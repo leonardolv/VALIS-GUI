@@ -10,6 +10,7 @@ import numpy as np
 
 from valis_workstation.models.config import Config
 from valis_workstation.utils.exceptions import UserVisibleError
+from valis_workstation.models.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +111,30 @@ def run_valis_pipeline(
         }
         slide_entry.update(_collect_transform_paths(output_dir, slide_obj))
         slides_info.append(slide_entry)
+=======
+        raise ValueError("No slides provided for registration.")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    registrar_kwargs = build_registrar_kwargs(config)
+
+    if not _valis_available():
+        logger.info("VALIS library not available; running dry pipeline.")
+        if progress_callback:
+            progress_callback(100)
+        return {"output_dir": output_dir, "slides": slides, "kwargs": registrar_kwargs}
+
+    valis_module = importlib.import_module("valis")
+    logger.info("Starting VALIS pipeline with %d slides", len(slides))
+
+    if progress_callback:
+        progress_callback(25)
+
+    registrar = valis_module.Valis(
+        slide_src=str(slides[0].parent),
+        slide_dst=str(output_dir),
+        **registrar_kwargs,
+    )
+    registrar.register()
 
     if progress_callback:
         progress_callback(100)

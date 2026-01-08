@@ -207,3 +207,13 @@ class MainWindow(QtWidgets.QMainWindow):
         if self._viewer is not None:
             self._viewer.close()
         super().closeEvent(event)
+        QtWidgets.QMessageBox.information(self, "Blink", "Blink view toggled.")
+
+    def _show_analysis_plot(self) -> None:
+        QtWidgets.QMessageBox.information(
+            self, "Analysis", "Analysis plot placeholder."
+        )
+
+    def _warp_annotations(self) -> None:
+        dialog = WarpAnnotationsDialog(self)
+        dialog.exec()
