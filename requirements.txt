@@ -1,0 +1,4 @@
+PySide6>=6.7.0
+napari[all]>=0.4.19
+pytest>=8.4.0
+pytest-qt>=4.4.0
