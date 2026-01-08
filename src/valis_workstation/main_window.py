@@ -9,6 +9,8 @@ from PySide6 import QtCore, QtWidgets
 
 from valis_workstation.models.config import Config
 from valis_workstation.services.slide_scan import scan_slide_folder
+from valis_workstation.ui.dialogs.analysis_plot import AnalysisPlotDialog
+from valis_workstation.ui.dialogs.blink_viewer import BlinkViewerDialog
 from valis_workstation.ui.dialogs.warp_annotations import WarpAnnotationsDialog
 from valis_workstation.ui.project_dock import ProjectDock
 from valis_workstation.ui.properties_dock import PropertiesDock
@@ -32,6 +34,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log_emitter = log_emitter
         self._worker_thread: QtCore.QThread | None = None
         self._worker: ValisWorker | None = None
+        self._viewer = None
+        self._napari_available = False
+        self._last_result: dict | None = None
 
         self.setWindowTitle("VALIS Workstation")
         self.resize(1400, 900)
@@ -58,12 +63,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         napari_module = importlib.import_module("napari")
         try:
-            viewer = napari_module.Viewer(show=False)
+            self._viewer = napari_module.Viewer(show=False)
+            self._napari_available = True
         except Exception:
             logger.exception("Failed to start napari viewer")
             return self._napari_unavailable_widget()
 
-        return viewer.window._qt_window
+        return self._viewer.window._qt_window
 
     def _napari_unavailable_widget(self) -> QtWidgets.QWidget:
         label = QtWidgets.QLabel("Napari not available")
@@ -131,6 +137,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def _on_worker_finished(self, result: dict) -> None:
         logger.info("Registration completed")
         self._status_dock.set_progress(100)
+        self._last_result = result
+        self._load_registered_layers(result)
         QtWidgets.QMessageBox.information(
             self, "VALIS", "Registration complete."
         )
@@ -142,6 +150,63 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
     def _blink(self) -> None:
+        if not self._napari_available or self._viewer is None:
+            QtWidgets.QMessageBox.warning(self, "Blink", "Napari not available.")
+            return
+        if not self._last_result or not self._last_result.get("registered_dir"):
+            QtWidgets.QMessageBox.warning(self, "Blink", "No registered slides available.")
+            return
+        registered_dir = Path(self._last_result["registered_dir"])
+        slide_paths = sorted(registered_dir.glob("*.ome.tiff"))
+        if len(slide_paths) < 2:
+            QtWidgets.QMessageBox.warning(
+                self, "Blink", "Need at least two registered slides."
+            )
+            return
+        dialog = BlinkViewerDialog(self._viewer, slide_paths, self)
+        dialog.exec()
+
+    def _show_analysis_plot(self) -> None:
+        if not self._last_result or "summary_df" not in self._last_result:
+            QtWidgets.QMessageBox.warning(self, "Analysis", "No results available.")
+            return
+        summary_df = self._last_result["summary_df"]
+        dialog = AnalysisPlotDialog(summary_df, self)
+        dialog.exec()
+
+    def _warp_annotations(self) -> None:
+        if not self._last_result or "registrar" not in self._last_result:
+            QtWidgets.QMessageBox.warning(self, "Warp", "No registration results available.")
+            return
+        output_dir = Path(self._last_result["output_dir"])
+        dialog = WarpAnnotationsDialog(self._last_result["registrar"], output_dir, self)
+        dialog.exec()
+
+    def _load_registered_layers(self, result: dict) -> None:
+        if not self._napari_available or self._viewer is None:
+            return
+        registered_dir = Path(result["registered_dir"])
+        for layer in list(self._viewer.layers):
+            if layer.name.startswith("Registered:"):
+                self._viewer.layers.remove(layer)
+        for slide_path in sorted(registered_dir.glob("*.ome.tiff")):
+            try:
+                layer_result = self._viewer.open(
+                    str(slide_path), name=f"Registered: {slide_path.name}"
+                )
+                if isinstance(layer_result, list):
+                    for layer in layer_result:
+                        layer.name = f"Registered: {layer.name}"
+            except Exception:
+                logger.exception("Failed to load registered slide %s", slide_path)
+
+    def closeEvent(self, event) -> None:
+        if self._worker_thread and self._worker_thread.isRunning():
+            self._worker_thread.quit()
+            self._worker_thread.wait(2000)
+        if self._viewer is not None:
+            self._viewer.close()
+        super().closeEvent(event)
         QtWidgets.QMessageBox.information(self, "Blink", "Blink view toggled.")
 
     def _show_analysis_plot(self) -> None:

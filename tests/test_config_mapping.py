@@ -15,9 +15,7 @@ def test_build_registrar_kwargs_maps_config() -> None:
     kwargs = build_registrar_kwargs(config)
 
     assert kwargs == {
-        "rigid_registrar": False,
-        "non_rigid_registrar": True,
-        "max_image_size": 4096,
-        "match_threshold": 0.5,
-        "use_gpu": True,
+        "max_image_dim_px": 4096,
+        "do_rigid": False,
+        "non_rigid_registrar_cls": "default",
     }
