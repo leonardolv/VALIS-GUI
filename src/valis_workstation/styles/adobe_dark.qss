@@ -1,0 +1,29 @@
+QWidget {
+    background-color: #2b2b2b;
+    color: #f0f0f0;
+    font-size: 12px;
+}
+
+QLineEdit, QSpinBox, QDoubleSpinBox, QTextEdit, QListWidget {
+    background-color: #3b3b3b;
+    border: 1px solid #555555;
+    padding: 4px;
+}
+
+QMenuBar, QMenu {
+    background-color: #2b2b2b;
+}
+
+QDockWidget::title {
+    background-color: #1f1f1f;
+    padding: 4px;
+}
+
+QProgressBar {
+    border: 1px solid #555555;
+    text-align: center;
+}
+
+QProgressBar::chunk {
+    background-color: #3fa9f5;
+}
