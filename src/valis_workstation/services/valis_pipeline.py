@@ -111,7 +111,6 @@ def run_valis_pipeline(
         }
         slide_entry.update(_collect_transform_paths(output_dir, slide_obj))
         slides_info.append(slide_entry)
-=======
         raise ValueError("No slides provided for registration.")
 
     output_dir.mkdir(parents=True, exist_ok=True)
