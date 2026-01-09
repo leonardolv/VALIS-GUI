@@ -8,13 +8,10 @@ from pathlib import Path
 from PySide6 import QtCore, QtWidgets
 
 from valis_workstation.models.config import Config
-from valis_workstation.services.error_metrics import select_metric_column
 from valis_workstation.services.slide_scan import scan_slide_folder
 from valis_workstation.ui.dialogs.analysis_plot import AnalysisPlotDialog
 from valis_workstation.ui.dialogs.blink_viewer import BlinkViewerDialog
-from valis_workstation.ui.dialogs.quality_report import QualityReportDialog
 from valis_workstation.ui.dialogs.warp_annotations import WarpAnnotationsDialog
-from valis_workstation.ui.layer_controls_dock import LayerControlsDock
 from valis_workstation.ui.project_dock import ProjectDock
 from valis_workstation.ui.properties_dock import PropertiesDock
 from valis_workstation.ui.status_dock import StatusDock
@@ -40,7 +37,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self._viewer = None
         self._napari_available = False
         self._last_result: dict | None = None
-        self._layer_controls: LayerControlsDock | None = None
 
         self.setWindowTitle("VALIS Workstation")
         self.resize(1400, 900)
@@ -73,11 +69,6 @@ class MainWindow(QtWidgets.QMainWindow):
             logger.exception("Failed to start napari viewer")
             return self._napari_unavailable_widget()
 
-        self._layer_controls = LayerControlsDock(self._viewer, self)
-        self.addDockWidget(
-            QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self._layer_controls
-        )
-
         return self._viewer.window._qt_window
 
     def _napari_unavailable_widget(self) -> QtWidgets.QWidget:
@@ -107,10 +98,6 @@ class MainWindow(QtWidgets.QMainWindow):
         warp_action = QtWidgets.QAction("Warp Annotations", self)
         warp_action.triggered.connect(self._warp_annotations)
         tools_menu.addAction(warp_action)
-
-        report_action = QtWidgets.QAction("Quality Report", self)
-        report_action.triggered.connect(self._show_quality_report)
-        tools_menu.addAction(report_action)
 
     def _open_slide_folder(self) -> None:
         folder = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Slide Folder")
@@ -152,7 +139,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self._status_dock.set_progress(100)
         self._last_result = result
         self._load_registered_layers(result)
-        self._add_quality_overlays(result)
         QtWidgets.QMessageBox.information(
             self, "VALIS", "Registration complete."
         )
@@ -188,14 +174,6 @@ class MainWindow(QtWidgets.QMainWindow):
         dialog = AnalysisPlotDialog(summary_df, self)
         dialog.exec()
 
-    def _show_quality_report(self) -> None:
-        if not self._last_result or "summary_df" not in self._last_result:
-            QtWidgets.QMessageBox.warning(self, "Quality", "No results available.")
-            return
-        summary_df = self._last_result["summary_df"]
-        dialog = QualityReportDialog(summary_df, self)
-        dialog.exec()
-
     def _warp_annotations(self) -> None:
         if not self._last_result or "registrar" not in self._last_result:
             QtWidgets.QMessageBox.warning(self, "Warp", "No registration results available.")
@@ -222,90 +200,6 @@ class MainWindow(QtWidgets.QMainWindow):
             except Exception:
                 logger.exception("Failed to load registered slide %s", slide_path)
 
-        if self._layer_controls is not None:
-            self._layer_controls.refresh()
-
-    def _add_quality_overlays(self, result: dict) -> None:
-        if not self._napari_available or self._viewer is None:
-            return
-        summary_df = result.get("summary_df")
-        if summary_df is None:
-            return
-
-        metric_column = select_metric_column(summary_df)
-        if metric_column is None:
-            return
-
-        metric_by_slide = (
-            summary_df.groupby("from")[metric_column].mean().to_dict()
-        )
-        values = list(metric_by_slide.values())
-        if not values:
-            return
-        min_val, max_val = min(values), max(values)
-        spread = max(max_val - min_val, 1e-6)
-
-        for layer in list(self._viewer.layers):
-            if layer.name.startswith("Quality Heatmap"):
-                self._viewer.layers.remove(layer)
-        if "Quality Markers" in self._viewer.layers:
-            self._viewer.layers.remove(self._viewer.layers["Quality Markers"])
-
-        marker_layer = self._viewer.add_shapes(
-            name="Quality Markers",
-            shape_type="rectangle",
-            edge_width=4,
-            face_color="transparent",
-        )
-
-        for layer in list(self._viewer.layers):
-            if not layer.name.startswith("Registered:"):
-                continue
-            slide_name = layer.name.replace("Registered:", "").strip()
-            metric_value = metric_by_slide.get(slide_name, min_val)
-            normalized = (metric_value - min_val) / spread
-            color = (1.0, 1.0 - normalized, 0.0, 0.9)
-
-            extent = layer.extent.data
-            top_left = extent[0]
-            bottom_right = extent[1]
-            rectangle = [
-                [top_left[0], top_left[1]],
-                [top_left[0], bottom_right[1]],
-                [bottom_right[0], bottom_right[1]],
-                [bottom_right[0], top_left[1]],
-            ]
-            marker_layer.add(rectangle, edge_color=color)
-
-            heatmap = self._build_heatmap_layer(layer, normalized)
-            if heatmap is not None:
-                self._viewer.add_image(**heatmap)
-
-    @staticmethod
-    def _build_heatmap_layer(layer, normalized_value: float) -> dict | None:
-        try:
-            import numpy as np
-        except Exception:
-            return None
-        extent = layer.extent.data
-        top_left = extent[0]
-        bottom_right = extent[1]
-        height = max(int(bottom_right[0] - top_left[0]), 1)
-        width = max(int(bottom_right[1] - top_left[1]), 1)
-
-        base = np.full((64, 64), normalized_value, dtype="float32")
-        scale_y = height / base.shape[0]
-        scale_x = width / base.shape[1]
-        return {
-            "data": base,
-            "name": f"Quality Heatmap: {layer.name}",
-            "colormap": "magma",
-            "opacity": 0.35,
-            "blending": "additive",
-            "translate": (top_left[0], top_left[1]),
-            "scale": (scale_y, scale_x),
-        }
-
     def closeEvent(self, event) -> None:
         if self._worker_thread and self._worker_thread.isRunning():
             self._worker_thread.quit()
@@ -313,3 +207,13 @@ class MainWindow(QtWidgets.QMainWindow):
         if self._viewer is not None:
             self._viewer.close()
         super().closeEvent(event)
+        QtWidgets.QMessageBox.information(self, "Blink", "Blink view toggled.")
+
+    def _show_analysis_plot(self) -> None:
+        QtWidgets.QMessageBox.information(
+            self, "Analysis", "Analysis plot placeholder."
+        )
+
+    def _warp_annotations(self) -> None:
+        dialog = WarpAnnotationsDialog(self)
+        dialog.exec()

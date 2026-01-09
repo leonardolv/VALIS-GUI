@@ -10,6 +10,7 @@ import numpy as np
 
 from valis_workstation.models.config import Config
 from valis_workstation.utils.exceptions import UserVisibleError
+from valis_workstation.models.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -60,9 +61,9 @@ def run_valis_pipeline(
     slides = [Path(slide) for slide in slides]
     slide_paths = [str(slide) for slide in slides]
 
+    valis_module = importlib.import_module("valis")
     valis_registration = importlib.import_module("valis.registration")
     valis_serial_non_rigid = importlib.import_module("valis.serial_non_rigid")
-    valis_feature_matcher = importlib.import_module("valis.feature_matcher")
     logger.info("Starting VALIS pipeline with %d slides", len(slides))
     if progress_callback:
         progress_callback(10)
@@ -70,16 +71,6 @@ def run_valis_pipeline(
     registrar_kwargs = build_registrar_kwargs(config)
     if config.non_rigid_registration:
         registrar_kwargs["non_rigid_registrar_cls"] = valis_serial_non_rigid.SerialNonRigidRegistrar
-    matcher = valis_feature_matcher.SuperGlueMatcher(
-        match_threshold=config.match_threshold,
-        force_cpu=not config.use_gpu,
-    )
-    matcher_for_sorting = valis_feature_matcher.SuperGlueMatcher(
-        match_threshold=config.match_threshold,
-        force_cpu=not config.use_gpu,
-    )
-    registrar_kwargs["matcher"] = matcher
-    registrar_kwargs["matcher_for_sorting"] = matcher_for_sorting
 
     registrar = valis_registration.Valis(
         src_dir=str(slides[0].parent),
@@ -120,6 +111,29 @@ def run_valis_pipeline(
         }
         slide_entry.update(_collect_transform_paths(output_dir, slide_obj))
         slides_info.append(slide_entry)
+        raise ValueError("No slides provided for registration.")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    registrar_kwargs = build_registrar_kwargs(config)
+
+    if not _valis_available():
+        logger.info("VALIS library not available; running dry pipeline.")
+        if progress_callback:
+            progress_callback(100)
+        return {"output_dir": output_dir, "slides": slides, "kwargs": registrar_kwargs}
+
+    valis_module = importlib.import_module("valis")
+    logger.info("Starting VALIS pipeline with %d slides", len(slides))
+
+    if progress_callback:
+        progress_callback(25)
+
+    registrar = valis_module.Valis(
+        slide_src=str(slides[0].parent),
+        slide_dst=str(output_dir),
+        **registrar_kwargs,
+    )
+    registrar.register()
 
     if progress_callback:
         progress_callback(100)
