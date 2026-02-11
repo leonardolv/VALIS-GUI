@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -38,6 +41,7 @@ def select_metric_column(summary_df: pd.DataFrame) -> str | None:
 def summarize_error_dataframe(summary_df: pd.DataFrame) -> dict:
     metric_column = select_metric_column(summary_df)
     if metric_column is None:
+        logger.warning("No suitable metric column found in summary dataframe")
         return {
             "metric_column": None,
             "values": [],
@@ -45,6 +49,7 @@ def summarize_error_dataframe(summary_df: pd.DataFrame) -> dict:
             "max": 0.0,
         }
     values = summary_df[metric_column].fillna(0).tolist()
+    logger.info("Selected metric column '%s' with %d values", metric_column, len(values))
     return {
         "metric_column": metric_column,
         "values": values,

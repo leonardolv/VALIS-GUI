@@ -16,12 +16,19 @@ class ValisWorker(QtCore.QObject):
     progress = QtCore.Signal(int)
     finished = QtCore.Signal(dict)
     failed = QtCore.Signal(str)
+    cancelled = QtCore.Signal()
 
     def __init__(self, config: Config, slides: list[Path], output_dir: Path) -> None:
         super().__init__()
         self._config = config
         self._slides = slides
         self._output_dir = output_dir
+        self._cancel_requested = False
+
+    def cancel(self) -> None:
+        """Request cancellation of the registration."""
+        logger.info("Cancellation requested")
+        self._cancel_requested = True
 
     @QtCore.Slot()
     def run(self) -> None:
@@ -32,7 +39,14 @@ class ValisWorker(QtCore.QObject):
                 self._slides,
                 self._output_dir,
                 progress_callback=self.progress.emit,
+                cancel_check=lambda: self._cancel_requested,
             )
+            
+            if self._cancel_requested:
+                logger.info("Registration cancelled")
+                self.cancelled.emit()
+                return
+                
         except Exception as exc:
             logger.exception("VALIS pipeline failed")
             self.failed.emit(str(exc))

@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 from functools import partial
 
 from PySide6 import QtCore, QtWidgets
+
+logger = logging.getLogger(__name__)
 
 
 COLORMAP_OPTIONS = [
@@ -22,6 +25,7 @@ COLORMAP_OPTIONS = [
 class LayerControlsDock(QtWidgets.QDockWidget):
     def __init__(self, viewer, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__("Layers", parent)
+        self.setObjectName("LayerControlsDock")
         self._viewer = viewer
 
         container = QtWidgets.QWidget()
@@ -40,6 +44,7 @@ class LayerControlsDock(QtWidgets.QDockWidget):
     def refresh(self) -> None:
         layers = list(self._viewer.layers)
         self._table.setRowCount(len(layers))
+        logger.debug("Refreshing layer controls: %d layers", len(layers))
 
         for row_idx, layer in enumerate(layers):
             visible = QtWidgets.QCheckBox()
@@ -71,7 +76,7 @@ class LayerControlsDock(QtWidgets.QDockWidget):
 
     @staticmethod
     def _toggle_visible(layer, state: int) -> None:
-        layer.visible = state == QtCore.Qt.CheckState.Checked
+        layer.visible = state == QtCore.Qt.CheckState.Checked.value
 
     @staticmethod
     def _set_opacity(layer, value: int) -> None:

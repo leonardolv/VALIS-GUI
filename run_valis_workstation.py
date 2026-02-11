@@ -21,12 +21,11 @@ def _ensure_logs_dir(repo_root: Path) -> Path:
 
 
 def _configure_qt_defaults() -> None:
+    """Configure Qt settings - AA_EnableHighDpiScaling is deprecated in Qt 6."""
     if importlib.util.find_spec("PySide6") is None:
         return
-    QtCore = importlib.import_module("PySide6.QtCore")
-    QtCore.QCoreApplication.setAttribute(
-        QtCore.Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True
-    )
+    # High DPI scaling is enabled by default in Qt 6, no need to set it
+    pass
 
 
 def main() -> int:
