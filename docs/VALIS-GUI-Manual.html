@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VALIS Workstation — Complete User Manual</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   VALIS WORKSTATION v3 – TABBED PROFESSIONAL MANUAL
+   Standalone HTML · Embedded CSS/JS · SVG diagrams
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── RESET & BASE ──────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Segoe UI',Inter,-apple-system,BlinkMacSystemFont,Roboto,Oxygen,Ubuntu,sans-serif;color:#1e293b;background:#f8fafc;line-height:1.7}
+a{color:#0369a1;text-decoration:none}a:hover{text-decoration:underline}
+img,svg{max-width:100%;display:block}
+h1,h2,h3,h4{font-weight:700;line-height:1.3}
+h1{font-size:2.2rem}h2{font-size:1.55rem;margin-top:8px}h3{font-size:1.18rem}h4{font-size:1.02rem}
+p,li{max-width:74ch}
+ul,ol{padding-left:24px;margin:8px 0 14px}
+li{margin-bottom:4px}
+
+/* ─── LAYOUT ────────────────────────────────────────────────── */
+.page{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media(max-width:900px){.page{grid-template-columns:1fr}.sidebar{display:none}.mobile-menu-btn{display:flex!important}}
+
+/* ─── SIDEBAR ───────────────────────────────────────────────── */
+.sidebar{background:#0c1929;color:#94a3b8;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:20;display:flex;flex-direction:column}
+.sidebar-header{padding:20px 16px 12px;border-bottom:1px solid #1e3a5f}
+.sidebar-header h2{color:#e2e8f0;font-size:.88rem;letter-spacing:.06em;text-transform:uppercase;margin:0}
+.sidebar-header .version-badge{display:inline-block;background:rgba(14,165,233,.2);color:#38bdf8;padding:2px 10px;border-radius:12px;font-size:.7rem;margin-top:6px}
+.sidebar-header .quick-link{display:inline-block;margin-top:8px;background:#0c2d4a;border:1px solid #1e3a5f;color:#7dd3fc;padding:4px 10px;border-radius:7px;font-size:.72rem;font-weight:600}
+.sidebar-header .quick-link:hover{background:#114268;color:#bae6fd;text-decoration:none}
+
+/* Search */
+.sidebar-search{padding:12px 14px 8px}
+.sidebar-search input{width:100%;background:#162544;border:1px solid #1e3a5f;border-radius:6px;padding:8px 12px 8px 34px;color:#e2e8f0;font-size:.82rem;outline:none;transition:border .2s}
+.sidebar-search input:focus{border-color:#0ea5e9}
+.sidebar-search input::placeholder{color:#475569}
+.sidebar-search-wrap{position:relative}
+.sidebar-search-wrap::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:.78rem;pointer-events:none}
+.search-results{display:none;padding:4px 14px 8px}
+.search-results.active{display:block}
+.search-results a{display:block;padding:5px 10px;border-radius:4px;color:#38bdf8;font-size:.8rem;margin-bottom:2px}
+.search-results a:hover{background:#1e3a5f;text-decoration:none}
+.search-results .no-results{color:#64748b;font-size:.78rem;padding:5px 10px}
+
+/* Nav sections */
+.sidebar-nav{flex:1;overflow-y:auto;padding:4px 0 20px}
+.nav-section{margin-bottom:4px}
+.nav-section-title{color:#64748b;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;padding:12px 16px 4px;font-weight:600;user-select:none}
+.nav-section a{display:block;position:relative;padding:7px 16px 7px 24px;margin:2px 10px 2px 12px;color:#94a3b8;font-size:.82rem;border-left:3px solid transparent;border-radius:8px;transition:transform .18s,background .18s,color .18s,border-color .18s,box-shadow .18s}
+.nav-section a::after{content:'';position:absolute;right:10px;top:50%;width:6px;height:6px;border-radius:999px;background:transparent;transform:translateY(-50%);transition:background .18s,box-shadow .18s}
+.nav-section a:hover{background:#16314f;color:#e2e8f0;text-decoration:none;border-left-color:#2d557f;transform:translateX(2px)}
+.nav-section a.active{color:#e0f2fe;background:linear-gradient(90deg,#0e2f4e 0%,#134066 100%);border-left-color:#22d3ee;font-weight:600;box-shadow:inset 0 0 0 1px rgba(56,189,248,.2)}
+.nav-section a.active::after{background:#22d3ee;box-shadow:0 0 0 3px rgba(34,211,238,.2)}
+.nav-section a .nav-icon{display:inline-block;width:20px;text-align:center;margin-right:4px;font-size:.78rem}
+
+/* Tab badges on nav links */
+.nav-badge{display:inline-block;font-size:.6rem;padding:1px 6px;border-radius:8px;margin-left:4px;font-weight:700;vertical-align:middle}
+.nav-badge.beginner{background:#dcfce7;color:#166534}
+.nav-badge.advanced{background:#fef3c7;color:#92400e}
+.nav-badge.api{background:#ede9fe;color:#5b21b6}
+
+/* ─── MAIN CONTENT ──────────────────────────────────────────── */
+.main{padding:0;max-width:960px;overflow-x:hidden}
+
+/* ─── TOP TAB BAR ───────────────────────────────────────────── */
+.tab-bar{position:sticky;top:0;z-index:15;background:#fff;border-bottom:2px solid #e2e8f0;display:flex;align-items:stretch;padding:0 20px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.tab-btn{padding:14px 24px;font-size:.9rem;font-weight:600;color:#64748b;cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;transition:all .2s;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.tab-btn:hover{color:#0284c7;background:#f0f9ff}
+.tab-btn.active{color:#0284c7;border-bottom-color:#0284c7}
+.tab-btn .tab-icon{font-size:1.1rem}
+.tab-btn .tab-count{font-size:.68rem;background:#e2e8f0;color:#475569;padding:1px 7px;border-radius:10px}
+.tab-btn.active .tab-count{background:#dbeafe;color:#0284c7}
+
+.mobile-menu-btn{display:none;position:fixed;bottom:20px;right:20px;width:50px;height:50px;background:#0284c7;color:#fff;border:none;border-radius:50%;font-size:1.4rem;cursor:pointer;z-index:100;box-shadow:0 4px 12px rgba(2,132,199,.4);align-items:center;justify-content:center}
+
+/* Tab content */
+.tab-content{display:none;padding:32px 40px 60px}
+.tab-content.active{display:block}
+@media(max-width:900px){.tab-content{padding:20px 16px 40px}}
+
+/* ─── HERO ──────────────────────────────────────────────────── */
+.hero{background:linear-gradient(135deg,#0c4a6e 0%,#0e7490 50%,#0891b2 100%);color:#fff;border-radius:14px;padding:48px 40px;margin-bottom:36px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero::after{content:'';position:absolute;top:-40%;right:-10%;width:420px;height:420px;background:radial-gradient(circle,rgba(255,255,255,.08) 0%,transparent 70%);border-radius:50%}
+.hero h1{margin-bottom:8px;font-size:2.5rem;position:relative;z-index:1}
+.hero .subtitle{font-size:1.12rem;opacity:.88;margin-bottom:14px;position:relative;z-index:1}
+.hero .version{display:inline-block;background:rgba(255,255,255,.18);padding:4px 16px;border-radius:20px;font-size:.8rem;letter-spacing:.04em;position:relative;z-index:1}
+.hero-tabs{display:flex;gap:10px;margin-top:18px;position:relative;z-index:1}
+.hero-tab-link{background:rgba(255,255,255,.15);color:#fff;padding:8px 18px;border-radius:8px;font-size:.85rem;cursor:pointer;border:1px solid rgba(255,255,255,.2);transition:all .2s}
+.hero-tab-link:hover{background:rgba(255,255,255,.25);text-decoration:none}
+
+/* ─── CARDS ─────────────────────────────────────────────────── */
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:26px;margin-bottom:22px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h4{margin-bottom:10px}
+.card-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.mini-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:18px 14px;text-align:center;transition:box-shadow .15s,transform .15s}
+.mini-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.07);transform:translateY(-2px)}
+.mini-card .icon{font-size:2rem;margin-bottom:6px}
+.mini-card h4{margin-bottom:4px;font-size:.92rem}
+.mini-card p{font-size:.8rem;color:#64748b;max-width:none}
+
+/* ─── TABLES ────────────────────────────────────────────────── */
+table{width:100%;border-collapse:collapse;margin:14px 0 22px}
+th,td{padding:10px 12px;border:1px solid #e2e8f0;text-align:left;font-size:.88rem}
+th{background:#f1f5f9;font-weight:600;color:#334155;white-space:nowrap}
+tr:nth-child(even){background:#f8fafc}
+tr:hover{background:#f0f7ff}
+
+/* ─── CODE ──────────────────────────────────────────────────── */
+pre{background:#0f172a;color:#e2e8f0;padding:16px 20px;border-radius:8px;overflow-x:auto;font-size:.84rem;line-height:1.65;margin:14px 0 22px}
+code{background:#f1f5f9;padding:2px 7px;border-radius:4px;font-size:.86em;color:#0f172a}
+pre code{background:none;padding:0;color:inherit}
+
+/* ─── ALERTS ────────────────────────────────────────────────── */
+.note{background:#fef9c3;border-left:4px solid #eab308;padding:14px 18px;border-radius:0 8px 8px 0;margin:16px 0 22px;font-size:.9rem}
+.tip{background:#ecfdf5;border-left:4px solid #10b981;padding:14px 18px;border-radius:0 8px 8px 0;margin:16px 0 22px;font-size:.9rem}
+.warn{background:#fef2f2;border-left:4px solid #ef4444;padding:14px 18px;border-radius:0 8px 8px 0;margin:16px 0 22px;font-size:.9rem}
+.info{background:#eff6ff;border-left:4px solid #3b82f6;padding:14px 18px;border-radius:0 8px 8px 0;margin:16px 0 22px;font-size:.9rem}
+
+/* ─── UI ELEMENTS ───────────────────────────────────────────── */
+.kbd{display:inline-block;background:#1e293b;color:#fff;padding:2px 8px;border-radius:4px;font-size:.78rem;font-family:'Consolas','Cascadia Code',monospace;letter-spacing:.02em;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;font-weight:700;font-size:.9rem;margin-right:12px;flex-shrink:0;box-shadow:0 2px 4px rgba(2,132,199,.3)}
+.step{display:flex;align-items:flex-start;margin-bottom:18px;padding:12px 16px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0}
+.step-body{flex:1}
+.step-body strong{color:#0c4a6e}
+hr{border:none;border-top:1px solid #e2e8f0;margin:32px 0}
+.section-anchor{display:block;position:relative;top:-80px;visibility:hidden}
+.caption{font-size:.86rem;color:#64748b;text-align:center;margin:-6px 0 24px;font-style:italic}
+.section-divider{margin:40px 0;border:none;border-top:2px solid #e2e8f0}
+.doc-image{width:100%;border-radius:10px;border:1px solid #cbd5e1;box-shadow:0 4px 14px rgba(2,8,23,.08);background:#fff}
+.image-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:14px 0 6px}
+.image-grid .img-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:8px}
+.image-grid .img-card figcaption{font-size:.8rem;color:#64748b;margin-top:8px}
+.learning-path{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.learning-path .path{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px}
+@media(max-width:820px){.learning-path{grid-template-columns:1fr}}
+
+/* ─── UI MOCKUP ─────────────────────────────────────────────── */
+.ui-mock{background:#1a1f2e;border-radius:10px;padding:0;overflow:hidden;margin:18px auto 12px;border:1px solid #334155;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.ui-titlebar{background:linear-gradient(180deg,#161b28,#0f1520);padding:9px 14px;display:flex;align-items:center;gap:8px}
+.ui-dot{width:11px;height:11px;border-radius:50%}
+.ui-dot.r{background:#ef4444}.ui-dot.y{background:#eab308}.ui-dot.g{background:#22c55e}
+.ui-titlebar span{color:#94a3b8;font-size:.78rem;margin-left:8px;flex:1}
+.ui-body{padding:16px}
+.ui-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:4px}
+.ui-field{background:#0f172a;border:1px solid #334155;border-radius:5px;padding:7px 11px;color:#e2e8f0;font-size:.82rem;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.ui-field .val{color:#38bdf8;font-weight:500}
+.ui-check{display:inline-flex;align-items:center;gap:6px;color:#cbd5e1;font-size:.82rem;margin-bottom:8px}
+.ui-check .box{width:14px;height:14px;border:1.5px solid #64748b;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.6rem}
+.ui-check .box.on{background:#0284c7;border-color:#0284c7;color:#fff}
+.ui-btn{display:inline-block;background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;padding:7px 18px;border-radius:5px;font-size:.82rem;cursor:pointer;border:none;font-weight:500}
+.ui-btn.sec{background:linear-gradient(135deg,#334155,#475569)}
+.ui-row{display:flex;gap:12px;flex-wrap:wrap}
+.ui-col{flex:1;min-width:160px}
+.callout{position:relative;border:2px solid #0ea5e9;border-radius:7px;padding:4px;margin-bottom:12px}
+.callout-label{position:absolute;top:-10px;left:14px;background:#0ea5e9;color:#fff;font-size:.65rem;padding:1px 10px;border-radius:3px;letter-spacing:.06em;font-weight:600}
+
+/* ─── DIAGRAMS ──────────────────────────────────────────────── */
+.diagram{width:100%;overflow-x:auto;margin:18px 0 8px}
+.diagram svg{display:block;margin:0 auto}
+
+/* ─── GLOSSARY / DEFINITION LIST ────────────────────────────── */
+.glossary dt{font-weight:700;color:#0c4a6e;margin-top:14px}
+.glossary dd{margin-left:20px;margin-bottom:6px;color:#475569}
+
+/* ─── USE-CASE CARDS ────────────────────────────────────────── */
+.usecase{background:linear-gradient(135deg,#f0f9ff,#ecfdf5);border:1px solid #bae6fd;border-radius:10px;padding:24px;margin-bottom:20px}
+.usecase h4{color:#0c4a6e;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.usecase h4 .uc-icon{font-size:1.4rem}
+.usecase .uc-tags{display:flex;gap:6px;margin:8px 0 10px;flex-wrap:wrap}
+.usecase .uc-tag{font-size:.7rem;padding:2px 10px;border-radius:10px;font-weight:600}
+.usecase .uc-tag.bf{background:#fef3c7;color:#92400e}
+.usecase .uc-tag.fl{background:#ede9fe;color:#5b21b6}
+.usecase .uc-tag.multi{background:#dcfce7;color:#166534}
+
+/* ─── DECISION TREE ─────────────────────────────────────────── */
+.decision-tree{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:24px;margin:18px 0}
+.decision-tree h4{margin-bottom:12px;color:#0c4a6e}
+.dt-node{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;padding:8px 14px;border-radius:6px}
+.dt-node.question{background:#eff6ff;border:1px solid #bfdbfe}
+.dt-node.answer{background:#ecfdf5;border:1px solid #a7f3d0;margin-left:30px}
+.dt-node .dt-icon{font-size:1.2rem;flex-shrink:0}
+
+/* ─── FOOTER ────────────────────────────────────────────────── */
+footer{text-align:center;padding:40px 20px;color:#64748b;font-size:.82rem;border-top:1px solid #e2e8f0;margin-top:48px}
+footer strong{color:#334155}
+
+/* ─── PRINT ─────────────────────────────────────────────────── */
+@media print{
+  .page{display:block}.sidebar,.tab-bar,.mobile-menu-btn{display:none}
+  .tab-content{display:block!important;padding:20px}
+  .main{max-width:100%}
+  .hero{background:#0c4a6e!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .card,.ui-mock{break-inside:avoid}
+}
+
+/* ─── ACCORDION (for grouped content) ───────────────────────── */
+.accordion{border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin:14px 0 22px}
+.accordion-header{background:#f1f5f9;padding:12px 18px;cursor:pointer;font-weight:600;font-size:.92rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;user-select:none;transition:background .15s}
+.accordion-header:hover{background:#e2e8f0}
+.accordion-header .arrow{transition:transform .2s;font-size:.7rem;color:#64748b}
+.accordion-header.open .arrow{transform:rotate(90deg)}
+.accordion-body{display:none;padding:18px}
+.accordion-body.open{display:block}
+
+/* ─── HIGHLIGHT / SEARCHABLE ────────────────────────────────── */
+mark{background:#fef08a;padding:1px 3px;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ═══════════════════════════════ SIDEBAR ═══════════════════════════════ -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2>VALIS Workstation</h2>
+    <span class="version-badge">v1.0 Manual</span>
+    <a class="quick-link" href="VALIS-GUI-Tutorial.html">Open Step-by-Step Tutorial</a>
+  </div>
+
+  <div class="sidebar-search">
+    <div class="sidebar-search-wrap">
+      <input type="text" id="searchInput" placeholder="Search manual…" autocomplete="off">
+    </div>
+  </div>
+  <div class="search-results" id="searchResults"></div>
+
+  <div class="sidebar-nav" id="sidebarNav">
+
+    <!-- BEGINNER -->
+    <div class="nav-section" data-tab="beginner">
+      <div class="nav-section-title">🟢 Beginner Guide</div>
+      <a href="#what-is-valis" onclick="activateTab('beginner')"><span class="nav-icon">📖</span>What Is VALIS?</a>
+      <a href="#concepts" onclick="activateTab('beginner')"><span class="nav-icon">💡</span>Key Concepts</a>
+      <a href="#installation" onclick="activateTab('beginner')"><span class="nav-icon">⚙️</span>Installation</a>
+      <a href="#first-registration" onclick="activateTab('beginner')"><span class="nav-icon">🚀</span>First Registration</a>
+      <a href="#ui-tour" onclick="activateTab('beginner')"><span class="nav-icon">🖥️</span>Interface Tour</a>
+      <a href="#gui-tasks" onclick="activateTab('beginner')"><span class="nav-icon">🗂️</span>GUI Task Catalog</a>
+      <a href="#after-registration" onclick="activateTab('beginner')"><span class="nav-icon">📊</span>After Registration</a>
+      <a href="#use-cases" onclick="activateTab('beginner')"><span class="nav-icon">🔬</span>Use Cases</a>
+      <a href="#beginner-faq" onclick="activateTab('beginner')"><span class="nav-icon">❓</span>FAQ</a>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="nav-section" data-tab="advanced">
+      <div class="nav-section-title">🟡 Advanced Guide</div>
+      <a href="#pipeline-deep" onclick="activateTab('advanced')"><span class="nav-icon">⚡</span>Pipeline Deep-Dive</a>
+      <a href="#valis-full-map" onclick="activateTab('advanced')"><span class="nav-icon">🧭</span>VALIS Full Map</a>
+      <a href="#detectors-guide" onclick="activateTab('advanced')"><span class="nav-icon">🔎</span>Feature Detectors</a>
+      <a href="#matchers-guide" onclick="activateTab('advanced')"><span class="nav-icon">🔗</span>Feature Matchers</a>
+      <a href="#nonrigid-guide" onclick="activateTab('advanced')"><span class="nav-icon">🌊</span>Non-Rigid Registration</a>
+      <a href="#preprocessing-guide" onclick="activateTab('advanced')"><span class="nav-icon">🎨</span>Preprocessing</a>
+      <a href="#output-formats" onclick="activateTab('advanced')"><span class="nav-icon">💾</span>Output &amp; Formats</a>
+      <a href="#optimization-tips" onclick="activateTab('advanced')"><span class="nav-icon">🏎️</span>Optimization Tips</a>
+      <a href="#decision-trees" onclick="activateTab('advanced')"><span class="nav-icon">🌳</span>Decision Trees</a>
+      <a href="#advanced-dialogs" onclick="activateTab('advanced')"><span class="nav-icon">🧰</span>All Dialogs &amp; Tools</a>
+      <a href="#config-mgmt" onclick="activateTab('advanced')"><span class="nav-icon">📋</span>Config Management</a>
+      <a href="#troubleshooting" onclick="activateTab('advanced')"><span class="nav-icon">🔧</span>Troubleshooting</a>
+    </div>
+
+    <!-- API REFERENCE -->
+    <div class="nav-section" data-tab="api">
+      <div class="nav-section-title">🟣 API &amp; Reference</div>
+      <a href="#valis-class" onclick="activateTab('api')"><span class="nav-icon">📦</span>Valis Class</a>
+      <a href="#slide-class" onclick="activateTab('api')"><span class="nav-icon">🔲</span>Slide Class</a>
+      <a href="#slide-io" onclick="activateTab('api')"><span class="nav-icon">📂</span>Slide I/O &amp; Formats</a>
+      <a href="#fd-api" onclick="activateTab('api')"><span class="nav-icon">🎯</span>Feature Detectors API</a>
+      <a href="#fm-api" onclick="activateTab('api')"><span class="nav-icon">🔗</span>Feature Matchers API</a>
+      <a href="#nr-api" onclick="activateTab('api')"><span class="nav-icon">🌀</span>Non-Rigid API</a>
+      <a href="#affine-api" onclick="activateTab('api')"><span class="nav-icon">📐</span>Affine Optimizers</a>
+      <a href="#preprocess-api" onclick="activateTab('api')"><span class="nav-icon">🎨</span>Preprocessing API</a>
+      <a href="#warp-api" onclick="activateTab('api')"><span class="nav-icon">↗️</span>Warp Tools API</a>
+      <a href="#viz-api" onclick="activateTab('api')"><span class="nav-icon">📊</span>Visualization API</a>
+      <a href="#gui-arch" onclick="activateTab('api')"><span class="nav-icon">🏗️</span>GUI Architecture</a>
+      <a href="#param-ref" onclick="activateTab('api')"><span class="nav-icon">📑</span>Full Parameter Table</a>
+      <a href="#keyboard-ref" onclick="activateTab('api')"><span class="nav-icon">⌨️</span>Keyboard Shortcuts</a>
+      <a href="#glossary" onclick="activateTab('api')"><span class="nav-icon">📚</span>Glossary</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════ MAIN ═══════════════════════════════ -->
+<div class="main">
+
+<!-- ─── TAB BAR ─────────────────────────────────────────────── -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="activateTab('beginner')" data-tab="beginner">
+    <span class="tab-icon">🟢</span> Beginner Guide <span class="tab-count">9</span>
+  </button>
+  <button class="tab-btn" onclick="activateTab('advanced')" data-tab="advanced">
+    <span class="tab-icon">🟡</span> Advanced Guide <span class="tab-count">13</span>
+  </button>
+  <button class="tab-btn" onclick="activateTab('api')" data-tab="api">
+    <span class="tab-icon">🟣</span> API Reference <span class="tab-count">15</span>
+  </button>
+</div>
+
+<!-- ╔═══════════════════════════════════════════════════════════════════╗
+     ║              TAB 1 — BEGINNER GUIDE                              ║
+     ╚═══════════════════════════════════════════════════════════════════╝ -->
+<div class="tab-content active" id="tab-beginner">
+
+<!-- HERO -->
+<div class="hero">
+  <h1>VALIS Workstation</h1>
+  <div class="subtitle">Professional whole-slide image registration, alignment &amp; analysis</div>
+  <span class="version">v 1.0 &nbsp;|&nbsp; Beginner-Friendly User Guide</span>
+  <div class="hero-tabs">
+    <a class="hero-tab-link" href="VALIS-GUI-Tutorial.html">→ Guided Tutorial</a>
+    <span class="hero-tab-link" onclick="activateTab('advanced')">→ Advanced Guide</span>
+    <span class="hero-tab-link" onclick="activateTab('api')">→ API Reference</span>
+  </div>
+</div>
+
+<!-- FEATURE CARDS -->
+<div class="card-row">
+  <div class="mini-card"><div class="icon">🔬</div><h4>Multi-Slide Registration</h4><p>Rigid + non-rigid alignment of serial tissue sections</p></div>
+  <div class="mini-card"><div class="icon">🧬</div><h4>8 Feature Detectors</h4><p>Classical &amp; deep-learning algorithms</p></div>
+  <div class="mini-card"><div class="icon">🖥️</div><h4>Napari Viewer</h4><p>Interactive multi-layer visualization</p></div>
+  <div class="mini-card"><div class="icon">📊</div><h4>Quality Analytics</h4><p>Error plots &amp; quality reports</p></div>
+  <div class="mini-card"><div class="icon">🔀</div><h4>Channel Merging</h4><p>CyCIF / CODEX composite creation</p></div>
+  <div class="mini-card"><div class="icon">💾</div><h4>Flexible Export</h4><p>OME-TIFF pyramids, JPEG, PNG</p></div>
+</div>
+
+<div class="card">
+<h4>Start Here — Pick Your Learning Path</h4>
+<div class="learning-path">
+  <div class="path">
+    <p><strong>Path A: First-time user (recommended)</strong></p>
+    <ol>
+      <li>Open <a href="VALIS-GUI-Tutorial.html">VALIS-GUI-Tutorial.html</a></li>
+      <li>Complete one full run with <code>examples/example_datasets/ihc</code></li>
+      <li>Return here for advanced tuning and API details</li>
+    </ol>
+  </div>
+  <div class="path">
+    <p><strong>Path B: Experienced user</strong></p>
+    <ol>
+      <li>Jump to <a href="#first-registration">First Registration</a> for the rapid checklist</li>
+      <li>Use <a href="#optimization-tips">Optimization Tips</a> and <a href="#decision-trees">Decision Trees</a></li>
+      <li>Reference the API tab for programmatic integration</li>
+    </ol>
+  </div>
+</div>
+<div class="image-grid">
+  <figure class="img-card">
+    <img class="doc-image" src="_images/banner.gif" alt="VALIS workflow banner" loading="lazy">
+    <figcaption>High-level context: where VALIS fits in pathology registration workflows.</figcaption>
+  </figure>
+  <figure class="img-card">
+    <img class="doc-image" src="_images/pipeline.png" alt="VALIS pipeline figure" loading="lazy">
+    <figcaption>Core pipeline overview from input slides to quality metrics and saved outputs.</figcaption>
+  </figure>
+</div>
+</div>
+
+<!-- ─── WHAT IS VALIS? ───────────────────────────────────────── -->
+<span class="section-anchor" id="what-is-valis"></span>
+<h2>1 — What Is VALIS?</h2>
+<hr>
+<div class="card">
+<p><strong>VALIS</strong> (Virtual Alignment of pathoLogy Image Series) is a Python library for registering (aligning) serial whole-slide images. It was published in <em>Nature Communications</em> and handles brightfield (H&amp;E, IHC) and fluorescence (CyCIF, CODEX, mIHC) images.</p>
+<p style="margin-top:12px"><strong>VALIS Workstation</strong> is the graphical desktop application that wraps VALIS in a user-friendly GUI — no command-line or programming knowledge required.</p>
+
+<h4 style="margin-top:18px">What can it do?</h4>
+<ul>
+  <li><strong>Align</strong> 2 or more tissue slides (serial sections, restained, multiplexed)</li>
+  <li><strong>Correct</strong> both linear (rotation, scale) and non-linear (elastic) tissue deformations</li>
+  <li><strong>Export</strong> registered images as pyramidal OME-TIFF (compatible with QuPath, OMERO, ImageJ)</li>
+  <li><strong>Merge</strong> registered slides into multi-channel composites</li>
+  <li><strong>Transfer</strong> annotations (GeoJSON) between registered slides</li>
+  <li><strong>Measure</strong> registration quality with built-in error metrics</li>
+</ul>
+
+<div class="diagram">
+<svg viewBox="0 0 760 180" xmlns="http://www.w3.org/2000/svg" style="max-width:740px" aria-label="VALIS concept: unaligned slides become aligned">
+  <defs>
+    <marker id="arr-b" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0,0 10,3.5 0,7" fill="#0284c7"/></marker>
+  </defs>
+  <!-- Before -->
+  <text x="130" y="18" text-anchor="middle" fill="#64748b" font-size="11" font-weight="700">BEFORE (unaligned)</text>
+  <rect x="30" y="28" width="80" height="110" rx="6" fill="none" stroke="#ef4444" stroke-width="2" transform="rotate(-8,70,83)"/>
+  <rect x="70" y="38" width="80" height="110" rx="6" fill="none" stroke="#3b82f6" stroke-width="2" transform="rotate(5,110,93)"/>
+  <rect x="110" y="30" width="80" height="110" rx="6" fill="none" stroke="#22c55e" stroke-width="2" transform="rotate(-3,150,85)"/>
+  <text x="130" y="170" text-anchor="middle" fill="#94a3b8" font-size="9">Misaligned serial sections</text>
+
+  <!-- Arrow -->
+  <line x1="230" y1="85" x2="340" y2="85" stroke="#0284c7" stroke-width="3" marker-end="url(#arr-b)"/>
+  <text x="285" y="75" text-anchor="middle" fill="#0284c7" font-size="11" font-weight="700">VALIS</text>
+  <text x="285" y="105" text-anchor="middle" fill="#64748b" font-size="8">rigid + non-rigid</text>
+
+  <!-- After -->
+  <text x="520" y="18" text-anchor="middle" fill="#64748b" font-size="11" font-weight="700">AFTER (registered)</text>
+  <rect x="460" y="30" width="120" height="120" rx="6" fill="none" stroke="#ef4444" stroke-width="2"/>
+  <rect x="460" y="30" width="120" height="120" rx="6" fill="none" stroke="#3b82f6" stroke-width="2" opacity=".7"/>
+  <rect x="460" y="30" width="120" height="120" rx="6" fill="none" stroke="#22c55e" stroke-width="2" opacity=".5"/>
+  <ellipse cx="520" cy="90" rx="40" ry="35" fill="none" stroke="#94a3b8" stroke-dasharray="4,3"/>
+  <text x="520" y="170" text-anchor="middle" fill="#94a3b8" font-size="9">Perfectly overlaid</text>
+
+  <!-- Output arrow -->
+  <line x1="600" y1="85" x2="680" y2="85" stroke="#10b981" stroke-width="2" marker-end="url(#arr-b)"/>
+  <rect x="685" y="55" width="60" height="60" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="715" y="82" text-anchor="middle" fill="#166534" font-size="9" font-weight="600">OME</text>
+  <text x="715" y="96" text-anchor="middle" fill="#166534" font-size="9" font-weight="600">TIFF</text>
+</svg>
+</div>
+<p class="caption">Figure 1 — The core concept: VALIS takes unaligned serial sections and produces perfectly registered outputs</p>
+</div>
+
+<!-- ─── KEY CONCEPTS ─────────────────────────────────────────── -->
+<span class="section-anchor" id="concepts"></span>
+<h2>2 — Key Concepts (Before You Start)</h2>
+<hr>
+<div class="card">
+<p>Understanding these five terms will make everything else clearer:</p>
+
+<table>
+  <tr><th style="width:170px">Term</th><th>Plain-English Explanation</th></tr>
+  <tr><td><strong>Registration</strong></td><td>The process of aligning two or more images so that the same tissue structures overlap. Think of it as "stacking" slides on top of each other.</td></tr>
+  <tr><td><strong>Rigid registration</strong></td><td>Corrects rotation, scaling, and translation. The tissue shape stays unchanged — only its position and angle are fixed.</td></tr>
+  <tr><td><strong>Non-rigid registration</strong></td><td>Corrects <em>elastic</em> deformations (stretching, folding, tearing). The tissue shape is gently warped to match its pair.</td></tr>
+  <tr><td><strong>Feature detection</strong></td><td>Automatically finding unique "landmarks" (keypoints) in each image — like corners, edges, or texture patterns — that can be matched across slides.</td></tr>
+  <tr><td><strong>OME-TIFF</strong></td><td>An open standard image format for microscopy. Supports multiple resolution levels (pyramids), tiling, and rich metadata. Compatible with QuPath, OMERO, ImageJ/FIJI, Napari.</td></tr>
+</table>
+
+<div class="diagram">
+<svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" style="max-width:680px" aria-label="Registration steps explained visually">
+  <defs>
+    <marker id="arr-c" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="#0284c7"/></marker>
+  </defs>
+  <!-- Step 1: Detect -->
+  <rect x="10" y="20" width="140" height="160" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="80" y="42" text-anchor="middle" fill="#1e40af" font-size="10" font-weight="700">① Find Landmarks</text>
+  <circle cx="45" cy="80" r="5" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="100" cy="70" r="5" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="70" cy="120" r="5" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="120" cy="140" r="5" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="40" cy="150" r="5" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>
+  <text x="80" y="174" text-anchor="middle" fill="#3b82f6" font-size="7.5">Keypoints detected</text>
+
+  <line x1="155" y1="100" x2="175" y2="100" stroke="#0284c7" stroke-width="2" marker-end="url(#arr-c)"/>
+
+  <!-- Step 2: Match -->
+  <rect x="180" y="20" width="160" height="160" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="260" y="42" text-anchor="middle" fill="#92400e" font-size="10" font-weight="700">② Match Pairs</text>
+  <circle cx="210" cy="80" r="4" fill="#ef4444"/><circle cx="310" cy="75" r="4" fill="#3b82f6"/>
+  <line x1="214" y1="80" x2="306" y2="75" stroke="#94a3b8" stroke-width="1"/>
+  <circle cx="230" cy="110" r="4" fill="#ef4444"/><circle cx="290" cy="115" r="4" fill="#3b82f6"/>
+  <line x1="234" y1="110" x2="286" y2="115" stroke="#94a3b8" stroke-width="1"/>
+  <circle cx="220" cy="145" r="4" fill="#ef4444"/><circle cx="305" cy="140" r="4" fill="#3b82f6"/>
+  <line x1="224" y1="145" x2="301" y2="140" stroke="#94a3b8" stroke-width="1"/>
+  <text x="260" y="174" text-anchor="middle" fill="#92400e" font-size="7.5">Corresponding pairs found</text>
+
+  <line x1="345" y1="100" x2="365" y2="100" stroke="#0284c7" stroke-width="2" marker-end="url(#arr-c)"/>
+
+  <!-- Step 3: Rigid -->
+  <rect x="370" y="20" width="140" height="160" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="440" y="42" text-anchor="middle" fill="#065f46" font-size="10" font-weight="700">③ Rigid Align</text>
+  <rect x="395" y="60" width="50" height="50" rx="4" fill="none" stroke="#ef4444" stroke-width="1.5" transform="rotate(-5,420,85)"/>
+  <rect x="405" y="65" width="50" height="50" rx="4" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="440" y="140" text-anchor="middle" fill="#065f46" font-size="7.5">Rotation + translation</text>
+  <text x="440" y="152" text-anchor="middle" fill="#065f46" font-size="7.5">corrected</text>
+
+  <line x1="515" y1="100" x2="535" y2="100" stroke="#0284c7" stroke-width="2" marker-end="url(#arr-c)"/>
+
+  <!-- Step 4: Non-rigid -->
+  <rect x="540" y="20" width="150" height="160" rx="10" fill="#fce7f3" stroke="#ec4899" stroke-width="1.5"/>
+  <text x="615" y="42" text-anchor="middle" fill="#9d174d" font-size="10" font-weight="700">④ Non-Rigid Warp</text>
+  <rect x="565" y="60" width="50" height="50" rx="4" fill="none" stroke="#ef4444" stroke-width="1.5"/>
+  <rect x="565" y="60" width="50" height="50" rx="4" fill="none" stroke="#3b82f6" stroke-width="1.5" opacity=".6"/>
+  <text x="615" y="140" text-anchor="middle" fill="#9d174d" font-size="7.5">Elastic deformations</text>
+  <text x="615" y="152" text-anchor="middle" fill="#9d174d" font-size="7.5">corrected → ✅ aligned!</text>
+</svg>
+</div>
+<p class="caption">Figure 2 — The four stages of image registration explained visually</p>
+</div>
+
+<!-- ─── INSTALLATION ─────────────────────────────────────────── -->
+<span class="section-anchor" id="installation"></span>
+<h2>3 — Installation</h2>
+<hr>
+<div class="card">
+<h4>Prerequisites</h4>
+<ul>
+  <li><strong>Python 3.9+</strong> (3.13 tested)</li>
+  <li><strong>pip</strong> or <strong>conda</strong></li>
+  <li><strong>Git</strong></li>
+  <li><strong>CUDA toolkit</strong> (optional — for GPU-accelerated deep-learning detectors)</li>
+</ul>
+
+<h4 style="margin-top:18px">Option A — pip (simplest)</h4>
+<pre><code>git clone https://github.com/leonardolv/VALIS-GUI.git
+cd VALIS-GUI
+python -m venv .venv
+.venv\Scripts\Activate.ps1          # Windows
+# source .venv/bin/activate         # macOS/Linux
+pip install -r requirements.txt
+pip install -e .</code></pre>
+
+<h4 style="margin-top:18px">Option B — conda (recommended for GPU)</h4>
+<pre><code>conda create -n valis-gui python=3.10 -y
+conda activate valis-gui
+conda install numba llvmlite -c conda-forge
+pip install -r requirements.txt && pip install -e .</code></pre>
+
+<h4 style="margin-top:18px">Verify installation</h4>
+<pre><code>python -c "import valis; import napari; from PySide6 import QtWidgets; print('All OK')"</code></pre>
+<div class="tip"><strong>Tip:</strong> If Napari is missing: <code>pip install napari[all]</code></div>
+</div>
+
+<!-- ─── FIRST REGISTRATION ───────────────────────────────────── -->
+<span class="section-anchor" id="first-registration"></span>
+<h2>4 — Your First Registration (Step by Step)</h2>
+<hr>
+<div class="card">
+<p>Complete your first registration in under 5 minutes:</p>
+
+<div class="step"><span class="step-num">1</span><div class="step-body"><strong>Launch the application</strong>
+<pre><code>python run_valis_workstation.py</code></pre></div></div>
+
+<div class="step"><span class="step-num">2</span><div class="step-body"><strong>Open a slide folder</strong> — <strong>File → Open Slide Folder</strong> (<span class="kbd">Ctrl+O</span>) or drag a folder onto the window.</div></div>
+
+<div class="step"><span class="step-num">3</span><div class="step-body"><strong>Review your slides</strong> — Thumbnails appear in the <strong>Slide Preview</strong> dock. Hover over each for metadata.</div></div>
+
+<div class="step"><span class="step-num">4</span><div class="step-body"><strong>Check settings</strong> — The <strong>Properties</strong> dock on the right shows all options. For beginners, the defaults are excellent:
+<ul>
+  <li>Feature Detector: <strong>VGG</strong> (works on all tissue types)</li>
+  <li>Rigid + Non-rigid: <strong>both enabled</strong></li>
+  <li>Max image size: <strong>2048 px</strong></li>
+</ul></div></div>
+
+<div class="step"><span class="step-num">5</span><div class="step-body"><strong>Run registration</strong> — Press <span class="kbd">Ctrl+R</span>. Review the confirmation dialog, then click <strong>Start Registration</strong>.</div></div>
+
+<div class="step"><span class="step-num">6</span><div class="step-body"><strong>Monitor progress</strong> — Watch the progress bar and logs in the <strong>Status</strong> dock. You can cancel anytime.</div></div>
+
+<div class="step"><span class="step-num">7</span><div class="step-body"><strong>Explore results</strong> — Registered slides load into the Napari viewer. Toggle visibility, opacity, and colormaps in the <strong>Layers</strong> dock.</div></div>
+
+<div class="step"><span class="step-num">8</span><div class="step-body"><strong>Check quality</strong> — Use <strong>Tools → Quality Report</strong> to see error metrics, or <strong>Tools → Blink Compare</strong> (<span class="kbd">Ctrl+B</span>) for visual comparison.</div></div>
+
+<h4 style="margin-top:10px">What good registration should look like</h4>
+<div class="image-grid">
+  <figure class="img-card">
+    <img class="doc-image" src="../examples/expected_results/registration/ihc/overlaps/ihc_original_overlap.png" alt="Original overlap before registration" loading="lazy">
+    <figcaption>Before registration: major boundary mismatch between slides.</figcaption>
+  </figure>
+  <figure class="img-card">
+    <img class="doc-image" src="../examples/expected_results/registration/ihc/overlaps/ihc_non_rigid_overlap.png" alt="Overlap after non-rigid registration" loading="lazy">
+    <figcaption>After non-rigid registration: tissue contours align closely.</figcaption>
+  </figure>
+</div>
+<div class="tip"><strong>Practical check:</strong> if edges are still visibly doubled in key tissue regions, rerun with higher <code>max image size</code> or enable <code>micro-registration</code>.</div>
+</div>
+
+<!-- ─── INTERFACE TOUR ───────────────────────────────────────── -->
+<span class="section-anchor" id="ui-tour"></span>
+<h2>5 — Interface Tour</h2>
+<hr>
+<p>The interface is organized into five dockable panels around a central viewer.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 820 510" xmlns="http://www.w3.org/2000/svg" style="max-width:800px" aria-label="Main window layout">
+  <defs>
+    <filter id="sh"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.12"/></filter>
+    <linearGradient id="tbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#161b28"/><stop offset="1" stop-color="#0f1520"/></linearGradient>
+    <linearGradient id="pbg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0284c7"/><stop offset="1" stop-color="#06b6d4"/></linearGradient>
+  </defs>
+  <!-- Window chrome -->
+  <rect x="10" y="10" width="800" height="490" rx="10" fill="#1a1f2e" stroke="#334155" stroke-width="1.5" filter="url(#sh)"/>
+  <rect x="10" y="10" width="800" height="30" rx="10" fill="url(#tbar)"/>
+  <rect x="10" y="28" width="800" height="12" fill="#0f1520"/>
+  <circle cx="30" cy="25" r="5.5" fill="#ef4444"/><circle cx="48" cy="25" r="5.5" fill="#eab308"/><circle cx="66" cy="25" r="5.5" fill="#22c55e"/>
+  <text x="410" y="28" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Segoe UI,sans-serif">VALIS Workstation — My CyCIF Study</text>
+  <!-- Menu bar -->
+  <rect x="10" y="40" width="800" height="22" fill="#141926"/>
+  <text x="26" y="55" fill="#94a3b8" font-size="10">File</text>
+  <text x="62" y="55" fill="#94a3b8" font-size="10">Tools</text>
+  <text x="104" y="55" fill="#94a3b8" font-size="10">Help</text>
+  <!-- Project Dock -->
+  <rect x="16" y="66" width="168" height="196" rx="5" fill="#111827" stroke="#1e3a5f" stroke-width="1.2"/>
+  <rect x="16" y="66" width="168" height="22" rx="5" fill="#1e3a5f"/>
+  <text x="100" y="82" text-anchor="middle" fill="#e2e8f0" font-size="9.5" font-weight="700">PROJECT (5 slides)</text>
+  <text x="28" y="104" fill="#94a3b8" font-size="8.5" font-family="Consolas,monospace">slide_001.ome.tiff</text>
+  <text x="28" y="120" fill="#94a3b8" font-size="8.5" font-family="Consolas,monospace">slide_002.ome.tiff</text>
+  <text x="28" y="136" fill="#38bdf8" font-size="8.5" font-family="Consolas,monospace">slide_003.ome.tiff</text>
+  <text x="28" y="152" fill="#94a3b8" font-size="8.5" font-family="Consolas,monospace">slide_004.ome.tiff</text>
+  <text x="28" y="168" fill="#94a3b8" font-size="8.5" font-family="Consolas,monospace">slide_005.ome.tiff</text>
+  <!-- Slide Preview -->
+  <rect x="16" y="268" width="168" height="168" rx="5" fill="#111827" stroke="#1e3a5f" stroke-width="1.2"/>
+  <rect x="16" y="268" width="168" height="22" rx="5" fill="#1e3a5f"/>
+  <text x="100" y="284" text-anchor="middle" fill="#e2e8f0" font-size="9.5" font-weight="700">SLIDE PREVIEW</text>
+  <rect x="26" y="310" width="46" height="36" rx="4" fill="#1e293b" stroke="#334155"/>
+  <rect x="80" y="310" width="46" height="36" rx="4" fill="#1e293b" stroke="#334155"/>
+  <rect x="134" y="310" width="46" height="36" rx="4" fill="#1e293b" stroke="#334155"/>
+  <rect x="26" y="354" width="46" height="36" rx="4" fill="#1e293b" stroke="#334155"/>
+  <rect x="80" y="354" width="46" height="36" rx="4" fill="#1e293b" stroke="#334155"/>
+  <!-- Central Napari -->
+  <rect x="190" y="66" width="400" height="370" rx="5" fill="#080c16" stroke="#1e3a5f" stroke-width="1.2"/>
+  <text x="390" y="84" text-anchor="middle" fill="#334155" font-size="10" font-weight="600">NAPARI VIEWER</text>
+  <ellipse cx="390" cy="240" rx="130" ry="100" fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-dasharray="5,3" opacity="0.55"/>
+  <ellipse cx="385" cy="245" rx="125" ry="95" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="5,3" opacity="0.55"/>
+  <text x="390" y="360" text-anchor="middle" fill="#334155" font-size="9" font-style="italic">Registered slides overlaid</text>
+  <!-- Properties Dock -->
+  <rect x="596" y="66" width="208" height="370" rx="5" fill="#111827" stroke="#1e3a5f" stroke-width="1.2"/>
+  <rect x="596" y="66" width="208" height="22" rx="5" fill="#1e3a5f"/>
+  <text x="700" y="82" text-anchor="middle" fill="#e2e8f0" font-size="9.5" font-weight="700">PROPERTIES</text>
+  <rect x="604" y="94" width="192" height="14" rx="3" fill="#162544"/><text x="700" y="104" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-weight="600">▾ BASIC</text>
+  <rect x="604" y="200" width="192" height="14" rx="3" fill="#162544"/><text x="700" y="210" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-weight="600">▸ ADVANCED</text>
+  <rect x="604" y="222" width="192" height="14" rx="3" fill="#162544"/><text x="700" y="232" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-weight="600">▸ OUTPUT</text>
+  <!-- Status Dock -->
+  <rect x="16" y="442" width="788" height="52" rx="5" fill="#111827" stroke="#1e3a5f" stroke-width="1.2"/>
+  <rect x="16" y="442" width="788" height="20" rx="5" fill="#1e3a5f"/>
+  <text x="410" y="456" text-anchor="middle" fill="#e2e8f0" font-size="9.5" font-weight="700">STATUS &amp; LOGS</text>
+  <rect x="26" y="468" width="240" height="12" rx="6" fill="#1e293b"/>
+  <rect x="26" y="468" width="168" height="12" rx="6" fill="url(#pbg)"/>
+  <text x="278" y="478" fill="#94a3b8" font-size="9">70%</text>
+  <!-- Labels -->
+  <rect x="48" y="52" width="68" height="12" rx="3" fill="#0ea5e9" opacity="0.9"/>
+  <text x="82" y="61" text-anchor="middle" fill="#fff" font-size="7" font-weight="600">PROJECT</text>
+  <rect x="355" y="52" width="68" height="12" rx="3" fill="#0ea5e9" opacity="0.9"/>
+  <text x="389" y="61" text-anchor="middle" fill="#fff" font-size="7" font-weight="600">NAPARI</text>
+  <rect x="665" y="52" width="68" height="12" rx="3" fill="#0ea5e9" opacity="0.9"/>
+  <text x="699" y="61" text-anchor="middle" fill="#fff" font-size="7" font-weight="600">PROPERTIES</text>
+</svg>
+</div>
+<p class="caption">Figure 3 — Annotated layout of the VALIS Workstation with all five docks</p>
+
+<div class="card">
+<h4>The Five Docks</h4>
+<table>
+  <tr><th>Dock</th><th>Location</th><th>What It Does</th></tr>
+  <tr><td><strong>Project</strong></td><td>Top-left</td><td>Lists all loaded slides. Drag to reorder. "Clear All" button to remove.</td></tr>
+  <tr><td><strong>Slide Preview</strong></td><td>Bottom-left</td><td>Thumbnail grid. Slider to resize (64–256 px). Grid/List toggle.</td></tr>
+  <tr><td><strong>Properties</strong></td><td>Right</td><td>All registration settings: Basic, Advanced, Output (collapsible sections).</td></tr>
+  <tr><td><strong>Layer Controls</strong></td><td>Right (tab)</td><td>Per-layer visibility, opacity, and colormap for registered slides in Napari.</td></tr>
+  <tr><td><strong>Status &amp; Logs</strong></td><td>Bottom</td><td>Progress bar, live log console, Cancel button during registration.</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h4>Menu Bar Quick Reference</h4>
+<div class="ui-row">
+<div class="ui-col">
+  <h4>File</h4>
+  <table>
+    <tr><td>Open Slide Folder</td><td><span class="kbd">Ctrl+O</span></td></tr>
+    <tr><td>Recent Folders</td><td>Last 10 folders</td></tr>
+    <tr><td>Save Configuration</td><td>Export JSON</td></tr>
+    <tr><td>Load Configuration</td><td>Import JSON</td></tr>
+    <tr><td>Run Registration</td><td><span class="kbd">Ctrl+R</span></td></tr>
+    <tr><td>Preferences</td><td><span class="kbd">Ctrl+,</span></td></tr>
+    <tr><td>Quit</td><td><span class="kbd">Ctrl+Q</span></td></tr>
+  </table>
+</div>
+<div class="ui-col">
+  <h4>Tools</h4>
+  <table>
+    <tr><td>Blink Compare</td><td><span class="kbd">Ctrl+B</span></td></tr>
+    <tr><td>Analysis Plot</td><td></td></tr>
+    <tr><td>Quality Report</td><td></td></tr>
+    <tr><td>Warp Annotations</td><td></td></tr>
+    <tr><td>Save Options</td><td></td></tr>
+    <tr><td>Merge Slides</td><td></td></tr>
+  </table>
+  <h4 style="margin-top:10px">Help</h4>
+  <table>
+    <tr><td>Performance Stats</td><td><span class="kbd">Ctrl+Shift+P</span></td></tr>
+    <tr><td>About / Manual</td><td></td></tr>
+  </table>
+</div>
+</div>
+</div>
+
+<!-- ─── AFTER REGISTRATION ───────────────────────────────────── -->
+<span class="section-anchor" id="gui-tasks"></span>
+<h2>6 - GUI Task Catalog (Click-by-Click)</h2>
+<hr>
+<div class="card">
+<p>This is the complete action map for the current VALIS Workstation GUI. Use it as your day-to-day operational checklist.</p>
+
+<h4>File Menu (Project Lifecycle)</h4>
+<table>
+  <tr><th>Task</th><th>Where</th><th>How</th><th>Result</th></tr>
+  <tr><td>Open slides</td><td>File -&gt; Open Slide Folder</td><td>Select a directory with slide files (or press <span class="kbd">Ctrl+O</span>)</td><td>Slides load into Project + Slide Preview docks</td></tr>
+  <tr><td>Load recent project folder</td><td>File -&gt; Recent Folders</td><td>Pick one of up to 10 recent entries</td><td>Folder is rescanned and loaded</td></tr>
+  <tr><td>Save settings profile</td><td>File -&gt; Save Configuration</td><td>Choose destination JSON file</td><td>Current Properties values exported</td></tr>
+  <tr><td>Load settings profile</td><td>File -&gt; Load Configuration</td><td>Select a previously saved JSON file</td><td>Properties dock updates to saved values</td></tr>
+  <tr><td>Run registration</td><td>File -&gt; Run Registration</td><td>Review confirmation dialog and proceed (<span class="kbd">Ctrl+R</span>)</td><td>Worker starts, progress/logs update, outputs written</td></tr>
+  <tr><td>Open Preferences</td><td>File -&gt; Preferences</td><td>Adjust cache/performance/UI options (<span class="kbd">Ctrl+,</span>)</td><td>Settings persisted via QSettings</td></tr>
+</table>
+
+<h4 style="margin-top:14px">Tools Menu (Post-Registration)</h4>
+<table>
+  <tr><th>Task</th><th>Where</th><th>How</th><th>Result</th></tr>
+  <tr><td>Blink comparison</td><td>Tools -&gt; Blink</td><td>Select two registered slides, adjust blend, start/stop blink (<span class="kbd">Ctrl+B</span>)</td><td>Visual A/B alignment validation</td></tr>
+  <tr><td>Error trend plot</td><td>Tools -&gt; Analysis Plot</td><td>Open after successful run</td><td>Pairwise error chart + summary metrics</td></tr>
+  <tr><td>Quality table</td><td>Tools -&gt; Quality Report</td><td>Open after successful run and sort columns</td><td>Detailed metric table for outlier review</td></tr>
+  <tr><td>Warp annotations</td><td>Tools -&gt; Warp Annotations</td><td>Select GeoJSON + source slide + output folder</td><td>One warped GeoJSON per registered target slide</td></tr>
+  <tr><td>Set export options</td><td>Tools -&gt; Save Options</td><td>Choose format, pyramids, compression, tile size, quality</td><td>Values copied into Output settings for next saves</td></tr>
+  <tr><td>Merge channels</td><td>Tools -&gt; Merge Slides</td><td>Map slides to channels, assign colors, choose overlap strategy</td><td>Merged multi-channel output file</td></tr>
+</table>
+
+<h4 style="margin-top:14px">Help Menu + Utility Actions</h4>
+<table>
+  <tr><th>Task</th><th>Where</th><th>How</th><th>Result</th></tr>
+  <tr><td>Open manual</td><td>Help -&gt; User Manual</td><td>Launches local manual path</td><td>Documentation opens in system browser/editor</td></tr>
+  <tr><td>Open quick start</td><td>Help -&gt; Quick Start Guide</td><td>Launches local quick-start path</td><td>Quick onboarding guide opens</td></tr>
+  <tr><td>Report issue</td><td>Help -&gt; Report Issue</td><td>Opens GitHub issue URL</td><td>Bug-report workflow starts</td></tr>
+  <tr><td>Performance diagnostics</td><td>Help -&gt; Performance Statistics</td><td>Open dialog (<span class="kbd">Ctrl+Shift+P</span>)</td><td>Live cache/memory/performance telemetry</td></tr>
+  <tr><td>About dialog</td><td>Help -&gt; About VALIS Workstation</td><td>View app/library metadata</td><td>Version + project info</td></tr>
+  <tr><td>Drag and drop folder</td><td>Main window drop area</td><td>Drop any folder</td><td>Folder is scanned and loaded as slides</td></tr>
+  <tr><td>Drag and drop JSON config</td><td>Main window drop area</td><td>Drop <code>.json</code> config file</td><td>Configuration is loaded into Properties</td></tr>
+</table>
+
+<div class="image-grid">
+  <figure class="img-card">
+    <img class="doc-image" src="_images/point_warping.png" alt="Point warping concept figure" loading="lazy">
+    <figcaption>Warp tools in action: transformed coordinates and annotations across slides.</figcaption>
+  </figure>
+  <figure class="img-card">
+    <img class="doc-image" src="_images/pu_color_mplex.png" alt="Multiplex channel visualization example" loading="lazy">
+    <figcaption>Channel-oriented workflows: useful reference when configuring Merge Slides.</figcaption>
+  </figure>
+</div>
+</div>
+
+<span class="section-anchor" id="after-registration"></span>
+<h2>7 — What to Do After Registration</h2>
+<hr>
+<div class="card">
+<h4>Your toolkit after a successful registration:</h4>
+<div class="card-row">
+  <div class="mini-card"><div class="icon">🔄</div><h4>Blink Compare</h4><p>Rapidly toggle between two slides to spot misalignments</p></div>
+  <div class="mini-card"><div class="icon">📈</div><h4>Analysis Plot</h4><p>Matplotlib chart of registration error per slide pair</p></div>
+  <div class="mini-card"><div class="icon">📋</div><h4>Quality Report</h4><p>Sortable table of all alignment metrics</p></div>
+  <div class="mini-card"><div class="icon">📎</div><h4>Warp Annotations</h4><p>Transfer GeoJSON from one slide to all others</p></div>
+  <div class="mini-card"><div class="icon">🔀</div><h4>Merge Slides</h4><p>Create multi-channel composites for CyCIF/CODEX</p></div>
+  <div class="mini-card"><div class="icon">💾</div><h4>Save Options</h4><p>Configure export format, pyramids, compression</p></div>
+</div>
+<div class="image-grid">
+  <figure class="img-card">
+    <img class="doc-image" src="_images/annotation_transfer.png" alt="Annotation transfer example" loading="lazy">
+    <figcaption>Warp Annotations: transfer one GeoJSON ROI set across all registered slides.</figcaption>
+  </figure>
+  <figure class="img-card">
+    <img class="doc-image" src="_images/merge_ome_tiff.png" alt="Merged OME-TIFF channels example" loading="lazy">
+    <figcaption>Merge Slides: build multi-channel composites for CyCIF/CODEX workflows.</figcaption>
+  </figure>
+</div>
+</div>
+
+<!-- ─── USE CASES ────────────────────────────────────────────── -->
+<span class="section-anchor" id="use-cases"></span>
+<h2>8 — Common Use Cases</h2>
+<hr>
+
+<div class="usecase">
+  <h4><span class="uc-icon">🔬</span> Serial H&amp;E Sections</h4>
+  <div class="uc-tags"><span class="uc-tag bf">Brightfield</span></div>
+  <p><strong>Scenario:</strong> You have 5–20 serial sections stained with H&amp;E and need to align them for 3D reconstruction or cross-section comparison.</p>
+  <p><strong>Settings:</strong> Feature detector = <strong>VGG</strong> · Transform = <strong>Similarity</strong> · Non-rigid = <strong>ON</strong></p>
+  <p><strong>Tips:</strong> Default settings work well. Enable "Slides pre-ordered" if your slides are already in physical order.</p>
+</div>
+
+<div class="usecase">
+  <h4><span class="uc-icon">🧬</span> CyCIF / CODEX Multiplexed Imaging</h4>
+  <div class="uc-tags"><span class="uc-tag fl">Fluorescence</span><span class="uc-tag multi">Multiplex</span></div>
+  <p><strong>Scenario:</strong> Multiple rounds of staining on the same slide. Each round has DAPI + 2–4 markers. You need to align rounds and merge into one multi-channel image.</p>
+  <p><strong>Settings:</strong> Feature detector = <strong>DISK</strong> or <strong>SuperPoint</strong> · Transform = <strong>Similarity</strong> · Non-rigid = <strong>ON</strong></p>
+  <p><strong>After registration:</strong> Use <strong>Tools → Merge Slides</strong> to create the composite. Name channels (DAPI, CD3, CD8, PanCK, etc.) and assign colors.</p>
+</div>
+
+<div class="usecase">
+  <h4><span class="uc-icon">🎯</span> IHC Serial Stain Comparison</h4>
+  <div class="uc-tags"><span class="uc-tag bf">Brightfield</span></div>
+  <p><strong>Scenario:</strong> Adjacent sections with different IHC stains (e.g., Ki67 vs. p53). Register to compare marker expression in the same tissue region.</p>
+  <p><strong>Settings:</strong> Feature detector = <strong>VGG</strong> · Tissue masks = <strong>ON</strong> · Crop = <strong>all_overlap</strong></p>
+  <p><strong>After registration:</strong> Use <strong>Blink Compare</strong> to visually toggle between stains at the same location.</p>
+</div>
+
+<div class="usecase">
+  <h4><span class="uc-icon">📐</span> Annotation Transfer</h4>
+  <div class="uc-tags"><span class="uc-tag bf">Brightfield</span><span class="uc-tag fl">Fluorescence</span></div>
+  <p><strong>Scenario:</strong> A pathologist drew regions of interest on one slide (e.g., tumor boundary). You need those annotations on all other registered slides.</p>
+  <p><strong>After registration:</strong> Use <strong>Tools → Warp Annotations</strong>. Select the GeoJSON file, choose the source slide, and one warped file is created per target.</p>
+</div>
+
+<!-- ─── BEGINNER FAQ ─────────────────────────────────────────── -->
+<span class="section-anchor" id="beginner-faq"></span>
+<h2>9 — Frequently Asked Questions</h2>
+<hr>
+<div class="card">
+<h4>Q: What image formats are supported?</h4>
+<p>TIFF, OME-TIFF, SVS (Aperio), NDPI (Hamamatsu), MRXS (3DHISTECH), CZI (Zeiss), LIF (Leica), ND2 (Nikon), JPEG, PNG, BMP, and 300+ more via Bio-Formats.</p>
+
+<h4 style="margin-top:14px">Q: Is there a step-by-step tutorial for new lab members?</h4>
+<p>Yes. Open <a href="VALIS-GUI-Tutorial.html">VALIS-GUI-Tutorial.html</a> for a didactic, image-guided workflow from setup through quality validation.</p>
+
+<h4 style="margin-top:14px">Q: My GPU checkbox is grayed out — why?</h4>
+<p>PyTorch was not installed with CUDA support, or no CUDA GPU was detected. Install PyTorch with CUDA: <code>pip install torch --index-url https://download.pytorch.org/whl/cu121</code></p>
+
+<h4 style="margin-top:14px">Q: Which feature detector should I use?</h4>
+<p><strong>VGG</strong> is the best default for most cases. For fluorescence images, try <strong>DISK</strong> or <strong>SuperPoint</strong>. For maximum speed, use <strong>ORB</strong> or <strong>BRISK</strong>.</p>
+
+<h4 style="margin-top:14px">Q: Registration is very slow — how to speed it up?</h4>
+<p>Reduce <strong>Max image size</strong> (try 1024). Disable <strong>Non-rigid registration</strong> for initial tests. Use a classical detector (VGG, BRISK, ORB) instead of neural.</p>
+
+<h4 style="margin-top:14px">Q: Can I cancel a running registration?</h4>
+<p>Yes. Click <strong>Cancel</strong> in the Status dock. Partial output may remain.</p>
+
+<h4 style="margin-top:14px">Q: What is the output?</h4>
+<p>Pyramidal OME-TIFF files + a CSV summary with alignment metrics. Configure via <strong>Tools → Save Options</strong>.</p>
+
+<h4 style="margin-top:14px">Q: Does this work on macOS / Linux?</h4>
+<p>Yes. PySide6 + Napari are fully cross-platform.</p>
+</div>
+
+</div><!-- end tab-beginner -->
+
+
+<!-- ╔═══════════════════════════════════════════════════════════════════╗
+     ║              TAB 2 — ADVANCED GUIDE                              ║
+     ╚═══════════════════════════════════════════════════════════════════╝ -->
+<div class="tab-content" id="tab-advanced">
+
+<span class="section-anchor" id="pipeline-deep"></span>
+<h2>Registration Pipeline Deep-Dive</h2>
+<hr>
+<div class="card">
+<p>The VALIS pipeline executes these stages in order. Understanding each stage helps you tune parameters for challenging cases.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 800 370" xmlns="http://www.w3.org/2000/svg" style="max-width:780px">
+  <defs>
+    <marker id="ar2" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="#0284c7"/></marker>
+    <marker id="ar3" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="#8b5cf6"/></marker>
+    <filter id="gs"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.08"/></filter>
+  </defs>
+
+  <!-- Row 1 -->
+  <rect x="10" y="10" width="130" height="80" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" filter="url(#gs)"/>
+  <text x="75" y="36" text-anchor="middle" fill="#065f46" font-size="11" font-weight="700">1. Read Slides</text>
+  <text x="75" y="52" text-anchor="middle" fill="#065f46" font-size="7.5">Auto-detect reader</text>
+  <text x="75" y="64" text-anchor="middle" fill="#065f46" font-size="7.5">Downsample to 1024px</text>
+  <text x="75" y="76" text-anchor="middle" fill="#065f46" font-size="7">max_image_dim_px</text>
+
+  <line x1="140" y1="50" x2="158" y2="50" stroke="#0284c7" stroke-width="2" marker-end="url(#ar2)"/>
+
+  <rect x="162" y="10" width="130" height="80" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" filter="url(#gs)"/>
+  <text x="227" y="36" text-anchor="middle" fill="#1e40af" font-size="11" font-weight="700">2. Preprocess</text>
+  <text x="227" y="52" text-anchor="middle" fill="#1e40af" font-size="7.5">OD (brightfield) or</text>
+  <text x="227" y="64" text-anchor="middle" fill="#1e40af" font-size="7.5">ChannelGetter (fluor)</text>
+  <text x="227" y="76" text-anchor="middle" fill="#1e40af" font-size="7">Resize to 512px</text>
+
+  <line x1="292" y1="50" x2="310" y2="50" stroke="#0284c7" stroke-width="2" marker-end="url(#ar2)"/>
+
+  <rect x="314" y="10" width="130" height="80" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5" filter="url(#gs)"/>
+  <text x="379" y="36" text-anchor="middle" fill="#92400e" font-size="11" font-weight="700">3. Sort Images</text>
+  <text x="379" y="52" text-anchor="middle" fill="#92400e" font-size="7.5">Build distance matrix</text>
+  <text x="379" y="64" text-anchor="middle" fill="#92400e" font-size="7.5">(VggFD + Matcher)</text>
+  <text x="379" y="76" text-anchor="middle" fill="#92400e" font-size="7">Skip if imgs_ordered</text>
+
+  <line x1="444" y1="50" x2="462" y2="50" stroke="#0284c7" stroke-width="2" marker-end="url(#ar2)"/>
+
+  <rect x="466" y="10" width="150" height="80" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5" filter="url(#gs)"/>
+  <text x="541" y="36" text-anchor="middle" fill="#1e40af" font-size="11" font-weight="700">4. Feature Match</text>
+  <text x="541" y="52" text-anchor="middle" fill="#1e40af" font-size="7.5">DiskFD + LightGlue</text>
+  <text x="541" y="64" text-anchor="middle" fill="#1e40af" font-size="7.5">Sequential matching</text>
+  <text x="541" y="76" text-anchor="middle" fill="#1e40af" font-size="7">USAC_MAGSAC filter</text>
+
+  <line x1="616" y1="50" x2="634" y2="50" stroke="#0284c7" stroke-width="2" marker-end="url(#ar2)"/>
+
+  <rect x="638" y="10" width="150" height="80" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" filter="url(#gs)"/>
+  <text x="713" y="36" text-anchor="middle" fill="#065f46" font-size="11" font-weight="700">5. Rigid Register</text>
+  <text x="713" y="52" text-anchor="middle" fill="#065f46" font-size="7.5">SimilarityTransform</text>
+  <text x="713" y="64" text-anchor="middle" fill="#065f46" font-size="7.5">Rotation estimation</text>
+  <text x="713" y="76" text-anchor="middle" fill="#065f46" font-size="7">Optional AffineOptimizer</text>
+
+  <!-- Row 2 -->
+  <line x1="713" y1="90" x2="713" y2="118" stroke="#0284c7" stroke-width="2" marker-end="url(#ar2)"/>
+
+  <rect x="638" y="120" width="150" height="80" rx="10" fill="#fce7f3" stroke="#ec4899" stroke-width="1.5" filter="url(#gs)"/>
+  <text x="713" y="146" text-anchor="middle" fill="#9d174d" font-size="11" font-weight="700">6. Non-Rigid Reg</text>
+  <text x="713" y="162" text-anchor="middle" fill="#9d174d" font-size="7.5">OpticalFlowWarper</text>
+  <text x="713" y="174" text-anchor="middle" fill="#9d174d" font-size="7.5">Resize to 2048px</text>
+  <text x="713" y="186" text-anchor="middle" fill="#9d174d" font-size="7">DeepFlow / RAFT</text>
+
+  <line x1="638" y1="160" x2="616" y2="160" stroke="#0284c7" stroke-width="2" marker-end="url(#ar2)"/>
+
+  <rect x="466" y="120" width="150" height="80" rx="10" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="6,3" filter="url(#gs)"/>
+  <text x="541" y="146" text-anchor="middle" fill="#5b21b6" font-size="11" font-weight="700">7. Micro-Reg</text>
+  <text x="541" y="162" text-anchor="middle" fill="#5b21b6" font-size="7.5">High-res refinement</text>
+  <text x="541" y="174" text-anchor="middle" fill="#5b21b6" font-size="7.5">4096px default</text>
+  <text x="541" y="186" text-anchor="middle" fill="#5b21b6" font-size="7">(optional)</text>
+
+  <line x1="466" y1="160" x2="448" y2="160" stroke="#0284c7" stroke-width="2" marker-end="url(#ar2)"/>
+
+  <rect x="314" y="120" width="130" height="80" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" filter="url(#gs)"/>
+  <text x="379" y="146" text-anchor="middle" fill="#065f46" font-size="11" font-weight="700">8. Error Check</text>
+  <text x="379" y="162" text-anchor="middle" fill="#065f46" font-size="7.5">TRE / rTRE metrics</text>
+  <text x="379" y="174" text-anchor="middle" fill="#065f46" font-size="7.5">summary_df output</text>
+
+  <line x1="314" y1="160" x2="296" y2="160" stroke="#0284c7" stroke-width="2" marker-end="url(#ar2)"/>
+
+  <rect x="162" y="120" width="130" height="80" rx="10" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5" filter="url(#gs)"/>
+  <text x="227" y="146" text-anchor="middle" fill="#166534" font-size="11" font-weight="700">9. Warp &amp; Save</text>
+  <text x="227" y="162" text-anchor="middle" fill="#166534" font-size="7.5">Full-res via pyvips</text>
+  <text x="227" y="174" text-anchor="middle" fill="#166534" font-size="7.5">OME-TIFF pyramids</text>
+  <text x="227" y="186" text-anchor="middle" fill="#166534" font-size="7">+ CSV summary</text>
+
+  <!-- Output section -->
+  <line x1="227" y1="200" x2="227" y2="228" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <rect x="10" y="230" width="190" height="50" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1" filter="url(#gs)"/>
+  <text x="105" y="252" text-anchor="middle" fill="#475569" font-size="9" font-weight="600">📊 Analysis &amp; QC</text>
+  <text x="105" y="268" text-anchor="middle" fill="#94a3b8" font-size="7.5">plots, quality report, blink</text>
+
+  <rect x="210" y="230" width="190" height="50" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1" filter="url(#gs)"/>
+  <text x="305" y="252" text-anchor="middle" fill="#475569" font-size="9" font-weight="600">🔀 Merge Channels</text>
+  <text x="305" y="268" text-anchor="middle" fill="#94a3b8" font-size="7.5">CyCIF / CODEX composite</text>
+
+  <rect x="410" y="230" width="190" height="50" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1" filter="url(#gs)"/>
+  <text x="505" y="252" text-anchor="middle" fill="#475569" font-size="9" font-weight="600">📎 Warp Annotations</text>
+  <text x="505" y="268" text-anchor="middle" fill="#94a3b8" font-size="7.5">GeoJSON transfer</text>
+</svg>
+</div>
+<p class="caption">Figure 4 — Complete 9-stage VALIS registration pipeline (dashed = optional)</p>
+</div>
+
+<!-- ─── FEATURE DETECTORS GUIDE ──────────────────────────────── -->
+<span class="section-anchor" id="valis-full-map"></span>
+<h2>VALIS Full Feature &amp; Function Map</h2>
+<hr>
+<div class="card">
+<p>This section maps GUI capabilities to VALIS internals so both beginner and advanced users can understand full functional coverage.</p>
+<table>
+  <tr><th>VALIS Module</th><th>What It Covers</th><th>Core Classes / Functions</th><th>GUI Surface</th><th>Full Local Docs</th></tr>
+  <tr><td><code>valis.registration</code></td><td>End-to-end orchestration</td><td><code>Valis</code>, <code>register()</code>, <code>warp_and_save_slides()</code>, <code>measure_error()</code></td><td>Run Registration, confirmation dialog, output saving</td><td><a href="html/registration.html">registration.html</a></td></tr>
+  <tr><td><code>valis.slide_io</code></td><td>File reading + format support</td><td><code>BioFormatsSlideReader</code>, <code>VipsSlideReader</code>, <code>init_jvm()</code>, <code>load_registrar()</code></td><td>Open Slide Folder, slide loading, drag/drop folder</td><td><a href="html/slide_io.html">slide_io.html</a></td></tr>
+  <tr><td><code>valis.feature_detectors</code></td><td>Feature extraction</td><td><code>VggFD</code>, <code>KazeFD</code>, <code>BriskFD</code>, <code>OrbFD</code>, <code>AkazeFD</code>, <code>SuperPointFD</code>, <code>DiskFD</code>, <code>DeDoDeFD</code></td><td>Properties - Feature detector selector</td><td><a href="html/feature_detectors.html">feature_detectors.html</a></td></tr>
+  <tr><td><code>valis.feature_matcher</code></td><td>Feature matching + filtering</td><td><code>Matcher</code>, <code>LightGlueMatcher</code>, <code>SuperGlueMatcher</code>, <code>filter_matches_ransac()</code>, <code>filter_matches_gms()</code></td><td>Implicit in registration engine</td><td><a href="html/feature_matcher.html">feature_matcher.html</a></td></tr>
+  <tr><td><code>valis.non_rigid_registrars</code></td><td>Elastic alignment</td><td><code>OpticalFlowWarper</code>, <code>RAFTWarper</code>, <code>SimpleElastixWarper</code>, <code>NonRigidTileRegistrar</code></td><td>Properties - Non-rigid checkbox + advanced behavior</td><td><a href="html/non_rigid_registrars.html">non_rigid_registrars.html</a></td></tr>
+  <tr><td><code>valis.affine_optimizer</code></td><td>Rigid transform refinement</td><td><code>AffineOptimizerMattesMI</code>, <code>AffineOptimizerRMI</code>, <code>AffineOptimizerDisplacement</code>, <code>AffineOptimizerKNN</code></td><td>Advanced tuning / programmatic use</td><td><a href="html/affine_optimizer.html">affine_optimizer.html</a></td></tr>
+  <tr><td><code>valis.preprocessing</code></td><td>Image conditioning + masks</td><td><code>OD</code>, <code>ChannelGetter</code>, <code>HEDeconvolution</code>, <code>create_tissue_mask()</code>, <code>denoise_img()</code></td><td>Use tissue masks, denoise options</td><td><a href="html/preprocessing.html">preprocessing.html</a></td></tr>
+  <tr><td><code>valis.warp_tools</code></td><td>Image/point/geometry warping</td><td><code>warp_img()</code>, <code>warp_xy()</code>, <code>warp_xy_from_to()</code>, <code>warp_shapely_geom()</code></td><td>Warp Annotations + downstream coordinate transfer</td><td><a href="html/registration.html#module-valis.warp_tools">warp_tools API section</a></td></tr>
+  <tr><td><code>valis.viz</code></td><td>Quality visuals + overlays</td><td><code>draw_matches()</code>, <code>create_overlap_img()</code>, plotting helpers</td><td>Blink, Analysis Plot, quality review workflows</td><td><a href="html/viz.html">viz.html</a></td></tr>
+</table>
+
+<div class="info"><strong>Coverage note:</strong> The GUI exposes the high-value workflow surface. This manual plus the linked module pages provide full class/function coverage for VALIS usage in this repository.</div>
+
+<div class="image-grid">
+  <figure class="img-card">
+    <img class="doc-image" src="_images/3d_recon.png" alt="3D reconstruction style example" loading="lazy">
+    <figcaption>Advanced downstream: aligned stacks can be used for 3D reconstruction workflows.</figcaption>
+  </figure>
+  <figure class="img-card">
+    <img class="doc-image" src="_images/3D_error_plot.png" alt="3D error visualization" loading="lazy">
+    <figcaption>Error visualization helps validate parameter changes at advanced tuning stages.</figcaption>
+  </figure>
+</div>
+</div>
+
+<span class="section-anchor" id="detectors-guide"></span>
+<h2>Feature Detectors — Choosing the Right One</h2>
+<hr>
+<div class="card">
+<p>VALIS supports <strong>8 feature detectors</strong> spanning classical computer vision and modern deep learning. The detector you choose affects speed, accuracy, and GPU requirements.</p>
+
+<table>
+  <tr><th>Detector</th><th>Type</th><th>GPU</th><th>Speed</th><th>Accuracy</th><th>Best For</th></tr>
+  <tr><td><strong>VGG</strong></td><td>Classical</td><td>No</td><td>⚡⚡⚡</td><td>⭐⭐⭐⭐</td><td>General-purpose default. BRISK detector + VGG descriptor.</td></tr>
+  <tr><td><strong>KAZE</strong></td><td>Classical</td><td>No</td><td>⚡⚡</td><td>⭐⭐⭐⭐</td><td>Scale-space features, robust to blur and noise.</td></tr>
+  <tr><td><strong>BRISK</strong></td><td>Classical</td><td>No</td><td>⚡⚡⚡⚡</td><td>⭐⭐⭐</td><td>Fast binary descriptor, real-time processing.</td></tr>
+  <tr><td><strong>ORB</strong></td><td>Classical</td><td>No</td><td>⚡⚡⚡⚡⚡</td><td>⭐⭐</td><td>Fastest option, rotation-invariant, low memory.</td></tr>
+  <tr><td><strong>AKAZE</strong></td><td>Classical</td><td>No</td><td>⚡⚡⚡</td><td>⭐⭐⭐⭐</td><td>Accelerated KAZE, balanced speed/quality.</td></tr>
+  <tr><td><strong>SuperPoint</strong></td><td>Neural</td><td>Yes*</td><td>⚡</td><td>⭐⭐⭐⭐⭐</td><td>Highest accuracy for challenging tissue.</td></tr>
+  <tr><td><strong>DISK</strong></td><td>Neural</td><td>Yes*</td><td>⚡⚡</td><td>⭐⭐⭐⭐⭐</td><td>Dense features, used in default VALIS pipeline with LightGlue.</td></tr>
+  <tr><td><strong>DeDoDe</strong></td><td>Neural</td><td>Yes*</td><td>⚡</td><td>⭐⭐⭐⭐⭐</td><td>State-of-the-art descriptor-free detection.</td></tr>
+</table>
+<p style="font-size:.85rem;color:#64748b">* GPU strongly recommended. Will run on CPU but 10–50× slower.</p>
+
+<div class="info"><strong>Default pipeline:</strong> VALIS uses <strong>VGG</strong> for initial sorting, then <strong>DiskFD + LightGlueMatcher</strong> for the actual registration matching. The GUI's "Feature detector" setting controls the sorting matcher.</div>
+
+<p style="margin-top:14px">Beyond these 8, the VALIS library also supports: <strong>DaisyFD</strong>, <strong>LatchFD</strong>, <strong>BoostFD</strong>, <strong>OrbVggFD</strong>, <strong>SKOrbVggFD</strong>, <strong>CensureVggFD</strong> (programmatic use only).</p>
+</div>
+
+<!-- ─── MATCHERS GUIDE ───────────────────────────────────────── -->
+<span class="section-anchor" id="matchers-guide"></span>
+<h2>Feature Matchers</h2>
+<hr>
+<div class="card">
+<p>After detecting features, VALIS <em>matches</em> corresponding keypoints between pairs of images. Three matcher types are available:</p>
+<table>
+  <tr><th>Matcher</th><th>Default Detector</th><th>Method</th><th>Notes</th></tr>
+  <tr><td><strong>Matcher</strong> (traditional)</td><td>VggFD</td><td>Descriptor distance + USAC_MAGSAC filtering</td><td>Good with any classical detector</td></tr>
+  <tr><td><strong>SuperGlueMatcher</strong></td><td>SuperPointFD</td><td>SuperGlue neural graph matching</td><td>Best with SuperPoint features</td></tr>
+  <tr><td><strong>LightGlueMatcher</strong></td><td>DiskFD</td><td>Kornia LightGlue matching</td><td><strong>Default in VALIS pipeline.</strong> Brute-force rotation estimation.</td></tr>
+</table>
+<p style="margin-top:10px"><strong>Outlier filtering methods:</strong> USAC_MAGSAC (default), RANSAC, GMS (Grid-based Motion Statistics), Tukey fences.</p>
+</div>
+
+<!-- ─── NON-RIGID ────────────────────────────────────────────── -->
+<span class="section-anchor" id="nonrigid-guide"></span>
+<h2>Non-Rigid Registration Methods</h2>
+<hr>
+<div class="card">
+<p>Non-rigid registration corrects elastic tissue deformations. Available methods:</p>
+<table>
+  <tr><th>Method</th><th>Engine</th><th>Strengths</th><th>Parameters</th></tr>
+  <tr><td><strong>OpticalFlowWarper</strong> (default)</td><td>OpenCV DeepFlow</td><td>Fast, robust, no GPU needed</td><td><code>n_grid_pts=50, sigma_ratio=0.005</code></td></tr>
+  <tr><td><strong>RAFTWarper</strong></td><td>PyTorch RAFT</td><td>High quality, GPU-accelerated</td><td><code>weights=Raft_Large, device=auto</code></td></tr>
+  <tr><td><strong>SimpleElastixWarper</strong></td><td>SimpleITK / SimpleElastix</td><td>B-spline deformation, keypoint-aware</td><td><code>ammi_weight=0.33</code></td></tr>
+  <tr><td><strong>SimpleElastixGroupwiseWarper</strong></td><td>SimpleElastix</td><td>Groupwise (all images at once)</td><td>Same as SimpleElastix</td></tr>
+  <tr><td><strong>NonRigidTileRegistrar</strong></td><td>Tiled approach</td><td>Very large images</td><td><code>tile_wh=512, tile_buffer=100</code></td></tr>
+</table>
+
+<h4 style="margin-top:14px">Smoothing Methods (for OpticalFlowWarper)</h4>
+<table>
+  <tr><th>Method</th><th>Effect</th></tr>
+  <tr><td><code>None</code> (default)</td><td>No smoothing applied</td></tr>
+  <tr><td><code>"gauss"</code></td><td>Gaussian blur on displacement field</td></tr>
+  <tr><td><code>"inpaint"</code></td><td>Detect and inpaint folded regions</td></tr>
+  <tr><td><code>"regularize"</code></td><td>Mesh regularization (Garanzha et al. 2021)</td></tr>
+</table>
+</div>
+
+<!-- ─── PREPROCESSING ────────────────────────────────────────── -->
+<span class="section-anchor" id="preprocessing-guide"></span>
+<h2>Image Preprocessing</h2>
+<hr>
+<div class="card">
+<p>VALIS preprocesses images before feature detection. The processor is chosen automatically based on image type:</p>
+<table>
+  <tr><th>Processor</th><th>Image Type</th><th>What It Does</th></tr>
+  <tr><td><strong>OD</strong> (Optical Density)</td><td>Brightfield (default)</td><td>Converts RGB to optical density space. Good for H&amp;E/IHC.</td></tr>
+  <tr><td><strong>ChannelGetter</strong></td><td>Fluorescence (default)</td><td>Extracts a single channel (e.g., DAPI) for matching.</td></tr>
+  <tr><td><strong>ColorfulStandardizer</strong></td><td>Brightfield</td><td>Standardizes colorfulness across slides.</td></tr>
+  <tr><td><strong>HEDeconvolution</strong></td><td>H&amp;E stains</td><td>Separates hematoxylin and eosin channels.</td></tr>
+  <tr><td><strong>StainFlattener</strong></td><td>Brightfield</td><td>Reduces stain variation across the tissue.</td></tr>
+  <tr><td><strong>Gray</strong></td><td>Any</td><td>Simple grayscale conversion.</td></tr>
+</table>
+<p style="margin-top:8px">Other available processors: <code>JCDist</code>, <code>ColorDeconvolver</code>, <code>Luminosity</code>, <code>BgColorDistance</code>.</p>
+</div>
+
+<!-- ─── OUTPUT FORMATS ───────────────────────────────────────── -->
+<span class="section-anchor" id="output-formats"></span>
+<h2>Output &amp; File Formats</h2>
+<hr>
+<div class="card">
+<h4>Output directory structure</h4>
+<pre><code>output/&lt;project_name&gt;/
+├── images/               # Converted input images
+├── processed/            # Preprocessed single-channel images
+├── rigid_registration/   # Rigidly aligned images
+├── non_rigid_registration/ # Non-rigidly warped images
+├── deformation_fields/   # Displacement fields (dx, dy)
+├── overlaps/             # Colored overlap visualizations
+├── data/                 # Registration data (transforms, keypoints)
+├── micro_registration/   # Micro-registration results (if enabled)
+├── masks/                # Tissue masks (if enabled)
+└── summary.csv           # Quality metrics table</code></pre>
+
+<h4 style="margin-top:16px">Export formats</h4>
+<table>
+  <tr><th>Format</th><th>Pyramids</th><th>Metadata</th><th>Best For</th></tr>
+  <tr><td><strong>OME-TIFF</strong> (default)</td><td>Yes</td><td>Full OME-XML</td><td>QuPath, OMERO, ImageJ, Napari</td></tr>
+  <tr><td><strong>TIFF</strong></td><td>Optional</td><td>Basic TIFF tags</td><td>General image analysis</td></tr>
+  <tr><td><strong>JPEG</strong></td><td>No</td><td>None</td><td>Quick previews, presentations</td></tr>
+  <tr><td><strong>PNG</strong></td><td>No</td><td>None</td><td>Lossless screenshots</td></tr>
+</table>
+</div>
+
+<!-- ─── OPTIMIZATION TIPS ────────────────────────────────────── -->
+<span class="section-anchor" id="optimization-tips"></span>
+<h2>Optimization Tips</h2>
+<hr>
+<div class="card">
+<h4>Speed optimization</h4>
+<ul>
+  <li>Reduce <strong>Max image size</strong> to 1024 for quick tests</li>
+  <li>Disable non-rigid registration for initial alignment inspection</li>
+  <li>Use <strong>ORB</strong> or <strong>BRISK</strong> detector (fastest classical)</li>
+  <li>Enable <strong>Slides pre-ordered</strong> if you know the physical order — skips the sorting step entirely</li>
+  <li>Set lower <strong>Pyramid levels</strong> (2 instead of 4)</li>
+</ul>
+
+<h4 style="margin-top:14px">Quality optimization</h4>
+<ul>
+  <li>Increase <strong>Max image size</strong> to 4096 or higher</li>
+  <li>Use <strong>DISK</strong> or <strong>SuperPoint</strong> with GPU enabled</li>
+  <li>Enable <strong>Micro-registration</strong> for sub-pixel accuracy</li>
+  <li>Enable <strong>Tissue masks</strong> to focus matching on tissue regions only</li>
+  <li>Enable <strong>Denoise</strong> for noisy fluorescence images</li>
+</ul>
+
+<h4 style="margin-top:14px">Memory optimization</h4>
+<ul>
+  <li>Lower max image size and pyramid levels</li>
+  <li>Reduce tile cache in <strong>Preferences → Cache</strong></li>
+  <li>Monitor memory via <strong>Help → Performance Statistics</strong></li>
+</ul>
+<div class="image-grid">
+  <figure class="img-card">
+    <img class="doc-image" src="_images/new_fd_2025_error_v_time.png" alt="Registration error over time chart" loading="lazy">
+    <figcaption>Use error-vs-time trends to compare settings for speed-quality tradeoffs.</figcaption>
+  </figure>
+  <figure class="img-card">
+    <img class="doc-image" src="_images/new_fd_2025_error_correlation.png" alt="Registration error correlation chart" loading="lazy">
+    <figcaption>Error correlation helps identify detector/parameter regimes that fail consistently.</figcaption>
+  </figure>
+</div>
+</div>
+
+<!-- ─── DECISION TREES ───────────────────────────────────────── -->
+<span class="section-anchor" id="decision-trees"></span>
+<h2>Decision Trees — Choosing Settings</h2>
+<hr>
+
+<div class="decision-tree">
+<h4>🌳 Which feature detector should I use?</h4>
+<div class="dt-node question"><span class="dt-icon">❓</span><div>Is this your first time using VALIS?</div></div>
+<div class="dt-node answer"><span class="dt-icon">✅</span><div><strong>Yes →</strong> Use <strong>VGG</strong> (default). Works well for almost all tissue types.</div></div>
+<div class="dt-node question"><span class="dt-icon">❓</span><div>Do you have a CUDA GPU and need maximum accuracy?</div></div>
+<div class="dt-node answer"><span class="dt-icon">✅</span><div><strong>Yes →</strong> Use <strong>DISK</strong> (best balance) or <strong>SuperPoint</strong> (highest accuracy but slower).</div></div>
+<div class="dt-node question"><span class="dt-icon">❓</span><div>Do you need maximum speed (e.g., hundreds of slides)?</div></div>
+<div class="dt-node answer"><span class="dt-icon">✅</span><div><strong>Yes →</strong> Use <strong>ORB</strong> (fastest) or <strong>BRISK</strong> (fast with better quality).</div></div>
+<div class="dt-node question"><span class="dt-icon">❓</span><div>Are your images blurry or low-quality?</div></div>
+<div class="dt-node answer"><span class="dt-icon">✅</span><div><strong>Yes →</strong> Use <strong>KAZE</strong> (scale-space features, robust to blur).</div></div>
+</div>
+
+<div class="decision-tree">
+<h4>🌳 Which transform model?</h4>
+<div class="dt-node question"><span class="dt-icon">❓</span><div>Are your tissue sections cut at different thicknesses or show size variation?</div></div>
+<div class="dt-node answer"><span class="dt-icon">✅</span><div><strong>Yes →</strong> Use <strong>Similarity</strong> (default). Corrects rotation + scaling + translation.</div></div>
+<div class="dt-node question"><span class="dt-icon">❓</span><div>Is there shearing from mounting?</div></div>
+<div class="dt-node answer"><span class="dt-icon">✅</span><div><strong>Yes →</strong> Use <strong>Affine</strong>. Adds shear and non-uniform scaling.</div></div>
+<div class="dt-node question"><span class="dt-icon">❓</span><div>Are sizes consistent and only orientation varies?</div></div>
+<div class="dt-node answer"><span class="dt-icon">✅</span><div><strong>Yes →</strong> Use <strong>Rigid/Euclidean</strong>. Rotation + translation only, preserves scale.</div></div>
+</div>
+
+<div class="decision-tree">
+<h4>🌳 Which crop mode?</h4>
+<div class="dt-node answer"><span class="dt-icon">📐</span><div><strong>reference</strong> (default) — Crop output to the reference slide's boundary. Best for most cases.</div></div>
+<div class="dt-node answer"><span class="dt-icon">🔲</span><div><strong>all_overlap</strong> — Only keep the region where ALL slides overlap. Useful for analysis requiring complete correspondence.</div></div>
+<div class="dt-node answer"><span class="dt-icon">📏</span><div><strong>all</strong> — Expand to include the union of all slides (may have blank borders).</div></div>
+<div class="dt-node answer"><span class="dt-icon">↔️</span><div><strong>unchanged</strong> — No cropping at all.</div></div>
+</div>
+
+<!-- ─── ALL DIALOGS ──────────────────────────────────────────── -->
+<span class="section-anchor" id="advanced-dialogs"></span>
+<h2>All Dialogs &amp; Tools (Complete Reference)</h2>
+<hr>
+
+<div class="accordion">
+  <div class="accordion-header" onclick="toggleAccordion(this)">🔄 Blink Viewer <span class="arrow">▶</span></div>
+  <div class="accordion-body">
+    <p><strong>Shortcut:</strong> <span class="kbd">Ctrl+B</span> · <strong>Purpose:</strong> A/B comparison of registered slides.</p>
+    <ul>
+      <li><strong>Slide A / B:</strong> ComboBox selectors for any two registered slides</li>
+      <li><strong>Blend slider:</strong> Manual crossfade 0–100%</li>
+      <li><strong>Blink mode:</strong> Timer-driven toggle at 600ms intervals</li>
+    </ul>
+    <div class="tip"><strong>Tip:</strong> Blink first to spot gross errors, then blend for fine assessment.</div>
+  </div>
+</div>
+
+<div class="accordion">
+  <div class="accordion-header" onclick="toggleAccordion(this)">📈 Analysis Plot <span class="arrow">▶</span></div>
+  <div class="accordion-body">
+    <p><strong>Purpose:</strong> Matplotlib chart of Target Registration Error (TRE) per slide pair.</p>
+    <ul>
+      <li>Line/bar plot with markers showing error per pair</li>
+      <li>Summary label: Mean / Max error</li>
+      <li>Matplotlib toolbar: zoom, pan, save as PNG</li>
+    </ul>
+  </div>
+</div>
+
+<div class="accordion">
+  <div class="accordion-header" onclick="toggleAccordion(this)">📋 Quality Report <span class="arrow">▶</span></div>
+  <div class="accordion-body">
+    <p><strong>Purpose:</strong> Sortable data table of all alignment quality metrics.</p>
+    <p>Columns: Slide name, Rigid error, Non-rigid error, Features matched. Click headers to sort.</p>
+    <p>Data source: <code>summary_df</code> which includes: <code>rigid_D</code>, <code>rigid_rTRE</code>, <code>non_rigid_D</code>, <code>non_rigid_rTRE</code>, <code>rigid_time_minutes</code>, <code>non_rigid_time_minutes</code></p>
+  </div>
+</div>
+
+<div class="accordion">
+  <div class="accordion-header" onclick="toggleAccordion(this)">📎 Warp Annotations <span class="arrow">▶</span></div>
+  <div class="accordion-body">
+    <p><strong>Purpose:</strong> Transfer GeoJSON annotations from one slide's coordinate system to all others.</p>
+    <ol>
+      <li>Browse for a <code>.geojson</code> file</li>
+      <li>Select the <strong>source slide</strong> (the one annotations were drawn on)</li>
+      <li>Choose output directory (default: <code>&lt;output&gt;/warped_annotations/</code>)</li>
+      <li>Click OK — one warped GeoJSON per target slide</li>
+    </ol>
+    <p>Uses both rigid transform matrices AND non-rigid displacement fields for accurate transfer.</p>
+  </div>
+</div>
+
+<div class="accordion">
+  <div class="accordion-header" onclick="toggleAccordion(this)">💾 Save Options <span class="arrow">▶</span></div>
+  <div class="accordion-body">
+    <p><strong>Purpose:</strong> Configure export parameters for registered slides.</p>
+    <table>
+      <tr><th>Option</th><th>Choices</th><th>Default</th></tr>
+      <tr><td>Format</td><td>OME-TIFF, TIFF, JPEG, PNG</td><td>OME-TIFF</td></tr>
+      <tr><td>Pyramid levels</td><td>1–10</td><td>4</td></tr>
+      <tr><td>Compression</td><td>0–9</td><td>1</td></tr>
+      <tr><td>JPEG quality</td><td>1–100</td><td>95</td></tr>
+      <tr><td>Tile size</td><td>128/256/512/1024/2048</td><td>512</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="accordion">
+  <div class="accordion-header" onclick="toggleAccordion(this)">🔀 Merge Slides <span class="arrow">▶</span></div>
+  <div class="accordion-body">
+    <p><strong>Purpose:</strong> Combine registered slides into multi-channel composites (CyCIF, CODEX).</p>
+    <ul>
+      <li><strong>Channel table:</strong> Include/exclude slides, set channel names (DAPI, CD3, etc.), assign colors</li>
+      <li><strong>Colors:</strong> Auto, Red, Green, Blue, Cyan, Magenta, Yellow, Gray, White</li>
+      <li><strong>Overlap handling:</strong> Average, Maximum, Minimum, First, Last</li>
+      <li><strong>Normalize intensities:</strong> Balance channel intensities</li>
+    </ul>
+  </div>
+</div>
+
+<div class="accordion">
+  <div class="accordion-header" onclick="toggleAccordion(this)">📊 Performance Statistics <span class="arrow">▶</span></div>
+  <div class="accordion-body">
+    <p><strong>Shortcut:</strong> <span class="kbd">Ctrl+Shift+P</span> · Auto-refreshes every 2 seconds.</p>
+    <p><strong>4 tabs:</strong></p>
+    <ul>
+      <li><strong>Overview:</strong> Uptime, memory, cache hit rate, slides loaded, registrations run</li>
+      <li><strong>Thumbnail Cache:</strong> Size/max, hits/misses, cache directory</li>
+      <li><strong>Tile Cache:</strong> Memory usage, evictions, hit rate</li>
+      <li><strong>Memory:</strong> Current/peak/average MB</li>
+    </ul>
+    <p>Buttons: Refresh Now, Clear Thumbnail Cache, Clear Tile Cache</p>
+  </div>
+</div>
+
+<div class="accordion">
+  <div class="accordion-header" onclick="toggleAccordion(this)">⚙️ Preferences <span class="arrow">▶</span></div>
+  <div class="accordion-body">
+    <p><strong>Shortcut:</strong> <span class="kbd">Ctrl+,</span> · Persistent via QSettings.</p>
+    <table>
+      <tr><th>Tab</th><th>Settings</th></tr>
+      <tr><td><strong>Cache</strong></td><td>Cache dir, Max thumbnail cache (500 MB), Max tile cache (1024 MB), Persist between sessions</td></tr>
+      <tr><td><strong>Performance</strong></td><td>Parallel workers (4), Tile size (512), Enable monitoring, Auto-refresh (2s)</td></tr>
+      <tr><td><strong>UI</strong></td><td>Show tooltips, Show status bar, Confirm closing, Recent files (10), Default thumbnail size (256)</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="accordion">
+  <div class="accordion-header" onclick="toggleAccordion(this)">🚨 Error Detail Dialog <span class="arrow">▶</span></div>
+  <div class="accordion-body">
+    <p>Shown when registration fails. Contains:</p>
+    <ul>
+      <li>User-friendly error message</li>
+      <li>Collapsible Technical Details (traceback + last 50 log lines)</li>
+      <li>"Copy to Clipboard" button (flashes ✓ Copied!)</li>
+      <li>"Report Issue" button (opens GitHub)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── CONFIG MANAGEMENT ────────────────────────────────────── -->
+<span class="section-anchor" id="config-mgmt"></span>
+<h2>Configuration Management</h2>
+<hr>
+<div class="card">
+<h4>Save Configuration (File → Save Configuration)</h4>
+<p>Exports all Properties dock settings to a JSON file:</p>
+<pre><code>{
+  "project_name": "My CyCIF Study",
+  "rigid_registration": true,
+  "non_rigid_registration": true,
+  "max_image_size": 2048,
+  "use_gpu": false,
+  "feature_detector": "vgg",
+  "transformer_type": "similarity",
+  "reference_slide": null,
+  "crop_mode": "reference",
+  "use_masks": false,
+  "denoise": false,
+  "imgs_ordered": false,
+  "micro_registration": false,
+  "micro_max_image_size": 4096,
+  "compression_level": 1,
+  "pyramid_levels": 4,
+  "tile_size": 512,
+  "image_quality": 95
+}</code></pre>
+<h4 style="margin-top:16px">Drag &amp; Drop</h4>
+<table>
+  <tr><th>Drop a…</th><th>Action</th></tr>
+  <tr><td><code>.json</code> file</td><td>Loads configuration into Properties dock</td></tr>
+  <tr><td>Folder</td><td>Scans for slide images and loads into Project</td></tr>
+</table>
+</div>
+
+<!-- ─── TROUBLESHOOTING ──────────────────────────────────────── -->
+<span class="section-anchor" id="troubleshooting"></span>
+<h2>Troubleshooting</h2>
+<hr>
+<div class="card">
+<h4>"Napari not available"</h4>
+<pre><code>pip install napari[all]
+# or: conda install napari -c conda-forge</code></pre>
+
+<h4 style="margin-top:16px">GPU checkbox disabled</h4>
+<pre><code>pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+python -c "import torch; print(torch.cuda.is_available())"</code></pre>
+
+<h4 style="margin-top:16px">"SimpleElastix not found"</h4>
+<p>Without SimpleElastix, only rigid registration works. Non-rigid uses OpticalFlowWarper as an alternative.</p>
+
+<h4 style="margin-top:16px">Out of memory</h4>
+<ul>
+  <li>Reduce Max image size and Pyramid levels</li>
+  <li>Lower tile cache in Preferences</li>
+  <li>Monitor via Help → Performance Statistics → Memory tab</li>
+</ul>
+
+<h4 style="margin-top:16px">Wheel build errors</h4>
+<pre><code>conda install numba llvmlite scikit-image -c conda-forge</code></pre>
+</div>
+
+</div><!-- end tab-advanced -->
+
+
+<!-- ╔═══════════════════════════════════════════════════════════════════╗
+     ║              TAB 3 — API REFERENCE                               ║
+     ╚═══════════════════════════════════════════════════════════════════╝ -->
+<div class="tab-content" id="tab-api">
+
+<!-- ─── VALIS CLASS ──────────────────────────────────────────── -->
+<span class="section-anchor" id="valis-class"></span>
+<h2>Valis Class — Main Orchestrator</h2>
+<hr>
+<div class="card">
+<p>The <code>Valis</code> class in <code>valis.registration</code> is the primary entry point for all registration operations.</p>
+
+<h4>Constructor Parameters</h4>
+<table>
+  <tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr>
+  <tr><td><code>src_dir</code></td><td>str</td><td><em>required</em></td><td>Path to folder containing slides to register</td></tr>
+  <tr><td><code>dst_dir</code></td><td>str</td><td><em>required</em></td><td>Path to output folder</td></tr>
+  <tr><td><code>name</code></td><td>str</td><td>None</td><td>Project name (subfolder of dst_dir)</td></tr>
+  <tr><td><code>series</code></td><td>int</td><td>None</td><td>Series number for multi-series files</td></tr>
+  <tr><td><code>image_type</code></td><td>str</td><td>None</td><td><code>"brightfield"</code>, <code>"fluorescence"</code>, or <code>"multi"</code></td></tr>
+  <tr><td><code>feature_detector_cls</code></td><td>class</td><td>VggFD</td><td>Feature detector class for sorting</td></tr>
+  <tr><td><code>transformer_cls</code></td><td>class</td><td>SimilarityTransform</td><td>Rigid transform model</td></tr>
+  <tr><td><code>affine_optimizer_cls</code></td><td>class</td><td>None</td><td>Affine optimizer (AffineOptimizerMattesMI, etc.)</td></tr>
+  <tr><td><code>similarity_metric</code></td><td>str</td><td>None</td><td>Similarity metric for sorting</td></tr>
+  <tr><td><code>matcher</code></td><td>object</td><td>LightGlueMatcher(DiskFD())</td><td>Feature matcher for registration</td></tr>
+  <tr><td><code>matcher_for_sorting</code></td><td>object</td><td>None</td><td>Separate matcher for sorting step</td></tr>
+  <tr><td><code>imgs_ordered</code></td><td>bool</td><td>False</td><td>Skip sorting, use file order as-is</td></tr>
+  <tr><td><code>non_rigid_registrar_cls</code></td><td>class</td><td>OpticalFlowWarper</td><td>Non-rigid registration method</td></tr>
+  <tr><td><code>non_rigid_reg_params</code></td><td>dict</td><td>{}</td><td>Parameters for non-rigid registrar</td></tr>
+  <tr><td><code>compose_non_rigid</code></td><td>bool</td><td>False</td><td>Compose deformation fields serially</td></tr>
+  <tr><td><code>img_list</code></td><td>list</td><td>None</td><td>Explicit list of image filenames</td></tr>
+  <tr><td><code>reference_img_f</code></td><td>str</td><td>None</td><td>Reference image filename</td></tr>
+  <tr><td><code>align_to_reference</code></td><td>bool</td><td>False</td><td>Align all directly to reference</td></tr>
+  <tr><td><code>do_rigid</code></td><td>bool</td><td>True</td><td>Perform rigid registration</td></tr>
+  <tr><td><code>crop</code></td><td>str</td><td>"overlap"</td><td><code>"overlap"</code>, <code>"reference"</code>, or <code>None</code></td></tr>
+  <tr><td><code>create_masks</code></td><td>bool</td><td>False</td><td>Generate tissue masks</td></tr>
+  <tr><td><code>denoise_rigid</code></td><td>bool</td><td>False</td><td>Denoise before rigid registration</td></tr>
+  <tr><td><code>check_for_reflections</code></td><td>bool</td><td>False</td><td>Check/fix mirrored slides</td></tr>
+  <tr><td><code>max_image_dim_px</code></td><td>int</td><td>1024</td><td>Max dimension for initial processing</td></tr>
+  <tr><td><code>max_processed_image_dim_px</code></td><td>int</td><td>512</td><td>Max dimension for preprocessed images</td></tr>
+  <tr><td><code>max_non_rigid_registration_dim_px</code></td><td>int</td><td>2048</td><td>Max dimension for non-rigid step</td></tr>
+  <tr><td><code>thumbnail_size</code></td><td>int</td><td>None</td><td>Size for overview thumbnails</td></tr>
+  <tr><td><code>norm_method</code></td><td>str</td><td>None</td><td><code>"img_stats"</code> or <code>"histo_match"</code></td></tr>
+  <tr><td><code>micro_rigid_registrar_cls</code></td><td>class</td><td>None</td><td>MicroRigidRegistrar class</td></tr>
+  <tr><td><code>qt_emitter</code></td><td>object</td><td>None</td><td>Qt signal emitter for progress</td></tr>
+</table>
+
+<h4 style="margin-top:16px">Methods</h4>
+<table>
+  <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+  <tr><td><code>register()</code></td><td>rigid_reg, non_rigid_reg, summary_df</td><td>Run full registration pipeline</td></tr>
+  <tr><td><code>register_micro()</code></td><td>—</td><td>High-resolution refinement pass</td></tr>
+  <tr><td><code>warp_and_save_slides()</code></td><td>—</td><td>Warp at full resolution and save OME-TIFF</td></tr>
+  <tr><td><code>warp_and_merge_slides()</code></td><td>merged_img</td><td>Merge into multi-channel composite</td></tr>
+  <tr><td><code>measure_error()</code></td><td>summary_df</td><td>Recompute alignment error metrics</td></tr>
+  <tr><td><code>get_slide(name)</code></td><td>Slide</td><td>Return Slide object by filename</td></tr>
+  <tr><td><code>get_ref_slide()</code></td><td>Slide</td><td>Return the reference Slide</td></tr>
+</table>
+
+<h4 style="margin-top:16px">Programmatic Example</h4>
+<pre><code>from valis import registration
+
+registrar = registration.Valis(
+    src_dir="./slides/",
+    dst_dir="./output/",
+    name="my_study",
+    imgs_ordered=True,
+    max_image_dim_px=2048,
+    create_masks=True
+)
+
+rigid_reg, non_rigid_reg, error_df = registrar.register()
+registrar.warp_and_save_slides(
+    dst_dir="./registered/",
+    pyramid=True,
+    compression="lzw",
+    tile_wh=512,
+    Q=95
+)
+print(error_df[["filename", "rigid_D", "non_rigid_D"]])</code></pre>
+</div>
+
+<!-- ─── SLIDE CLASS ──────────────────────────────────────────── -->
+<span class="section-anchor" id="slide-class"></span>
+<h2>Slide Class — Per-Image Operations</h2>
+<hr>
+<div class="card">
+<p>Each loaded image becomes a <code>Slide</code> object. After registration, you can warp images, points, and annotations.</p>
+<table>
+  <tr><th>Method</th><th>Description</th></tr>
+  <tr><td><code>slide2image(level, xywh)</code></td><td>Read region as numpy array at given pyramid level</td></tr>
+  <tr><td><code>slide2vips(level, xywh)</code></td><td>Read region as pyvips.Image</td></tr>
+  <tr><td><code>warp_img(img)</code></td><td>Warp a numpy image using this slide's transforms</td></tr>
+  <tr><td><code>warp_img_from_to(img, target_slide)</code></td><td>Warp from this slide's space to another's</td></tr>
+  <tr><td><code>warp_slide(level, ...)</code></td><td>Warp the entire slide at a given resolution</td></tr>
+  <tr><td><code>warp_and_save_slide(dst_f, ...)</code></td><td>Warp and save as OME-TIFF</td></tr>
+  <tr><td><code>warp_xy(xy)</code></td><td>Warp XY coordinates forward</td></tr>
+  <tr><td><code>warp_xy_from_to(xy, target_slide)</code></td><td>Warp XY from this slide to another</td></tr>
+  <tr><td><code>warp_geojson(geojson)</code></td><td>Warp GeoJSON annotation</td></tr>
+  <tr><td><code>warp_geojson_from_to(geojson, target)</code></td><td>Warp GeoJSON to another slide's space</td></tr>
+</table>
+
+<h4 style="margin-top:16px">Example: Warp points between slides</h4>
+<pre><code>import numpy as np
+
+# Get slide objects
+slide_a = registrar.get_slide("slide_001.tiff")
+slide_b = registrar.get_slide("slide_002.tiff")
+
+# Points in slide_a's coordinate system
+points = np.array([[100, 200], [300, 400], [500, 600]])
+
+# Warp to slide_b's coordinate system
+warped_points = slide_a.warp_xy_from_to(points, slide_b)
+print(warped_points)</code></pre>
+</div>
+
+<!-- ─── SLIDE I/O ────────────────────────────────────────────── -->
+<span class="section-anchor" id="slide-io"></span>
+<h2>Slide I/O &amp; Supported Formats</h2>
+<hr>
+<div class="card">
+<p>VALIS auto-detects the best reader for each file:</p>
+<table>
+  <tr><th>Reader</th><th>Formats</th><th>Requirements</th></tr>
+  <tr><td><strong>BioFormatsSlideReader</strong></td><td>300+ formats (DICOM, ND2, LIF, CZI, OME-TIFF, etc.)</td><td>jpype1 / scyjava (JVM)</td></tr>
+  <tr><td><strong>VipsSlideReader</strong></td><td>OpenSlide formats: SVS, NDPI, MRXS, SCN, VMS, VMU</td><td>pyvips, openslide</td></tr>
+  <tr><td><strong>FlattenedPyramidReader</strong></td><td>Multi-page TIFF / pyramidal</td><td>pyvips</td></tr>
+  <tr><td><strong>CziJpgxrReader</strong></td><td>CZI with JPEG-XR compression</td><td>aicspylibczi</td></tr>
+  <tr><td><strong>ImageReader</strong></td><td>JPEG, PNG, BMP, simple TIFF</td><td>scikit-image / Pillow</td></tr>
+</table>
+
+<h4 style="margin-top:16px">Supported File Extensions</h4>
+<p><code>.tif .tiff .svs .ndpi .mrxs .scn .vms .vmu .svslide .bif .czi .lif .nd2 .ome.tif .ome.tiff .dcm .dicom .png .jpg .jpeg .bmp</code> and 280+ more via Bio-Formats.</p>
+
+<h4 style="margin-top:12px">Utility Functions</h4>
+<table>
+  <tr><th>Function</th><th>Purpose</th></tr>
+  <tr><td><code>init_jvm()</code></td><td>Start the Java VM for Bio-Formats</td></tr>
+  <tr><td><code>kill_jvm()</code></td><td>Shutdown JVM</td></tr>
+  <tr><td><code>load_registrar(path)</code></td><td>Load a saved registrar from disk</td></tr>
+</table>
+</div>
+
+<!-- ─── FEATURE DETECTORS API ────────────────────────────────── -->
+<span class="section-anchor" id="fd-api"></span>
+<h2>Feature Detectors API</h2>
+<hr>
+<div class="card">
+<h4>Class Hierarchy</h4>
+<pre><code>FeatureDD (abstract base)
+├── OrbFD, BriskFD, KazeFD, AkazeFD
+├── DaisyFD, LatchFD, BoostFD
+├── VggFD, OrbVggFD, SKOrbVggFD, CensureVggFD
+└── KorniaFD (abstract base for deep learning)
+    ├── DiskFD(num_features=7500, device=None)
+    └── DeDoDeFD(num_features=7500, device=None)
+
+SuperPointFD (standalone, PyTorch)
+    └── keypoint_threshold=0.005, nms_radius=4, force_cpu=False</code></pre>
+
+<h4 style="margin-top:14px">Key Parameters</h4>
+<ul>
+  <li><code>MAX_FEATURES = 7500</code> — maximum keypoints per image</li>
+  <li><code>detect_and_compute(image, mask)</code> — returns keypoints + descriptors</li>
+  <li><code>rgb=False</code> — whether detector expects RGB input</li>
+</ul>
+</div>
+
+<!-- ─── FEATURE MATCHERS API ─────────────────────────────────── -->
+<span class="section-anchor" id="fm-api"></span>
+<h2>Feature Matchers API</h2>
+<hr>
+<div class="card">
+<table>
+  <tr><th>Class</th><th>Default FD</th><th>Key Parameters</th></tr>
+  <tr><td><code>Matcher</code></td><td>VggFD()</td><td><code>match_filter_method="USAC_MAGSAC", ransac_thresh=7, rotation_invariant=True</code></td></tr>
+  <tr><td><code>SuperGlueMatcher</code></td><td>SuperPointFD()</td><td><code>weights="indoor", match_threshold=0.2, sinkhorn_iterations=100</code></td></tr>
+  <tr><td><code>LightGlueMatcher</code></td><td>DiskFD()</td><td><code>match_filter_method="USAC_MAGSAC", ransac_thresh=7, rotation_invariant=False</code></td></tr>
+</table>
+
+<h4 style="margin-top:14px">MatchInfo Object</h4>
+<p>Stores match results: <code>matched_kp1_xy</code>, <code>matched_kp2_xy</code>, <code>matched_desc1</code>, <code>matched_desc2</code>, <code>match_distances</code>, <code>distance</code>, <code>similarity</code></p>
+
+<h4 style="margin-top:14px">Filtering Functions</h4>
+<table>
+  <tr><th>Function</th><th>Method</th></tr>
+  <tr><td><code>filter_matches_ransac()</code></td><td>RANSAC / USAC_MAGSAC outlier removal</td></tr>
+  <tr><td><code>filter_matches_gms()</code></td><td>Grid-based Motion Statistics</td></tr>
+  <tr><td><code>filter_matches_tukey()</code></td><td>Tukey fences statistical filtering</td></tr>
+</table>
+</div>
+
+<!-- ─── NON-RIGID API ────────────────────────────────────────── -->
+<span class="section-anchor" id="nr-api"></span>
+<h2>Non-Rigid Registrars API</h2>
+<hr>
+<div class="card">
+<h4>Class Hierarchy</h4>
+<pre><code>NonRigidRegistrar (abstract base)
+├── OpticalFlowWarper(optical_flow_obj=DeepFlow, n_grid_pts=50)
+├── RAFTWarper(weights=Raft_Large, device=None)
+└── NonRigidRegistrarXY (abstract, uses keypoints)
+    └── SimpleElastixWarper(ammi_weight=0.33)
+
+NonRigidRegistrarGroupwise (abstract)
+└── SimpleElastixGroupwiseWarper
+
+NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
+
+<h4 style="margin-top:14px">Serial Registration Strategies</h4>
+<ul>
+  <li><code>register_serial()</code> — Register toward center of the stack</li>
+  <li><code>register_to_ref()</code> — Register each image directly to reference</li>
+  <li><code>register_groupwise()</code> — All images simultaneously</li>
+</ul>
+</div>
+
+<!-- ─── AFFINE OPTIMIZERS API ────────────────────────────────── -->
+<span class="section-anchor" id="affine-api"></span>
+<h2>Affine Optimizers API</h2>
+<hr>
+<div class="card">
+<p>Optional post-processing step to refine the rigid transform:</p>
+<table>
+  <tr><th>Optimizer</th><th>Cost Function</th><th>Requirements</th></tr>
+  <tr><td><code>AffineOptimizerMattesMI</code></td><td>Mattes Mutual Information</td><td>SimpleITK</td></tr>
+  <tr><td><code>AffineOptimizerRMI</code></td><td>Regional Mutual Information</td><td>—</td></tr>
+  <tr><td><code>AffineOptimizerDisplacement</code></td><td>Mean Squared Error</td><td>—</td></tr>
+  <tr><td><code>AffineOptimizerKNN</code></td><td>KNN entropy</td><td>—</td></tr>
+</table>
+<p style="margin-top:8px">Common parameters: <code>nlevels=1</code>, <code>nbins=256</code>, <code>optimization="Powell"</code>, <code>transformation="EuclideanTransform"</code>. Uses Gaussian pyramid for multi-resolution optimization.</p>
+</div>
+
+<!-- ─── PREPROCESSING API ────────────────────────────────────── -->
+<span class="section-anchor" id="preprocess-api"></span>
+<h2>Preprocessing API</h2>
+<hr>
+<div class="card">
+<h4>AbstractClass: ImageProcesser</h4>
+<p><code>__init__(image, src_f, level, series, reader)</code> → <code>create_mask()</code>, <code>process_image()</code></p>
+
+<h4 style="margin-top:14px">All Processors</h4>
+<table>
+  <tr><th>Class</th><th>Use Case</th><th>Key Parameters</th></tr>
+  <tr><td><code>OD</code></td><td>Brightfield (default)</td><td><code>adaptive_eq=False, p=95</code></td></tr>
+  <tr><td><code>ChannelGetter</code></td><td>Fluorescence (default)</td><td><code>channel="dapi", adaptive_eq=True</code></td></tr>
+  <tr><td><code>ColorfulStandardizer</code></td><td>Brightfield</td><td><code>c=DEFAULT_COLOR_STD_C, invert=True</code></td></tr>
+  <tr><td><code>JCDist</code></td><td>Brightfield</td><td><code>p=99, metric="euclidean"</code></td></tr>
+  <tr><td><code>ColorDeconvolver</code></td><td>Brightfield</td><td><code>cspace="JzAzBz", method="similarity"</code></td></tr>
+  <tr><td><code>HEDeconvolution</code></td><td>H&amp;E stains</td><td><code>stain="hem", Io=240</code></td></tr>
+  <tr><td><code>StainFlattener</code></td><td>Brightfield</td><td><code>n_colors=100, q=95</code></td></tr>
+  <tr><td><code>Gray</code></td><td>Any</td><td>—</td></tr>
+  <tr><td><code>Luminosity</code></td><td>General</td><td>—</td></tr>
+  <tr><td><code>BgColorDistance</code></td><td>General</td><td><code>brightness_q=0.99</code></td></tr>
+</table>
+
+<h4 style="margin-top:14px">Standalone Functions</h4>
+<ul>
+  <li><strong>Color space:</strong> <code>rgb2jab()</code>, <code>rgb2od()</code>, <code>jab2rgb()</code>, <code>rgb2jch()</code></li>
+  <li><strong>Masking:</strong> <code>create_tissue_mask_from_rgb()</code>, <code>create_tissue_mask()</code>, <code>clean_mask()</code></li>
+  <li><strong>Normalization:</strong> <code>normalize_he()</code>, <code>norm_img_stats()</code>, <code>match_histograms()</code></li>
+  <li><strong>Processing:</strong> <code>remove_bg()</code>, <code>denoise_img()</code>, <code>quantize_image()</code></li>
+</ul>
+</div>
+
+<!-- ─── WARP TOOLS API ───────────────────────────────────────── -->
+<span class="section-anchor" id="warp-api"></span>
+<h2>Warp Tools API</h2>
+<hr>
+<div class="card">
+<h4>Image Warping</h4>
+<table>
+  <tr><th>Function</th><th>Description</th></tr>
+  <tr><td><code>warp_img(img, M, bk_dxdy, out_shape)</code></td><td>Warp image with rigid + non-rigid</td></tr>
+  <tr><td><code>warp_img_inv(img, M, fwd_dxdy)</code></td><td>Inverse warp</td></tr>
+  <tr><td><code>warp_img_from_to(img, from_M, to_M)</code></td><td>Warp between coordinate systems</td></tr>
+</table>
+
+<h4 style="margin-top:14px">Point Warping</h4>
+<table>
+  <tr><th>Function</th><th>Description</th></tr>
+  <tr><td><code>warp_xy(xy, M, fwd_dxdy)</code></td><td>Warp points forward</td></tr>
+  <tr><td><code>warp_xy_inv(xy, M, bk_dxdy)</code></td><td>Inverse warp points</td></tr>
+  <tr><td><code>warp_xy_from_to(xy, from_M, to_M)</code></td><td>Warp points between slides</td></tr>
+</table>
+
+<h4 style="margin-top:14px">Geometry Warping</h4>
+<table>
+  <tr><th>Function</th><th>Description</th></tr>
+  <tr><td><code>warp_shapely_geom(geom, M, fwd_dxdy)</code></td><td>Warp Shapely geometries</td></tr>
+  <tr><td><code>warp_shapely_geom_from_to(geom, ...)</code></td><td>Warp between slides' spaces</td></tr>
+</table>
+
+<h4 style="margin-top:14px">Utilities</h4>
+<p><code>smooth_dxdy()</code>, <code>get_inverse_field()</code>, <code>remove_folds_in_dxdy()</code>, <code>numpy2vips()</code>, <code>vips2numpy()</code>, <code>resize_img()</code>, <code>rotate()</code></p>
+</div>
+
+<!-- ─── VISUALIZATION API ────────────────────────────────────── -->
+<span class="section-anchor" id="viz-api"></span>
+<h2>Visualization API</h2>
+<hr>
+<div class="card">
+<table>
+  <tr><th>Function</th><th>Purpose</th></tr>
+  <tr><td><code>draw_outline(img, mask)</code></td><td>Draw tissue outline on image</td></tr>
+  <tr><td><code>draw_features(img, kp_xy)</code></td><td>Draw detected keypoints</td></tr>
+  <tr><td><code>draw_matches(img1, img2, kp1, kp2)</code></td><td>Draw feature matches between images</td></tr>
+  <tr><td><code>create_overlap_img(img_list)</code></td><td>Create colored overlap image</td></tr>
+  <tr><td><code>color_multichannel(img, colors)</code></td><td>Color multichannel fluorescence</td></tr>
+  <tr><td><code>draw_displacement_vector_field(dxdy)</code></td><td>Draw deformation field arrows</td></tr>
+  <tr><td><code>color_displacement_grid(dxdy)</code></td><td>Color displacement on grid</td></tr>
+  <tr><td><code>get_n_colors(n)</code></td><td>Get n perceptually distinct colors</td></tr>
+</table>
+<p style="margin-top:8px">Color maps: <code>jzazbz_cmap()</code>, <code>cam16ucs_cmap()</code>, <code>turbo_cmap()</code></p>
+</div>
+
+<!-- ─── GUI ARCHITECTURE ─────────────────────────────────────── -->
+<span class="section-anchor" id="gui-arch"></span>
+<h2>GUI Architecture</h2>
+<hr>
+<div class="card">
+<div class="diagram">
+<svg viewBox="0 0 740 350" xmlns="http://www.w3.org/2000/svg" style="max-width:720px">
+  <defs>
+    <marker id="ar4" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="#475569"/></marker>
+    <filter id="gs2"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.07"/></filter>
+  </defs>
+  <!-- GUI Layer -->
+  <rect x="10" y="10" width="720" height="80" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" filter="url(#gs2)"/>
+  <text x="370" y="30" text-anchor="middle" fill="#1e40af" font-size="11" font-weight="700">GUI Layer (PySide6 / Qt6)</text>
+  <rect x="25" y="40" width="80" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="65" y="60" text-anchor="middle" fill="#1e40af" font-size="8" font-weight="600">MainWindow</text>
+  <rect x="115" y="40" width="80" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="155" y="60" text-anchor="middle" fill="#1e40af" font-size="8" font-weight="600">Properties</text>
+  <rect x="205" y="40" width="70" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="240" y="60" text-anchor="middle" fill="#1e40af" font-size="8" font-weight="600">Project</text>
+  <rect x="285" y="40" width="70" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="320" y="60" text-anchor="middle" fill="#1e40af" font-size="8" font-weight="600">Preview</text>
+  <rect x="365" y="40" width="60" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="395" y="60" text-anchor="middle" fill="#1e40af" font-size="8" font-weight="600">Status</text>
+  <rect x="435" y="40" width="60" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="465" y="60" text-anchor="middle" fill="#1e40af" font-size="8" font-weight="600">Layers</text>
+  <rect x="505" y="40" width="115" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="562" y="60" text-anchor="middle" fill="#1e40af" font-size="8" font-weight="600">9 Dialogs</text>
+  <rect x="630" y="40" width="80" height="40" rx="5" fill="#e0e7ff" stroke="#a5b4fc"/><text x="670" y="60" text-anchor="middle" fill="#3730a3" font-size="8" font-weight="600">Napari</text>
+  <!-- Data Layer -->
+  <rect x="10" y="108" width="720" height="52" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5" filter="url(#gs2)"/>
+  <text x="370" y="128" text-anchor="middle" fill="#92400e" font-size="11" font-weight="700">Data &amp; Models</text>
+  <rect x="120" y="136" width="100" height="18" rx="4" fill="#fde68a" stroke="#fbbf24"/><text x="170" y="149" text-anchor="middle" fill="#92400e" font-size="8">Config (18 fields)</text>
+  <rect x="260" y="136" width="100" height="18" rx="4" fill="#fde68a" stroke="#fbbf24"/><text x="310" y="149" text-anchor="middle" fill="#92400e" font-size="8">Constants</text>
+  <rect x="400" y="136" width="100" height="18" rx="4" fill="#fde68a" stroke="#fbbf24"/><text x="450" y="149" text-anchor="middle" fill="#92400e" font-size="8">Validation</text>
+  <rect x="540" y="136" width="100" height="18" rx="4" fill="#fde68a" stroke="#fbbf24"/><text x="590" y="149" text-anchor="middle" fill="#92400e" font-size="8">QSettings</text>
+  <!-- Services Layer -->
+  <rect x="10" y="178" width="720" height="52" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" filter="url(#gs2)"/>
+  <text x="370" y="198" text-anchor="middle" fill="#065f46" font-size="11" font-weight="700">Services &amp; Workers</text>
+  <rect x="80" y="206" width="110" height="18" rx="4" fill="#d1fae5" stroke="#6ee7b7"/><text x="135" y="219" text-anchor="middle" fill="#065f46" font-size="8">ValisPipeline</text>
+  <rect x="210" y="206" width="100" height="18" rx="4" fill="#d1fae5" stroke="#6ee7b7"/><text x="260" y="219" text-anchor="middle" fill="#065f46" font-size="8">ValisWorker</text>
+  <rect x="330" y="206" width="90" height="18" rx="4" fill="#d1fae5" stroke="#6ee7b7"/><text x="375" y="219" text-anchor="middle" fill="#065f46" font-size="8">SlideScan</text>
+  <rect x="440" y="206" width="110" height="18" rx="4" fill="#d1fae5" stroke="#6ee7b7"/><text x="495" y="219" text-anchor="middle" fill="#065f46" font-size="8">ThumbnailWorker</text>
+  <rect x="570" y="206" width="90" height="18" rx="4" fill="#d1fae5" stroke="#6ee7b7"/><text x="615" y="219" text-anchor="middle" fill="#065f46" font-size="8">CacheManager</text>
+  <!-- VALIS Core -->
+  <rect x="10" y="248" width="720" height="90" rx="10" fill="#fce7f3" stroke="#ec4899" stroke-width="1.5" filter="url(#gs2)"/>
+  <text x="370" y="268" text-anchor="middle" fill="#9d174d" font-size="11" font-weight="700">VALIS Core Library (valis-wsi 1.2.0)</text>
+  <rect x="30" y="276" width="100" height="18" rx="4" fill="#fbcfe8" stroke="#f9a8d4"/><text x="80" y="289" text-anchor="middle" fill="#9d174d" font-size="7.5">Registration</text>
+  <rect x="145" y="276" width="100" height="18" rx="4" fill="#fbcfe8" stroke="#f9a8d4"/><text x="195" y="289" text-anchor="middle" fill="#9d174d" font-size="7.5">Feature Detect</text>
+  <rect x="260" y="276" width="80" height="18" rx="4" fill="#fbcfe8" stroke="#f9a8d4"/><text x="300" y="289" text-anchor="middle" fill="#9d174d" font-size="7.5">SlideIO</text>
+  <rect x="355" y="276" width="100" height="18" rx="4" fill="#fbcfe8" stroke="#f9a8d4"/><text x="405" y="289" text-anchor="middle" fill="#9d174d" font-size="7.5">Affine Opt.</text>
+  <rect x="470" y="276" width="100" height="18" rx="4" fill="#fbcfe8" stroke="#f9a8d4"/><text x="520" y="289" text-anchor="middle" fill="#9d174d" font-size="7.5">Non-Rigid</text>
+  <rect x="585" y="276" width="80" height="18" rx="4" fill="#fbcfe8" stroke="#f9a8d4"/><text x="625" y="289" text-anchor="middle" fill="#9d174d" font-size="7.5">Warp Tools</text>
+  <rect x="30" y="302" width="80" height="18" rx="4" fill="#e0e7ff" stroke="#a5b4fc"/><text x="70" y="315" text-anchor="middle" fill="#3730a3" font-size="7.5">OpenCV</text>
+  <rect x="125" y="302" width="80" height="18" rx="4" fill="#e0e7ff" stroke="#a5b4fc"/><text x="165" y="315" text-anchor="middle" fill="#3730a3" font-size="7.5">PyTorch</text>
+  <rect x="220" y="302" width="80" height="18" rx="4" fill="#e0e7ff" stroke="#a5b4fc"/><text x="260" y="315" text-anchor="middle" fill="#3730a3" font-size="7.5">pyvips</text>
+  <rect x="315" y="302" width="80" height="18" rx="4" fill="#e0e7ff" stroke="#a5b4fc"/><text x="355" y="315" text-anchor="middle" fill="#3730a3" font-size="7.5">Kornia</text>
+  <rect x="410" y="302" width="80" height="18" rx="4" fill="#e0e7ff" stroke="#a5b4fc"/><text x="450" y="315" text-anchor="middle" fill="#3730a3" font-size="7.5">SimpleITK</text>
+  <rect x="505" y="302" width="80" height="18" rx="4" fill="#e0e7ff" stroke="#a5b4fc"/><text x="545" y="315" text-anchor="middle" fill="#3730a3" font-size="7.5">Matplotlib</text>
+  <rect x="600" y="302" width="80" height="18" rx="4" fill="#e0e7ff" stroke="#a5b4fc"/><text x="640" y="315" text-anchor="middle" fill="#3730a3" font-size="7.5">Bio-Formats</text>
+  <!-- Arrows -->
+  <line x1="370" y1="90" x2="370" y2="106" stroke="#475569" stroke-width="1.8" marker-end="url(#ar4)"/>
+  <line x1="370" y1="160" x2="370" y2="176" stroke="#475569" stroke-width="1.8" marker-end="url(#ar4)"/>
+  <line x1="370" y1="230" x2="370" y2="246" stroke="#475569" stroke-width="1.8" marker-end="url(#ar4)"/>
+</svg>
+</div>
+<p class="caption">Figure 5 — Four-layer GUI architecture: GUI → Data → Services → Core Library</p>
+
+<h4 style="margin-top:16px">Worker Threading Model</h4>
+<p>Registration runs in a separate <code>QThread</code> via <code>moveToThread()</code>:</p>
+<table>
+  <tr><th>Signal</th><th>Type</th><th>Purpose</th></tr>
+  <tr><td><code>started</code></td><td>Signal()</td><td>Worker begins execution</td></tr>
+  <tr><td><code>progress</code></td><td>Signal(int)</td><td>0–100% updates</td></tr>
+  <tr><td><code>finished</code></td><td>Signal(dict)</td><td>Success with result dict</td></tr>
+  <tr><td><code>failed</code></td><td>Signal(str)</td><td>Error message</td></tr>
+  <tr><td><code>cancelled</code></td><td>Signal()</td><td>User cancelled</td></tr>
+</table>
+</div>
+
+<!-- ─── FULL PARAMETER TABLE ─────────────────────────────────── -->
+<span class="section-anchor" id="param-ref"></span>
+<h2>Full GUI Parameter Reference</h2>
+<hr>
+<div class="card">
+<table>
+  <tr><th>Config Field</th><th>Type</th><th>Default</th><th>Range</th><th>Widget</th><th>Section</th></tr>
+  <tr><td><code>project_name</code></td><td>str</td><td>"New Project"</td><td>—</td><td>QLineEdit</td><td>Basic</td></tr>
+  <tr><td><code>rigid_registration</code></td><td>bool</td><td>True</td><td>—</td><td>QCheckBox</td><td>Basic</td></tr>
+  <tr><td><code>non_rigid_registration</code></td><td>bool</td><td>True</td><td>—</td><td>QCheckBox</td><td>Basic</td></tr>
+  <tr><td><code>max_image_size</code></td><td>int</td><td>2048</td><td>256–16384</td><td>QSpinBox</td><td>Basic</td></tr>
+  <tr><td><code>use_gpu</code></td><td>bool</td><td>False</td><td>—</td><td>QCheckBox</td><td>Basic</td></tr>
+  <tr><td><code>feature_detector</code></td><td>str</td><td>"vgg"</td><td>8 options</td><td>QComboBox</td><td>Advanced</td></tr>
+  <tr><td><code>transformer_type</code></td><td>str</td><td>"similarity"</td><td>3 options</td><td>QComboBox</td><td>Advanced</td></tr>
+  <tr><td><code>reference_slide</code></td><td>str|None</td><td>None</td><td>dynamic</td><td>QComboBox</td><td>Advanced</td></tr>
+  <tr><td><code>crop_mode</code></td><td>str</td><td>"reference"</td><td>4 options</td><td>QComboBox</td><td>Advanced</td></tr>
+  <tr><td><code>use_masks</code></td><td>bool</td><td>False</td><td>—</td><td>QCheckBox</td><td>Advanced</td></tr>
+  <tr><td><code>denoise</code></td><td>bool</td><td>False</td><td>—</td><td>QCheckBox</td><td>Advanced</td></tr>
+  <tr><td><code>imgs_ordered</code></td><td>bool</td><td>False</td><td>—</td><td>QCheckBox</td><td>Advanced</td></tr>
+  <tr><td><code>micro_registration</code></td><td>bool</td><td>False</td><td>—</td><td>QCheckBox</td><td>Advanced</td></tr>
+  <tr><td><code>micro_max_image_size</code></td><td>int</td><td>4096</td><td>2048–32768</td><td>QSpinBox</td><td>Advanced</td></tr>
+  <tr><td><code>compression_level</code></td><td>int</td><td>1</td><td>0–9</td><td>QSpinBox</td><td>Output</td></tr>
+  <tr><td><code>pyramid_levels</code></td><td>int</td><td>4</td><td>0–10</td><td>QSpinBox</td><td>Output</td></tr>
+  <tr><td><code>tile_size</code></td><td>int</td><td>512</td><td>128–4096</td><td>QSpinBox</td><td>Output</td></tr>
+  <tr><td><code>image_quality</code></td><td>int</td><td>95</td><td>1–100</td><td>QSpinBox</td><td>Output</td></tr>
+</table>
+</div>
+
+<!-- ─── KEYBOARD SHORTCUTS ───────────────────────────────────── -->
+<span class="section-anchor" id="keyboard-ref"></span>
+<h2>Keyboard Shortcuts</h2>
+<hr>
+<div class="card">
+<table>
+  <tr><th style="width:160px">Shortcut</th><th>Action</th><th>Menu</th></tr>
+  <tr><td><span class="kbd">Ctrl+O</span></td><td>Open Slide Folder</td><td>File</td></tr>
+  <tr><td><span class="kbd">Ctrl+R</span></td><td>Run Registration</td><td>File</td></tr>
+  <tr><td><span class="kbd">Ctrl+B</span></td><td>Blink Viewer</td><td>Tools</td></tr>
+  <tr><td><span class="kbd">Ctrl+,</span></td><td>Preferences</td><td>File</td></tr>
+  <tr><td><span class="kbd">Ctrl+Shift+P</span></td><td>Performance Statistics</td><td>Help</td></tr>
+  <tr><td><span class="kbd">Ctrl+Q</span></td><td>Quit Application</td><td>File</td></tr>
+</table>
+</div>
+
+<!-- ─── GLOSSARY ─────────────────────────────────────────────── -->
+<span class="section-anchor" id="glossary"></span>
+<h2>Glossary</h2>
+<hr>
+<div class="card">
+<dl class="glossary">
+  <dt>Registration</dt><dd>The process of aligning two or more images so corresponding structures overlap.</dd>
+  <dt>Rigid registration</dt><dd>Alignment using only rotation, scaling, and translation. Shape is preserved.</dd>
+  <dt>Non-rigid / elastic registration</dt><dd>Alignment that allows local deformation (stretching, warping) of the tissue.</dd>
+  <dt>Feature detection</dt><dd>Automatic identification of distinctive landmarks (keypoints) in images.</dd>
+  <dt>Feature matching</dt><dd>Finding corresponding keypoints between two images.</dd>
+  <dt>TRE (Target Registration Error)</dt><dd>The distance between corresponding points after registration. Lower = better.</dd>
+  <dt>rTRE (relative TRE)</dt><dd>TRE normalized by image size for cross-study comparison.</dd>
+  <dt>OME-TIFF</dt><dd>Open Microscopy Environment TIFF — a standardized format for microscopy images.</dd>
+  <dt>Pyramid / multi-resolution</dt><dd>An image stored at multiple resolutions for efficient viewing at different zoom levels.</dd>
+  <dt>Displacement field</dt><dd>A 2D grid of (dx, dy) vectors describing how each pixel should move during non-rigid warp.</dd>
+  <dt>Optical flow</dt><dd>A computer vision technique estimating pixel-level motion between frames.</dd>
+  <dt>Affine transform</dt><dd>A linear transformation including rotation, scaling, shearing, and translation.</dd>
+  <dt>Similarity transform</dt><dd>A subset of affine: rotation + uniform scaling + translation.</dd>
+  <dt>Brightfield microscopy</dt><dd>Standard transmitted-light microscopy (H&amp;E, IHC stains).</dd>
+  <dt>Fluorescence microscopy</dt><dd>Imaging using fluorescent markers excited by specific wavelengths.</dd>
+  <dt>CyCIF</dt><dd>Cyclic Immunofluorescence — iterative staining and imaging of the same tissue.</dd>
+  <dt>CODEX</dt><dd>CO-Detection by indEXing — highly multiplexed tissue imaging.</dd>
+  <dt>GeoJSON</dt><dd>A JSON-based format for encoding geographic/spatial data. Used for slide annotations.</dd>
+  <dt>Bio-Formats</dt><dd>A Java library for reading 300+ microscopy file formats.</dd>
+  <dt>pyvips</dt><dd>Python bindings for libvips, a fast image processing library efficient with large images.</dd>
+  <dt>SimpleElastix</dt><dd>A medical image registration library built on SimpleITK, providing B-spline deformation.</dd>
+  <dt>USAC_MAGSAC</dt><dd>A robust outlier rejection method for geometric model estimation.</dd>
+  <dt>LightGlue</dt><dd>A lightweight neural feature matcher from Kornia.</dd>
+  <dt>DISK</dt><dd>A learned local feature detector and descriptor.</dd>
+  <dt>SuperPoint</dt><dd>A self-supervised deep learning keypoint detector and descriptor.</dd>
+</dl>
+</div>
+
+</div><!-- end tab-api -->
+
+
+<!-- ═══════════════════════════════════════════════════ FOOTER ═══ -->
+<footer>
+  <p><strong>VALIS Workstation — Complete User Manual</strong> — Version 1.0</p>
+  <p>Built on the <a href="https://github.com/MathOnco/valis">VALIS library</a> (Nature Communications) by Chandler Gatenbee · MIT License</p>
+  <p style="margin-top:6px;font-size:.78rem">Standalone HTML document — no external dependencies required.</p>
+</footer>
+
+</div><!-- .main -->
+</div><!-- .page -->
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT — Tab switching, Search, Accordion, Active nav
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+// ─── TAB SWITCHING ─────────────────────────────────────────────
+function activateTab(tabName) {
+  // Deactivate all tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+
+  // Activate target
+  const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+  const content = document.getElementById(`tab-${tabName}`);
+  if (btn) btn.classList.add('active');
+  if (content) content.classList.add('active');
+
+  // Highlight corresponding nav section
+  document.querySelectorAll('.nav-section').forEach(ns => {
+    ns.style.opacity = ns.dataset.tab === tabName ? '1' : '0.5';
+  });
+
+  // Close search dropdown when switching context
+  const results = document.getElementById('searchResults');
+  if (results) results.classList.remove('active');
+
+  // Re-evaluate active section after tab swap
+  requestAnimationFrame(updateActiveNav);
+}
+
+// ─── SEARCH ────────────────────────────────────────────────────
+const searchIndex = [];
+
+function buildSearchIndex() {
+  // Index all sections with anchors and headings
+  document.querySelectorAll('.section-anchor').forEach(anchor => {
+    const id = anchor.id;
+    const heading = anchor.nextElementSibling;
+    if (!heading) return;
+
+    // Find parent tab
+    let tabContent = anchor.closest('.tab-content');
+    let tabName = tabContent ? tabContent.id.replace('tab-', '') : 'beginner';
+
+    // Get surrounding text content
+    let textContent = '';
+    let sibling = heading;
+    for (let i = 0; i < 6 && sibling; i++) {
+      sibling = sibling.nextElementSibling;
+      if (sibling) textContent += ' ' + sibling.textContent;
+    }
+
+    searchIndex.push({
+      id: id,
+      title: heading.textContent.replace(/^\d+\s*[—–-]\s*/, '').trim(),
+      text: (heading.textContent + ' ' + textContent).toLowerCase(),
+      tab: tabName
+    });
+  });
+}
+
+function handleSearch(query) {
+  const results = document.getElementById('searchResults');
+  query = query.trim().toLowerCase();
+
+  if (query.length < 2) {
+    results.classList.remove('active');
+    results.innerHTML = '';
+    return;
+  }
+
+  const matches = searchIndex.filter(item =>
+    item.text.includes(query) || item.title.toLowerCase().includes(query)
+  ).slice(0, 8);
+
+  if (matches.length === 0) {
+    results.innerHTML = '<div class="no-results">No results found</div>';
+    results.classList.add('active');
+    return;
+  }
+
+  const tabLabels = { beginner: '🟢', advanced: '🟡', api: '🟣' };
+  results.innerHTML = matches.map(m =>
+    `<a href="#${m.id}" onclick="activateTab('${m.tab}')">${tabLabels[m.tab] || ''} ${m.title}</a>`
+  ).join('');
+  results.classList.add('active');
+}
+
+// ─── ACCORDION ─────────────────────────────────────────────────
+function toggleAccordion(header) {
+  const body = header.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+
+  // Close all
+  header.closest('.tab-content').querySelectorAll('.accordion-body').forEach(b => b.classList.remove('open'));
+  header.closest('.tab-content').querySelectorAll('.accordion-header').forEach(h => h.classList.remove('open'));
+
+  // Toggle
+  if (!isOpen) {
+    body.classList.add('open');
+    header.classList.add('open');
+  }
+}
+
+// ─── ACTIVE NAV HIGHLIGHT ──────────────────────────────────────
+function getVisibleSections() {
+  const activeTab = document.querySelector('.tab-content.active');
+  return activeTab ? activeTab.querySelectorAll('.section-anchor') : [];
+}
+
+function updateActiveNav() {
+  const sections = getVisibleSections();
+  let currentId = '';
+
+  sections.forEach(section => {
+    const rect = section.getBoundingClientRect();
+    if (rect.top <= 140) {
+      currentId = section.id;
+    }
+  });
+
+  if (currentId) {
+    document.querySelectorAll('.nav-section a').forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + currentId);
+    });
+  }
+}
+
+// ─── INIT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  buildSearchIndex();
+  document.getElementById('searchInput').addEventListener('input', (e) => handleSearch(e.target.value));
+  window.addEventListener('scroll', () => requestAnimationFrame(updateActiveNav), { passive: true });
+  window.addEventListener('resize', () => requestAnimationFrame(updateActiveNav), { passive: true });
+
+  // Immediate visual feedback when clicking nav links
+  document.querySelectorAll('.nav-section a').forEach(link => {
+    link.addEventListener('click', () => {
+      setTimeout(() => requestAnimationFrame(updateActiveNav), 60);
+    });
+  });
+
+  // Initialize tab opacity
+  document.querySelectorAll('.nav-section').forEach(ns => {
+    ns.style.opacity = ns.dataset.tab === 'beginner' ? '1' : '0.5';
+  });
+
+  updateActiveNav();
+});
+</script>
+
+<button class="mobile-menu-btn" onclick="document.getElementById('sidebar').style.display=document.getElementById('sidebar').style.display==='flex'?'none':'flex'">☰</button>
+
+</body>
+</html>
