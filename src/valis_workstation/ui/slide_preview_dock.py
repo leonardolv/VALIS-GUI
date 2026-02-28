@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from valis_workstation.layout_constants import GRID_SPACING
+
 if TYPE_CHECKING:
     pass
 
@@ -27,7 +29,8 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         # Main container
         container = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(container)
-        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setContentsMargins(GRID_SPACING, GRID_SPACING, GRID_SPACING, GRID_SPACING)
+        layout.setSpacing(GRID_SPACING)
         
         # Toolbar
         toolbar = QtWidgets.QHBoxLayout()
@@ -72,7 +75,7 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         
         self._grid_container = QtWidgets.QWidget()
         self._grid_layout = QtWidgets.QGridLayout(self._grid_container)
-        self._grid_layout.setSpacing(8)
+        self._grid_layout.setSpacing(GRID_SPACING)
         scroll.setWidget(self._grid_container)
         
         layout.addWidget(scroll)
@@ -99,8 +102,11 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         widget = QtWidgets.QWidget()
         widget.setObjectName(f"slide_{name}")
         widget_layout = QtWidgets.QVBoxLayout(widget)
-        widget_layout.setContentsMargins(4, 4, 4, 4)
-        widget_layout.setSpacing(4)
+        widget_layout.setContentsMargins(
+            GRID_SPACING // 2, GRID_SPACING // 2,
+            GRID_SPACING // 2, GRID_SPACING // 2,
+        )
+        widget_layout.setSpacing(GRID_SPACING // 2)
         
         # Thumbnail label
         thumb_label = QtWidgets.QLabel()

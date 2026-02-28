@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from PySide6 import QtWidgets
 
+from valis_workstation.layout_constants import GRID_SPACING
 from valis_workstation.utils.qt_logging import QtLogEmitter
 
 logger = logging.getLogger(__name__)
@@ -14,6 +15,8 @@ class StatusDock(QtWidgets.QDockWidget):
         self.setObjectName("StatusDock")
         container = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(container)
+        layout.setContentsMargins(GRID_SPACING, GRID_SPACING, GRID_SPACING, GRID_SPACING)
+        layout.setSpacing(GRID_SPACING)
 
         self._progress = QtWidgets.QProgressBar()
         self._progress.setRange(0, 100)

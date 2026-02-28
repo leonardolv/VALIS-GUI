@@ -7,6 +7,23 @@ from pathlib import Path
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from valis_workstation.layout_constants import (
+    CANVAS_MIN_H,
+    CANVAS_MIN_W,
+    GRID_SPACING,
+    LEFT_SIDEBAR_INIT,
+    LEFT_SIDEBAR_MAX,
+    LEFT_SIDEBAR_MIN,
+    RIGHT_SIDEBAR_INIT,
+    RIGHT_SIDEBAR_MAX,
+    RIGHT_SIDEBAR_MIN,
+    SPLITTER_HANDLE_W,
+    TIMELINE_INIT_H,
+    TIMELINE_MAX_H,
+    TIMELINE_MIN_H,
+    WINDOW_MIN_H,
+    WINDOW_MIN_W,
+)
 from valis_workstation.models.config import Config
 from valis_workstation.services.slide_scan import scan_slide_folder
 from valis_workstation.ui.dialogs.analysis_plot import AnalysisPlotDialog
@@ -20,12 +37,23 @@ from valis_workstation.ui.layer_controls_dock import LayerControlsDock
 from valis_workstation.ui.project_dock import ProjectDock
 from valis_workstation.ui.properties_dock import PropertiesDock
 from valis_workstation.ui.slide_preview_dock import SlidePreviewDock
+from valis_workstation.ui.splitter_utils import (
+    GripSplitter,
+    clear_splitter_state,
+    collapse_panel,
+    persist_splitter_state,
+    restore_splitter_state,
+)
 from valis_workstation.ui.status_dock import StatusDock
 from valis_workstation.utils.qt_logging import QtLogEmitter
 from valis_workstation.utils.validation import validate_slides
 from valis_workstation.workers.valis_worker import ValisWorker
 
 logger = logging.getLogger(__name__)
+
+# QSettings keys for splitter persistence
+_KEY_TOP_SPLITTER = "layout/topSplitter/sizes"
+_KEY_OUTER_SPLITTER = "layout/outerSplitter/sizes"
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -47,33 +75,189 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle("VALIS Workstation")
         self.resize(1400, 900)
+        self.setMinimumSize(WINDOW_MIN_W, WINDOW_MIN_H)
 
+        # ── Create panel content holders (docks kept for API compat) ──
         self._project_dock = ProjectDock(self)
         self._properties_dock = PropertiesDock(simple_elastix_available, self)
         self._status_dock = StatusDock(log_emitter, self)
         self._layer_controls_dock: LayerControlsDock | None = None
         self._slide_preview_dock = SlidePreviewDock(self)
 
-        self.addDockWidget(QtCore.Qt.DockWidgetArea.LeftDockWidgetArea, self._project_dock)
-        self.addDockWidget(
-            QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self._properties_dock
-        )
-        self.addDockWidget(
-            QtCore.Qt.DockWidgetArea.BottomDockWidgetArea, self._status_dock
-        )
-        self.addDockWidget(
-            QtCore.Qt.DockWidgetArea.LeftDockWidgetArea, self._slide_preview_dock
-        )
-        self.tabifyDockWidget(self._project_dock, self._slide_preview_dock)
+        # ── Build splitter-based layout ──────────────────────────────
+        self._build_splitter_layout()
 
-        self.setCentralWidget(self._build_central_widget())
         self._build_actions()
         self._setup_keyboard_shortcuts()
         self._setup_status_bar()
         self._restore_window_state()
-        
+        self._restore_splitter_state()
+
         # Enable drag and drop
         self.setAcceptDrops(True)
+
+    # ── Splitter layout construction ─────────────────────────────
+
+    def _build_splitter_layout(self) -> None:
+        """Replace dock-widget layout with nested ``QSplitter`` widgets."""
+
+        # -- left panel: tabbed Project + Slide Preview ---------------
+        self._left_tabs = QtWidgets.QTabWidget()
+        self._left_tabs.setObjectName("LeftPanelTabs")
+
+        left_project_scroll = self._wrap_in_scroll_area(
+            self._project_dock.widget()
+        )
+        left_preview_scroll = self._wrap_in_scroll_area(
+            self._slide_preview_dock.widget()
+        )
+        self._left_tabs.addTab(left_project_scroll, "Project")
+        self._left_tabs.addTab(left_preview_scroll, "Slide Preview")
+
+        left_panel = QtWidgets.QFrame()
+        left_panel.setObjectName("LeftPanel")
+        left_panel.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        left_layout = QtWidgets.QVBoxLayout(left_panel)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(0)
+        left_layout.addWidget(self._left_tabs)
+        left_panel.setMinimumWidth(LEFT_SIDEBAR_MIN)
+        left_panel.setMaximumWidth(LEFT_SIDEBAR_MAX)
+        left_panel.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
+
+        # -- canvas (centre) ------------------------------------------
+        canvas_widget = self._build_central_widget()
+        canvas_panel = QtWidgets.QFrame()
+        canvas_panel.setObjectName("CanvasPanel")
+        canvas_panel.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        canvas_layout = QtWidgets.QVBoxLayout(canvas_panel)
+        canvas_layout.setContentsMargins(0, 0, 0, 0)
+        canvas_layout.setSpacing(0)
+        canvas_layout.addWidget(canvas_widget)
+        canvas_panel.setMinimumSize(CANVAS_MIN_W, CANVAS_MIN_H)
+        canvas_panel.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
+
+        # -- right panel: tabbed Properties + Layers ------------------
+        self._right_tabs = QtWidgets.QTabWidget()
+        self._right_tabs.setObjectName("RightPanelTabs")
+
+        right_props_scroll = self._wrap_in_scroll_area(
+            self._properties_dock.widget()
+        )
+        self._right_tabs.addTab(right_props_scroll, "Properties")
+        # Layer controls tab is added when napari is ready (see
+        # _build_central_widget).  A placeholder is stored so it can be
+        # inserted after initialisation.
+
+        right_panel = QtWidgets.QFrame()
+        right_panel.setObjectName("RightPanel")
+        right_panel.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        right_layout = QtWidgets.QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_layout.setSpacing(0)
+        right_layout.addWidget(self._right_tabs)
+        right_panel.setMinimumWidth(RIGHT_SIDEBAR_MIN)
+        right_panel.setMaximumWidth(RIGHT_SIDEBAR_MAX)
+        right_panel.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
+
+        # -- horizontal top splitter: left | canvas | right -----------
+        self._top_splitter = GripSplitter(QtCore.Qt.Orientation.Horizontal)
+        self._top_splitter.setObjectName("TopSplitter")
+        self._top_splitter.setHandleWidth(SPLITTER_HANDLE_W)
+        self._top_splitter.setChildrenCollapsible(False)
+
+        self._top_splitter.addWidget(left_panel)
+        self._top_splitter.addWidget(canvas_panel)
+        self._top_splitter.addWidget(right_panel)
+
+        # Only the canvas absorbs extra space
+        self._top_splitter.setStretchFactor(0, 0)
+        self._top_splitter.setStretchFactor(1, 1)
+        self._top_splitter.setStretchFactor(2, 0)
+
+        for idx in range(self._top_splitter.count()):
+            self._top_splitter.setCollapsible(idx, False)
+
+        # -- bottom status panel --------------------------------------
+        status_content = self._status_dock.widget()
+        status_panel = QtWidgets.QFrame()
+        status_panel.setObjectName("StatusPanel")
+        status_panel.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        status_layout = QtWidgets.QVBoxLayout(status_panel)
+        status_layout.setContentsMargins(0, 0, 0, 0)
+        status_layout.setSpacing(0)
+        status_layout.addWidget(status_content)
+        status_panel.setMinimumHeight(TIMELINE_MIN_H)
+        status_panel.setMaximumHeight(TIMELINE_MAX_H)
+
+        # -- outer vertical splitter: top | status --------------------
+        self._outer_splitter = GripSplitter(QtCore.Qt.Orientation.Vertical)
+        self._outer_splitter.setObjectName("OuterSplitter")
+        self._outer_splitter.setHandleWidth(SPLITTER_HANDLE_W)
+        self._outer_splitter.setChildrenCollapsible(False)
+
+        self._outer_splitter.addWidget(self._top_splitter)
+        self._outer_splitter.addWidget(status_panel)
+
+        # Top area absorbs extra vertical space
+        self._outer_splitter.setStretchFactor(0, 1)
+        self._outer_splitter.setStretchFactor(1, 0)
+
+        for idx in range(self._outer_splitter.count()):
+            self._outer_splitter.setCollapsible(idx, False)
+
+        # -- initial sizes --------------------------------------------
+        canvas_init = max(
+            CANVAS_MIN_W, self.width() - LEFT_SIDEBAR_INIT - RIGHT_SIDEBAR_INIT - 2 * SPLITTER_HANDLE_W
+        )
+        self._top_splitter.setSizes(
+            [LEFT_SIDEBAR_INIT, canvas_init, RIGHT_SIDEBAR_INIT]
+        )
+        main_area_h = max(CANVAS_MIN_H, self.height() - TIMELINE_INIT_H - SPLITTER_HANDLE_W)
+        self._outer_splitter.setSizes([main_area_h, TIMELINE_INIT_H])
+
+        # -- connect splitter-moved to auto-persist -------------------
+        self._top_splitter.splitterMoved.connect(
+            lambda: persist_splitter_state(self._top_splitter, _KEY_TOP_SPLITTER)
+        )
+        self._outer_splitter.splitterMoved.connect(
+            lambda: persist_splitter_state(self._outer_splitter, _KEY_OUTER_SPLITTER)
+        )
+
+        # -- set as central widget ------------------------------------
+        self.setCentralWidget(self._outer_splitter)
+
+        # Keep panel references for programmatic helpers
+        self._left_panel = left_panel
+        self._canvas_panel = canvas_panel
+        self._right_panel = right_panel
+        self._status_panel = status_panel
+
+    # ── Scroll-area wrapper ──────────────────────────────────────
+
+    @staticmethod
+    def _wrap_in_scroll_area(widget: QtWidgets.QWidget) -> QtWidgets.QScrollArea:
+        """Wrap *widget* in a ``QScrollArea`` with ``widgetResizable``."""
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        scroll.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        scroll.setWidget(widget)
+        scroll.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+        return scroll
 
     def _build_central_widget(self) -> QtWidgets.QWidget:
         napari_spec = importlib.util.find_spec("napari")
@@ -85,13 +269,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self._viewer = napari_module.Viewer(show=False)
             self._napari_available = True
             logger.info("Napari viewer initialized successfully")
-            
-            # Add layer controls dock for napari
+
+            # Add layer controls as a tab in the right panel
             self._layer_controls_dock = LayerControlsDock(self._viewer, self)
-            self.addDockWidget(
-                QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self._layer_controls_dock
-            )
-            self.tabifyDockWidget(self._properties_dock, self._layer_controls_dock)
+            layer_widget = self._layer_controls_dock.widget()
+            if layer_widget is not None:
+                layer_scroll = self._wrap_in_scroll_area(layer_widget)
+                self._right_tabs.addTab(layer_scroll, "Layers")
         except Exception:
             logger.exception("Failed to start napari viewer")
             return self._napari_unavailable_widget()
@@ -166,6 +350,34 @@ class MainWindow(QtWidgets.QMainWindow):
         preferences_action.triggered.connect(self._show_preferences)
         file_menu.addAction(preferences_action)
 
+        # ── View menu ────────────────────────────────────────────────
+        view_menu = self.menuBar().addMenu("View")
+
+        reset_layout_action = QtGui.QAction("Reset Layout", self)
+        reset_layout_action.setShortcut("Ctrl+Shift+L")
+        reset_layout_action.setToolTip("Reset all panels to their default sizes")
+        reset_layout_action.triggered.connect(self.reset_layout)
+        view_menu.addAction(reset_layout_action)
+
+        toggle_left_action = QtGui.QAction("Toggle Left Sidebar", self)
+        toggle_left_action.setShortcut("Ctrl+[")
+        toggle_left_action.triggered.connect(self.toggle_left_sidebar)
+        view_menu.addAction(toggle_left_action)
+
+        toggle_right_action = QtGui.QAction("Toggle Right Sidebar", self)
+        toggle_right_action.setShortcut("Ctrl+]")
+        toggle_right_action.triggered.connect(self.toggle_right_sidebar)
+        view_menu.addAction(toggle_right_action)
+
+        expand_center_action = QtGui.QAction("Expand Center", self)
+        expand_center_action.setShortcut("Ctrl+Shift+C")
+        expand_center_action.triggered.connect(self.expand_center)
+        view_menu.addAction(expand_center_action)
+
+        fit_content_action = QtGui.QAction("Fit to Content", self)
+        fit_content_action.triggered.connect(self.fit_to_content)
+        view_menu.addAction(fit_content_action)
+
         tools_menu = self.menuBar().addMenu("Tools")
         
         blink_action = QtGui.QAction("Blink", self)
@@ -199,6 +411,17 @@ class MainWindow(QtWidgets.QMainWindow):
         merge_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogListView))
         merge_action.triggered.connect(self._merge_slides)
         tools_menu.addAction(merge_action)
+
+        # Store result-dependent actions for contextual enable/disable
+        self._result_actions: list[QtGui.QAction] = [
+            blink_action,
+            plot_action,
+            quality_action,
+            warp_action,
+            save_options_action,
+            merge_action,
+        ]
+        self._update_tools_enabled()
 
         # Help menu
         help_menu = self.menuBar().addMenu("Help")
@@ -246,6 +469,19 @@ class MainWindow(QtWidgets.QMainWindow):
         # View shortcuts
         blink_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+B"), self)
         blink_shortcut.activated.connect(self._blink)
+        
+        # Layout shortcuts
+        reset_layout_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Shift+L"), self)
+        reset_layout_shortcut.activated.connect(self.reset_layout)
+        
+        toggle_left_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+["), self)
+        toggle_left_shortcut.activated.connect(self.toggle_left_sidebar)
+        
+        toggle_right_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+]"), self)
+        toggle_right_shortcut.activated.connect(self.toggle_right_sidebar)
+        
+        expand_center_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Shift+C"), self)
+        expand_center_shortcut.activated.connect(self.expand_center)
         
         # General shortcuts
         quit_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Q"), self)
@@ -425,6 +661,7 @@ class MainWindow(QtWidgets.QMainWindow):
         logger.info("Registration completed")
         self._status_dock.set_progress(100)
         self._last_result = result
+        self._update_tools_enabled()
         self._load_registered_layers(result)
         self._status_bar.showMessage("Registration completed successfully", 5000)
         QtWidgets.QMessageBox.information(
@@ -511,8 +748,9 @@ class MainWindow(QtWidgets.QMainWindow):
         """Handle window close event with proper resource cleanup."""
         logger.info("Closing main window - initiating cleanup")
         
-        # Save window state
+        # Save window state and splitter layout
         self._save_window_state()
+        self._save_splitter_state()
         
         # Stop and cleanup worker thread if running
         if self._worker_thread and self._worker_thread.isRunning():
@@ -564,6 +802,97 @@ class MainWindow(QtWidgets.QMainWindow):
         if window_state:
             self.restoreState(window_state)
             logger.debug("Window state restored")
+
+    # ── Splitter persistence ─────────────────────────────────────
+
+    def _save_splitter_state(self) -> None:
+        """Persist both splitter size lists to QSettings."""
+        persist_splitter_state(self._top_splitter, _KEY_TOP_SPLITTER)
+        persist_splitter_state(self._outer_splitter, _KEY_OUTER_SPLITTER)
+        logger.debug("Splitter state saved")
+
+    def _restore_splitter_state(self) -> None:
+        """Restore splitter sizes from QSettings, falling back to defaults."""
+        canvas_init = max(
+            CANVAS_MIN_W,
+            self.width() - LEFT_SIDEBAR_INIT - RIGHT_SIDEBAR_INIT - 2 * SPLITTER_HANDLE_W,
+        )
+        restore_splitter_state(
+            self._top_splitter,
+            _KEY_TOP_SPLITTER,
+            default_sizes=[LEFT_SIDEBAR_INIT, canvas_init, RIGHT_SIDEBAR_INIT],
+        )
+        main_area_h = max(
+            CANVAS_MIN_H,
+            self.height() - TIMELINE_INIT_H - SPLITTER_HANDLE_W,
+        )
+        restore_splitter_state(
+            self._outer_splitter,
+            _KEY_OUTER_SPLITTER,
+            default_sizes=[main_area_h, TIMELINE_INIT_H],
+        )
+
+    # ── Programmatic layout helpers ──────────────────────────────
+
+    def _update_tools_enabled(self) -> None:
+        """Enable/disable Tools menu actions based on whether results exist."""
+        has_result = self._last_result is not None
+        for action in getattr(self, "_result_actions", []):
+            action.setEnabled(has_result)
+
+    def reset_layout(self) -> None:
+        """Reset splitters to default sizes."""
+        canvas_init = max(
+            CANVAS_MIN_W,
+            self.width() - LEFT_SIDEBAR_INIT - RIGHT_SIDEBAR_INIT - 2 * SPLITTER_HANDLE_W,
+        )
+        self._top_splitter.setSizes(
+            [LEFT_SIDEBAR_INIT, canvas_init, RIGHT_SIDEBAR_INIT]
+        )
+        main_area_h = max(
+            CANVAS_MIN_H,
+            self.height() - TIMELINE_INIT_H - SPLITTER_HANDLE_W,
+        )
+        self._outer_splitter.setSizes([main_area_h, TIMELINE_INIT_H])
+
+        # Clear persisted state so next launch also uses defaults
+        clear_splitter_state(_KEY_TOP_SPLITTER)
+        clear_splitter_state(_KEY_OUTER_SPLITTER)
+        logger.info("Layout reset to defaults")
+        self._status_bar.showMessage("Layout reset to defaults", 3000)
+
+    def toggle_left_sidebar(self) -> None:
+        """Collapse or restore the left sidebar."""
+        sizes = self._top_splitter.sizes()
+        if sizes[0] > LEFT_SIDEBAR_MIN:
+            collapse_panel(self._top_splitter, 0, LEFT_SIDEBAR_MIN)
+        else:
+            sizes[0] = LEFT_SIDEBAR_INIT
+            sizes[1] = max(CANVAS_MIN_W, sizes[1] - (LEFT_SIDEBAR_INIT - sizes[0]))
+            self._top_splitter.setSizes(sizes)
+
+    def toggle_right_sidebar(self) -> None:
+        """Collapse or restore the right sidebar."""
+        sizes = self._top_splitter.sizes()
+        if sizes[2] > RIGHT_SIDEBAR_MIN:
+            collapse_panel(self._top_splitter, 2, RIGHT_SIDEBAR_MIN)
+        else:
+            sizes[2] = RIGHT_SIDEBAR_INIT
+            sizes[1] = max(CANVAS_MIN_W, sizes[1] - (RIGHT_SIDEBAR_INIT - sizes[2]))
+            self._top_splitter.setSizes(sizes)
+
+    def expand_center(self) -> None:
+        """Minimise both sidebars so the canvas gets maximum space."""
+        total = sum(self._top_splitter.sizes())
+        center = total - LEFT_SIDEBAR_MIN - RIGHT_SIDEBAR_MIN
+        self._top_splitter.setSizes([LEFT_SIDEBAR_MIN, center, RIGHT_SIDEBAR_MIN])
+        logger.debug("Center panel expanded")
+
+    def fit_to_content(self) -> None:
+        """Resize timeline to its preferred height."""
+        self._outer_splitter.setSizes(
+            [self.height() - TIMELINE_INIT_H - SPLITTER_HANDLE_W, TIMELINE_INIT_H]
+        )
 
     def _open_user_manual(self) -> None:
         """Open the user manual in default browser."""

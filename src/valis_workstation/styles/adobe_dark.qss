@@ -568,19 +568,57 @@ QMessageBox QLabel {
 
 /* ---- Splitter ---------------------------------------------- */
 QSplitter::handle {
-    background-color: #3a3a3a;
+    background-color: #2a2a2a;
+    spacing: 0px;
 }
 
 QSplitter::handle:hover {
+    background-color: #3e3e3e;
+}
+
+QSplitter::handle:pressed {
     background-color: #2d7aed;
 }
 
 QSplitter::handle:horizontal {
-    width: 2px;
+    width: 6px;
+    margin: 0px;
+    border-left: 1px solid #3a3a3a;
+    border-right: 1px solid #3a3a3a;
+    /* grip dots drawn by SplitterHandle.paintEvent */
 }
 
 QSplitter::handle:vertical {
-    height: 2px;
+    height: 6px;
+    margin: 0px;
+    border-top: 1px solid #3a3a3a;
+    border-bottom: 1px solid #3a3a3a;
+}
+
+/* Panel frames inside splitters */
+#LeftPanel, #RightPanel, #CanvasPanel, #StatusPanel {
+    background-color: #232323;
+    border: none;
+}
+
+#LeftPanelTabs, #RightPanelTabs {
+    background-color: #232323;
+}
+
+/* ---- Text overflow ----------------------------------------- */
+QListWidget::item {
+    /* Prevent long slide names from pushing layout */
+    padding: 4px 8px;
+}
+
+QComboBox {
+    /* Already has padding; just ensure it clips */
+    min-width: 60px;
+}
+
+/* Contextual disabled state for Tools menu */
+QMenu::item:disabled {
+    color: #666666;
 }
 
 /* ---- Labels ------------------------------------------------ */
@@ -596,6 +634,16 @@ QLabel:disabled {
 /* ---- Form Layout Labels ------------------------------------ */
 QFormLayout QLabel {
     font-weight: 500;
-    min-width: 120px;
+    min-width: 100px;
+    max-width: 160px;
     padding-right: 8px;
+}
+
+/* ---- Sidebar Section Headers ------------------------------- */
+.SidebarHeader {
+    font-weight: 600;
+    font-size: 12px;
+    color: #999999;
+    padding: 4px 8px 2px 8px;
+    text-transform: uppercase;
 }

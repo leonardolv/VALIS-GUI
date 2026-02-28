@@ -4,6 +4,8 @@ from pathlib import Path
 
 from PySide6 import QtCore, QtWidgets
 
+from valis_workstation.layout_constants import GRID_SPACING
+
 
 class ProjectDock(QtWidgets.QDockWidget):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
@@ -14,6 +16,8 @@ class ProjectDock(QtWidgets.QDockWidget):
         self._list.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
         self._list.setDefaultDropAction(QtCore.Qt.MoveAction)
         self._list.setAlternatingRowColors(True)
+        # Elide long slide names with "..." instead of pushing layout
+        self._list.setTextElideMode(QtCore.Qt.TextElideMode.ElideRight)
 
         # Clear all button
         self._clear_button = QtWidgets.QPushButton("Clear All")
@@ -22,6 +26,8 @@ class ProjectDock(QtWidgets.QDockWidget):
 
         container = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(container)
+        layout.setContentsMargins(GRID_SPACING, GRID_SPACING, GRID_SPACING, GRID_SPACING)
+        layout.setSpacing(GRID_SPACING)
         layout.addWidget(self._list)
         layout.addWidget(self._clear_button)
         self.setWidget(container)
@@ -33,6 +39,7 @@ class ProjectDock(QtWidgets.QDockWidget):
         for slide in slides:
             item = QtWidgets.QListWidgetItem(slide.name)
             item.setData(QtCore.Qt.ItemDataRole.UserRole, str(slide))
+            item.setToolTip(str(slide))  # Full path on hover
             self._list.addItem(item)
         self._update_title()
 
