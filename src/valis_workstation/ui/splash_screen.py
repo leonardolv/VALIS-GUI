@@ -7,20 +7,15 @@ slide scanning or thumbnail generation.
 """
 from __future__ import annotations
 
-import math
-from typing import Optional
-
 from PySide6 import QtCore, QtGui, QtWidgets
+
+import valis_workstation as _pkg
 
 
 # ── Colour palette (matches adobe_dark.qss) ─────────────────────
-_BG          = QtGui.QColor("#1e1e1e")
-_BG_CARD     = QtGui.QColor(35, 35, 35, 230)
-_ACCENT      = QtGui.QColor("#2d7aed")
-_ACCENT_DIM  = QtGui.QColor("#2d7aed")
-_TEXT         = QtGui.QColor("#e8e8e8")
-_TEXT_DIM     = QtGui.QColor("#888888")
-_TRACK       = QtGui.QColor("#3a3a3a")
+_BG     = QtGui.QColor("#1e1e1e")
+_ACCENT = QtGui.QColor("#2d7aed")
+_TRACK  = QtGui.QColor("#3a3a3a")
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -31,8 +26,8 @@ class _Spinner(QtWidgets.QWidget):
 
     def __init__(self, size: int = 48, parent: QtWidgets.QWidget | None = None):
         super().__init__(parent)
-        self._size = size
-        self._angle = 0
+        self._size: int = size
+        self._angle: int = 0
         self._timer = QtCore.QTimeLine(1000)
         self._timer.setFrameRange(0, 360)
         self._timer.setLoopCount(0)  # infinite
@@ -79,6 +74,7 @@ class SplashScreen(QtWidgets.QWidget):
 
     def __init__(self, parent: QtWidgets.QWidget | None = None):
         super().__init__(parent)
+        self._finished: bool = False
         self.setWindowFlags(
             QtCore.Qt.WindowType.FramelessWindowHint
             | QtCore.Qt.WindowType.WindowStaysOnTopHint
@@ -142,8 +138,8 @@ class SplashScreen(QtWidgets.QWidget):
 
         layout.addStretch()
 
-        # Version label at bottom
-        ver = QtWidgets.QLabel("v1.2")
+        # Version label at bottom (read from package)
+        ver = QtWidgets.QLabel(f"v{_pkg.__version__}")
         ver.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         ver.setStyleSheet("font-size: 10px; color: #555555; background: transparent;")
         layout.addWidget(ver)
@@ -170,9 +166,12 @@ class SplashScreen(QtWidgets.QWidget):
 
     def finish(self, main_window: QtWidgets.QWidget) -> None:
         """Fade out and close; then show the main window."""
+        if self._finished:
+            return
+        self._finished = True
         self._spinner.stop()
         # Quick fade-out animation
-        self._fade = QtCore.QPropertyAnimation(self, b"windowOpacity")
+        self._fade: QtCore.QPropertyAnimation = QtCore.QPropertyAnimation(self, b"windowOpacity")
         self._fade.setDuration(350)
         self._fade.setStartValue(1.0)
         self._fade.setEndValue(0.0)
@@ -214,6 +213,7 @@ class LoadingOverlay(QtWidgets.QWidget):
         message: str = "Please wait…",
     ):
         super().__init__(parent)
+        self._dismissed: bool = False
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
         self.setStyleSheet("background: transparent;")
 
@@ -264,8 +264,11 @@ class LoadingOverlay(QtWidgets.QWidget):
         self._label.setText(text)
 
     def dismiss(self) -> None:
+        if self._dismissed:
+            return
+        self._dismissed = True
         self._spinner.stop()
-        self._fade = QtCore.QPropertyAnimation(self, b"windowOpacity")
+        self._fade: QtCore.QPropertyAnimation = QtCore.QPropertyAnimation(self, b"windowOpacity")
         self._fade.setDuration(200)
         self._fade.setStartValue(1.0)
         self._fade.setEndValue(0.0)
@@ -285,5 +288,6 @@ class LoadingOverlay(QtWidgets.QWidget):
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:  # noqa: N802
         super().resizeEvent(event)
         # Keep overlay filling parent
-        if self.parent():
-            self.setGeometry(self.parent().rect())
+        parent = self.parentWidget()
+        if parent is not None:
+            self.setGeometry(parent.rect())
