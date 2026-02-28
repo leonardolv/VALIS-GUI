@@ -525,9 +525,9 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 
 <div class="step"><span class="step-num">2</span><div class="step-body"><strong>Open a slide folder</strong> — <strong>File → Open Slide Folder</strong> (<span class="kbd">Ctrl+O</span>) or drag a folder onto the window.</div></div>
 
-<div class="step"><span class="step-num">3</span><div class="step-body"><strong>Review your slides</strong> — Thumbnails appear in the <strong>Slide Preview</strong> dock. Hover over each for metadata.</div></div>
+<div class="step"><span class="step-num">3</span><div class="step-body"><strong>Review your slides</strong> — Thumbnails appear in the <strong>Slide Preview</strong> panel. Hover over each for metadata.</div></div>
 
-<div class="step"><span class="step-num">4</span><div class="step-body"><strong>Check settings</strong> — The <strong>Properties</strong> dock on the right shows all options. For beginners, the defaults are excellent:
+<div class="step"><span class="step-num">4</span><div class="step-body"><strong>Check settings</strong> — The <strong>Properties</strong> panel on the right shows all options. For beginners, the defaults are excellent:
 <ul>
   <li>Feature Detector: <strong>VGG</strong> (works on all tissue types)</li>
   <li>Rigid + Non-rigid: <strong>both enabled</strong></li>
@@ -536,9 +536,9 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 
 <div class="step"><span class="step-num">5</span><div class="step-body"><strong>Run registration</strong> — Press <span class="kbd">Ctrl+R</span>. Review the confirmation dialog, then click <strong>Start Registration</strong>.</div></div>
 
-<div class="step"><span class="step-num">6</span><div class="step-body"><strong>Monitor progress</strong> — Watch the progress bar and logs in the <strong>Status</strong> dock. You can cancel anytime.</div></div>
+<div class="step"><span class="step-num">6</span><div class="step-body"><strong>Monitor progress</strong> — Watch the progress bar and logs in the <strong>Status</strong> panel. You can cancel anytime.</div></div>
 
-<div class="step"><span class="step-num">7</span><div class="step-body"><strong>Explore results</strong> — Registered slides load into the Napari viewer. Toggle visibility, opacity, and colormaps in the <strong>Layers</strong> dock.</div></div>
+<div class="step"><span class="step-num">7</span><div class="step-body"><strong>Explore results</strong> — Registered slides load into the Napari viewer. Toggle visibility, opacity, and colormaps in the <strong>Layers</strong> panel.</div></div>
 
 <div class="step"><span class="step-num">8</span><div class="step-body"><strong>Check quality</strong> — Use <strong>Tools → Quality Report</strong> to see error metrics, or <strong>Tools → Blink Compare</strong> (<span class="kbd">Ctrl+B</span>) for visual comparison.</div></div>
 
@@ -560,7 +560,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 <span class="section-anchor" id="ui-tour"></span>
 <h2>5 — Interface Tour</h2>
 <hr>
-<p>The interface is organized into five dockable panels around a central viewer.</p>
+<p>The interface uses a <strong>nested resizable splitter layout</strong> with five panels around a central viewer. Panels are separated by <strong>grip handles</strong> &mdash; visible dotted bars that highlight on hover &mdash; which you can drag to resize any panel.</p>
 
 <div class="diagram">
 <svg viewBox="0 0 820 510" xmlns="http://www.w3.org/2000/svg" style="max-width:800px" aria-label="Main window layout">
@@ -578,8 +578,9 @@ pip install -r requirements.txt && pip install -e .</code></pre>
   <!-- Menu bar -->
   <rect x="10" y="40" width="800" height="22" fill="#141926"/>
   <text x="26" y="55" fill="#94a3b8" font-size="10">File</text>
-  <text x="62" y="55" fill="#94a3b8" font-size="10">Tools</text>
-  <text x="104" y="55" fill="#94a3b8" font-size="10">Help</text>
+  <text x="55" y="55" fill="#94a3b8" font-size="10">View</text>
+  <text x="88" y="55" fill="#94a3b8" font-size="10">Tools</text>
+  <text x="130" y="55" fill="#94a3b8" font-size="10">Help</text>
   <!-- Project Dock -->
   <rect x="16" y="66" width="168" height="196" rx="5" fill="#111827" stroke="#1e3a5f" stroke-width="1.2"/>
   <rect x="16" y="66" width="168" height="22" rx="5" fill="#1e3a5f"/>
@@ -657,7 +658,18 @@ pip install -r requirements.txt && pip install -e .</code></pre>
   </table>
 </div>
 <div class="ui-col">
+  <h4>View</h4>
+  <table>
+    <tr><td>Reset Layout</td><td><span class="kbd">Ctrl+Shift+L</span></td></tr>
+    <tr><td>Toggle Left Sidebar</td><td><span class="kbd">Ctrl+[</span></td></tr>
+    <tr><td>Toggle Right Sidebar</td><td><span class="kbd">Ctrl+]</span></td></tr>
+    <tr><td>Expand Center</td><td><span class="kbd">Ctrl+Shift+C</span></td></tr>
+    <tr><td>Fit to Content</td><td></td></tr>
+  </table>
+</div>
+<div class="ui-col">
   <h4>Tools</h4>
+  <p style="font-size:0.85em;color:#94a3b8;margin:0 0 6px">Post-registration tools are disabled until results exist.</p>
   <table>
     <tr><td>Blink Compare</td><td><span class="kbd">Ctrl+B</span></td></tr>
     <tr><td>Analysis Plot</td><td></td></tr>
@@ -685,15 +697,26 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 <h4>File Menu (Project Lifecycle)</h4>
 <table>
   <tr><th>Task</th><th>Where</th><th>How</th><th>Result</th></tr>
-  <tr><td>Open slides</td><td>File -&gt; Open Slide Folder</td><td>Select a directory with slide files (or press <span class="kbd">Ctrl+O</span>)</td><td>Slides load into Project + Slide Preview docks</td></tr>
+  <tr><td>Open slides</td><td>File -&gt; Open Slide Folder</td><td>Select a directory with slide files (or press <span class="kbd">Ctrl+O</span>)</td><td>Slides load into Project + Slide Preview panels</td></tr>
   <tr><td>Load recent project folder</td><td>File -&gt; Recent Folders</td><td>Pick one of up to 10 recent entries</td><td>Folder is rescanned and loaded</td></tr>
   <tr><td>Save settings profile</td><td>File -&gt; Save Configuration</td><td>Choose destination JSON file</td><td>Current Properties values exported</td></tr>
-  <tr><td>Load settings profile</td><td>File -&gt; Load Configuration</td><td>Select a previously saved JSON file</td><td>Properties dock updates to saved values</td></tr>
+  <tr><td>Load settings profile</td><td>File -&gt; Load Configuration</td><td>Select a previously saved JSON file</td><td>Properties panel updates to saved values</td></tr>
   <tr><td>Run registration</td><td>File -&gt; Run Registration</td><td>Review confirmation dialog and proceed (<span class="kbd">Ctrl+R</span>)</td><td>Worker starts, progress/logs update, outputs written</td></tr>
   <tr><td>Open Preferences</td><td>File -&gt; Preferences</td><td>Adjust cache/performance/UI options (<span class="kbd">Ctrl+,</span>)</td><td>Settings persisted via QSettings</td></tr>
 </table>
 
+<h4 style="margin-top:14px">View Menu (Layout Controls)</h4>
+<table>
+  <tr><th>Task</th><th>Where</th><th>How</th><th>Result</th></tr>
+  <tr><td>Reset Layout</td><td>View -&gt; Reset Layout</td><td>Restore all panels to default sizes (<span class="kbd">Ctrl+Shift+L</span>)</td><td>Sidebars and center return to initial proportions</td></tr>
+  <tr><td>Toggle Left Sidebar</td><td>View -&gt; Toggle Left Sidebar</td><td>Show/hide the Project &amp; Slide Preview panel (<span class="kbd">Ctrl+[</span>)</td><td>Left panel collapses or expands</td></tr>
+  <tr><td>Toggle Right Sidebar</td><td>View -&gt; Toggle Right Sidebar</td><td>Show/hide the Properties &amp; Layers panel (<span class="kbd">Ctrl+]</span>)</td><td>Right panel collapses or expands</td></tr>
+  <tr><td>Expand Center</td><td>View -&gt; Expand Center</td><td>Collapse both sidebars to maximize viewer (<span class="kbd">Ctrl+Shift+C</span>)</td><td>Napari viewer fills available width</td></tr>
+  <tr><td>Fit to Content</td><td>View -&gt; Fit to Content</td><td>Adjust panel sizes to match current content</td><td>Panels resize to optimal widths</td></tr>
+</table>
+
 <h4 style="margin-top:14px">Tools Menu (Post-Registration)</h4>
+<p style="font-size:0.9em;color:#94a3b8;margin:0 0 8px">Tools menu actions are <strong>contextually enabled</strong> &mdash; post-registration tools are disabled until a registration run completes successfully.</p>
 <table>
   <tr><th>Task</th><th>Where</th><th>How</th><th>Result</th></tr>
   <tr><td>Blink comparison</td><td>Tools -&gt; Blink</td><td>Select two registered slides, adjust blend, start/stop blink (<span class="kbd">Ctrl+B</span>)</td><td>Visual A/B alignment validation</td></tr>

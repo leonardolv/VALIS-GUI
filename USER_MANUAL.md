@@ -1,7 +1,7 @@
 # VALIS Workstation User Manual
 
-**Version:** 1.0  
-**Last Updated:** January 9, 2026
+**Version:** 1.2  
+**Last Updated:** February 28, 2026
 
 ---
 
@@ -123,35 +123,52 @@ When you first launch the application:
 
 ### Main Window Layout
 
-The VALIS Workstation interface consists of several panels (docks):
+The VALIS Workstation uses a **nested resizable splitter layout**. All panels can be resized by dragging the grip handles (visible dot patterns) between them.
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  File    Tools                          [Menu Bar]  │
-├──────────┬────────────────────────┬─────────────────┤
-│          │                        │                 │
-│ Project  │   Napari Viewer        │  Properties    │
-│  Dock    │   (Central Widget)     │    Dock        │
-│          │                        │  ─────────────  │
-│          │                        │  Layers Dock   │
-│          │                        │   (Tabbed)     │
-└──────────┴────────────────────────┴─────────────────┤
-│              Status Dock                            │
-│  [Progress Bar] [Log Console]                       │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│  File    View    Tools    Help                [Menu Bar] │
+├──────────┬┬───────────────────────┬┬────────────────────┤
+│ Project  ││                       ││  Properties        │
+│ ········ ││                       ││  (Tab)             │
+│ Slide    ││   Napari Viewer       ││ ──────────────────  │
+│ Preview  ││   (Central Canvas)    ││  Layers            │
+│ (Tabs)   ││                       ││  (Tab)             │
+│          ││                       ││                    │
+├──────────┴┴───────────────────────┴┴────────────────────┤
+│  ≡≡ grip handle ≡≡                                      │
+├─────────────────────────────────────────────────────────┤
+│              Status & Logs                              │
+│  [Progress Bar] [Log Console] [Cancel]                  │
+└─────────────────────────────────────────────────────────┘
+  ║║ = vertical grip handles (drag left/right to resize)
+  ≡≡ = horizontal grip handle (drag up/down to resize)
 ```
+
+> **Tip:** Grip handles display a pattern of dots when hovered, making them easy to locate. You can also use the **View** menu or keyboard shortcuts to toggle sidebars and reset layout.
 
 ### Panel Descriptions
 
-#### 1. **Project Dock** (Left Panel)
+All panels are separated by **GripSplitter** handles — custom splitter bars that display a dotted grip pattern on hover, making resize affordances clearly visible.
+
+#### 1. **Project Panel** (Left Tab)
 
 - **Purpose:** Manage slide files for registration
 - **Features:**
-  - View list of loaded slides
+  - View list of loaded slides with **truncated filenames** (full path shown on hover tooltip)
   - **Drag & drop** to reorder slides
   - Slide order determines registration sequence
+  - Consistent 6 px grid spacing throughout
 
-#### 2. **Properties Dock** (Right Panel - Top Tab)
+#### 2. **Slide Preview Panel** (Left Tab)
+
+- **Purpose:** Display thumbnail previews of loaded slides
+- **Features:**
+  - Thumbnail grid with adjustable size slider (64–256 px)
+  - Grid/List view toggle
+  - Hover for slide metadata
+
+#### 3. **Properties Panel** (Right Tab)
 
 - **Purpose:** Configure registration parameters
 - **Parameters:**
@@ -161,8 +178,9 @@ The VALIS Workstation interface consists of several panels (docks):
   - **Max image size:** Maximum dimension for processing (default: 2048 pixels)
   - **Match threshold:** Feature matching threshold (0.0-1.0, default: 0.35)
   - **Use GPU:** Enable GPU acceleration if available
+- **Sections:** Basic, Advanced, and Output (collapsible)
 
-#### 3. **Layers Dock** (Right Panel - Bottom Tab)
+#### 4. **Layers Panel** (Right Tab)
 
 - **Purpose:** Control layer visibility and appearance in Napari
 - **Controls:**
@@ -171,14 +189,15 @@ The VALIS Workstation interface consists of several panels (docks):
   - **Opacity:** Adjust layer transparency (0-100%)
   - **Colormap:** Change color scheme for grayscale layers
 
-#### 4. **Status Dock** (Bottom Panel)
+#### 5. **Status & Logs Panel** (Bottom)
 
 - **Purpose:** Monitor registration progress and view logs
 - **Components:**
   - **Progress Bar:** Shows current operation progress (0-100%)
   - **Log Console:** Real-time application logs (INFO level and above)
+  - **Cancel Button:** Stop a running registration
 
-#### 5. **Napari Viewer** (Center)
+#### 6. **Napari Viewer** (Center)
 
 - **Purpose:** Visualize slides and registered results
 - **Controls:**
@@ -187,19 +206,48 @@ The VALIS Workstation interface consists of several panels (docks):
   - **Right click:** Context menu
   - Use layer controls to adjust visibility and appearance
 
+### Resizing Panels
+
+Panels can be resized by dragging the grip handles between them:
+
+- **Vertical handles** (between left/center/right): drag left or right
+- **Horizontal handle** (between center and status): drag up or down
+- Minimum and maximum widths are enforced to prevent panels from collapsing entirely
+- Sidebar width constraints: 120–500 px (left), 150–500 px (right)
+- Center canvas minimum width: 300 px
+
 ### Menu Bar
 
 #### File Menu
 
-- **Open Slide Folder:** Load slides from a directory
-- **Run Registration:** Start the registration pipeline
+- **Open Slide Folder** (`Ctrl+O`): Load slides from a directory
+- **Recent Folders:** Reopen one of the last 10 folders
+- **Save Configuration:** Export current settings to JSON
+- **Load Configuration:** Import settings from JSON
+- **Run Registration** (`Ctrl+R`): Start the registration pipeline
+- **Preferences** (`Ctrl+,`): Adjust cache, performance, and UI options
+- **Quit** (`Ctrl+Q`): Exit the application
+
+#### View Menu
+
+The View menu provides layout controls for the resizable panel system:
+
+- **Reset Layout** (`Ctrl+Shift+L`): Restore all panels to their default sizes
+- **Toggle Left Sidebar** (`Ctrl+[`): Show or hide the left panel (Project / Slide Preview)
+- **Toggle Right Sidebar** (`Ctrl+]`): Show or hide the right panel (Properties / Layers)
+- **Expand Center** (`Ctrl+Shift+C`): Collapse both sidebars to maximize the Napari viewer
+- **Fit to Content:** Adjust panel sizes to fit their current content
 
 #### Tools Menu
 
-- **Blink:** Toggle between registered slides for comparison
-- **Analysis Plot:** View registration error metrics
-- **Quality Report:** Detailed quality assessment table
-- **Warp Annotations:** Transfer annotations between slides
+Tools menu actions are **contextually enabled** — post-registration tools (Blink, Analysis Plot, Quality Report, Warp Annotations) are disabled until a registration run completes successfully.
+
+- **Blink** (`Ctrl+B`): Toggle between registered slides for visual comparison
+- **Analysis Plot:** View registration error metrics and trends
+- **Quality Report:** Detailed quality assessment table with sortable columns
+- **Warp Annotations:** Transfer GeoJSON annotations between registered slides
+- **Save Options:** Configure output format, pyramids, compression, tile size
+- **Merge Slides:** Combine registered slides into multi-channel outputs
 
 ---
 
@@ -766,6 +814,16 @@ https://doi.org/10.1038/s41467-023-40218-9
 ---
 
 ## Version History
+
+**v1.2** (February 2026)
+- Replaced dock widgets with nested GripSplitter resizable layout
+- Visible grip handles with dot patterns on hover
+- View menu with layout controls (Reset, Toggle Sidebars, Expand Center, Fit to Content)
+- Keyboard shortcuts for layout management (`Ctrl+[`, `Ctrl+]`, `Ctrl+Shift+L`, `Ctrl+Shift+C`)
+- Contextual Tools menu — post-registration actions disabled until results exist
+- Text overflow handling with ellipsis and full-path tooltips
+- Consistent 6 px grid spacing across all panels
+- Layout regression test suite (53 tests)
 
 **v1.0** (January 2026)
 - Initial release

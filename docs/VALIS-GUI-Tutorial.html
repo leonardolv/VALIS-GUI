@@ -591,7 +591,8 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
 
     <section id="ui-map" class="section">
       <h2>4. UI Map</h2>
-      <p>The workflow uses five areas: Project, Slide Preview, central viewer, Properties/Layers, and Status/Logs.</p>
+      <p>The interface uses a <strong>nested resizable splitter layout</strong> with five areas: Project, Slide Preview, central Napari viewer, Properties/Layers, and Status/Logs. All panels are separated by <strong>grip handles</strong> &mdash; dotted bars that highlight on hover &mdash; which you can drag to resize any panel.</p>
+      <p>The left sidebar has <strong>Project</strong> and <strong>Slide Preview</strong> tabs. The right sidebar has <strong>Properties</strong> and <strong>Layers</strong> tabs. The center holds the Napari viewer. The bottom bar shows progress and logs.</p>
       <div class="grid-2">
         <figure class="figure">
           <img src="_images/merge_ome_tiff.png" alt="Merged OME-TIFF visualization example" loading="lazy">
@@ -602,7 +603,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
           <figcaption>Annotation transfer concept used by the Warp Annotations tool.</figcaption>
         </figure>
       </div>
-      <div class="note"><strong>Keyboard shortcuts:</strong> <span class="kbd">Ctrl+O</span> open folder, <span class="kbd">Ctrl+R</span> run registration, <span class="kbd">Ctrl+B</span> Blink, <span class="kbd">Ctrl+Shift+P</span> performance stats.</div>
+      <div class="note"><strong>Layout keyboard shortcuts:</strong> <span class="kbd">Ctrl+O</span> open folder, <span class="kbd">Ctrl+R</span> run registration, <span class="kbd">Ctrl+B</span> Blink, <span class="kbd">Ctrl+Shift+P</span> performance stats, <span class="kbd">Ctrl+[</span> toggle left sidebar, <span class="kbd">Ctrl+]</span> toggle right sidebar, <span class="kbd">Ctrl+Shift+L</span> reset layout, <span class="kbd">Ctrl+Shift+C</span> expand center panel.</div>
     </section>
 
     <section id="first-run" class="section">
@@ -698,6 +699,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
       </table>
 
       <h3>Tools Menu</h3>
+      <div class="note"><strong>Contextual actions:</strong> Post-registration tools (Blink, Analysis Plot, Quality Report, Warp Annotations) are <strong>disabled</strong> until a registration run completes. They become active automatically when results are available.</div>
       <table class="preflight">
         <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
         <tr><td>Blink</td><td><code>Tools -&gt; Blink</code> / <span class="kbd">Ctrl+B</span></td><td>Pick Slide A/B, blend or auto-blink.</td><td>Fast visual detection of local drift/misalignment.</td></tr>
@@ -706,6 +708,16 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
         <tr><td>Warp Annotations</td><td><code>Tools -&gt; Warp Annotations</code></td><td>Provide GeoJSON + source slide + output folder.</td><td>One warped GeoJSON for each target slide.</td></tr>
         <tr><td>Save Options</td><td><code>Tools -&gt; Save Options...</code></td><td>Set format, pyramids, compression, tile size, quality.</td><td>Output settings updated in Properties dock.</td></tr>
         <tr><td>Merge Slides</td><td><code>Tools -&gt; Merge Slides...</code></td><td>Map channels, set colors, overlap strategy, normalize.</td><td>Merged multi-channel output created.</td></tr>
+      </table>
+
+      <h3>View Menu (Layout Controls)</h3>
+      <table class="preflight">
+        <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
+        <tr><td>Reset Layout</td><td><code>View -&gt; Reset Layout</code> / <span class="kbd">Ctrl+Shift+L</span></td><td>Restore all panels to default sizes.</td><td>Sidebars and center return to initial proportions.</td></tr>
+        <tr><td>Toggle Left Sidebar</td><td><code>View -&gt; Toggle Left Sidebar</code> / <span class="kbd">Ctrl+[</span></td><td>Show or hide the Project/Slide Preview panel.</td><td>Left panel collapses or expands.</td></tr>
+        <tr><td>Toggle Right Sidebar</td><td><code>View -&gt; Toggle Right Sidebar</code> / <span class="kbd">Ctrl+]</span></td><td>Show or hide the Properties/Layers panel.</td><td>Right panel collapses or expands.</td></tr>
+        <tr><td>Expand Center</td><td><code>View -&gt; Expand Center</code> / <span class="kbd">Ctrl+Shift+C</span></td><td>Collapse both sidebars to maximize the viewer.</td><td>Napari viewer fills the available width.</td></tr>
+        <tr><td>Fit to Content</td><td><code>View -&gt; Fit to Content</code></td><td>Adjust panel sizes to match their content.</td><td>Panels resize to their optimal widths.</td></tr>
       </table>
 
       <h3>Help Menu + Utility Actions</h3>

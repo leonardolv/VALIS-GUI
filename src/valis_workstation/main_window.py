@@ -127,6 +127,10 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QSizePolicy.Policy.Preferred,
             QtWidgets.QSizePolicy.Policy.Expanding,
         )
+        # Prepare right tabs early so central widget can add layer controls
+        # when Napari initializes.
+        self._right_tabs = QtWidgets.QTabWidget()
+        self._right_tabs.setObjectName("RightPanelTabs")
 
         # -- canvas (centre) ------------------------------------------
         canvas_widget = self._build_central_widget()
@@ -144,9 +148,6 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         # -- right panel: tabbed Properties + Layers ------------------
-        self._right_tabs = QtWidgets.QTabWidget()
-        self._right_tabs.setObjectName("RightPanelTabs")
-
         right_props_scroll = self._wrap_in_scroll_area(
             self._properties_dock.widget()
         )
