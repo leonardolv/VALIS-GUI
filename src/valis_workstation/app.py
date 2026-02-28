@@ -9,6 +9,7 @@ from pathlib import Path
 from PySide6 import QtCore, QtWidgets
 
 from valis_workstation.main_window import MainWindow
+from valis_workstation.ui.splash_screen import SplashScreen
 from valis_workstation.utils.logging_config import setup_logging
 from valis_workstation.utils.qt_logging import QtLogEmitter, QtSignalHandler
 
@@ -88,18 +89,30 @@ def run_app(repo_root: Path) -> int:
     if stylesheet:
         app.setStyleSheet(stylesheet)
 
+    # ── Show splash screen while heavy subsystems load ───────────
+    splash = SplashScreen()
+    splash.show()
+    app.processEvents()
+
+    splash.set_status("Starting Java Virtual Machine…")
     jvm_started = _start_jvm()
 
+    splash.set_status("Checking SimpleElastix…")
     simple_elastix_available = _simple_elastix_available()
 
+    splash.set_status("Building user interface…")
     main_window = MainWindow(repo_root, log_emitter, simple_elastix_available)
-    main_window.show()
+
+    splash.set_status("Ready")
 
     def _cleanup() -> None:
         if jvm_started:
             _shutdown_jvm()
 
     app.aboutToQuit.connect(_cleanup)
+
+    # Fade out splash and show main window
+    splash.finish(main_window)
 
     try:
         return app.exec()

@@ -44,6 +44,7 @@ from valis_workstation.ui.splitter_utils import (
     persist_splitter_state,
     restore_splitter_state,
 )
+from valis_workstation.ui.splash_screen import LoadingOverlay
 from valis_workstation.ui.status_dock import StatusDock
 from valis_workstation.utils.qt_logging import QtLogEmitter
 from valis_workstation.utils.validation import validate_slides
@@ -961,6 +962,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _load_slides_from_folder(self, folder: Path) -> None:
         """Load slides from a folder path."""
+        overlay = LoadingOverlay(self, f"Scanning {folder.name}…")
+        overlay.show()
+        QtWidgets.QApplication.processEvents()
         try:
             slides = scan_slide_folder(folder)
             if slides:
@@ -972,8 +976,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._properties_dock.update_reference_slide_list(slide_names)
                 
                 # Update slide preview dock with real thumbnails (parallel loading)
+                overlay.set_message(f"Generating thumbnails for {len(slides)} slides…")
+                QtWidgets.QApplication.processEvents()
                 self._slide_preview_dock.clear()
-                self._load_thumbnails_parallel(slides)
+                self._load_thumbnails_parallel(slides, overlay)
                 
                 logger.info("Loaded %d slides from %s", len(slides), folder.name)
                 self._status_bar.showMessage(f"Loaded {len(slides)} slides from {folder.name}")
@@ -988,14 +994,18 @@ class MainWindow(QtWidgets.QMainWindow):
                 self, "Error",
                 f"Failed to load slides from {folder.name}:\n{str(e)}"
             )
+        finally:
+            overlay.dismiss()
 
-    def _load_thumbnails_parallel(self, slides: list[Path]) -> None:
+    def _load_thumbnails_parallel(self, slides: list[Path], overlay: LoadingOverlay | None = None) -> None:
         """Load thumbnails in parallel using thread pool.
         
         Parameters
         ----------
         slides : list[Path]
             List of slide file paths to generate thumbnails for
+        overlay : LoadingOverlay | None
+            Optional overlay to update with progress messages
         """
         import concurrent.futures
         from valis_workstation.services.thumbnail_generator import generate_thumbnail
@@ -1035,7 +1045,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 
                 # Update progress
                 completed += 1
-                self._status_bar.showMessage(f"Generating thumbnails: {completed}/{total_slides}")
+                msg = f"Generating thumbnails: {completed}/{total_slides}"
+                self._status_bar.showMessage(msg)
+                if overlay is not None:
+                    overlay.set_message(msg)
                 
                 # Process events to keep UI responsive
                 QtWidgets.QApplication.processEvents()
