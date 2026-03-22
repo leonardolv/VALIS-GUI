@@ -129,6 +129,7 @@ class GripSplitter(QtWidgets.QSplitter):
 
 # ── Persistence ────────────────────────────────────────────────
 
+
 def persist_splitter_state(splitter: QtWidgets.QSplitter, key: str) -> None:
     """Save *splitter* sizes to ``QSettings`` under *key*."""
     settings = _settings()
@@ -157,7 +158,9 @@ def restore_splitter_state(
                 return True
             logger.warning(
                 "Stored splitter sizes count mismatch for %s: expected %d, got %d",
-                key, splitter.count(), len(sizes),
+                key,
+                splitter.count(),
+                len(sizes),
             )
         except (TypeError, ValueError):
             logger.warning("Invalid stored splitter sizes for %s: %r", key, raw)
@@ -176,14 +179,11 @@ def clear_splitter_state(key: str) -> None:
 
 # ── Programmatic resizing ──────────────────────────────────────
 
-def set_splitter_sizes(
-    splitter: QtWidgets.QSplitter, sizes: Sequence[int]
-) -> None:
+
+def set_splitter_sizes(splitter: QtWidgets.QSplitter, sizes: Sequence[int]) -> None:
     """Set *splitter* sizes with bounds validation."""
     if len(sizes) != splitter.count():
-        raise ValueError(
-            f"Expected {splitter.count()} sizes, got {len(sizes)}"
-        )
+        raise ValueError(f"Expected {splitter.count()} sizes, got {len(sizes)}")
     splitter.setSizes(list(sizes))
 
 

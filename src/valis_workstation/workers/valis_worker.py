@@ -41,12 +41,12 @@ class ValisWorker(QtCore.QObject):
                 progress_callback=self.progress.emit,
                 cancel_check=lambda: self._cancel_requested,
             )
-            
+
             if self._cancel_requested:
                 logger.info("Registration cancelled")
                 self.cancelled.emit()
                 return
-                
+
         except Exception as exc:
             logger.exception("VALIS pipeline failed")
             self.failed.emit(str(exc))

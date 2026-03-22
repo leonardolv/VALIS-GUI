@@ -26,12 +26,14 @@ class ProjectDock(QtWidgets.QDockWidget):
 
         container = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(container)
-        layout.setContentsMargins(GRID_SPACING, GRID_SPACING, GRID_SPACING, GRID_SPACING)
+        layout.setContentsMargins(
+            GRID_SPACING, GRID_SPACING, GRID_SPACING, GRID_SPACING
+        )
         layout.setSpacing(GRID_SPACING)
         layout.addWidget(self._list)
         layout.addWidget(self._clear_button)
         self.setWidget(container)
-        
+
         self._update_title()
 
     def set_slides(self, slides: list[Path]) -> None:
@@ -54,14 +56,16 @@ class ProjectDock(QtWidgets.QDockWidget):
         """Clear all slides from the list."""
         if self._list.count() == 0:
             return
-        
+
         reply = QtWidgets.QMessageBox.question(
-            self, "Clear All Slides",
+            self,
+            "Clear All Slides",
             f"Remove all {self._list.count()} slides from the project?",
-            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
-            QtWidgets.QMessageBox.StandardButton.No
+            QtWidgets.QMessageBox.StandardButton.Yes
+            | QtWidgets.QMessageBox.StandardButton.No,
+            QtWidgets.QMessageBox.StandardButton.No,
         )
-        
+
         if reply == QtWidgets.QMessageBox.StandardButton.Yes:
             self._list.clear()
             self._update_title()

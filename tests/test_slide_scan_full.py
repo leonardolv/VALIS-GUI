@@ -1,4 +1,5 @@
 """Tests for the slide scanning service."""
+
 from __future__ import annotations
 
 from pathlib import Path

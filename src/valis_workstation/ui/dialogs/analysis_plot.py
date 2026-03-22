@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from PySide6 import QtWidgets
-
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+from PySide6 import QtWidgets
 
 from valis_workstation.services.error_metrics import summarize_error_dataframe
 

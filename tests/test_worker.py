@@ -1,4 +1,5 @@
 """Tests for ValisWorker and thread management."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -16,8 +17,12 @@ from valis_workstation.workers.valis_worker import ValisWorker
 
 
 class TestValisWorkerSignals:
-    def test_emits_finished_on_success(self, qtbot, monkeypatch, tmp_path: Path) -> None:
-        def fake_pipeline(config, slides, output_dir, progress_callback=None, cancel_check=None):
+    def test_emits_finished_on_success(
+        self, qtbot, monkeypatch, tmp_path: Path
+    ) -> None:
+        def fake_pipeline(
+            config, slides, output_dir, progress_callback=None, cancel_check=None
+        ):
             if progress_callback:
                 progress_callback(50)
                 progress_callback(100)
@@ -40,7 +45,9 @@ class TestValisWorkerSignals:
         thread.wait()
         assert blocker.args[0]["output_dir"] == str(tmp_path)
 
-    def test_emits_failed_on_exception(self, qtbot, monkeypatch, tmp_path: Path) -> None:
+    def test_emits_failed_on_exception(
+        self, qtbot, monkeypatch, tmp_path: Path
+    ) -> None:
         def failing_pipeline(*args, **kwargs):
             raise RuntimeError("Pipeline exploded")
 
@@ -67,8 +74,12 @@ class TestValisWorkerSignals:
         worker.cancel()
         assert worker._cancel_requested is True
 
-    def test_emits_cancelled_when_flag_set(self, qtbot, monkeypatch, tmp_path: Path) -> None:
-        def cancelling_pipeline(config, slides, output_dir, progress_callback=None, cancel_check=None):
+    def test_emits_cancelled_when_flag_set(
+        self, qtbot, monkeypatch, tmp_path: Path
+    ) -> None:
+        def cancelling_pipeline(
+            config, slides, output_dir, progress_callback=None, cancel_check=None
+        ):
             return {"output_dir": str(output_dir)}
 
         monkeypatch.setattr(

@@ -1,4 +1,5 @@
 """Tests for Qt/GUI components that don't require napari."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -21,6 +22,7 @@ class TestPropertiesDock:
     @pytest.fixture()
     def dock(self, qtbot):
         from valis_workstation.ui.properties_dock import PropertiesDock
+
         d = PropertiesDock(simple_elastix_available=True)
         qtbot.addWidget(d)
         return d
@@ -38,13 +40,14 @@ class TestPropertiesDock:
         assert c.project_name == "MyProject"
 
     def test_invalid_project_name_sanitised(self, dock) -> None:
-        dock._project_name.setText('Bad<>Name')
+        dock._project_name.setText("Bad<>Name")
         c = dock.config()
         assert "<" not in c.project_name
         assert ">" not in c.project_name
 
     def test_simple_elastix_unavailable_disables_non_rigid(self, qtbot) -> None:
         from valis_workstation.ui.properties_dock import PropertiesDock
+
         d = PropertiesDock(simple_elastix_available=False)
         qtbot.addWidget(d)
         assert not d._non_rigid.isEnabled()
@@ -94,6 +97,7 @@ class TestProjectDock:
     @pytest.fixture()
     def dock(self, qtbot):
         from valis_workstation.ui.project_dock import ProjectDock
+
         d = ProjectDock()
         qtbot.addWidget(d)
         return d
@@ -115,6 +119,7 @@ class TestStatusDock:
     @pytest.fixture()
     def dock(self, qtbot):
         from valis_workstation.ui.status_dock import StatusDock
+
         emitter = QtLogEmitter()
         d = StatusDock(emitter)
         qtbot.addWidget(d)
@@ -144,10 +149,12 @@ class TestWarpAnnotationsDialog:
         """Regression test: WarpAnnotationsDialog must not have a bare __init__(parent)."""
         from valis_workstation.ui.dialogs.warp_annotations import WarpAnnotationsDialog
         import inspect
+
         sig = inspect.signature(WarpAnnotationsDialog.__init__)
         params = list(sig.parameters.keys())
-        assert "registrar" in params, \
+        assert "registrar" in params, (
             "WarpAnnotationsDialog.__init__ should require 'registrar' parameter"
+        )
 
 
 # ---------- LayerControlsDock visibility toggle ----------
@@ -169,6 +176,7 @@ class TestLayerToggle:
 class TestSaveOptionsDialog:
     def test_dialog_opens(self, qtbot) -> None:
         from valis_workstation.ui.dialogs.save_options_dialog import SaveOptionsDialog
+
         d = SaveOptionsDialog()
         qtbot.addWidget(d)
         opts = d.get_options()
@@ -180,6 +188,7 @@ class TestSaveOptionsDialog:
 class TestMergeSlidesDialog:
     def test_dialog_opens(self, qtbot) -> None:
         from valis_workstation.ui.dialogs.merge_slides_dialog import MergeSlidesDialog
+
         slides = ["Slide_A", "Slide_B", "Slide_C"]
         d = MergeSlidesDialog(slides)
         qtbot.addWidget(d)
@@ -192,6 +201,7 @@ class TestConfigSaveLoad:
     def test_full_config_roundtrip(self, tmp_path: Path) -> None:
         """All Config fields must survive a save/load cycle."""
         from dataclasses import asdict
+
         original = Config(
             project_name="TestProject",
             rigid_registration=False,

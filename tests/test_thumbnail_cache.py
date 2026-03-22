@@ -1,4 +1,5 @@
 """Tests for ThumbnailCache (disk-based cache)."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -61,8 +62,9 @@ class TestThumbnailCache:
 
         # Simulate file modification by rewriting
         import os, time
+
         time.sleep(0.1)
-        dummy_slide.write_bytes(b"\xFF" * 200)
+        dummy_slide.write_bytes(b"\xff" * 200)
         # Force mtime difference > 1s
         os.utime(dummy_slide, (time.time() + 10, time.time() + 10))
 

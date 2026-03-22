@@ -23,6 +23,10 @@ VALIS Workstation is a modern, user-friendly GUI application built on top of the
 - 🎨 **Layer Management** - Control visibility, opacity, and colormaps
 - 📝 **Annotation Warping** - Transfer annotations between aligned slides
 - 🔄 **Real-time Progress** - Live logging and progress tracking
+- 🧭 **Preflight Estimation** - Input size, output size, and runtime estimate before run
+- 🧪 **Diagnostics Dialog** - Runtime/environment snapshot for troubleshooting
+- 💾 **Config Presets** - Save/load/delete reusable registration configurations
+- 📦 **Session Bundle Export** - ZIP export of run summary + logs for support/handoff
 - 💾 **OME-TIFF Output** - Industry-standard format compatible with QuPath, ImageJ, HALO, etc.
 
 ---
@@ -46,9 +50,9 @@ python run_valis_workstation.py
 ### Basic Usage
 
 1. **Open slides:** File → Open Slide Folder
-2. **Configure:** Adjust parameters in Properties panel (optional)
-3. **Register:** File → Run Registration
-4. **Review:** Use Tools menu for blink comparison, quality plots, etc.
+2. **Configure:** Use Properties panel, presets, and output profiles (optional)
+3. **Register:** File → Run Registration and confirm preflight summary
+4. **Review:** Use Tools menu for comparison, reports, export bundle, etc.
 
 **📖 [See Quick Start Guide](QUICK_START.md) for detailed walkthrough**
 
@@ -157,6 +161,7 @@ VALIS Workstation implements the full VALIS pipeline:
 - Rapidly toggle between registered slides
 - Adjustable blend opacity
 - Automatic blinking mode
+- Mode selector: Blink, Side-by-side, Swipe
 - Perfect for detecting misalignments
 
 #### Analysis Plot
@@ -176,10 +181,23 @@ VALIS Workstation implements the full VALIS pipeline:
 
 ### Layer Controls
 
+- **Search:** Filter layers by name
+- **Lock edits:** Prevent accidental value changes
+- **Solo selected:** Show only the selected layer
+- **Reset opacity:** Return all layers to full opacity
 - **Visibility:** Toggle layers on/off
 - **Opacity:** Blend multiple layers (0-100%)
 - **Colormaps:** False-color overlays (gray, viridis, red, green, blue, etc.)
 - **Auto-refresh:** Updates when layers change
+
+### Configuration and Session Tools
+
+- **Presets:** Save/load/delete named parameter sets in the Properties panel
+- **Output profiles:** `Custom`, `WSI Archive`, `Fast Review`, `Publication`
+- **Resume Last Registration:** Restart from prior run context in one action
+- **Recent folder + config linking:** Reopen known data+config pairs quickly
+- **Session bundle export:** Capture config, summary metadata, and logs to ZIP
+- **Diagnostics:** Open Help -> Diagnostics for environment/runtime summary
 
 ---
 
@@ -251,6 +269,8 @@ Logs are written to `logs/valis_workstation.log`:
 | Out of memory | Reduce max image size parameter |
 | Slow performance | Enable GPU or reduce image size |
 | JVM initialization failed | Install Java JDK/JRE |
+
+Tip: use **Help -> Diagnostics** and **Tools -> Export Session Bundle...** when preparing a bug report.
 
 **📖 [See Full Troubleshooting Guide](USER_MANUAL.md#troubleshooting)**
 

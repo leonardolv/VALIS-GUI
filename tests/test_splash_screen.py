@@ -3,6 +3,7 @@
 Covers instantiation, status/progress updates, dismiss/finish guards,
 version label, window flags, geometry, and paint robustness.
 """
+
 from __future__ import annotations
 
 import sys
@@ -24,6 +25,7 @@ import valis_workstation as _pkg
 # ---------------------------------------------------------------------------
 # _Spinner
 # ---------------------------------------------------------------------------
+
 
 class TestSpinner:
     """Tests for the animated arc spinner."""
@@ -66,6 +68,7 @@ class TestSpinner:
 # ---------------------------------------------------------------------------
 # SplashScreen
 # ---------------------------------------------------------------------------
+
 
 class TestSplashScreen:
     """Tests for the startup splash screen."""
@@ -141,6 +144,7 @@ class TestSplashScreen:
     # Drop shadow
     def test_card_has_drop_shadow(self, splash):
         from PySide6.QtWidgets import QGraphicsDropShadowEffect
+
         effect = splash._card.graphicsEffect()
         assert isinstance(effect, QGraphicsDropShadowEffect)
 
@@ -158,6 +162,7 @@ class TestSplashScreen:
 # ---------------------------------------------------------------------------
 # LoadingOverlay
 # ---------------------------------------------------------------------------
+
 
 class TestLoadingOverlay:
     """Tests for the reusable loading overlay."""
@@ -229,6 +234,11 @@ class TestLoadingOverlay:
     # Drop shadow on card
     def test_card_has_drop_shadow(self, overlay):
         from PySide6.QtWidgets import QGraphicsDropShadowEffect
+
         cards = overlay.findChildren(QtWidgets.QFrame)
-        shadowed = [c for c in cards if isinstance(c.graphicsEffect(), QGraphicsDropShadowEffect)]
+        shadowed = [
+            c
+            for c in cards
+            if isinstance(c.graphicsEffect(), QGraphicsDropShadowEffect)
+        ]
         assert len(shadowed) >= 1

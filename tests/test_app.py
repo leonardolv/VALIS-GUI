@@ -4,6 +4,7 @@ Covers _load_stylesheet, _simple_elastix_available, _start_jvm,
 _shutdown_jvm, and _install_excepthook — all unit-testable in isolation
 with mocking.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -32,6 +33,7 @@ from valis_workstation.app import (
 # _load_stylesheet
 # ---------------------------------------------------------------------------
 
+
 class TestLoadStylesheet:
     """Tests for stylesheet loading."""
 
@@ -53,6 +55,7 @@ class TestLoadStylesheet:
 # ---------------------------------------------------------------------------
 # _simple_elastix_available
 # ---------------------------------------------------------------------------
+
 
 class TestSimpleElastixAvailable:
     """Tests for SimpleElastix detection."""
@@ -78,6 +81,7 @@ class TestSimpleElastixAvailable:
 # ---------------------------------------------------------------------------
 # _start_jvm / _shutdown_jvm
 # ---------------------------------------------------------------------------
+
 
 class TestStartJvm:
     """Tests for JVM startup wrapper."""
@@ -129,11 +133,13 @@ class TestShutdownJvm:
 # _install_excepthook
 # ---------------------------------------------------------------------------
 
+
 class TestInstallExcepthook:
     """Tests for the global exception hook installer."""
 
     def test_replaces_sys_excepthook(self, qtbot):
         from PySide6 import QtWidgets
+
         app = QtWidgets.QApplication.instance()
         original = sys.excepthook
         _install_excepthook(app)

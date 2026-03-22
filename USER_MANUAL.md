@@ -1,7 +1,7 @@
 # VALIS Workstation User Manual
 
-**Version:** 1.2  
-**Last Updated:** February 28, 2026
+**Version:** 1.3  
+**Last Updated:** March 22, 2026
 
 ---
 
@@ -113,9 +113,12 @@ Or from VS Code, simply run the `run_valis_workstation.py` file.
 
 When you first launch the application:
 
-1. **Check the Status Dock** (bottom panel) for system messages
-2. **Verify Napari** is loaded (you should see a viewer in the center)
-3. **Check for SimpleElastix** - if not installed, you'll see a banner in the Properties panel
+1. A **First-Run Wizard** appears to capture:
+  - Default project name
+  - Default output profile (`WSI Archive`, `Fast Review`, or `Publication`)
+2. **Check the Status Dock** (bottom panel) for system messages
+3. **Verify Napari** is loaded (you should see a viewer in the center)
+4. **Check for SimpleElastix** - if not installed, you'll see a banner in the Properties panel
 
 ---
 
@@ -166,6 +169,8 @@ All panels are separated by **GripSplitter** handles — custom splitter bars th
 - **Features:**
   - Thumbnail grid with adjustable size slider (64–256 px)
   - Grid/List view toggle
+  - Name filter box for quick narrowing
+  - Sort order control (A-Z / Z-A)
   - Hover for slide metadata
 
 #### 3. **Properties Panel** (Right Tab)
@@ -173,17 +178,23 @@ All panels are separated by **GripSplitter** handles — custom splitter bars th
 - **Purpose:** Configure registration parameters
 - **Parameters:**
   - **Project name:** Name for output directory
+  - **Preset controls:** Save, load, and delete named parameter presets
   - **Rigid registration:** Enable/disable rigid alignment (checked by default)
   - **Non-rigid registration:** Enable/disable non-rigid alignment (requires SimpleElastix)
   - **Max image size:** Maximum dimension for processing (default: 2048 pixels)
   - **Match threshold:** Feature matching threshold (0.0-1.0, default: 0.35)
   - **Use GPU:** Enable GPU acceleration if available
+  - **Output profile:** `Custom`, `WSI Archive`, `Fast Review`, `Publication`
 - **Sections:** Basic, Advanced, and Output (collapsible)
 
 #### 4. **Layers Panel** (Right Tab)
 
 - **Purpose:** Control layer visibility and appearance in Napari
 - **Controls:**
+  - **Search:** Filter layers by name
+  - **Lock edits:** Prevent accidental visibility/opacity/colormap changes
+  - **Solo selected:** Show only currently selected layer
+  - **Reset opacity:** Return all layer opacities to 100%
   - **Visible:** Toggle layer visibility (checkbox)
   - **Name:** Layer identifier
   - **Opacity:** Adjust layer transparency (0-100%)
@@ -221,10 +232,12 @@ Panels can be resized by dragging the grip handles between them:
 #### File Menu
 
 - **Open Slide Folder** (`Ctrl+O`): Load slides from a directory
-- **Recent Folders:** Reopen one of the last 10 folders
+- **Recent Folders:** Reopen one of the last 10 folders (with missing-folder indicators)
+- **Open with config:** For linked folders, reopen slides and associated config together
 - **Save Configuration:** Export current settings to JSON
 - **Load Configuration:** Import settings from JSON
 - **Run Registration** (`Ctrl+R`): Start the registration pipeline
+- **Resume Last Registration:** Restart using the previous validated run context
 - **Preferences** (`Ctrl+,`): Adjust cache, performance, and UI options
 - **Quit** (`Ctrl+Q`): Exit the application
 
@@ -243,11 +256,18 @@ The View menu provides layout controls for the resizable panel system:
 Tools menu actions are **contextually enabled** — post-registration tools (Blink, Analysis Plot, Quality Report, Warp Annotations) are disabled until a registration run completes successfully.
 
 - **Blink** (`Ctrl+B`): Toggle between registered slides for visual comparison
+- **Session Bundle Export:** Package config, summary payload, and logs to ZIP
 - **Analysis Plot:** View registration error metrics and trends
 - **Quality Report:** Detailed quality assessment table with sortable columns
 - **Warp Annotations:** Transfer GeoJSON annotations between registered slides
 - **Save Options:** Configure output format, pyramids, compression, tile size
 - **Merge Slides:** Combine registered slides into multi-channel outputs
+- **Export ROI Crop:** Extract a bounded rectangle across all slides and export to OME-TIFF (reopens in viewer if desired)
+
+#### Help Menu
+
+- **Diagnostics:** Show environment/runtime snapshot (Python, Qt, recent folders, result paths, log-file presence)
+- **Performance Statistics:** Inspect cache and performance telemetry
 
 ---
 
@@ -292,17 +312,21 @@ In the **Properties Dock**, adjust settings:
 #### Step 4: Run Registration
 
 1. Click **File → Run Registration**
-2. Monitor progress in the **Status Dock**
+2. Confirm the **Preflight Estimate** dialog (input size, estimated output, time estimate)
+3. Confirm registration in the final confirmation dialog
+4. Monitor progress in the **Status Dock** and loading overlays
 3. Registration typically takes 5-30 minutes depending on:
    - Number of slides
    - Image resolution
    - Registration type (rigid vs. non-rigid)
 
-**Progress stages:**
+**Progress stages (typical):**
 - 0-10%: Initialization
 - 10-60%: Registration processing
 - 60-90%: Warping and saving slides
 - 90-100%: Finalization
+
+You can cancel an in-progress run from the **Status Dock** cancel button.
 
 #### Step 5: Review Results
 
@@ -425,6 +449,8 @@ Visual preview of loaded slides before registration:
 - Click slides to highlight/select
 - Adjustable thumbnail size (64-256 pixels)
 - Toggle between grid and list view
+- Filter slides by name
+- Sort thumbnails (A-Z / Z-A)
 
 **How to use:**
 
@@ -567,14 +593,50 @@ For each slide:
 3. In the Blink Viewer dialog:
    - **Slide A:** Select first slide
    - **Slide B:** Select second slide
+  - **Mode:** Select `Blink`, `Side-by-side`, or `Swipe`
    - **Blend:** Adjust opacity slider (0-100%)
-   - **Start Blink:** Click to toggle automatic blinking
+  - **Start Blink:** Click to toggle automatic blinking (Blink mode only)
 4. Observe the viewer - misaligned features will "jump"
 
 **Tips:**
 - Blink rate: 600ms (default)
 - Perfect alignment = no movement during blink
 - Use blend slider for manual comparison
+- Side-by-side and Swipe provide non-timed comparison alternatives
+
+### Export ROI Crop
+
+Export small bounds cut from identically registered slides to avoid saving the full gigapixel images.
+
+1. Click **Tools -> Export ROI Crop...**
+2. Specify your **Bounds Coordinates**: provide `X` and `Y` pixel starting coordinates along with width and height bounds.
+3. Use the toggle to optionally reload the images directly back into the viewer.
+4. Output defaults to **OME-TIFF**.
+
+### Session Bundle Export
+
+Export a compact package for debugging, handoff, or reproducibility.
+
+**How to use:**
+
+1. Click **Tools -> Export Session Bundle...**
+2. Choose output ZIP path
+3. The bundle includes:
+  - `session_summary.json` (active config, slide folder, last result metadata)
+  - `valis_workstation.log` (when present)
+
+This is useful when filing issue reports or sharing run context with collaborators.
+
+### Diagnostics Dialog
+
+Open **Help -> Diagnostics** to inspect environment and runtime state quickly.
+
+Shown information includes:
+- Python and Qt versions
+- Platform information
+- Repository/log paths
+- Recent folder count
+- Key last-result paths when available
 
 ### Analysis Plot
 
@@ -757,7 +819,7 @@ A: Resizes slides to this maximum dimension for processing. Smaller = faster but
 A: Controls feature matching strictness. Lower (e.g., 0.2) = more matches, more potential false positives. Higher (e.g., 0.5) = fewer, more reliable matches.
 
 **Q: Can I cancel a running registration?**  
-A: Currently no. Close the application to stop (Ctrl+Q or close window). This will be added in a future version.
+A: Yes. Use the **Cancel Registration** button in the Status Dock while a run is in progress.
 
 **Q: Where are the output files saved?**  
 A: In `output/<project_name>/` within the repository directory. Registered slides are in the `registered/` subfolder.

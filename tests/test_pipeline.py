@@ -1,4 +1,5 @@
 """Tests for the VALIS pipeline configuration mapping."""
+
 from __future__ import annotations
 
 from valis_workstation.models.config import Config
@@ -20,9 +21,11 @@ class TestBuildRegistrarKwargs:
         config = Config(non_rigid_registration=False)
         kwargs = build_registrar_kwargs(config)
         # When non-rigid is disabled, registrar_cls should be None/absent
-        assert kwargs.get("non_rigid_registrar_cls") is None or \
-               "non_rigid_registrar_cls" not in kwargs or \
-               kwargs.get("non_rigid_registrar_cls") is None
+        assert (
+            kwargs.get("non_rigid_registrar_cls") is None
+            or "non_rigid_registrar_cls" not in kwargs
+            or kwargs.get("non_rigid_registrar_cls") is None
+        )
 
     def test_non_rigid_enabled(self) -> None:
         config = Config(non_rigid_registration=True)

@@ -10,11 +10,12 @@ Date: 2026-01-11
 
 import logging
 import time
-import psutil
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, List, Optional
+
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -22,98 +23,109 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PerformanceMetrics:
     """Container for performance metrics."""
-    
+
     # Thumbnail generation metrics
     thumbnail_load_times: List[float] = field(default_factory=list)
     thumbnail_cache_hits: int = 0
     thumbnail_cache_misses: int = 0
-    
-    # Tile cache metrics  
+
+    # Tile cache metrics
     tile_cache_hits: int = 0
     tile_cache_misses: int = 0
     tile_load_times: List[float] = field(default_factory=list)
-    
+
     # Registration metrics
     registration_times: List[float] = field(default_factory=list)
-    
+
     # Memory metrics
     peak_memory_mb: float = 0.0
     memory_samples: List[float] = field(default_factory=list)
-    
+
     # Slide loading metrics
     slide_count: int = 0
     total_slide_load_time: float = 0.0
-    
+
     def get_summary(self) -> Dict:
         """Get a summary of all metrics."""
         summary = {
-            'thumbnails': {
-                'total_generated': len(self.thumbnail_load_times),
-                'avg_load_time_ms': (
-                    sum(self.thumbnail_load_times) / len(self.thumbnail_load_times) * 1000
-                    if self.thumbnail_load_times else 0
+            "thumbnails": {
+                "total_generated": len(self.thumbnail_load_times),
+                "avg_load_time_ms": (
+                    sum(self.thumbnail_load_times)
+                    / len(self.thumbnail_load_times)
+                    * 1000
+                    if self.thumbnail_load_times
+                    else 0
                 ),
-                'cache_hit_rate': (
-                    self.thumbnail_cache_hits / (self.thumbnail_cache_hits + self.thumbnail_cache_misses)
-                    if (self.thumbnail_cache_hits + self.thumbnail_cache_misses) > 0 else 0
+                "cache_hit_rate": (
+                    self.thumbnail_cache_hits
+                    / (self.thumbnail_cache_hits + self.thumbnail_cache_misses)
+                    if (self.thumbnail_cache_hits + self.thumbnail_cache_misses) > 0
+                    else 0
                 ),
             },
-            'tiles': {
-                'cache_hit_rate': (
-                    self.tile_cache_hits / (self.tile_cache_hits + self.tile_cache_misses)
-                    if (self.tile_cache_hits + self.tile_cache_misses) > 0 else 0
+            "tiles": {
+                "cache_hit_rate": (
+                    self.tile_cache_hits
+                    / (self.tile_cache_hits + self.tile_cache_misses)
+                    if (self.tile_cache_hits + self.tile_cache_misses) > 0
+                    else 0
                 ),
-                'avg_load_time_ms': (
+                "avg_load_time_ms": (
                     sum(self.tile_load_times) / len(self.tile_load_times) * 1000
-                    if self.tile_load_times else 0
+                    if self.tile_load_times
+                    else 0
                 ),
             },
-            'registration': {
-                'total_runs': len(self.registration_times),
-                'avg_time_s': (
+            "registration": {
+                "total_runs": len(self.registration_times),
+                "avg_time_s": (
                     sum(self.registration_times) / len(self.registration_times)
-                    if self.registration_times else 0
+                    if self.registration_times
+                    else 0
                 ),
             },
-            'memory': {
-                'peak_mb': self.peak_memory_mb,
-                'avg_mb': (
+            "memory": {
+                "peak_mb": self.peak_memory_mb,
+                "avg_mb": (
                     sum(self.memory_samples) / len(self.memory_samples)
-                    if self.memory_samples else 0
+                    if self.memory_samples
+                    else 0
                 ),
             },
-            'slides': {
-                'count': self.slide_count,
-                'avg_load_time_s': (
+            "slides": {
+                "count": self.slide_count,
+                "avg_load_time_s": (
                     self.total_slide_load_time / self.slide_count
-                    if self.slide_count > 0 else 0
+                    if self.slide_count > 0
+                    else 0
                 ),
             },
         }
-        
+
         return summary
 
 
 class PerformanceMonitor:
     """
     Performance monitoring system for tracking and reporting metrics.
-    
+
     This class provides context managers and utilities for tracking various
     performance metrics throughout the application.
     """
-    
+
     def __init__(self):
         """Initialize the performance monitor."""
         self.metrics = PerformanceMetrics()
         self._start_time = time.time()
         self._memory_process = psutil.Process()
-        
+
         logger.info("Performance monitoring initialized")
-    
+
     def track_thumbnail_load(self, duration: float, from_cache: bool = False) -> None:
         """
         Track thumbnail loading time.
-        
+
         Parameters
         ----------
         duration : float
@@ -122,21 +134,21 @@ class PerformanceMonitor:
             Whether loaded from cache
         """
         self.metrics.thumbnail_load_times.append(duration)
-        
+
         if from_cache:
             self.metrics.thumbnail_cache_hits += 1
         else:
             self.metrics.thumbnail_cache_misses += 1
-        
+
         logger.debug(
-            f"Thumbnail load: {duration*1000:.1f}ms "
+            f"Thumbnail load: {duration * 1000:.1f}ms "
             f"({'cache' if from_cache else 'generated'})"
         )
-    
+
     def track_tile_load(self, duration: float, from_cache: bool = False) -> None:
         """
         Track tile loading time.
-        
+
         Parameters
         ----------
         duration : float
@@ -145,16 +157,16 @@ class PerformanceMonitor:
             Whether loaded from cache
         """
         self.metrics.tile_load_times.append(duration)
-        
+
         if from_cache:
             self.metrics.tile_cache_hits += 1
         else:
             self.metrics.tile_cache_misses += 1
-    
+
     def track_registration(self, duration: float) -> None:
         """
         Track registration time.
-        
+
         Parameters
         ----------
         duration : float
@@ -162,11 +174,11 @@ class PerformanceMonitor:
         """
         self.metrics.registration_times.append(duration)
         logger.info(f"Registration completed in {duration:.1f}s")
-    
+
     def track_slides_loaded(self, count: int, duration: float) -> None:
         """
         Track slide loading.
-        
+
         Parameters
         ----------
         count : int
@@ -176,16 +188,16 @@ class PerformanceMonitor:
         """
         self.metrics.slide_count += count
         self.metrics.total_slide_load_time += duration
-        
+
         logger.info(
             f"Loaded {count} slides in {duration:.2f}s "
-            f"({duration/count:.2f}s per slide)"
+            f"({duration / count:.2f}s per slide)"
         )
-    
+
     def sample_memory(self) -> float:
         """
         Sample current memory usage.
-        
+
         Returns
         -------
         float
@@ -195,127 +207,125 @@ class PerformanceMonitor:
             # Get memory info
             mem_info = self._memory_process.memory_info()
             current_mb = mem_info.rss / (1024 * 1024)
-            
+
             # Update metrics
             self.metrics.memory_samples.append(current_mb)
-            
+
             if current_mb > self.metrics.peak_memory_mb:
                 self.metrics.peak_memory_mb = current_mb
-            
+
             return current_mb
-            
+
         except Exception as e:
             logger.error(f"Failed to sample memory: {e}")
             return 0.0
-    
+
     def get_summary(self) -> Dict:
         """
         Get performance summary.
-        
+
         Returns
         -------
         Dict
             Performance metrics summary
         """
         summary = self.metrics.get_summary()
-        
+
         # Add uptime
-        summary['uptime_s'] = time.time() - self._start_time
-        
+        summary["uptime_s"] = time.time() - self._start_time
+
         # Add current memory
-        summary['current_memory_mb'] = self.sample_memory()
-        
+        summary["current_memory_mb"] = self.sample_memory()
+
         return summary
-    
+
     def log_summary(self) -> None:
         """Log performance summary to logger."""
         summary = self.get_summary()
-        
+
         logger.info("=== Performance Summary ===")
-        
+
         # Thumbnails
-        thumb = summary['thumbnails']
+        thumb = summary["thumbnails"]
         logger.info(
             f"Thumbnails: {thumb['total_generated']} generated, "
             f"{thumb['avg_load_time_ms']:.1f}ms avg, "
-            f"{thumb['cache_hit_rate']*100:.1f}% cache hit rate"
+            f"{thumb['cache_hit_rate'] * 100:.1f}% cache hit rate"
         )
-        
+
         # Tiles
-        tiles = summary['tiles']
-        if tiles['cache_hit_rate'] > 0:
+        tiles = summary["tiles"]
+        if tiles["cache_hit_rate"] > 0:
             logger.info(
-                f"Tiles: {tiles['cache_hit_rate']*100:.1f}% cache hit rate, "
+                f"Tiles: {tiles['cache_hit_rate'] * 100:.1f}% cache hit rate, "
                 f"{tiles['avg_load_time_ms']:.1f}ms avg load time"
             )
-        
+
         # Registration
-        reg = summary['registration']
-        if reg['total_runs'] > 0:
+        reg = summary["registration"]
+        if reg["total_runs"] > 0:
             logger.info(
                 f"Registration: {reg['total_runs']} runs, "
                 f"{reg['avg_time_s']:.1f}s average"
             )
-        
+
         # Memory
-        mem = summary['memory']
+        mem = summary["memory"]
         logger.info(
             f"Memory: {summary['current_memory_mb']:.1f}MB current, "
             f"{mem['peak_mb']:.1f}MB peak, "
             f"{mem['avg_mb']:.1f}MB average"
         )
-        
+
         # Slides
-        slides = summary['slides']
-        if slides['count'] > 0:
+        slides = summary["slides"]
+        if slides["count"] > 0:
             logger.info(
                 f"Slides: {slides['count']} loaded, "
                 f"{slides['avg_load_time_s']:.2f}s average load time"
             )
-        
+
         logger.info(f"Uptime: {summary['uptime_s']:.1f}s")
         logger.info("=" * 30)
-    
+
     def get_status_message(self) -> str:
         """
         Get a concise status message for display in status bar.
-        
+
         Returns
         -------
         str
             Status message
         """
         current_mem = self.sample_memory()
-        
+
         # Build status message
         parts = []
-        
+
         # Memory
         parts.append(f"Mem: {current_mem:.0f}MB")
-        
+
         # Thumbnail cache hit rate
         if self.metrics.thumbnail_cache_hits + self.metrics.thumbnail_cache_misses > 0:
-            hit_rate = (
-                self.metrics.thumbnail_cache_hits / 
-                (self.metrics.thumbnail_cache_hits + self.metrics.thumbnail_cache_misses)
+            hit_rate = self.metrics.thumbnail_cache_hits / (
+                self.metrics.thumbnail_cache_hits + self.metrics.thumbnail_cache_misses
             )
-            parts.append(f"Thumb Cache: {hit_rate*100:.0f}%")
-        
+            parts.append(f"Thumb Cache: {hit_rate * 100:.0f}%")
+
         # Tile cache hit rate
         if self.metrics.tile_cache_hits + self.metrics.tile_cache_misses > 0:
-            hit_rate = (
-                self.metrics.tile_cache_hits /
-                (self.metrics.tile_cache_hits + self.metrics.tile_cache_misses)
+            hit_rate = self.metrics.tile_cache_hits / (
+                self.metrics.tile_cache_hits + self.metrics.tile_cache_misses
             )
-            parts.append(f"Tile Cache: {hit_rate*100:.0f}%")
-        
+            parts.append(f"Tile Cache: {hit_rate * 100:.0f}%")
+
         return " | ".join(parts)
 
 
 class TimingContext:
     """
     Context manager for timing operations.
-    
+
     Example
     -------
     >>> with TimingContext("Load thumbnail") as timer:
@@ -323,11 +333,11 @@ class TimingContext:
     ...     pass
     >>> print(f"Took {timer.duration}s")
     """
-    
+
     def __init__(self, operation_name: str, log_result: bool = True):
         """
         Initialize timing context.
-        
+
         Parameters
         ----------
         operation_name : str
@@ -340,30 +350,28 @@ class TimingContext:
         self.start_time: Optional[float] = None
         self.end_time: Optional[float] = None
         self.duration: float = 0.0
-    
+
     def __enter__(self):
         """Start timing."""
         self.start_time = time.time()
         logger.debug(f"Started: {self.operation_name}")
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Stop timing and log result."""
         self.end_time = time.time()
         self.duration = self.end_time - self.start_time
-        
+
         if self.log_result:
             if exc_type is None:
                 logger.debug(
-                    f"Completed: {self.operation_name} "
-                    f"in {self.duration*1000:.1f}ms"
+                    f"Completed: {self.operation_name} in {self.duration * 1000:.1f}ms"
                 )
             else:
                 logger.debug(
-                    f"Failed: {self.operation_name} "
-                    f"after {self.duration*1000:.1f}ms"
+                    f"Failed: {self.operation_name} after {self.duration * 1000:.1f}ms"
                 )
-        
+
         return False  # Don't suppress exceptions
 
 
@@ -374,17 +382,17 @@ _global_monitor: Optional[PerformanceMonitor] = None
 def get_performance_monitor() -> PerformanceMonitor:
     """
     Get the global performance monitor instance.
-    
+
     Returns
     -------
     PerformanceMonitor
         Global performance monitor
     """
     global _global_monitor
-    
+
     if _global_monitor is None:
         _global_monitor = PerformanceMonitor()
-    
+
     return _global_monitor
 
 
@@ -397,7 +405,7 @@ def log_performance_summary() -> None:
 def get_performance_status() -> str:
     """
     Get performance status message.
-    
+
     Returns
     -------
     str

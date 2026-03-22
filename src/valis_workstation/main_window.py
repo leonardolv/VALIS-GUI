@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import importlib
 import importlib.util
+import json
 import logging
+import time
+import zipfile
+from datetime import datetime
 from pathlib import Path
 
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -28,15 +32,18 @@ from valis_workstation.models.config import Config
 from valis_workstation.services.slide_scan import scan_slide_folder
 from valis_workstation.ui.dialogs.analysis_plot import AnalysisPlotDialog
 from valis_workstation.ui.dialogs.blink_viewer import BlinkViewerDialog
+from valis_workstation.ui.dialogs.diagnostics_dialog import DiagnosticsDialog
 from valis_workstation.ui.dialogs.error_detail_dialog import show_error_dialog
-from valis_workstation.ui.dialogs.quality_report import QualityReportDialog
-from valis_workstation.ui.dialogs.warp_annotations import WarpAnnotationsDialog
-from valis_workstation.ui.dialogs.save_options_dialog import SaveOptionsDialog
 from valis_workstation.ui.dialogs.merge_slides_dialog import MergeSlidesDialog
+from valis_workstation.ui.dialogs.quality_report import QualityReportDialog
+from valis_workstation.ui.dialogs.roi_export_dialog import ROIExportDialog
+from valis_workstation.ui.dialogs.save_options_dialog import SaveOptionsDialog
+from valis_workstation.ui.dialogs.warp_annotations import WarpAnnotationsDialog
 from valis_workstation.ui.layer_controls_dock import LayerControlsDock
 from valis_workstation.ui.project_dock import ProjectDock
 from valis_workstation.ui.properties_dock import PropertiesDock
 from valis_workstation.ui.slide_preview_dock import SlidePreviewDock
+from valis_workstation.ui.splash_screen import LoadingOverlay
 from valis_workstation.ui.splitter_utils import (
     GripSplitter,
     clear_splitter_state,
@@ -44,7 +51,6 @@ from valis_workstation.ui.splitter_utils import (
     persist_splitter_state,
     restore_splitter_state,
 )
-from valis_workstation.ui.splash_screen import LoadingOverlay
 from valis_workstation.ui.status_dock import StatusDock
 from valis_workstation.utils.qt_logging import QtLogEmitter
 from valis_workstation.utils.validation import validate_slides
@@ -73,6 +79,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._viewer = None
         self._napari_available = False
         self._last_result: dict | None = None
+        self._last_run_context: dict | None = None
+        self._current_slide_folder: Path | None = None
+        self._last_loaded_config_path: Path | None = None
 
         self.setWindowTitle("VALIS Workstation")
         self.resize(1400, 900)
@@ -106,9 +115,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._left_tabs = QtWidgets.QTabWidget()
         self._left_tabs.setObjectName("LeftPanelTabs")
 
-        left_project_scroll = self._wrap_in_scroll_area(
-            self._project_dock.widget()
-        )
+        left_project_scroll = self._wrap_in_scroll_area(self._project_dock.widget())
         left_preview_scroll = self._wrap_in_scroll_area(
             self._slide_preview_dock.widget()
         )
@@ -149,9 +156,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         # -- right panel: tabbed Properties + Layers ------------------
-        right_props_scroll = self._wrap_in_scroll_area(
-            self._properties_dock.widget()
-        )
+        right_props_scroll = self._wrap_in_scroll_area(self._properties_dock.widget())
         self._right_tabs.addTab(right_props_scroll, "Properties")
         # Layer controls tab is added when napari is ready (see
         # _build_central_widget).  A placeholder is stored so it can be
@@ -219,12 +224,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # -- initial sizes --------------------------------------------
         canvas_init = max(
-            CANVAS_MIN_W, self.width() - LEFT_SIDEBAR_INIT - RIGHT_SIDEBAR_INIT - 2 * SPLITTER_HANDLE_W
+            CANVAS_MIN_W,
+            self.width()
+            - LEFT_SIDEBAR_INIT
+            - RIGHT_SIDEBAR_INIT
+            - 2 * SPLITTER_HANDLE_W,
         )
         self._top_splitter.setSizes(
             [LEFT_SIDEBAR_INIT, canvas_init, RIGHT_SIDEBAR_INIT]
         )
-        main_area_h = max(CANVAS_MIN_H, self.height() - TIMELINE_INIT_H - SPLITTER_HANDLE_W)
+        main_area_h = max(
+            CANVAS_MIN_H, self.height() - TIMELINE_INIT_H - SPLITTER_HANDLE_W
+        )
         self._outer_splitter.setSizes([main_area_h, TIMELINE_INIT_H])
 
         # -- connect splitter-moved to auto-persist -------------------
@@ -251,12 +262,8 @@ class MainWindow(QtWidgets.QMainWindow):
         """Wrap *widget* in a ``QScrollArea`` with ``widgetResizable``."""
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setHorizontalScrollBarPolicy(
-            QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
-        )
-        scroll.setVerticalScrollBarPolicy(
-            QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
-        )
+        scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         scroll.setWidget(widget)
         scroll.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         return scroll
@@ -287,10 +294,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def _napari_unavailable_widget(self) -> QtWidgets.QWidget:
         widget = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(widget)
-        
+
         title = QtWidgets.QLabel("<h2>Napari Viewer Not Available</h2>")
         title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        
+
         message = QtWidgets.QLabel(
             "<p>The Napari image viewer could not be initialized.</p>"
             "<p>To install Napari, run:</p>"
@@ -302,52 +309,75 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         message.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         message.setWordWrap(True)
-        
+
         layout.addStretch()
         layout.addWidget(title)
         layout.addWidget(message)
         layout.addStretch()
-        
+
         return widget
 
     def _build_actions(self) -> None:
         style = self.style()
-        
+
         file_menu = self.menuBar().addMenu("File")
-        
+
         open_action = QtGui.QAction("Open Slide Folder", self)
-        open_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DirIcon))
+        open_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DirIcon)
+        )
         open_action.triggered.connect(self._open_slide_folder)
         file_menu.addAction(open_action)
-        
+
         # Recent folders submenu
         self._recent_menu = file_menu.addMenu("Recent Folders")
-        self._recent_menu.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView))
+        self._recent_menu.setIcon(
+            style.standardIcon(
+                QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView
+            )
+        )
         self._update_recent_folders_menu()
-        
+
         file_menu.addSeparator()
-        
+
         save_config_action = QtGui.QAction("Save Configuration...", self)
-        save_config_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton))
+        save_config_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton)
+        )
         save_config_action.triggered.connect(self._save_configuration)
         file_menu.addAction(save_config_action)
-        
+
         load_config_action = QtGui.QAction("Load Configuration...", self)
-        load_config_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogOpenButton))
+        load_config_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogOpenButton)
+        )
         load_config_action.triggered.connect(self._load_configuration)
         file_menu.addAction(load_config_action)
-        
+
         file_menu.addSeparator()
 
         run_action = QtGui.QAction("Run Registration", self)
-        run_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MediaPlay))
+        run_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MediaPlay)
+        )
         run_action.triggered.connect(self._start_registration)
         file_menu.addAction(run_action)
-        
+
+        resume_action = QtGui.QAction("Resume Last Registration", self)
+        resume_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_BrowserReload)
+        )
+        resume_action.triggered.connect(self._resume_last_registration)
+        file_menu.addAction(resume_action)
+
         file_menu.addSeparator()
-        
+
         preferences_action = QtGui.QAction("Preferences...", self)
-        preferences_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView))
+        preferences_action.setIcon(
+            style.standardIcon(
+                QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView
+            )
+        )
         preferences_action.setShortcut("Ctrl+,")
         preferences_action.triggered.connect(self._show_preferences)
         file_menu.addAction(preferences_action)
@@ -381,38 +411,64 @@ class MainWindow(QtWidgets.QMainWindow):
         view_menu.addAction(fit_content_action)
 
         tools_menu = self.menuBar().addMenu("Tools")
-        
+
         blink_action = QtGui.QAction("Blink", self)
-        blink_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_BrowserReload))
+        blink_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_BrowserReload)
+        )
         blink_action.triggered.connect(self._blink)
         tools_menu.addAction(blink_action)
 
         plot_action = QtGui.QAction("Analysis Plot", self)
-        plot_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogInfoView))
+        plot_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogInfoView)
+        )
         plot_action.triggered.connect(self._show_analysis_plot)
         tools_menu.addAction(plot_action)
 
         quality_action = QtGui.QAction("Quality Report", self)
-        quality_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogContentsView))
+        quality_action.setIcon(
+            style.standardIcon(
+                QtWidgets.QStyle.StandardPixmap.SP_FileDialogContentsView
+            )
+        )
         quality_action.triggered.connect(self._show_quality_report)
         tools_menu.addAction(quality_action)
 
         warp_action = QtGui.QAction("Warp Annotations", self)
-        warp_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogListView))
+        warp_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogListView)
+        )
         warp_action.triggered.connect(self._warp_annotations)
         tools_menu.addAction(warp_action)
-        
+
         tools_menu.addSeparator()
-        
+
         save_options_action = QtGui.QAction("Save Options...", self)
-        save_options_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton))
+        save_options_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton)
+        )
         save_options_action.triggered.connect(self._show_save_options)
         tools_menu.addAction(save_options_action)
-        
+
+        export_roi_action = QtGui.QAction("Export ROI Crop...", self)
+        export_roi_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogInfoView)
+        )
+        export_roi_action.triggered.connect(self._export_roi_crop)
+        tools_menu.addAction(export_roi_action)
+
         merge_action = QtGui.QAction("Merge Slides...", self)
-        merge_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogListView))
+        merge_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogListView)
+        )
         merge_action.triggered.connect(self._merge_slides)
         tools_menu.addAction(merge_action)
+
+        tools_menu.addSeparator()
+        export_bundle_action = QtGui.QAction("Export Session Bundle...", self)
+        export_bundle_action.triggered.connect(self._export_session_bundle)
+        tools_menu.addAction(export_bundle_action)
 
         # Store result-dependent actions for contextual enable/disable
         self._result_actions: list[QtGui.QAction] = [
@@ -421,41 +477,56 @@ class MainWindow(QtWidgets.QMainWindow):
             quality_action,
             warp_action,
             save_options_action,
+            export_roi_action,
             merge_action,
         ]
         self._update_tools_enabled()
 
         # Help menu
         help_menu = self.menuBar().addMenu("Help")
-        
+
         user_manual_action = QtGui.QAction("User Manual", self)
-        user_manual_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView))
+        user_manual_action.setIcon(
+            style.standardIcon(
+                QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView
+            )
+        )
         user_manual_action.triggered.connect(self._open_user_manual)
         help_menu.addAction(user_manual_action)
-        
+
         quick_start_action = QtGui.QAction("Quick Start Guide", self)
-        quick_start_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_TitleBarMenuButton))
+        quick_start_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_TitleBarMenuButton)
+        )
         quick_start_action.triggered.connect(self._open_quick_start)
         help_menu.addAction(quick_start_action)
-        
+
         help_menu.addSeparator()
-        
+
         report_issue_action = QtGui.QAction("Report Issue", self)
-        report_issue_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxWarning))
+        report_issue_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxWarning)
+        )
         report_issue_action.triggered.connect(self._report_issue)
         help_menu.addAction(report_issue_action)
-        
+
         help_menu.addSeparator()
-        
+
         perf_stats_action = QtGui.QAction("Performance Statistics", self)
         perf_stats_action.setShortcut("Ctrl+Shift+P")
         perf_stats_action.triggered.connect(self._show_performance_stats)
         help_menu.addAction(perf_stats_action)
-        
+
+        diagnostics_action = QtGui.QAction("Diagnostics", self)
+        diagnostics_action.triggered.connect(self._show_diagnostics)
+        help_menu.addAction(diagnostics_action)
+
         help_menu.addSeparator()
-        
+
         about_action = QtGui.QAction("About VALIS Workstation", self)
-        about_action.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxInformation))
+        about_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxInformation)
+        )
         about_action.triggered.connect(self._show_about)
         help_menu.addAction(about_action)
 
@@ -464,31 +535,35 @@ class MainWindow(QtWidgets.QMainWindow):
         # File menu shortcuts
         open_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+O"), self)
         open_shortcut.activated.connect(self._open_slide_folder)
-        
+
         run_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+R"), self)
         run_shortcut.activated.connect(self._start_registration)
-        
+
         # View shortcuts
         blink_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+B"), self)
         blink_shortcut.activated.connect(self._blink)
-        
+
         # Layout shortcuts
-        reset_layout_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Shift+L"), self)
+        reset_layout_shortcut = QtGui.QShortcut(
+            QtGui.QKeySequence("Ctrl+Shift+L"), self
+        )
         reset_layout_shortcut.activated.connect(self.reset_layout)
-        
+
         toggle_left_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+["), self)
         toggle_left_shortcut.activated.connect(self.toggle_left_sidebar)
-        
+
         toggle_right_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+]"), self)
         toggle_right_shortcut.activated.connect(self.toggle_right_sidebar)
-        
-        expand_center_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Shift+C"), self)
+
+        expand_center_shortcut = QtGui.QShortcut(
+            QtGui.QKeySequence("Ctrl+Shift+C"), self
+        )
         expand_center_shortcut.activated.connect(self.expand_center)
-        
+
         # General shortcuts
         quit_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Q"), self)
         quit_shortcut.activated.connect(self.close)
-        
+
         logger.debug("Keyboard shortcuts configured")
 
     def _setup_status_bar(self) -> None:
@@ -508,42 +583,110 @@ class MainWindow(QtWidgets.QMainWindow):
         if not slides:
             QtWidgets.QMessageBox.warning(self, "VALIS", "No slides to register.")
             return
-        
+
         config = self._properties_dock.config()
         output_dir = self._repo_root / "output" / config.project_name
-        
+
         # Validate before proceeding
         validation = validate_slides(slides, output_dir)
-        
+
         if validation.has_errors():
-            error_msg = "Cannot start registration due to the following errors:\n\n" + "\n".join(f"• {e}" for e in validation.errors)
-            QtWidgets.QMessageBox.critical(self, "Validation Failed", error_msg)
-            logger.error("Pre-registration validation failed: %s", "; ".join(validation.errors))
-            return
-        
-        if validation.has_warnings():
-            warning_msg = "The following warnings were detected:\n\n" + "\n".join(f"• {w}" for w in validation.warnings)
-            warning_msg += "\n\nDo you want to proceed anyway?"
-            
-            reply = QtWidgets.QMessageBox.question(
-                self, "Validation Warnings",
-                warning_msg,
-                QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
-                QtWidgets.QMessageBox.StandardButton.No
+            error_msg = (
+                "Cannot start registration due to the following errors:\n\n"
+                + "\n".join(f"• {e}" for e in validation.errors)
             )
-            
+            QtWidgets.QMessageBox.critical(self, "Validation Failed", error_msg)
+            logger.error(
+                "Pre-registration validation failed: %s", "; ".join(validation.errors)
+            )
+            return
+
+        if validation.has_warnings():
+            warning_msg = "The following warnings were detected:\n\n" + "\n".join(
+                f"• {w}" for w in validation.warnings
+            )
+            warning_msg += "\n\nDo you want to proceed anyway?"
+
+            reply = QtWidgets.QMessageBox.question(
+                self,
+                "Validation Warnings",
+                warning_msg,
+                QtWidgets.QMessageBox.StandardButton.Yes
+                | QtWidgets.QMessageBox.StandardButton.No,
+                QtWidgets.QMessageBox.StandardButton.No,
+            )
+
             if reply != QtWidgets.QMessageBox.StandardButton.Yes:
                 logger.info("Registration cancelled due to validation warnings")
                 return
-        
+
+        if not self._show_preflight_estimate(slides, config, output_dir):
+            logger.info("Registration cancelled at preflight stage")
+            return
+
         # Confirm before starting registration
         if not self._confirm_registration(slides):
             logger.info("Registration cancelled by user")
             return
-        
-        self._status_bar.showMessage(f"Starting registration of {len(slides)} slides...")
+
+        context = {
+            "slides": slides,
+            "config": config,
+            "output_dir": output_dir,
+        }
+        self._last_run_context = context
+        self._start_registration_from_context(context)
+
+    def _show_preflight_estimate(
+        self, slides: list[Path], config: Config, output_dir: Path
+    ) -> bool:
+        """Show preflight estimate and return whether to proceed."""
+        total_size_bytes, has_missing = self._safe_total_size_bytes(slides)
+        total_size_gb = total_size_bytes / (1024**3)
+        est_output_gb = max(0.5, total_size_gb * 2.5)
+
+        est_minutes = len(slides) * (1.6 if config.non_rigid_registration else 0.8)
+        if config.micro_registration:
+            est_minutes *= 1.8
+        if config.use_gpu:
+            est_minutes *= 0.7
+        est_minutes = max(1, int(est_minutes))
+
+        warning_html = ""
+        if has_missing:
+            warning_html = "<p style='color:#E49B0F;'><b>Warning:</b> Size could not be determined for some files. Estimate may be inaccurate.</p>"
+
+        msg = QtWidgets.QMessageBox(self)
+        msg.setWindowTitle("Preflight Estimate")
+        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
+        msg.setText(
+            f"<h3>Preflight Summary</h3>"
+            f"<p><b>Slides:</b> {len(slides)}<br>"
+            f"<b>Input size:</b> {total_size_gb:.2f} GB<br>"
+            f"<b>Estimated output:</b> ~{est_output_gb:.2f} GB<br>"
+            f"<b>Estimated time:</b> ~{est_minutes} min<br>"
+            f"<b>Output dir:</b> {output_dir}</p>"
+            f"{warning_html}"
+            f"<p>Continue to registration confirmation?</p>"
+        )
+        msg.setStandardButtons(
+            QtWidgets.QMessageBox.StandardButton.Yes
+            | QtWidgets.QMessageBox.StandardButton.No
+        )
+        msg.setDefaultButton(QtWidgets.QMessageBox.StandardButton.Yes)
+        return msg.exec() == QtWidgets.QMessageBox.StandardButton.Yes
+
+    def _start_registration_from_context(self, context: dict) -> None:
+        """Start worker from a stored run context (new run or resume)."""
+        slides: list[Path] = context["slides"]
+        config: Config = context["config"]
+        output_dir: Path = context["output_dir"]
+
+        self._status_bar.showMessage(
+            f"Starting registration of {len(slides)} slides..."
+        )
         logger.info("Starting registration with %d slides", len(slides))
-        
+
         self._worker_thread = QtCore.QThread(self)
         self._worker = ValisWorker(config, slides, output_dir)
         self._worker.moveToThread(self._worker_thread)
@@ -559,11 +702,26 @@ class MainWindow(QtWidgets.QMainWindow):
         self._worker.failed.connect(self._worker_thread.quit)
         self._worker.cancelled.connect(self._worker_thread.quit)
         self._worker_thread.finished.connect(self._cleanup_worker)
-        
+
         # Connect cancel button
         self._status_dock.connect_cancel(self._request_cancellation)
 
         self._worker_thread.start()
+
+    def _resume_last_registration(self) -> None:
+        """Resume/re-run the last registration context after cancel/failure."""
+        if not self._last_run_context:
+            QtWidgets.QMessageBox.information(
+                self, "Resume", "No previous registration context available."
+            )
+            return
+        if self._worker_thread and self._worker_thread.isRunning():
+            QtWidgets.QMessageBox.information(
+                self, "Resume", "Registration is already running."
+            )
+            return
+        self._status_bar.showMessage("Resuming last registration...", 3000)
+        self._start_registration_from_context(self._last_run_context)
 
     def _cleanup_worker(self) -> None:
         self._status_dock.show_cancel_button(False)
@@ -574,14 +732,16 @@ class MainWindow(QtWidgets.QMainWindow):
         """Handle user request to cancel registration."""
         if not self._worker:
             return
-        
+
         reply = QtWidgets.QMessageBox.question(
-            self, "Cancel Registration",
+            self,
+            "Cancel Registration",
             "Are you sure you want to cancel the registration?\nPartial results may be lost.",
-            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
-            QtWidgets.QMessageBox.StandardButton.No
+            QtWidgets.QMessageBox.StandardButton.Yes
+            | QtWidgets.QMessageBox.StandardButton.No,
+            QtWidgets.QMessageBox.StandardButton.No,
         )
-        
+
         if reply == QtWidgets.QMessageBox.StandardButton.Yes:
             logger.info("User requested cancellation")
             self._worker.cancel()
@@ -593,8 +753,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._status_dock.set_progress(0)
         self._status_bar.showMessage("Registration cancelled", 5000)
         QtWidgets.QMessageBox.information(
-            self, "VALIS",
-            "Registration was cancelled.\nPartial results may have been saved."
+            self,
+            "VALIS",
+            "Registration was cancelled.\nPartial results may have been saved.",
         )
 
     def _confirm_registration(self, slides: list[Path]) -> bool:
@@ -602,8 +763,8 @@ class MainWindow(QtWidgets.QMainWindow):
         config = self._properties_dock.config()
 
         # Compute total input size
-        total_size_bytes = sum(s.stat().st_size for s in slides if s.exists())
-        total_size_gb = total_size_bytes / (1024 ** 3)
+        total_size_bytes, has_missing = self._safe_total_size_bytes(slides)
+        total_size_gb = total_size_bytes / (1024**3)
 
         # Rough time estimate
         est_minutes = len(slides) * 2
@@ -616,30 +777,35 @@ class MainWindow(QtWidgets.QMainWindow):
         if config.use_masks:
             est_minutes *= 1.2
 
+        warning_html = ""
+        if has_missing:
+            warning_html = '<p style="color:#E49B0F; margin: 2px 0;"><b>Warning:</b> Input size calculation incomplete.</p>'
+
         msg = QtWidgets.QMessageBox(self)
         msg.setWindowTitle("Confirm Registration")
         msg.setIcon(QtWidgets.QMessageBox.Icon.Question)
 
-        text = f"""<h3>Ready to Register {len(slides)} Slide{'s' if len(slides) != 1 else ''}</h3>
+        text = f"""<h3>Ready to Register {len(slides)} Slide{"s" if len(slides) != 1 else ""}</h3>
 <table style="margin: 6px 0;">
 <tr><td><b>Total size:</b></td><td>{total_size_gb:.2f} GB</td></tr>
 <tr><td><b>Estimated time:</b></td><td>~{int(est_minutes)} min</td></tr>
 <tr><td><b>Project:</b></td><td>{config.project_name}</td></tr>
 </table>
+{warning_html}
 <p><b>Registration settings</b></p>
 <table style="margin: 4px 0;">
-<tr><td>Rigid registration:</td><td>{'Yes' if config.rigid_registration else 'No'}</td></tr>
-<tr><td>Non-rigid registration:</td><td>{'Yes' if config.non_rigid_registration else 'No'}</td></tr>
+<tr><td>Rigid registration:</td><td>{"Yes" if config.rigid_registration else "No"}</td></tr>
+<tr><td>Non-rigid registration:</td><td>{"Yes" if config.non_rigid_registration else "No"}</td></tr>
 <tr><td>Max image size:</td><td>{config.max_image_size} px</td></tr>
 <tr><td>Feature detector:</td><td>{config.feature_detector}</td></tr>
 <tr><td>Rigid transform:</td><td>{config.transformer_type}</td></tr>
-<tr><td>Reference slide:</td><td>{config.reference_slide or 'Auto-detect'}</td></tr>
+<tr><td>Reference slide:</td><td>{config.reference_slide or "Auto-detect"}</td></tr>
 <tr><td>Crop mode:</td><td>{config.crop_mode}</td></tr>
-<tr><td>Tissue masks:</td><td>{'Yes' if config.use_masks else 'No'}</td></tr>
-<tr><td>Denoise:</td><td>{'Yes' if config.denoise else 'No'}</td></tr>
-<tr><td>Slides pre-ordered:</td><td>{'Yes' if config.imgs_ordered else 'No (auto-sort)'}</td></tr>
-<tr><td>Micro-registration:</td><td>{'Yes (' + str(config.micro_max_image_size) + ' px)' if config.micro_registration else 'No'}</td></tr>
-<tr><td>GPU:</td><td>{'Yes' if config.use_gpu else 'No'}</td></tr>
+<tr><td>Tissue masks:</td><td>{"Yes" if config.use_masks else "No"}</td></tr>
+<tr><td>Denoise:</td><td>{"Yes" if config.denoise else "No"}</td></tr>
+<tr><td>Slides pre-ordered:</td><td>{"Yes" if config.imgs_ordered else "No (auto-sort)"}</td></tr>
+<tr><td>Micro-registration:</td><td>{"Yes (" + str(config.micro_max_image_size) + " px)" if config.micro_registration else "No"}</td></tr>
+<tr><td>GPU:</td><td>{"Yes" if config.use_gpu else "No"}</td></tr>
 </table>
 <p><b>Output settings</b></p>
 <table style="margin: 4px 0;">
@@ -659,6 +825,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
         return msg.exec() == QtWidgets.QMessageBox.StandardButton.Yes
 
+    @staticmethod
+    def _safe_total_size_bytes(slides: list[Path]) -> tuple[int, bool]:
+        total = 0
+        has_missing = False
+        for slide in slides:
+            try:
+                if slide.exists():
+                    total += slide.stat().st_size
+                else:
+                    has_missing = True
+            except OSError:
+                has_missing = True
+                continue
+        return total, has_missing
+
     def _on_worker_finished(self, result: dict) -> None:
         logger.info("Registration completed")
         self._status_dock.set_progress(100)
@@ -666,23 +847,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self._update_tools_enabled()
         self._load_registered_layers(result)
         self._status_bar.showMessage("Registration completed successfully", 5000)
-        QtWidgets.QMessageBox.information(
-            self, "VALIS", "Registration complete."
-        )
+        QtWidgets.QMessageBox.information(self, "VALIS", "Registration complete.")
 
     def _on_worker_failed(self, message: str) -> None:
         logger.error("Registration failed: %s", message)
         self._status_bar.showMessage("Registration failed", 5000)
-        
+
         # Find log file
         log_file = self._repo_root / "logs" / "valis_workstation.log"
-        
+
         # Show enhanced error dialog
         show_error_dialog(
             self,
             f"Registration failed: {message}",
             exception=None,  # We don't have the exception object here
-            log_file=log_file if log_file.exists() else None
+            log_file=log_file if log_file.exists() else None,
         )
 
     def _blink(self) -> None:
@@ -690,7 +869,9 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "Blink", "Napari not available.")
             return
         if not self._last_result or not self._last_result.get("registered_dir"):
-            QtWidgets.QMessageBox.warning(self, "Blink", "No registered slides available.")
+            QtWidgets.QMessageBox.warning(
+                self, "Blink", "No registered slides available."
+            )
             return
         registered_dir = Path(self._last_result["registered_dir"])
         slide_paths = sorted(registered_dir.glob("*.ome.tiff"))
@@ -713,7 +894,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _show_quality_report(self) -> None:
         if not self._last_result or "summary_df" not in self._last_result:
-            QtWidgets.QMessageBox.warning(self, "Quality Report", "No results available.")
+            QtWidgets.QMessageBox.warning(
+                self, "Quality Report", "No results available."
+            )
             return
         logger.info("Opening quality report dialog")
         summary_df = self._last_result["summary_df"]
@@ -722,7 +905,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _warp_annotations(self) -> None:
         if not self._last_result or "registrar" not in self._last_result:
-            QtWidgets.QMessageBox.warning(self, "Warp", "No registration results available.")
+            QtWidgets.QMessageBox.warning(
+                self, "Warp", "No registration results available."
+            )
             return
         output_dir = Path(self._last_result["output_dir"])
         dialog = WarpAnnotationsDialog(self._last_result["registrar"], output_dir, self)
@@ -731,11 +916,29 @@ class MainWindow(QtWidgets.QMainWindow):
     def _load_registered_layers(self, result: dict) -> None:
         if not self._napari_available or self._viewer is None:
             return
+
+        progress = QtWidgets.QProgressDialog(
+            "Loading registered output into viewer...", "Abort", 0, 0, self
+        )
+        progress.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
+        progress.show()
+
         registered_dir = Path(result["registered_dir"])
         for layer in list(self._viewer.layers):
             if layer.name.startswith("Registered:"):
                 self._viewer.layers.remove(layer)
-        for slide_path in sorted(registered_dir.glob("*.ome.tiff")):
+
+        slides = list(sorted(registered_dir.glob("*.ome.tiff")))
+        progress.setMaximum(len(slides))
+
+        for i, slide_path in enumerate(slides):
+            if progress.wasCanceled():
+                break
+
+            progress.setValue(i)
+            progress.setLabelText(f"Loading: {slide_path.name}...")
+            QtWidgets.QApplication.processEvents()
+
             try:
                 layer_result = self._viewer.open(
                     str(slide_path), name=f"Registered: {slide_path.name}"
@@ -746,29 +949,33 @@ class MainWindow(QtWidgets.QMainWindow):
             except Exception:
                 logger.exception("Failed to load registered slide %s", slide_path)
 
+        progress.setValue(len(slides))
+
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """Handle window close event with proper resource cleanup."""
         logger.info("Closing main window - initiating cleanup")
-        
+
         # Save window state and splitter layout
         self._save_window_state()
         self._save_splitter_state()
-        
+
         # Stop and cleanup worker thread if running
         if self._worker_thread and self._worker_thread.isRunning():
             logger.warning("Worker thread still running - requesting termination")
-            
+
             # Try to cancel the worker first
             if self._worker:
                 self._worker.cancel()
-            
+
             # Give it time to finish gracefully
             self._worker_thread.quit()
             if not self._worker_thread.wait(2000):  # Wait max 2 seconds
-                logger.error("Worker thread did not terminate gracefully, forcing termination")
+                logger.error(
+                    "Worker thread did not terminate gracefully, forcing termination"
+                )
                 self._worker_thread.terminate()
                 self._worker_thread.wait(500)
-        
+
         # Cleanup napari viewer
         if self._viewer is not None:
             try:
@@ -777,12 +984,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._viewer = None
             except Exception as e:
                 logger.exception(f"Failed to close napari viewer: {e}")
-        
+
         # Clear references to help garbage collection
         self._worker = None
         self._worker_thread = None
         self._last_result = None
-        
+
         logger.info("Cleanup complete, closing application")
         super().closeEvent(event)
 
@@ -817,7 +1024,10 @@ class MainWindow(QtWidgets.QMainWindow):
         """Restore splitter sizes from QSettings, falling back to defaults."""
         canvas_init = max(
             CANVAS_MIN_W,
-            self.width() - LEFT_SIDEBAR_INIT - RIGHT_SIDEBAR_INIT - 2 * SPLITTER_HANDLE_W,
+            self.width()
+            - LEFT_SIDEBAR_INIT
+            - RIGHT_SIDEBAR_INIT
+            - 2 * SPLITTER_HANDLE_W,
         )
         restore_splitter_state(
             self._top_splitter,
@@ -846,7 +1056,10 @@ class MainWindow(QtWidgets.QMainWindow):
         """Reset splitters to default sizes."""
         canvas_init = max(
             CANVAS_MIN_W,
-            self.width() - LEFT_SIDEBAR_INIT - RIGHT_SIDEBAR_INIT - 2 * SPLITTER_HANDLE_W,
+            self.width()
+            - LEFT_SIDEBAR_INIT
+            - RIGHT_SIDEBAR_INIT
+            - 2 * SPLITTER_HANDLE_W,
         )
         self._top_splitter.setSizes(
             [LEFT_SIDEBAR_INIT, canvas_init, RIGHT_SIDEBAR_INIT]
@@ -904,20 +1117,22 @@ class MainWindow(QtWidgets.QMainWindow):
             logger.info("Opened user manual")
         else:
             QtWidgets.QMessageBox.information(
-                self, "User Manual",
-                f"User manual not found at {manual_path}"
+                self, "User Manual", f"User manual not found at {manual_path}"
             )
 
     def _open_quick_start(self) -> None:
         """Open the quick start guide in default browser."""
         quick_start_path = self._repo_root / "QUICK_START.md"
         if quick_start_path.exists():
-            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(quick_start_path)))
+            QtGui.QDesktopServices.openUrl(
+                QtCore.QUrl.fromLocalFile(str(quick_start_path))
+            )
             logger.info("Opened quick start guide")
         else:
             QtWidgets.QMessageBox.information(
-                self, "Quick Start",
-                f"Quick start guide not found at {quick_start_path}"
+                self,
+                "Quick Start",
+                f"Quick start guide not found at {quick_start_path}",
             )
 
     def _report_issue(self) -> None:
@@ -954,7 +1169,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 break  # Only process first folder
             elif path.is_file():
                 # Check if it's a config file
-                if path.suffix.lower() == '.json':
+                if path.suffix.lower() == ".json":
                     logger.info(f"Dropped config file: {path}")
                     self._load_config_from_path(path)
                     break
@@ -963,43 +1178,58 @@ class MainWindow(QtWidgets.QMainWindow):
     def _load_slides_from_folder(self, folder: Path) -> None:
         """Load slides from a folder path."""
         overlay = LoadingOverlay(self, f"Scanning {folder.name}…")
+        overlay.set_stage("Scan")
+        overlay.set_progress(5)
         overlay.show()
         QtWidgets.QApplication.processEvents()
         try:
             slides = scan_slide_folder(folder)
+            overlay.set_progress(30)
             if slides:
+                self._current_slide_folder = folder
                 self._project_dock.set_slides(slides)
                 self._add_to_recent_folders(str(folder))
-                
+
                 # Update reference slide list in properties dock
                 slide_names = [s.stem for s in slides]
                 self._properties_dock.update_reference_slide_list(slide_names)
-                
+
                 # Update slide preview dock with real thumbnails (parallel loading)
+                overlay.set_stage("Thumbnail")
                 overlay.set_message(f"Generating thumbnails for {len(slides)} slides…")
                 QtWidgets.QApplication.processEvents()
                 self._slide_preview_dock.clear()
                 self._load_thumbnails_parallel(slides, overlay)
-                
+                overlay.set_progress(100)
+
+                # Auto-load associated config if one was linked to this folder.
+                linked_cfg = self._get_recent_folder_config(folder)
+                if linked_cfg and linked_cfg.exists():
+                    self._load_config_from_path(linked_cfg)
+
                 logger.info("Loaded %d slides from %s", len(slides), folder.name)
-                self._status_bar.showMessage(f"Loaded {len(slides)} slides from {folder.name}")
+                self._status_bar.showMessage(
+                    f"Loaded {len(slides)} slides from {folder.name}"
+                )
             else:
                 QtWidgets.QMessageBox.warning(
-                    self, "No Slides Found",
-                    f"No supported slide images found in {folder.name}"
+                    self,
+                    "No Slides Found",
+                    f"No supported slide images found in {folder.name}",
                 )
         except Exception as e:
             logger.exception("Failed to load slides from %s", folder)
             QtWidgets.QMessageBox.critical(
-                self, "Error",
-                f"Failed to load slides from {folder.name}:\n{str(e)}"
+                self, "Error", f"Failed to load slides from {folder.name}:\n{str(e)}"
             )
         finally:
             overlay.dismiss()
 
-    def _load_thumbnails_parallel(self, slides: list[Path], overlay: LoadingOverlay | None = None) -> None:
+    def _load_thumbnails_parallel(
+        self, slides: list[Path], overlay: LoadingOverlay | None = None
+    ) -> None:
         """Load thumbnails in parallel using thread pool.
-        
+
         Parameters
         ----------
         slides : list[Path]
@@ -1008,150 +1238,218 @@ class MainWindow(QtWidgets.QMainWindow):
             Optional overlay to update with progress messages
         """
         import concurrent.futures
+
         from valis_workstation.services.thumbnail_generator import generate_thumbnail
-        
+
         total_slides = len(slides)
         completed = 0
-        
+        started_at = time.time()
+
         # Update status bar
         self._status_bar.showMessage(f"Generating thumbnails: 0/{total_slides}")
-        
-        def generate_and_update(slide_path: Path) -> tuple[str, QtGui.QPixmap | None, dict]:
+
+        def generate_and_update(
+            slide_path: Path,
+        ) -> tuple[str, QtGui.QPixmap | None, dict]:
             """Generate thumbnail and return results."""
             try:
                 thumbnail, metadata = generate_thumbnail(slide_path, max_size=512)
                 return slide_path.stem, thumbnail, metadata
             except Exception as e:
-                logger.warning(f"Failed to generate thumbnail for {slide_path.name}: {e}")
+                logger.warning(
+                    f"Failed to generate thumbnail for {slide_path.name}: {e}"
+                )
                 return slide_path.stem, None, {"file_path": str(slide_path)}
-        
+
         # Use ThreadPoolExecutor with limited workers to avoid overwhelming disk I/O
         # 4 workers is a good balance for I/O bound operations
         max_workers = min(4, total_slides)
-        
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Submit all tasks
             future_to_slide = {
-                executor.submit(generate_and_update, slide): slide 
-                for slide in slides
+                executor.submit(generate_and_update, slide): slide for slide in slides
             }
-            
+
             # Process results as they complete
             for future in concurrent.futures.as_completed(future_to_slide):
                 slide_name, thumbnail, metadata = future.result()
-                
+
                 # Add to preview dock
                 self._slide_preview_dock.add_slide(slide_name, thumbnail, metadata)
-                
+
                 # Update progress
                 completed += 1
                 msg = f"Generating thumbnails: {completed}/{total_slides}"
                 self._status_bar.showMessage(msg)
                 if overlay is not None:
+                    overlay.set_stage("Thumbnail")
                     overlay.set_message(msg)
-                
+                    overlay.set_progress(completed, total_slides)
+                    elapsed = max(0.001, time.time() - started_at)
+                    rate = completed / elapsed
+                    remaining = (total_slides - completed) / rate if rate > 0 else None
+                    overlay.set_eta_seconds(remaining)
+
                 # Process events to keep UI responsive
                 QtWidgets.QApplication.processEvents()
-        
+
         logger.info(f"Generated {completed}/{total_slides} thumbnails")
 
     def _add_to_recent_folders(self, folder_path: str) -> None:
         """Add folder to recent folders list."""
         settings = QtCore.QSettings("VALIS", "Workstation")
         recent = settings.value("recent_folders", [])
-        
+
         if not isinstance(recent, list):
             recent = []
-        
+
         # Remove if already exists
         if folder_path in recent:
             recent.remove(folder_path)
-        
+
         # Add to front
         recent.insert(0, folder_path)
-        
+
         # Keep only last 10
         recent = recent[:10]
-        
+
         settings.setValue("recent_folders", recent)
         self._update_recent_folders_menu()
         logger.debug(f"Added {folder_path} to recent folders")
+
+    def _save_recent_folder_config(self, folder: Path, config_path: Path) -> None:
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        raw = settings.value("recent_folder_configs", "{}")
+        try:
+            mapping = json.loads(raw) if isinstance(raw, str) else dict(raw)
+        except Exception:
+            mapping = {}
+        mapping[str(folder)] = str(config_path)
+        settings.setValue("recent_folder_configs", json.dumps(mapping))
+
+    def _get_recent_folder_config(self, folder: Path) -> Path | None:
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        raw = settings.value("recent_folder_configs", "{}")
+        try:
+            mapping = json.loads(raw) if isinstance(raw, str) else dict(raw)
+        except Exception:
+            mapping = {}
+        path = mapping.get(str(folder))
+        return Path(path) if path else None
+
+    def _open_recent_with_config(self, folder: Path) -> None:
+        # `_load_slides_from_folder` already auto-loads linked configs.
+        self._load_slides_from_folder(folder)
 
     def _update_recent_folders_menu(self) -> None:
         """Update the recent folders menu."""
         self._recent_menu.clear()
         settings = QtCore.QSettings("VALIS", "Workstation")
         recent = settings.value("recent_folders", [])
-        
+
         if not isinstance(recent, list):
             recent = []
-        
+
         if not recent:
             action = self._recent_menu.addAction("(No recent folders)")
             action.setEnabled(False)
         else:
             for folder_path in recent:
                 path = Path(folder_path)
-                action = self._recent_menu.addAction(path.name)
+                exists = path.exists()
+                label = path.name if exists else f"[missing] {path.name}"
+                action = self._recent_menu.addAction(label)
                 action.setToolTip(folder_path)
+                action.setEnabled(exists)
                 action.triggered.connect(
                     lambda checked=False, p=path: self._load_slides_from_folder(p)
                 )
+                cfg = self._get_recent_folder_config(path)
+                if cfg is not None:
+                    cfg_action = self._recent_menu.addAction(
+                        f"  -> Open with config ({cfg.name})"
+                    )
+                    cfg_action.setEnabled(exists and cfg.exists())
+                    cfg_action.setToolTip(f"Folder: {folder_path}\nConfig: {cfg}")
+                    cfg_action.triggered.connect(
+                        lambda checked=False, p=path: self._open_recent_with_config(p)
+                    )
 
     def _save_configuration(self) -> None:
         """Save current configuration to JSON file."""
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
-            self, "Save Configuration",
+            self,
+            "Save Configuration",
             str(self._repo_root / "configs"),
-            "JSON Files (*.json)"
+            "JSON Files (*.json)",
         )
-        
+
         if not file_path:
             return
-        
+
         try:
-            import dataclasses, json
+            import dataclasses
+            import json
+
             config = self._properties_dock.config()
             config_dict = dataclasses.asdict(config)
-            
-            with open(file_path, 'w') as f:
+
+            with open(file_path, "w") as f:
                 json.dump(config_dict, f, indent=2)
-            
+
+            self._last_loaded_config_path = Path(file_path)
+            if self._current_slide_folder is not None:
+                self._save_recent_folder_config(
+                    self._current_slide_folder, Path(file_path)
+                )
+
             logger.info("Saved configuration to %s", file_path)
-            self._status_bar.showMessage(f"Configuration saved to {Path(file_path).name}", 3000)
+            self._status_bar.showMessage(
+                f"Configuration saved to {Path(file_path).name}", 3000
+            )
         except Exception as e:
             logger.exception("Failed to save configuration")
             QtWidgets.QMessageBox.critical(
-                self, "Save Error",
-                f"Failed to save configuration:\n{e}"
+                self, "Save Error", f"Failed to save configuration:\n{e}"
             )
 
     def _load_configuration(self) -> None:
         """Load configuration from JSON file."""
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Load Configuration",
+            self,
+            "Load Configuration",
             str(self._repo_root / "configs"),
-            "JSON Files (*.json)"
+            "JSON Files (*.json)",
         )
-        
+
         if not file_path:
             return
-        
+
         self._load_config_from_path(Path(file_path))
 
     def _load_config_from_path(self, file_path: Path) -> None:
         """Load configuration from a JSON file and populate the dock."""
         try:
             import json
-            with open(file_path, 'r') as f:
+
+            with open(file_path, "r") as f:
                 config_dict = json.load(f)
 
             # Build a Config from the dict, falling back to defaults for
             # any keys that are missing (e.g. older config files).
-            cfg = Config(**{k: v for k, v in config_dict.items()
-                            if k in Config.__dataclass_fields__})
+            cfg = Config(
+                **{
+                    k: v
+                    for k, v in config_dict.items()
+                    if k in Config.__dataclass_fields__
+                }
+            )
 
             self._properties_dock.set_config(cfg)
+            self._last_loaded_config_path = file_path
+            if self._current_slide_folder is not None:
+                self._save_recent_folder_config(self._current_slide_folder, file_path)
 
             logger.info("Loaded configuration from %s", file_path)
             self._status_bar.showMessage(
@@ -1160,10 +1458,9 @@ class MainWindow(QtWidgets.QMainWindow):
         except Exception as e:
             logger.exception("Failed to load configuration")
             QtWidgets.QMessageBox.critical(
-                self, "Load Error",
-                f"Failed to load configuration:\n{e}"
+                self, "Load Error", f"Failed to load configuration:\n{e}"
             )
-    
+
     def _show_save_options(self) -> None:
         """Show save-options dialog and copy results into the Properties dock."""
         dialog = SaveOptionsDialog(self)
@@ -1186,39 +1483,38 @@ class MainWindow(QtWidgets.QMainWindow):
             dock._output_group.setChecked(True)
 
             self._status_bar.showMessage("Output settings updated", 5000)
-    
+
     def _merge_slides(self) -> None:
         """Show merge slides dialog for creating multi-channel images."""
         if not self._last_result or "registrar" not in self._last_result:
             QtWidgets.QMessageBox.warning(
-                self, "Merge Slides",
-                "No registered slides available. Please run registration first."
+                self,
+                "Merge Slides",
+                "No registered slides available. Please run registration first.",
             )
             return
-        
+
         # Get list of slide names from the registrar
         registrar = self._last_result["registrar"]
         slide_names = [slide.name for slide in registrar.slide_dict.values()]
-        
+
         if len(slide_names) < 2:
             QtWidgets.QMessageBox.warning(
-                self, "Merge Slides",
-                "Need at least 2 registered slides to merge."
+                self, "Merge Slides", "Need at least 2 registered slides to merge."
             )
             return
-        
+
         dialog = MergeSlidesDialog(slide_names, self)
         if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
             merge_config = dialog.get_merge_config()
             logger.info(f"Merge configuration: {merge_config}")
-            
+
             if not merge_config["channels"]:
                 QtWidgets.QMessageBox.warning(
-                    self, "Merge Slides",
-                    "No channels selected for merging."
+                    self, "Merge Slides", "No channels selected for merging."
                 )
                 return
-            
+
             # Get output directory and save config
             output_dir = Path(self._last_result["output_dir"])
             config = self._properties_dock.config()
@@ -1228,21 +1524,20 @@ class MainWindow(QtWidgets.QMainWindow):
                 "tile_size": config.tile_size,
                 "image_quality": config.image_quality,
             }
-            
+
             # Run merge in a background thread
             from valis_workstation.services.merge_slides import merge_registered_slides
-            
+
             self._status_bar.showMessage(
-                f"Merging {len(merge_config['channels'])} channels...",
-                0
+                f"Merging {len(merge_config['channels'])} channels...", 0
             )
-            
+
             merge_thread = QtCore.QThread(self)
-            
+
             class _MergeWorker(QtCore.QObject):
                 finished = QtCore.Signal(object)
                 failed = QtCore.Signal(str)
-                
+
                 def __init__(self, registrar, merge_config, output_dir, save_config):
                     super().__init__()
                     self._registrar = registrar
@@ -1250,10 +1545,10 @@ class MainWindow(QtWidgets.QMainWindow):
                     self._output_dir = output_dir
                     self._save_config = save_config
                     self._cancel_requested = False
-                
+
                 def cancel(self):
                     self._cancel_requested = True
-                
+
                 def run(self):
                     try:
                         result_path = merge_registered_slides(
@@ -1267,60 +1562,190 @@ class MainWindow(QtWidgets.QMainWindow):
                         self.finished.emit(result_path)
                     except Exception as exc:
                         self.failed.emit(str(exc))
-            
-            merge_worker = _MergeWorker(registrar, merge_config, output_dir, save_config)
+
+            merge_worker = _MergeWorker(
+                registrar, merge_config, output_dir, save_config
+            )
             merge_worker.moveToThread(merge_thread)
-            
+
             def on_merge_success(result_path):
                 logger.info(f"Merge completed: {result_path}")
                 self._status_bar.showMessage(f"Slides merged successfully", 5000)
                 QtWidgets.QMessageBox.information(
-                    self, "Merge Complete",
+                    self,
+                    "Merge Complete",
                     f"Successfully merged {len(merge_config['channels'])} channels.\n\n"
-                    f"Output: {result_path}"
+                    f"Output: {result_path}",
                 )
                 merge_thread.quit()
-            
+
             def on_merge_error(msg):
                 logger.error(f"Merge failed: {msg}")
                 self._status_bar.showMessage("Merge failed", 5000)
                 QtWidgets.QMessageBox.critical(
-                    self, "Merge Failed",
-                    f"Failed to merge slides:\n{msg}"
+                    self, "Merge Failed", f"Failed to merge slides:\n{msg}"
                 )
                 merge_thread.quit()
-            
+
             merge_worker.finished.connect(on_merge_success)
             merge_worker.failed.connect(on_merge_error)
             merge_thread.started.connect(merge_worker.run)
             merge_thread.start()
-    
+
+    def _export_roi_crop(self) -> None:
+        """Show ROI export dialog and process the crop across all registered slides."""
+        if not self._last_result or "registrar" not in self._last_result:
+            QtWidgets.QMessageBox.warning(
+                self, "Export ROI", "No registered slides available."
+            )
+            return
+
+        dialog = ROIExportDialog(self)
+        if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
+            options = dialog.get_options()
+            bbox = options["bbox"]  # (x, y, w, h)
+            fmt = options["format"]
+            reopen = options["reopen"]
+
+            # Request directory to save crops to
+            out_dir = QtWidgets.QFileDialog.getExistingDirectory(
+                self, "Select Directory for ROI Crops", str(Path.home())
+            )
+            if not out_dir:
+                return
+
+            out_path = Path(out_dir)
+
+            registrar = self._last_result["registrar"]
+            import os
+
+            from valis import warp_tools
+
+            self._status_bar.showMessage("Extracting ROIs...")
+            QtWidgets.QApplication.processEvents()
+            try:
+                # Provide a visible progress
+                progress = QtWidgets.QProgressDialog(
+                    "Exporting ROIs...", "Cancel", 0, len(registrar.slide_dict), self
+                )
+                progress.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
+
+                new_slide_files = []
+                # Map standard formats
+                ext = ".tiff"
+                if fmt == ImageFormats.OME_TIFF:
+                    ext = ".ome.tiff"
+                elif fmt == ImageFormats.PNG:
+                    ext = ".png"
+
+                i = 0
+                for slide_name, slide_obj in registrar.slide_dict.items():
+                    if progress.wasCanceled():
+                        break
+
+                    progress.setValue(i)
+                    progress.setLabelText(f"Exporting ROI for {slide_name}...")
+
+                    warped_slide = slide_obj.warp_slide(level=0)
+                    roi_vips = warped_slide.extract_area(*bbox)
+
+                    out_file = out_path / f"{slide_name}_ROI{ext}"
+                    # convert properly
+                    warp_tools.save_img(str(out_file), roi_vips)
+                    new_slide_files.append(str(out_file))
+
+                    i += 1
+                progress.setValue(len(registrar.slide_dict))
+
+                QtWidgets.QMessageBox.information(
+                    self,
+                    "ROI Export",
+                    f"Successfully exported {len(new_slide_files)} ROIs to:\n{out_path}",
+                )
+
+                if (
+                    reopen
+                    and new_slide_files
+                    and self._napari_available
+                    and self._viewer
+                ):
+                    for sf in new_slide_files:
+                        self._viewer.open(sf)
+
+            except Exception as e:
+                logger.exception("Failed to export ROI")
+                QtWidgets.QMessageBox.critical(self, "Export Failed", str(e))
+
+            self._status_bar.showMessage("ROI Export finished", 5000)
+
+    def _export_session_bundle(self) -> None:
+        """Export config + logs + diagnostics summary into a zip bundle."""
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        default_name = str(self._repo_root / "logs" / f"session_bundle_{ts}.zip")
+        out_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Export Session Bundle",
+            default_name,
+            "ZIP Files (*.zip)",
+        )
+        if not out_path:
+            return
+
+        try:
+            cfg = self._properties_dock.config()
+            payload = {
+                "timestamp": ts,
+                "config": cfg.__dict__,
+                "current_slide_folder": str(self._current_slide_folder)
+                if self._current_slide_folder
+                else None,
+                "last_result": self._last_result,
+            }
+            with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+                zf.writestr(
+                    "session_summary.json", json.dumps(payload, indent=2, default=str)
+                )
+                log_file = self._repo_root / "logs" / "valis_workstation.log"
+                if log_file.exists():
+                    zf.write(log_file, arcname="valis_workstation.log")
+            QtWidgets.QMessageBox.information(
+                self, "Export", f"Session bundle exported to:\n{out_path}"
+            )
+        except Exception as exc:
+            logger.exception("Failed to export session bundle")
+            QtWidgets.QMessageBox.critical(self, "Export Failed", str(exc))
+
+    def _show_diagnostics(self) -> None:
+        dialog = DiagnosticsDialog(self._repo_root, self._last_result, self)
+        dialog.exec()
+
     def _show_performance_stats(self) -> None:
         """Show the performance statistics dialog."""
-        from valis_workstation.ui.dialogs.performance_stats_dialog import PerformanceStatsDialog
-        
+        from valis_workstation.ui.dialogs.performance_stats_dialog import (
+            PerformanceStatsDialog,
+        )
+
         dialog = PerformanceStatsDialog(self)
         dialog.exec()
-        
+
         logger.info("Performance statistics dialog opened")
-    
+
     def _show_preferences(self) -> None:
         """Show the preferences dialog."""
         from valis_workstation.ui.dialogs.preferences_dialog import PreferencesDialog
-        
+
         dialog = PreferencesDialog(self)
         dialog.preferences_changed.connect(self._on_preferences_changed)
         dialog.exec()
-        
+
         logger.info("Preferences dialog opened")
-    
+
     def _on_preferences_changed(self) -> None:
         """Handle preferences changes."""
         logger.info("Preferences changed - some settings require application restart")
-        
+
         QtWidgets.QMessageBox.information(
             self,
             "Preferences Saved",
-            "Some preference changes require restarting the application to take effect."
+            "Some preference changes require restarting the application to take effect.",
         )
-

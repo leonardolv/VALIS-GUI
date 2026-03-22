@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+import dataclasses
+import json
 import logging
 import re
 
 from PySide6 import QtCore, QtWidgets
 
+from valis_workstation.constants import CropModes, FeatureDetectors, TransformerTypes
 from valis_workstation.models.config import Config
-from valis_workstation.constants import (
-    FeatureDetectors, TransformerTypes, CropModes
-)
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,9 @@ SIMPLE_ELASTIX_BANNER = (
 
 
 class PropertiesDock(QtWidgets.QDockWidget):
-    def __init__(self, simple_elastix_available: bool, parent: QtWidgets.QWidget | None = None) -> None:
+    def __init__(
+        self, simple_elastix_available: bool, parent: QtWidgets.QWidget | None = None
+    ) -> None:
         super().__init__("Properties", parent)
         self.setObjectName("PropertiesDock")
         self._simple_elastix_available = simple_elastix_available
@@ -31,6 +33,26 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._banner.setWordWrap(True)
         self._banner.setStyleSheet("color: #ffcc66; font-weight: bold;")
         layout.addWidget(self._banner)
+
+        # ── Presets ──────────────────────────────────────────────────
+        preset_row = QtWidgets.QHBoxLayout()
+        preset_row.addWidget(QtWidgets.QLabel("Preset"))
+        self._preset_combo = QtWidgets.QComboBox()
+        self._preset_combo.setToolTip("Load a saved registration preset")
+        preset_row.addWidget(self._preset_combo, 1)
+
+        self._save_preset_btn = QtWidgets.QPushButton("Save")
+        self._save_preset_btn.clicked.connect(self._save_current_preset)
+        preset_row.addWidget(self._save_preset_btn)
+
+        self._load_preset_btn = QtWidgets.QPushButton("Load")
+        self._load_preset_btn.clicked.connect(self._load_selected_preset)
+        preset_row.addWidget(self._load_preset_btn)
+
+        self._delete_preset_btn = QtWidgets.QPushButton("Delete")
+        self._delete_preset_btn.clicked.connect(self._delete_selected_preset)
+        preset_row.addWidget(self._delete_preset_btn)
+        layout.addLayout(preset_row)
 
         # ── Basic settings ──────────────────────────────────────────
         form = QtWidgets.QFormLayout()
@@ -202,6 +224,13 @@ class PropertiesDock(QtWidgets.QDockWidget):
 
         out = QtWidgets.QFormLayout()
 
+        self._output_profile = QtWidgets.QComboBox()
+        self._output_profile.addItems(
+            ["Custom", "WSI Archive", "Fast Review", "Publication"]
+        )
+        self._output_profile.setToolTip("Apply output templates for common workflows")
+        self._output_profile.currentTextChanged.connect(self.apply_output_profile)
+
         self._compression_level_spin = QtWidgets.QSpinBox()
         self._compression_level_spin.setRange(0, 9)
         self._compression_level_spin.setValue(1)
@@ -234,10 +263,10 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._image_quality_spin.setValue(95)
         self._image_quality_spin.setSuffix(" %")
         self._image_quality_spin.setToolTip(
-            "JPEG compression quality (1–100).\n"
-            "Only affects JPEG-compressed TIFFs."
+            "JPEG compression quality (1–100).\nOnly affects JPEG-compressed TIFFs."
         )
 
+        out.addRow("Output profile", self._output_profile)
         out.addRow("Compression level", self._compression_level_spin)
         out.addRow("Pyramid levels", self._pyramid_levels_spin)
         out.addRow("Tile size", self._tile_size_spin)
@@ -249,6 +278,8 @@ class PropertiesDock(QtWidgets.QDockWidget):
         layout.addStretch(1)
         self.setWidget(container)
 
+        self._applying_profile = False
+        self._refresh_preset_list()
         self._apply_simple_elastix_state()
 
     # ── Helpers ─────────────────────────────────────────────────────
@@ -261,9 +292,113 @@ class PropertiesDock(QtWidgets.QDockWidget):
         else:
             self._banner.setText("")
 
+    def _preset_store_key(self) -> str:
+        return "config_presets"
+
+    def _get_presets(self) -> dict[str, dict]:
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        raw = settings.value(self._preset_store_key(), "{}")
+        if isinstance(raw, dict):
+            return raw
+        try:
+            parsed = json.loads(raw)
+            return parsed if isinstance(parsed, dict) else {}
+        except Exception:
+            return {}
+
+    def _set_presets(self, presets: dict[str, dict]) -> None:
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        settings.setValue(self._preset_store_key(), json.dumps(presets))
+
+    def _refresh_preset_list(self) -> None:
+        current = self._preset_combo.currentText()
+        self._preset_combo.clear()
+        self._preset_combo.addItem("(Select preset)")
+        for name in sorted(self._get_presets().keys()):
+            self._preset_combo.addItem(name)
+        idx = self._preset_combo.findText(current)
+        self._preset_combo.setCurrentIndex(idx if idx >= 0 else 0)
+
+    def _save_current_preset(self) -> None:
+        name, ok = QtWidgets.QInputDialog.getText(self, "Save Preset", "Preset name")
+        if not ok or not name.strip():
+            return
+        name = name.strip()
+        cfg = self.config()
+        presets = self._get_presets()
+        presets[name] = dataclasses.asdict(cfg)
+        self._set_presets(presets)
+        self._refresh_preset_list()
+        self._preset_combo.setCurrentText(name)
+        logger.info("Saved preset '%s'", name)
+
+    def _load_selected_preset(self) -> None:
+        name = self._preset_combo.currentText()
+        if not name or name == "(Select preset)":
+            return
+        preset = self._get_presets().get(name)
+        if not preset:
+            return
+        cfg = Config(
+            **{k: v for k, v in preset.items() if k in Config.__dataclass_fields__}
+        )
+        self.set_config(cfg)
+        logger.info("Loaded preset '%s'", name)
+
+    def _delete_selected_preset(self) -> None:
+        name = self._preset_combo.currentText()
+        if not name or name == "(Select preset)":
+            return
+        presets = self._get_presets()
+        if name in presets:
+            presets.pop(name)
+            self._set_presets(presets)
+            self._refresh_preset_list()
+            logger.info("Deleted preset '%s'", name)
+
+    def apply_output_profile(self, profile_name: str) -> None:
+        """Apply output profile template values.
+
+        Selecting `Custom` preserves user-entered values.
+        """
+        if self._applying_profile:
+            return
+        self._applying_profile = True
+        try:
+            templates = {
+                "WSI Archive": {
+                    "compression": 6,
+                    "pyramid": 5,
+                    "tile": 512,
+                    "quality": 95,
+                },
+                "Fast Review": {
+                    "compression": 2,
+                    "pyramid": 3,
+                    "tile": 256,
+                    "quality": 85,
+                },
+                "Publication": {
+                    "compression": 4,
+                    "pyramid": 4,
+                    "tile": 512,
+                    "quality": 100,
+                },
+            }
+            t = templates.get(profile_name)
+            if t is None:
+                return
+            self._compression_level_spin.setValue(t["compression"])
+            self._pyramid_levels_spin.setValue(t["pyramid"])
+            self._tile_size_spin.setValue(t["tile"])
+            self._image_quality_spin.setValue(t["quality"])
+        finally:
+            self._applying_profile = False
+
     def _check_gpu_available(self) -> bool:
         try:
             import torch
+
             available = torch.cuda.is_available()
             if available:
                 logger.info("GPU detected: %s", torch.cuda.get_device_name(0))
@@ -278,7 +413,10 @@ class PropertiesDock(QtWidgets.QDockWidget):
     def _validate_project_name(self, text: str) -> None:
         invalid_chars = r'[<>:"/\\|?*]'
         reserved_names = {
-            "CON", "PRN", "AUX", "NUL",
+            "CON",
+            "PRN",
+            "AUX",
+            "NUL",
             *(f"COM{i}" for i in range(1, 10)),
             *(f"LPT{i}" for i in range(1, 10)),
         }
@@ -294,8 +432,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
         else:
             self._project_name.setStyleSheet("")
             self._project_name.setToolTip(
-                "Name for the registration project.\n"
-                "Results → output/<project_name>/"
+                "Name for the registration project.\nResults → output/<project_name>/"
             )
 
     # ── Config read / write ─────────────────────────────────────────
@@ -307,7 +444,10 @@ class PropertiesDock(QtWidgets.QDockWidget):
         if not project_name:
             project_name = "New Project"
         reserved = {
-            "CON", "PRN", "AUX", "NUL",
+            "CON",
+            "PRN",
+            "AUX",
+            "NUL",
             *(f"COM{i}" for i in range(1, 10)),
             *(f"LPT{i}" for i in range(1, 10)),
         }
@@ -327,8 +467,10 @@ class PropertiesDock(QtWidgets.QDockWidget):
             max_image_size=int(self._max_size.value()),
             use_gpu=self._use_gpu.isChecked(),
             # Advanced
-            feature_detector=self._feature_detector.currentData() or FeatureDetectors.VGG,
-            transformer_type=self._transformer_type.currentData() or TransformerTypes.SIMILARITY,
+            feature_detector=self._feature_detector.currentData()
+            or FeatureDetectors.VGG,
+            transformer_type=self._transformer_type.currentData()
+            or TransformerTypes.SIMILARITY,
             reference_slide=ref_slide,
             crop_mode=self._crop_mode.currentText(),
             use_masks=self._use_masks.isChecked(),
@@ -381,6 +523,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._pyramid_levels_spin.setValue(cfg.pyramid_levels)
         self._tile_size_spin.setValue(cfg.tile_size)
         self._image_quality_spin.setValue(cfg.image_quality)
+        self._output_profile.setCurrentText("Custom")
 
     def update_reference_slide_list(self, slide_names: list[str]) -> None:
         """Update the reference-slide dropdown with available slide names."""

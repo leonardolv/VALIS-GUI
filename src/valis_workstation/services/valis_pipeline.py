@@ -8,9 +8,9 @@ from typing import Callable
 
 import numpy as np
 
+from valis_workstation.constants import CropModes, FeatureDetectors, TransformerTypes
 from valis_workstation.models.config import Config
 from valis_workstation.utils.exceptions import UserVisibleError
-from valis_workstation.constants import FeatureDetectors, TransformerTypes, CropModes
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Feature detector mapping
 # ---------------------------------------------------------------------------
+
 
 def _get_feature_detector_cls(detector_key: str):
     """Return the VALIS ``FeatureDD`` **class** for *detector_key*.
@@ -49,7 +50,9 @@ def _get_feature_detector_cls(detector_key: str):
 
     cls = _map.get(detector_key)
     if cls is None:
-        logger.warning("Unknown feature detector '%s' – falling back to VGG", detector_key)
+        logger.warning(
+            "Unknown feature detector '%s' – falling back to VGG", detector_key
+        )
         return None  # VALIS will use its own default (VGG)
 
     logger.info("Feature detector class: %s", cls.__name__)
@@ -59,6 +62,7 @@ def _get_feature_detector_cls(detector_key: str):
 # ---------------------------------------------------------------------------
 # Transformer mapping
 # ---------------------------------------------------------------------------
+
 
 def _get_transformer_cls(transformer_key: str):
     """Return the *uninstantiated* scikit-image transform **class**.
@@ -70,7 +74,10 @@ def _get_transformer_cls(transformer_key: str):
         from skimage import transform as skt  # type: ignore[import-untyped]
     except ImportError:
         logger.warning("scikit-image not available – using default SimilarityTransform")
-        from skimage.transform import SimilarityTransform  # type: ignore[import-untyped]
+        from skimage.transform import (
+            SimilarityTransform,  # type: ignore[import-untyped]
+        )
+
         return SimilarityTransform
 
     _map = {
@@ -87,6 +94,7 @@ def _get_transformer_cls(transformer_key: str):
 # ---------------------------------------------------------------------------
 # Crop mode mapping
 # ---------------------------------------------------------------------------
+
 
 def _map_crop_mode(crop_mode: str) -> str | None:
     """Map the UI crop mode key to the string VALIS expects for ``crop``."""
@@ -126,11 +134,15 @@ def build_registrar_kwargs(config: Config) -> dict:
     if config.non_rigid_registration:
         try:
             from valis import non_rigid_registrars  # type: ignore[import-untyped]
+
             kwargs["non_rigid_registrar_cls"] = non_rigid_registrars.OpticalFlowWarper
         except ImportError:
             try:
                 from valis import serial_non_rigid  # type: ignore[import-untyped]
-                kwargs["non_rigid_registrar_cls"] = serial_non_rigid.SerialNonRigidRegistrar
+
+                kwargs["non_rigid_registrar_cls"] = (
+                    serial_non_rigid.SerialNonRigidRegistrar
+                )
             except ImportError:
                 logger.warning("No non-rigid registrar available – disabling non-rigid")
                 kwargs["non_rigid_registrar_cls"] = None
@@ -161,12 +173,17 @@ def build_registrar_kwargs(config: Config) -> dict:
     if config.micro_registration:
         try:
             from valis import micro_rigid_registrar  # type: ignore[import-untyped]
-            kwargs["micro_rigid_registrar_cls"] = micro_rigid_registrar.MicroRigidRegistrar
+
+            kwargs["micro_rigid_registrar_cls"] = (
+                micro_rigid_registrar.MicroRigidRegistrar
+            )
             kwargs["micro_rigid_registrar_params"] = {
                 "max_image_dim_px": config.micro_max_image_size,
             }
         except ImportError:
-            logger.warning("micro_rigid_registrar not importable – skipping micro-registration")
+            logger.warning(
+                "micro_rigid_registrar not importable – skipping micro-registration"
+            )
 
     logger.info("Registrar kwargs: %s", kwargs)
     return kwargs
@@ -228,9 +245,7 @@ def run_valis_pipeline(
     if not slides:
         raise UserVisibleError("No slides provided for registration.")
     if not _valis_available():
-        raise UserVisibleError(
-            "VALIS library not available. Please install valis-wsi."
-        )
+        raise UserVisibleError("VALIS library not available. Please install valis-wsi.")
 
     output_dir.mkdir(parents=True, exist_ok=True)
     slides = [Path(s) for s in slides]

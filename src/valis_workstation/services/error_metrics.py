@@ -28,9 +28,13 @@ def summarize_errors(errors: list[float], threshold: float) -> ErrorSummary:
 
 
 def select_metric_column(summary_df: pd.DataFrame) -> str | None:
-    candidates = [c for c in summary_df.columns if c.startswith("non_rigid") and c.endswith("TRE")]
+    candidates = [
+        c for c in summary_df.columns if c.startswith("non_rigid") and c.endswith("TRE")
+    ]
     if not candidates:
-        candidates = [c for c in summary_df.columns if c.startswith("rigid") and c.endswith("TRE")]
+        candidates = [
+            c for c in summary_df.columns if c.startswith("rigid") and c.endswith("TRE")
+        ]
     if not candidates:
         candidates = [c for c in summary_df.columns if c.endswith("TRE")]
     if not candidates:
@@ -49,7 +53,9 @@ def summarize_error_dataframe(summary_df: pd.DataFrame) -> dict:
             "max": 0.0,
         }
     values = summary_df[metric_column].fillna(0).tolist()
-    logger.info("Selected metric column '%s' with %d values", metric_column, len(values))
+    logger.info(
+        "Selected metric column '%s' with %d values", metric_column, len(values)
+    )
     return {
         "metric_column": metric_column,
         "values": values,

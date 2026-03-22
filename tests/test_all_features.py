@@ -4,11 +4,13 @@ Every dialog, dock, menu action, keyboard shortcut, drag-and-drop, and
 service function is tested here WITHOUT any modal dialogs requiring user
 interaction.  All QFileDialog / QMessageBox calls are monkeypatched.
 """
+
 from __future__ import annotations
 
 import importlib
 import importlib.util
 import json
+import time
 from dataclasses import asdict
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -26,6 +28,7 @@ from valis_workstation.utils.qt_logging import QtLogEmitter
 # ═══════════════════════════════════════════════════════════════════════
 #  HELPERS
 # ═══════════════════════════════════════════════════════════════════════
+
 
 def _noop(*a, **kw):
     """No-op callable for monkeypatching dialog exec/show."""
@@ -48,10 +51,12 @@ def _mock_viewer():
 #  DIALOG TESTS — BlinkViewerDialog
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestBlinkViewerDialog:
     @pytest.fixture()
     def dialog(self, qtbot):
         from valis_workstation.ui.dialogs.blink_viewer import BlinkViewerDialog
+
         viewer = _mock_viewer()
         slides = [Path("a.tif"), Path("b.tif")]
         d = BlinkViewerDialog(viewer, slides)
@@ -94,16 +99,20 @@ class TestBlinkViewerDialog:
 #  DIALOG TESTS — AnalysisPlotDialog
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestAnalysisPlotDialog:
     def _make_df(self):
         pd = pytest.importorskip("pandas")
-        return pd.DataFrame({
-            "non_rigid_D": [0.1, 0.2, 0.15],
-            "rigid_D": [0.3, 0.4, 0.35],
-        })
+        return pd.DataFrame(
+            {
+                "non_rigid_D": [0.1, 0.2, 0.15],
+                "rigid_D": [0.3, 0.4, 0.35],
+            }
+        )
 
     def test_opens_with_data(self, qtbot):
         from valis_workstation.ui.dialogs.analysis_plot import AnalysisPlotDialog
+
         d = AnalysisPlotDialog(self._make_df())
         qtbot.addWidget(d)
         assert d._summary_label.text() != ""
@@ -111,12 +120,14 @@ class TestAnalysisPlotDialog:
     def test_opens_with_empty_df(self, qtbot):
         pd = pytest.importorskip("pandas")
         from valis_workstation.ui.dialogs.analysis_plot import AnalysisPlotDialog
+
         d = AnalysisPlotDialog(pd.DataFrame())
         qtbot.addWidget(d)
         # Should not crash
 
     def test_canvas_exists(self, qtbot):
         from valis_workstation.ui.dialogs.analysis_plot import AnalysisPlotDialog
+
         d = AnalysisPlotDialog(self._make_df())
         qtbot.addWidget(d)
         assert d._canvas is not None
@@ -126,15 +137,19 @@ class TestAnalysisPlotDialog:
 #  DIALOG TESTS — QualityReportDialog
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestQualityReportDialog:
     def test_with_data(self, qtbot):
         pd = pytest.importorskip("pandas")
         from valis_workstation.ui.dialogs.quality_report import QualityReportDialog
-        df = pd.DataFrame({
-            "filename": ["s1", "s2"],
-            "rigid_D": [0.1, 0.2],
-            "non_rigid_D": [0.05, 0.1],
-        })
+
+        df = pd.DataFrame(
+            {
+                "filename": ["s1", "s2"],
+                "rigid_D": [0.1, 0.2],
+                "non_rigid_D": [0.05, 0.1],
+            }
+        )
         d = QualityReportDialog(df)
         qtbot.addWidget(d)
         assert d._table.rowCount() == 2
@@ -143,12 +158,14 @@ class TestQualityReportDialog:
     def test_with_empty_df(self, qtbot):
         pd = pytest.importorskip("pandas")
         from valis_workstation.ui.dialogs.quality_report import QualityReportDialog
+
         d = QualityReportDialog(pd.DataFrame())
         qtbot.addWidget(d)
         assert d._table.rowCount() == 0
 
     def test_with_none(self, qtbot):
         from valis_workstation.ui.dialogs.quality_report import QualityReportDialog
+
         d = QualityReportDialog(None)
         qtbot.addWidget(d)
         assert d._table.rowCount() == 0
@@ -156,6 +173,7 @@ class TestQualityReportDialog:
     def test_sorting_enabled(self, qtbot):
         pd = pytest.importorskip("pandas")
         from valis_workstation.ui.dialogs.quality_report import QualityReportDialog
+
         d = QualityReportDialog(pd.DataFrame({"col": [1, 2]}))
         qtbot.addWidget(d)
         assert d._table.isSortingEnabled()
@@ -165,9 +183,11 @@ class TestQualityReportDialog:
 #  DIALOG TESTS — SaveOptionsDialog  (deep)
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestSaveOptionsDialogDeep:
     def test_all_keys_present(self, qtbot):
         from valis_workstation.ui.dialogs.save_options_dialog import SaveOptionsDialog
+
         d = SaveOptionsDialog()
         qtbot.addWidget(d)
         opts = d.get_options()
@@ -176,6 +196,7 @@ class TestSaveOptionsDialogDeep:
 
     def test_modify_pyramid_levels(self, qtbot):
         from valis_workstation.ui.dialogs.save_options_dialog import SaveOptionsDialog
+
         d = SaveOptionsDialog()
         qtbot.addWidget(d)
         d._pyramid_levels.setValue(6)
@@ -183,6 +204,7 @@ class TestSaveOptionsDialogDeep:
 
     def test_modify_compression(self, qtbot):
         from valis_workstation.ui.dialogs.save_options_dialog import SaveOptionsDialog
+
         d = SaveOptionsDialog()
         qtbot.addWidget(d)
         d._compression.setValue(5)
@@ -190,6 +212,7 @@ class TestSaveOptionsDialogDeep:
 
     def test_modify_quality(self, qtbot):
         from valis_workstation.ui.dialogs.save_options_dialog import SaveOptionsDialog
+
         d = SaveOptionsDialog()
         qtbot.addWidget(d)
         d._quality.setValue(80)
@@ -200,9 +223,11 @@ class TestSaveOptionsDialogDeep:
 #  DIALOG TESTS — MergeSlidesDialog  (deep)
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestMergeSlidesDialogDeep:
     def test_all_config_keys(self, qtbot):
         from valis_workstation.ui.dialogs.merge_slides_dialog import MergeSlidesDialog
+
         d = MergeSlidesDialog(["A", "B"])
         qtbot.addWidget(d)
         cfg = d.get_merge_config()
@@ -211,6 +236,7 @@ class TestMergeSlidesDialogDeep:
 
     def test_channels_match_slide_count(self, qtbot):
         from valis_workstation.ui.dialogs.merge_slides_dialog import MergeSlidesDialog
+
         d = MergeSlidesDialog(["A", "B", "C"])
         qtbot.addWidget(d)
         cfg = d.get_merge_config()
@@ -218,6 +244,7 @@ class TestMergeSlidesDialogDeep:
 
     def test_output_name_editable(self, qtbot):
         from valis_workstation.ui.dialogs.merge_slides_dialog import MergeSlidesDialog
+
         d = MergeSlidesDialog(["A", "B"])
         qtbot.addWidget(d)
         d._output_name.setText("my_composite")
@@ -226,6 +253,7 @@ class TestMergeSlidesDialogDeep:
 
     def test_normalize_checkbox(self, qtbot):
         from valis_workstation.ui.dialogs.merge_slides_dialog import MergeSlidesDialog
+
         d = MergeSlidesDialog(["A", "B"])
         qtbot.addWidget(d)
         d._normalize.setChecked(True)
@@ -238,21 +266,31 @@ class TestMergeSlidesDialogDeep:
 #  DIALOG TESTS — PerformanceStatsDialog
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestPerformanceStatsDialogFull:
     def test_opens(self, qtbot):
-        from valis_workstation.ui.dialogs.performance_stats_dialog import PerformanceStatsDialog
+        from valis_workstation.ui.dialogs.performance_stats_dialog import (
+            PerformanceStatsDialog,
+        )
+
         d = PerformanceStatsDialog()
         qtbot.addWidget(d)
         assert d.windowTitle() == "Performance Statistics"
 
     def test_auto_refresh_timer_active(self, qtbot):
-        from valis_workstation.ui.dialogs.performance_stats_dialog import PerformanceStatsDialog
+        from valis_workstation.ui.dialogs.performance_stats_dialog import (
+            PerformanceStatsDialog,
+        )
+
         d = PerformanceStatsDialog()
         qtbot.addWidget(d)
         assert d._update_timer.isActive()
 
     def test_close_stops_timer(self, qtbot):
-        from valis_workstation.ui.dialogs.performance_stats_dialog import PerformanceStatsDialog
+        from valis_workstation.ui.dialogs.performance_stats_dialog import (
+            PerformanceStatsDialog,
+        )
+
         d = PerformanceStatsDialog()
         qtbot.addWidget(d)
         d.close()
@@ -263,39 +301,58 @@ class TestPerformanceStatsDialogFull:
 #  DIALOG TESTS — PreferencesDialog
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestPreferencesDialogFull:
     def test_opens(self, qtbot):
         from valis_workstation.ui.dialogs.preferences_dialog import PreferencesDialog
+
         d = PreferencesDialog()
         qtbot.addWidget(d)
         assert d.windowTitle() == "Preferences"
 
     def test_signal_exists(self, qtbot):
         from valis_workstation.ui.dialogs.preferences_dialog import PreferencesDialog
+
         d = PreferencesDialog()
         qtbot.addWidget(d)
         assert hasattr(d, "preferences_changed")
 
     def test_settings_managed_by_qsettings(self, qtbot):
         from valis_workstation.ui.dialogs.preferences_dialog import PreferencesDialog
+
         d = PreferencesDialog()
         qtbot.addWidget(d)
         assert d._settings is not None
+
+    def test_output_profile_templates(self, qtbot):
+        from valis_workstation.ui.dialogs.preferences_dialog import PreferencesDialog
+        from valis_workstation.ui.properties_dock import PropertiesDock
+
+        # Use PropertiesDock for template behavior introduced in feature update.
+        dock = PropertiesDock(simple_elastix_available=True)
+        qtbot.addWidget(dock)
+        dock.apply_output_profile("Fast Review")
+        cfg = dock.config()
+        assert cfg.tile_size == 256
+        assert cfg.pyramid_levels == 3
 
 
 # ═══════════════════════════════════════════════════════════════════════
 #  DIALOG TESTS — ErrorDetailDialog
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestErrorDetailDialogFull:
     def test_opens(self, qtbot):
         from valis_workstation.ui.dialogs.error_detail_dialog import ErrorDetailDialog
+
         d = ErrorDetailDialog("Something failed", "Traceback...", "Log line 1")
         qtbot.addWidget(d)
         assert d.windowTitle() != ""
 
     def test_copy_to_clipboard(self, qtbot):
         from valis_workstation.ui.dialogs.error_detail_dialog import ErrorDetailDialog
+
         d = ErrorDetailDialog("Error", "Tech details", "Log excerpt")
         qtbot.addWidget(d)
         # The copy method should not crash
@@ -303,6 +360,7 @@ class TestErrorDetailDialogFull:
 
     def test_show_error_dialog_function(self, qtbot, monkeypatch):
         from valis_workstation.ui.dialogs.error_detail_dialog import show_error_dialog
+
         # Monkeypatch exec to prevent blocking modal dialog
         monkeypatch.setattr(QtWidgets.QDialog, "exec", lambda self: None)
         parent = QtWidgets.QWidget()
@@ -311,6 +369,7 @@ class TestErrorDetailDialogFull:
 
     def test_show_error_dialog_no_exception(self, qtbot, monkeypatch):
         from valis_workstation.ui.dialogs.error_detail_dialog import show_error_dialog
+
         monkeypatch.setattr(QtWidgets.QDialog, "exec", lambda self: None)
         parent = QtWidgets.QWidget()
         qtbot.addWidget(parent)
@@ -321,10 +380,12 @@ class TestErrorDetailDialogFull:
 #  DOCK TESTS — SlidePreviewDock
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestSlidePreviewDockFull:
     @pytest.fixture()
     def dock(self, qtbot):
         from valis_workstation.ui.slide_preview_dock import SlidePreviewDock
+
         d = SlidePreviewDock()
         qtbot.addWidget(d)
         return d
@@ -365,9 +426,11 @@ class TestSlidePreviewDockFull:
 #  DOCK TESTS — LayerControlsDock
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestLayerControlsDockFull:
     def test_opens(self, qtbot):
         from valis_workstation.ui.layer_controls_dock import LayerControlsDock
+
         viewer = MagicMock()
         viewer.layers = []
         d = LayerControlsDock(viewer)
@@ -375,6 +438,7 @@ class TestLayerControlsDockFull:
 
     def test_refresh_empty(self, qtbot):
         from valis_workstation.ui.layer_controls_dock import LayerControlsDock
+
         viewer = MagicMock()
         viewer.layers = []
         d = LayerControlsDock(viewer)
@@ -383,6 +447,7 @@ class TestLayerControlsDockFull:
 
     def test_refresh_with_layers(self, qtbot):
         from valis_workstation.ui.layer_controls_dock import LayerControlsDock
+
         layer = MagicMock()
         layer.name = "Layer1"
         layer.visible = True
@@ -398,6 +463,7 @@ class TestLayerControlsDockFull:
 
     def test_toggle_visible_static(self):
         from valis_workstation.ui.layer_controls_dock import LayerControlsDock
+
         mock_layer = MagicMock()
         LayerControlsDock._toggle_visible(mock_layer, 2)
         assert mock_layer.visible is True
@@ -406,20 +472,55 @@ class TestLayerControlsDockFull:
 
     def test_set_opacity_static(self):
         from valis_workstation.ui.layer_controls_dock import LayerControlsDock
+
         mock_layer = MagicMock()
         LayerControlsDock._set_opacity(mock_layer, 75)
         assert mock_layer.opacity == pytest.approx(0.75, abs=0.01)
 
     def test_set_colormap_static(self):
         from valis_workstation.ui.layer_controls_dock import LayerControlsDock
+
         mock_layer = MagicMock()
         LayerControlsDock._set_colormap(mock_layer, "viridis")
         assert mock_layer.colormap == "viridis"
+
+    def test_locked_solo_reset_noop(self, qtbot):
+        from valis_workstation.ui.layer_controls_dock import LayerControlsDock
+
+        layer = MagicMock()
+        layer.name = "Layer1"
+        layer.visible = True
+        layer.opacity = 0.5
+        layer.colormap = MagicMock()
+        layer.colormap.name = "gray"
+        viewer = MagicMock()
+        viewer.layers = [layer]
+
+        d = LayerControlsDock(viewer)
+        qtbot.addWidget(d)
+        d.refresh()
+
+        # Select first row
+        d._table.selectRow(0)
+
+        # Lock controls
+        d._lock_check.setChecked(True)
+
+        # Trigger solo
+        d._solo_selected()
+        # Should remain True and 0.5 opacity (no change)
+        assert layer.visible is True
+        assert layer.opacity == 0.5
+
+        # Trigger reset opacity
+        d._reset_opacity()
+        assert layer.opacity == 0.5  # Would be 1.0 if not locked
 
 
 # ═══════════════════════════════════════════════════════════════════════
 #  MAIN WINDOW TESTS
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestMainWindow:
     """Full integration tests for MainWindow.
@@ -434,12 +535,50 @@ class TestMainWindow:
     def win(self, qtbot, monkeypatch, tmp_path):
         # Disable napari so MainWindow uses the fallback central widget
         _original_find_spec = importlib.util.find_spec
+
         def _patched_find_spec(name, *args, **kwargs):
             if name == "napari":
                 return None
             return _original_find_spec(name, *args, **kwargs)
 
         monkeypatch.setattr(importlib.util, "find_spec", _patched_find_spec)
+
+        # Default dialog/file chooser stubs to prevent blocking modal UI in tests.
+        monkeypatch.setattr(
+            QtWidgets.QFileDialog,
+            "getExistingDirectory",
+            staticmethod(lambda *a, **kw: ""),
+        )
+        monkeypatch.setattr(
+            QtWidgets.QFileDialog,
+            "getOpenFileName",
+            staticmethod(lambda *a, **kw: ("", "")),
+        )
+        monkeypatch.setattr(
+            QtWidgets.QFileDialog,
+            "getSaveFileName",
+            staticmethod(lambda *a, **kw: ("", "")),
+        )
+        monkeypatch.setattr(
+            QtWidgets.QMessageBox,
+            "warning",
+            staticmethod(lambda *a, **kw: QtWidgets.QMessageBox.StandardButton.Ok),
+        )
+        monkeypatch.setattr(
+            QtWidgets.QMessageBox,
+            "critical",
+            staticmethod(lambda *a, **kw: QtWidgets.QMessageBox.StandardButton.Ok),
+        )
+        monkeypatch.setattr(
+            QtWidgets.QMessageBox,
+            "information",
+            staticmethod(lambda *a, **kw: QtWidgets.QMessageBox.StandardButton.Ok),
+        )
+        monkeypatch.setattr(
+            QtWidgets.QMessageBox,
+            "about",
+            staticmethod(lambda *a, **kw: None),
+        )
 
         from valis_workstation.main_window import MainWindow
 
@@ -567,7 +706,7 @@ class TestMainWindow:
         # Monkeypatch thumbnail generation to avoid image loading
         monkeypatch.setattr(
             "valis_workstation.main_window.MainWindow._load_thumbnails_parallel",
-            lambda self, slides: None,
+            lambda self, slides, overlay=None: None,
         )
         win._open_slide_folder()
 
@@ -576,6 +715,20 @@ class TestMainWindow:
         assert "s1.tif" in names
         assert "s2.tiff" in names
         assert "readme.txt" not in names
+
+    def test_form_layout_dialogs_construct(self, qtbot):
+        """Regression guard for dialogs using form layouts."""
+        from valis_workstation.ui.dialogs.performance_stats_dialog import (
+            PerformanceStatsDialog,
+        )
+        from valis_workstation.ui.dialogs.preferences_dialog import PreferencesDialog
+
+        perf = PerformanceStatsDialog()
+        prefs = PreferencesDialog()
+        qtbot.addWidget(perf)
+        qtbot.addWidget(prefs)
+        assert perf.windowTitle() == "Performance Statistics"
+        assert prefs.windowTitle() == "Preferences"
 
     def test_open_folder_cancelled(self, win, monkeypatch):
         monkeypatch.setattr(
@@ -606,7 +759,7 @@ class TestMainWindow:
 
         monkeypatch.setattr(
             "valis_workstation.main_window.MainWindow._load_thumbnails_parallel",
-            lambda self, slides: None,
+            lambda self, slides, overlay=None: None,
         )
 
         mock_url = MagicMock()
@@ -762,25 +915,51 @@ class TestMainWindow:
         assert win.statusBar() is not None
         assert win.statusBar().currentMessage() == "Ready"
 
+    def test_window_build_performance_smoke(self, qtbot, monkeypatch, tmp_path):
+        """Generous regression guard to detect severe startup slowdowns."""
+        _original_find_spec = importlib.util.find_spec
+
+        def _patched_find_spec(name, *args, **kwargs):
+            if name == "napari":
+                return None
+            return _original_find_spec(name, *args, **kwargs)
+
+        monkeypatch.setattr(importlib.util, "find_spec", _patched_find_spec)
+        from valis_workstation.main_window import MainWindow
+
+        start = time.perf_counter()
+        w = MainWindow(
+            repo_root=tmp_path,
+            log_emitter=QtLogEmitter(),
+            simple_elastix_available=False,
+        )
+        qtbot.addWidget(w)
+        elapsed = time.perf_counter() - start
+        assert elapsed < 15.0
+
 
 # ═══════════════════════════════════════════════════════════════════════
 #  SERVICE TESTS — ValisPipeline
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestValisPipelineService:
     def test_build_kwargs_defaults(self):
         from valis_workstation.services.valis_pipeline import build_registrar_kwargs
+
         kwargs = build_registrar_kwargs(Config())
         assert isinstance(kwargs, dict)
 
     def test_build_kwargs_gpu(self):
         from valis_workstation.services.valis_pipeline import build_registrar_kwargs
+
         cfg = Config(use_gpu=True)
         kwargs = build_registrar_kwargs(cfg)
         assert isinstance(kwargs, dict)
 
     def test_build_kwargs_no_rigid(self):
         from valis_workstation.services.valis_pipeline import build_registrar_kwargs
+
         cfg = Config(rigid_registration=False)
         kwargs = build_registrar_kwargs(cfg)
         assert isinstance(kwargs, dict)
@@ -788,6 +967,7 @@ class TestValisPipelineService:
     def test_build_kwargs_all_detectors(self):
         from valis_workstation.services.valis_pipeline import build_registrar_kwargs
         from valis_workstation.constants import FeatureDetectors
+
         for fd in FeatureDetectors:
             cfg = Config(feature_detector=fd.value)
             kwargs = build_registrar_kwargs(cfg)
@@ -796,6 +976,7 @@ class TestValisPipelineService:
     def test_build_kwargs_all_transformers(self):
         from valis_workstation.services.valis_pipeline import build_registrar_kwargs
         from valis_workstation.constants import TransformerTypes
+
         for tt in TransformerTypes:
             cfg = Config(transformer_type=tt.value)
             kwargs = build_registrar_kwargs(cfg)
@@ -804,6 +985,7 @@ class TestValisPipelineService:
     def test_build_kwargs_all_crop_modes(self):
         from valis_workstation.services.valis_pipeline import build_registrar_kwargs
         from valis_workstation.constants import CropModes
+
         for cm in CropModes:
             cfg = Config(crop_mode=cm.value)
             kwargs = build_registrar_kwargs(cfg)
@@ -814,13 +996,16 @@ class TestValisPipelineService:
 #  SERVICE TESTS — SlideScan
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestSlideScanService:
     def test_scan_empty(self, tmp_path):
         from valis_workstation.services.slide_scan import scan_slide_folder
+
         assert scan_slide_folder(tmp_path) == []
 
     def test_scan_tif(self, tmp_path):
         from valis_workstation.services.slide_scan import scan_slide_folder
+
         (tmp_path / "a.tif").write_text("x")
         (tmp_path / "b.tiff").write_text("x")
         result = scan_slide_folder(tmp_path)
@@ -830,12 +1015,14 @@ class TestSlideScanService:
 
     def test_scan_ignores_non_slide(self, tmp_path):
         from valis_workstation.services.slide_scan import scan_slide_folder
+
         (tmp_path / "readme.txt").write_text("x")
         (tmp_path / "data.csv").write_text("x")
         assert scan_slide_folder(tmp_path) == []
 
     def test_scan_svs(self, tmp_path):
         from valis_workstation.services.slide_scan import scan_slide_folder
+
         (tmp_path / "slide.svs").write_text("x")
         result = scan_slide_folder(tmp_path)
         assert any(p.name == "slide.svs" for p in result)
@@ -845,9 +1032,11 @@ class TestSlideScanService:
 #  ValisWorker TESTS
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestValisWorkerExtended:
     def test_cancel_flag(self):
         from valis_workstation.workers.valis_worker import ValisWorker
+
         w = ValisWorker(Config(), [], Path("."))
         assert w._cancel_requested is False
         w.cancel()
@@ -856,7 +1045,9 @@ class TestValisWorkerExtended:
     def test_emits_finished(self, qtbot, monkeypatch, tmp_path):
         from valis_workstation.workers.valis_worker import ValisWorker
 
-        def fake_pipeline(config, slides, output_dir, progress_callback=None, cancel_check=None):
+        def fake_pipeline(
+            config, slides, output_dir, progress_callback=None, cancel_check=None
+        ):
             if progress_callback:
                 progress_callback(50)
             return {"output_dir": str(output_dir), "registered_dir": str(output_dir)}
@@ -884,7 +1075,8 @@ class TestValisWorkerExtended:
             raise RuntimeError("boom")
 
         monkeypatch.setattr(
-            "valis_workstation.workers.valis_worker.run_valis_pipeline", crash,
+            "valis_workstation.workers.valis_worker.run_valis_pipeline",
+            crash,
         )
 
         worker = ValisWorker(Config(), [tmp_path / "s.tif"], tmp_path)
@@ -902,6 +1094,7 @@ class TestValisWorkerExtended:
 # ═══════════════════════════════════════════════════════════════════════
 #  CONFIG & CONSTANTS
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestConfigRoundtrip:
     def test_json_roundtrip(self, tmp_path):
@@ -933,8 +1126,9 @@ class TestConfigRoundtrip:
     def test_partial_config_load(self):
         """Old config files with missing keys should still load."""
         partial = {"project_name": "Old", "rigid_registration": False}
-        cfg = Config(**{k: v for k, v in partial.items()
-                        if k in Config.__dataclass_fields__})
+        cfg = Config(
+            **{k: v for k, v in partial.items() if k in Config.__dataclass_fields__}
+        )
         assert cfg.project_name == "Old"
         assert cfg.rigid_registration is False
         # Defaults for unset fields
@@ -947,27 +1141,33 @@ class TestConfigRoundtrip:
 class TestConstantsComplete:
     def test_feature_detectors_count(self):
         from valis_workstation.constants import FeatureDetectors
+
         assert len(FeatureDetectors) == 8
 
     def test_feature_detectors_have_labels(self):
         from valis_workstation.constants import FeatureDetectors
+
         for fd in FeatureDetectors:
             assert fd.label, f"{fd.name} has no label"
 
     def test_transformer_types_count(self):
         from valis_workstation.constants import TransformerTypes
+
         assert len(TransformerTypes) == 3
 
     def test_crop_modes_count(self):
         from valis_workstation.constants import CropModes
+
         assert len(CropModes) == 4
 
     def test_image_formats_count(self):
         from valis_workstation.constants import ImageFormats
+
         assert len(ImageFormats) == 4
 
     def test_config_keys_count(self):
         from valis_workstation.constants import ConfigKeys
+
         assert len(ConfigKeys) >= 18
 
 
@@ -975,10 +1175,12 @@ class TestConstantsComplete:
 #  PROPERTIES DOCK — Config ↔ Widget Sync
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestPropertiesDockSync:
     @pytest.fixture()
     def dock(self, qtbot):
         from valis_workstation.ui.properties_dock import PropertiesDock
+
         d = PropertiesDock(simple_elastix_available=True)
         qtbot.addWidget(d)
         return d
@@ -1010,6 +1212,7 @@ class TestPropertiesDockSync:
 
     def test_all_feature_detectors_in_combobox(self, dock):
         from valis_workstation.constants import FeatureDetectors
+
         combo = dock._feature_detector
         items = [combo.itemData(i) for i in range(combo.count())]
         for fd in FeatureDetectors:
@@ -1017,6 +1220,7 @@ class TestPropertiesDockSync:
 
     def test_all_transformer_types_in_combobox(self, dock):
         from valis_workstation.constants import TransformerTypes
+
         combo = dock._transformer_type
         items = [combo.itemData(i) for i in range(combo.count())]
         for tt in TransformerTypes:
@@ -1024,25 +1228,31 @@ class TestPropertiesDockSync:
 
     def test_all_crop_modes_in_combobox(self, dock):
         from valis_workstation.constants import CropModes
+
         combo = dock._crop_mode
         items = [combo.itemText(i).lower() for i in range(combo.count())]
         for cm in CropModes:
-            assert any(cm.value.lower() in t for t in items), \
+            assert any(cm.value.lower() in t for t in items), (
                 f"{cm.value} missing from crop mode combo"
+            )
 
 
 # ═══════════════════════════════════════════════════════════════════════
 #  VALIDATION
 # ═══════════════════════════════════════════════════════════════════════
 
+
 class TestValidation:
     def test_validate_empty_slides(self, tmp_path):
         from valis_workstation.utils.validation import validate_slides
+
         result = validate_slides([], tmp_path)
-        assert result.has_errors()
+        assert result.is_valid
+        assert not result.has_errors()
 
     def test_validate_valid_slides(self, tmp_path):
         from valis_workstation.utils.validation import validate_slides
+
         s = tmp_path / "slide.tif"
         s.write_bytes(b"x")
         result = validate_slides([s], tmp_path)
@@ -1053,6 +1263,7 @@ class TestValidation:
 # ═══════════════════════════════════════════════════════════════════════
 #  QT LOG EMITTER
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class TestQtLogEmitterFull:
     def test_emit_log_line(self, qtbot):

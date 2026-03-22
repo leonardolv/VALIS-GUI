@@ -5,17 +5,17 @@ Qt widgets) are initialised.  Also exposes a reusable *LoadingOverlay* that
 can be parented to any widget to indicate long-running operations such as
 slide scanning or thumbnail generation.
 """
+
 from __future__ import annotations
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
 import valis_workstation as _pkg
 
-
 # ── Colour palette (matches adobe_dark.qss) ─────────────────────
-_BG     = QtGui.QColor("#1e1e1e")
+_BG = QtGui.QColor("#1e1e1e")
 _ACCENT = QtGui.QColor("#2d7aed")
-_TRACK  = QtGui.QColor("#3a3a3a")
+_TRACK = QtGui.QColor("#3a3a3a")
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -46,7 +46,9 @@ class _Spinner(QtWidgets.QWidget):
 
         pen_w = max(3, self._size // 12)
         margin = pen_w + 1
-        rect = QtCore.QRectF(margin, margin, self._size - 2 * margin, self._size - 2 * margin)
+        rect = QtCore.QRectF(
+            margin, margin, self._size - 2 * margin, self._size - 2 * margin
+        )
 
         # Track ring
         pen = QtGui.QPen(_TRACK, pen_w, QtCore.Qt.PenStyle.SolidLine)
@@ -105,7 +107,9 @@ class SplashScreen(QtWidgets.QWidget):
         # Subtitle
         subtitle = QtWidgets.QLabel("Virtual Alignment of pathoLogy Image Series")
         subtitle.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        subtitle.setStyleSheet("font-size: 11px; color: #888888; background: transparent;")
+        subtitle.setStyleSheet(
+            "font-size: 11px; color: #888888; background: transparent;"
+        )
         layout.addWidget(subtitle)
 
         layout.addSpacing(16)
@@ -122,7 +126,9 @@ class SplashScreen(QtWidgets.QWidget):
         # Status label
         self._status = QtWidgets.QLabel("Initializing…")
         self._status.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self._status.setStyleSheet("font-size: 12px; color: #aaaaaa; background: transparent;")
+        self._status.setStyleSheet(
+            "font-size: 12px; color: #aaaaaa; background: transparent;"
+        )
         layout.addWidget(self._status)
 
         # Progress bar (thin, styled)
@@ -171,7 +177,9 @@ class SplashScreen(QtWidgets.QWidget):
         self._finished = True
         self._spinner.stop()
         # Quick fade-out animation
-        self._fade: QtCore.QPropertyAnimation = QtCore.QPropertyAnimation(self, b"windowOpacity")
+        self._fade: QtCore.QPropertyAnimation = QtCore.QPropertyAnimation(
+            self, b"windowOpacity"
+        )
         self._fade.setDuration(350)
         self._fade.setStartValue(1.0)
         self._fade.setEndValue(0.0)
@@ -240,6 +248,13 @@ class LoadingOverlay(QtWidgets.QWidget):
         card_layout.addLayout(spinner_row)
 
         # Message
+        self._stage_label = QtWidgets.QLabel("Working")
+        self._stage_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self._stage_label.setStyleSheet(
+            "font-size: 11px; color: #8ab4ff; font-weight: bold; background: transparent;"
+        )
+        card_layout.addWidget(self._stage_label)
+
         self._label = QtWidgets.QLabel(message)
         self._label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self._label.setStyleSheet(
@@ -247,6 +262,21 @@ class LoadingOverlay(QtWidgets.QWidget):
         )
         self._label.setWordWrap(True)
         card_layout.addWidget(self._label)
+
+        self._progress = QtWidgets.QProgressBar()
+        self._progress.setRange(0, 100)
+        self._progress.setValue(0)
+        self._progress.setTextVisible(True)
+        self._progress.setFormat("%p%")
+        self._progress.setFixedHeight(18)
+        card_layout.addWidget(self._progress)
+
+        self._eta_label = QtWidgets.QLabel("ETA: --")
+        self._eta_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self._eta_label.setStyleSheet(
+            "font-size: 10px; color: #a0a0a0; background: transparent;"
+        )
+        card_layout.addWidget(self._eta_label)
 
         # Centre the card inside the overlay
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -263,12 +293,32 @@ class LoadingOverlay(QtWidgets.QWidget):
     def set_message(self, text: str) -> None:
         self._label.setText(text)
 
+    def set_stage(self, stage: str) -> None:
+        self._stage_label.setText(stage)
+
+    def set_progress(self, current: int, total: int | None = None) -> None:
+        if total is not None and total > 0:
+            pct = int((current / total) * 100)
+            self._progress.setValue(max(0, min(100, pct)))
+            self._progress.setFormat(f"{current}/{total} (%p%)")
+        else:
+            self._progress.setValue(max(0, min(100, current)))
+
+    def set_eta_seconds(self, seconds: float | None) -> None:
+        if seconds is None or seconds < 0:
+            self._eta_label.setText("ETA: --")
+            return
+        mins, secs = divmod(int(seconds), 60)
+        self._eta_label.setText(f"ETA: {mins:02d}:{secs:02d}")
+
     def dismiss(self) -> None:
         if self._dismissed:
             return
         self._dismissed = True
         self._spinner.stop()
-        self._fade: QtCore.QPropertyAnimation = QtCore.QPropertyAnimation(self, b"windowOpacity")
+        self._fade: QtCore.QPropertyAnimation = QtCore.QPropertyAnimation(
+            self, b"windowOpacity"
+        )
         self._fade.setDuration(200)
         self._fade.setStartValue(1.0)
         self._fade.setEndValue(0.0)

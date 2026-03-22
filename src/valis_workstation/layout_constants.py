@@ -34,5 +34,9 @@ SPLITTER_HANDLE_W: int = 6
 GRID_SPACING: int = 8
 
 # ── Minimum window size ────────────────────────────────────────
-WINDOW_MIN_W: int = LEFT_SIDEBAR_MIN + CANVAS_MIN_W + RIGHT_SIDEBAR_MIN + 2 * SPLITTER_HANDLE_W
-WINDOW_MIN_H: int = CANVAS_MIN_H + TIMELINE_MIN_H + SPLITTER_HANDLE_W + 80  # 80 for menus/status bar
+WINDOW_MIN_W: int = (
+    LEFT_SIDEBAR_MIN + CANVAS_MIN_W + RIGHT_SIDEBAR_MIN + 2 * SPLITTER_HANDLE_W
+)
+WINDOW_MIN_H: int = (
+    CANVAS_MIN_H + TIMELINE_MIN_H + SPLITTER_HANDLE_W + 80
+)  # 80 for menus/status bar

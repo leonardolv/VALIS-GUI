@@ -1,4 +1,5 @@
 """Module entry point for VALIS Workstation."""
+
 from __future__ import annotations
 
 import sys
@@ -13,6 +14,7 @@ def main() -> int:
         sys.path.insert(0, src_path)
 
     from valis_workstation.app import run_app
+
     return run_app(repo_root)
 
 

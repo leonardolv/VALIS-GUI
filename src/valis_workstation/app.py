@@ -9,6 +9,7 @@ from pathlib import Path
 from PySide6 import QtCore, QtWidgets
 
 from valis_workstation.main_window import MainWindow
+from valis_workstation.ui.dialogs.first_run_wizard import FirstRunWizard
 from valis_workstation.ui.splash_screen import SplashScreen
 from valis_workstation.utils.logging_config import setup_logging
 from valis_workstation.utils.qt_logging import QtLogEmitter, QtSignalHandler
@@ -57,7 +58,9 @@ def _shutdown_jvm() -> None:
 
 def _install_excepthook(app: QtWidgets.QApplication) -> None:
     def _hook(exc_type, exc_value, traceback_obj):
-        logger.exception("Unhandled exception", exc_info=(exc_type, exc_value, traceback_obj))
+        logger.exception(
+            "Unhandled exception", exc_info=(exc_type, exc_value, traceback_obj)
+        )
         QtWidgets.QMessageBox.critical(
             None,
             "VALIS Workstation",
@@ -102,6 +105,20 @@ def run_app(repo_root: Path) -> int:
 
     splash.set_status("Building user interface…")
     main_window = MainWindow(repo_root, log_emitter, simple_elastix_available)
+
+    settings = QtCore.QSettings("VALIS", "Workstation")
+    first_run_done = settings.value("first_run_completed", False, type=bool)
+    if not first_run_done:
+        splash.set_status("Running first-time setup…")
+        wizard = FirstRunWizard(main_window)
+        if wizard.exec() == QtWidgets.QDialog.DialogCode.Accepted:
+            cfg = main_window._properties_dock.config()
+            cfg.project_name = wizard.selected_project_name()
+            main_window._properties_dock.set_config(cfg)
+            main_window._properties_dock.apply_output_profile(
+                wizard.selected_output_profile()
+            )
+            settings.setValue("first_run_completed", True)
 
     splash.set_status("Ready")
 

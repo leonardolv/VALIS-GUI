@@ -39,6 +39,7 @@ from valis_workstation.ui.splitter_utils import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _process_events(timeout_ms: int = 200) -> None:
     """Let the event loop settle."""
     QtTest.QTest.qWait(timeout_ms)
@@ -60,6 +61,7 @@ class _TestSplitterWindow(QtWidgets.QMainWindow):
 # ---------------------------------------------------------------------------
 # 1. Layout constants
 # ---------------------------------------------------------------------------
+
 
 class TestLayoutConstants:
     """Unit tests for layout_constants values."""
@@ -85,7 +87,9 @@ class TestLayoutConstants:
 
     def test_window_min_computed(self):
         expected_w = (
-            LC.LEFT_SIDEBAR_MIN + LC.CANVAS_MIN_W + LC.RIGHT_SIDEBAR_MIN
+            LC.LEFT_SIDEBAR_MIN
+            + LC.CANVAS_MIN_W
+            + LC.RIGHT_SIDEBAR_MIN
             + 2 * LC.SPLITTER_HANDLE_W
         )
         assert LC.WINDOW_MIN_W == expected_w
@@ -99,6 +103,7 @@ class TestLayoutConstants:
 # ---------------------------------------------------------------------------
 # 2. Splitter utility functions
 # ---------------------------------------------------------------------------
+
 
 class TestSplitterUtils:
     """Tests for splitter_utils helpers without the full MainWindow."""
@@ -173,6 +178,7 @@ class TestSplitterUtils:
 # 3. Splitter-based MainWindow layout tests
 # ---------------------------------------------------------------------------
 
+
 class TestSplitterLayout:
     """GUI tests that create a lightweight MainWindow-like structure.
 
@@ -240,7 +246,12 @@ class TestSplitterLayout:
             outer_splitter.setCollapsible(idx, False)
 
         # Initial sizes
-        canvas_w = 1400 - LC.LEFT_SIDEBAR_INIT - LC.RIGHT_SIDEBAR_INIT - 2 * LC.SPLITTER_HANDLE_W
+        canvas_w = (
+            1400
+            - LC.LEFT_SIDEBAR_INIT
+            - LC.RIGHT_SIDEBAR_INIT
+            - 2 * LC.SPLITTER_HANDLE_W
+        )
         top_splitter.setSizes([LC.LEFT_SIDEBAR_INIT, canvas_w, LC.RIGHT_SIDEBAR_INIT])
         main_h = 900 - LC.TIMELINE_INIT_H - LC.SPLITTER_HANDLE_W
         outer_splitter.setSizes([main_h, LC.TIMELINE_INIT_H])
@@ -423,6 +434,7 @@ class TestSplitterLayout:
 # 4. GripSplitter / GripSplitterHandle tests
 # ---------------------------------------------------------------------------
 
+
 class TestGripSplitter:
     """Tests for the custom GripSplitter that paints visible grip dots."""
 
@@ -497,6 +509,7 @@ class TestGripSplitter:
 # 5. Layout regression tests at multiple window sizes
 # ---------------------------------------------------------------------------
 
+
 class TestLayoutRegression:
     """Verify no overlaps and all regions remain visible at various sizes.
 
@@ -509,9 +522,9 @@ class TestLayoutRegression:
     """
 
     _SIZES = [
-        (1024, 768),   # small laptop
-        (1280, 800),   # typical laptop
-        (1400, 900),   # default
+        (1024, 768),  # small laptop
+        (1280, 800),  # typical laptop
+        (1400, 900),  # default
         (1920, 1080),  # full HD
     ]
 
@@ -562,7 +575,12 @@ class TestLayoutRegression:
         outer_splitter.setStretchFactor(0, 1)
         outer_splitter.setStretchFactor(1, 0)
 
-        canvas_w = 1400 - LC.LEFT_SIDEBAR_INIT - LC.RIGHT_SIDEBAR_INIT - 2 * LC.SPLITTER_HANDLE_W
+        canvas_w = (
+            1400
+            - LC.LEFT_SIDEBAR_INIT
+            - LC.RIGHT_SIDEBAR_INIT
+            - 2 * LC.SPLITTER_HANDLE_W
+        )
         top_splitter.setSizes([LC.LEFT_SIDEBAR_INIT, canvas_w, LC.RIGHT_SIDEBAR_INIT])
         main_h = 900 - LC.TIMELINE_INIT_H - LC.SPLITTER_HANDLE_W
         outer_splitter.setSizes([main_h, LC.TIMELINE_INIT_H])
@@ -586,7 +604,12 @@ class TestLayoutRegression:
         regression_window.resize(w, h)
         _process_events(300)
 
-        for panel_name in ("_left_panel", "_canvas_panel", "_right_panel", "_status_panel"):
+        for panel_name in (
+            "_left_panel",
+            "_canvas_panel",
+            "_right_panel",
+            "_status_panel",
+        ):
             panel = getattr(regression_window, panel_name)
             assert panel.width() > 0, f"{panel_name} has zero width at {w}x{h}"
             assert panel.height() > 0, f"{panel_name} has zero height at {w}x{h}"

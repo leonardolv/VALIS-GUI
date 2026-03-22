@@ -1,4 +1,5 @@
 """Tests for error metrics service."""
+
 from __future__ import annotations
 
 import pandas as pd
@@ -46,31 +47,39 @@ class TestSummarizeErrors:
 
 class TestSelectMetricColumn:
     def test_prefers_non_rigid_tre(self) -> None:
-        df = pd.DataFrame({
-            "non_rigid_TRE": [1],
-            "rigid_TRE": [2],
-        })
+        df = pd.DataFrame(
+            {
+                "non_rigid_TRE": [1],
+                "rigid_TRE": [2],
+            }
+        )
         assert select_metric_column(df) == "non_rigid_TRE"
 
     def test_falls_back_to_rigid_tre(self) -> None:
-        df = pd.DataFrame({
-            "rigid_TRE": [1],
-            "other_col": [2],
-        })
+        df = pd.DataFrame(
+            {
+                "rigid_TRE": [1],
+                "other_col": [2],
+            }
+        )
         assert select_metric_column(df) == "rigid_TRE"
 
     def test_falls_back_to_any_tre(self) -> None:
-        df = pd.DataFrame({
-            "custom_TRE": [1],
-            "other": [2],
-        })
+        df = pd.DataFrame(
+            {
+                "custom_TRE": [1],
+                "other": [2],
+            }
+        )
         assert select_metric_column(df) == "custom_TRE"
 
     def test_falls_back_to_d_column(self) -> None:
-        df = pd.DataFrame({
-            "displacement_D": [1],
-            "other": [2],
-        })
+        df = pd.DataFrame(
+            {
+                "displacement_D": [1],
+                "other": [2],
+            }
+        )
         assert select_metric_column(df) == "displacement_D"
 
     def test_returns_none_when_no_match(self) -> None:

@@ -1,4 +1,5 @@
 """Tests for data models (Config dataclass)."""
+
 from __future__ import annotations
 
 from dataclasses import asdict
@@ -58,11 +59,23 @@ class TestConfigCustom:
     def test_all_fields_present_in_dict(self) -> None:
         d = asdict(Config())
         expected_keys = {
-            "project_name", "rigid_registration", "non_rigid_registration",
-            "max_image_size", "use_gpu",
-            "feature_detector", "transformer_type", "reference_slide",
-            "crop_mode", "use_masks", "denoise", "imgs_ordered",
-            "micro_registration", "micro_max_image_size",
-            "compression_level", "pyramid_levels", "tile_size", "image_quality",
+            "project_name",
+            "rigid_registration",
+            "non_rigid_registration",
+            "max_image_size",
+            "use_gpu",
+            "feature_detector",
+            "transformer_type",
+            "reference_slide",
+            "crop_mode",
+            "use_masks",
+            "denoise",
+            "imgs_ordered",
+            "micro_registration",
+            "micro_max_image_size",
+            "compression_level",
+            "pyramid_levels",
+            "tile_size",
+            "image_quality",
         }
         assert set(d.keys()) == expected_keys

@@ -35,7 +35,9 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
             slide_obj = registrar.get_slide(slide_path)
             self._source_slide.addItem(slide_obj.name, slide_path)
 
-        self._output_dir_edit = QtWidgets.QLineEdit(str(self._output_dir / "warped_annotations"))
+        self._output_dir_edit = QtWidgets.QLineEdit(
+            str(self._output_dir / "warped_annotations")
+        )
         out_btn = QtWidgets.QPushButton("Browse")
         out_btn.clicked.connect(self._browse_output)
         out_layout = QtWidgets.QHBoxLayout()
@@ -67,7 +69,9 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
             self._annotation_path.setText(path)
 
     def _browse_output(self) -> None:
-        folder = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Output Folder")
+        folder = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Select Output Folder"
+        )
         if folder:
             self._output_dir_edit.setText(folder)
 
@@ -97,7 +101,9 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
                 non_rigid=self._use_non_rigid,
                 crop=True,
             )
-            output_path = output_dir / f"{source_slide.name}_to_{target_slide.name}.geojson"
+            output_path = (
+                output_dir / f"{source_slide.name}_to_{target_slide.name}.geojson"
+            )
             output_path.write_text(json.dumps(warped_geojson))
 
         self._status.setText(f"Warped annotations saved to {output_dir}")

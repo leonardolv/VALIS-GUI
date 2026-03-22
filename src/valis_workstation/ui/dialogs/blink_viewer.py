@@ -37,6 +37,10 @@ class BlinkViewerDialog(QtWidgets.QDialog):
         self._opacity.setValue(50)
         self._opacity.valueChanged.connect(self._apply_opacity)
 
+        self._mode = QtWidgets.QComboBox()
+        self._mode.addItems(["Blink", "Side-by-side", "Swipe"])
+        self._mode.currentTextChanged.connect(self._on_mode_changed)
+
         self._blink_toggle = QtWidgets.QPushButton("Start Blink")
         self._blink_toggle.setCheckable(True)
         self._blink_toggle.toggled.connect(self._toggle_blink)
@@ -46,6 +50,7 @@ class BlinkViewerDialog(QtWidgets.QDialog):
 
         form.addRow("Slide A", self._slide_a)
         form.addRow("Slide B", self._slide_b)
+        form.addRow("Mode", self._mode)
         form.addRow("Blend", self._opacity)
         layout.addLayout(form)
         layout.addWidget(self._blink_toggle)
@@ -77,6 +82,7 @@ class BlinkViewerDialog(QtWidgets.QDialog):
         )
         self._apply_opacity()
         self._set_layer_visibility(True)
+        self._on_mode_changed(self._mode.currentText())
 
     @staticmethod
     def _normalize_layer(layer_result):
@@ -90,6 +96,31 @@ class BlinkViewerDialog(QtWidgets.QDialog):
         value = self._opacity.value() / 100
         self._layer_a.opacity = 1 - value
         self._layer_b.opacity = value
+
+    def _on_mode_changed(self, mode: str) -> None:
+        if self._layer_a is None or self._layer_b is None:
+            return
+        if mode != "Blink":
+            self._blink_toggle.setChecked(False)
+            self._timer.stop()
+            self._blink_toggle.setEnabled(False)
+        else:
+            self._blink_toggle.setEnabled(True)
+
+        if mode == "Side-by-side":
+            # Best-effort side-by-side fallback in layer stack: show both fully.
+            self._layer_a.visible = True
+            self._layer_b.visible = True
+            self._layer_a.opacity = 1.0
+            self._layer_b.opacity = 1.0
+        elif mode == "Swipe":
+            # Swipe approximation: blend controlled by slider.
+            self._layer_a.visible = True
+            self._layer_b.visible = True
+            self._apply_opacity()
+        else:
+            self._apply_opacity()
+            self._set_layer_visibility(True)
 
     def _toggle_blink(self, enabled: bool) -> None:
         if enabled:
