@@ -28,6 +28,7 @@ from valis_workstation.layout_constants import (
     WINDOW_MIN_H,
     WINDOW_MIN_W,
 )
+from valis_workstation.constants import ImageFormats
 from valis_workstation.models.config import Config
 from valis_workstation.services.slide_scan import scan_slide_folder
 from valis_workstation.ui.dialogs.analysis_plot import AnalysisPlotDialog
@@ -76,6 +77,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log_emitter = log_emitter
         self._worker_thread: QtCore.QThread | None = None
         self._worker: ValisWorker | None = None
+        self._merge_thread: QtCore.QThread | None = None
         self._viewer = None
         self._napari_available = False
         self._last_result: dict | None = None
@@ -620,12 +622,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 logger.info("Registration cancelled due to validation warnings")
                 return
 
-        if not self._show_preflight_estimate(slides, config, output_dir):
-            logger.info("Registration cancelled at preflight stage")
-            return
-
-        # Confirm before starting registration
-        if not self._confirm_registration(slides):
+        if not self._confirm_registration(slides, config, output_dir):
             logger.info("Registration cancelled by user")
             return
 
@@ -636,45 +633,6 @@ class MainWindow(QtWidgets.QMainWindow):
         }
         self._last_run_context = context
         self._start_registration_from_context(context)
-
-    def _show_preflight_estimate(
-        self, slides: list[Path], config: Config, output_dir: Path
-    ) -> bool:
-        """Show preflight estimate and return whether to proceed."""
-        total_size_bytes, has_missing = self._safe_total_size_bytes(slides)
-        total_size_gb = total_size_bytes / (1024**3)
-        est_output_gb = max(0.5, total_size_gb * 2.5)
-
-        est_minutes = len(slides) * (1.6 if config.non_rigid_registration else 0.8)
-        if config.micro_registration:
-            est_minutes *= 1.8
-        if config.use_gpu:
-            est_minutes *= 0.7
-        est_minutes = max(1, int(est_minutes))
-
-        warning_html = ""
-        if has_missing:
-            warning_html = "<p style='color:#E49B0F;'><b>Warning:</b> Size could not be determined for some files. Estimate may be inaccurate.</p>"
-
-        msg = QtWidgets.QMessageBox(self)
-        msg.setWindowTitle("Preflight Estimate")
-        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
-        msg.setText(
-            f"<h3>Preflight Summary</h3>"
-            f"<p><b>Slides:</b> {len(slides)}<br>"
-            f"<b>Input size:</b> {total_size_gb:.2f} GB<br>"
-            f"<b>Estimated output:</b> ~{est_output_gb:.2f} GB<br>"
-            f"<b>Estimated time:</b> ~{est_minutes} min<br>"
-            f"<b>Output dir:</b> {output_dir}</p>"
-            f"{warning_html}"
-            f"<p>Continue to registration confirmation?</p>"
-        )
-        msg.setStandardButtons(
-            QtWidgets.QMessageBox.StandardButton.Yes
-            | QtWidgets.QMessageBox.StandardButton.No
-        )
-        msg.setDefaultButton(QtWidgets.QMessageBox.StandardButton.Yes)
-        return msg.exec() == QtWidgets.QMessageBox.StandardButton.Yes
 
     def _start_registration_from_context(self, context: dict) -> None:
         """Start worker from a stored run context (new run or resume)."""
@@ -758,24 +716,25 @@ class MainWindow(QtWidgets.QMainWindow):
             "Registration was cancelled.\nPartial results may have been saved.",
         )
 
-    def _confirm_registration(self, slides: list[Path]) -> bool:
-        """Show confirmation dialog with *all* settings before starting."""
-        config = self._properties_dock.config()
-
-        # Compute total input size
+    def _confirm_registration(
+        self, slides: list[Path], config: Config, output_dir: Path
+    ) -> bool:
+        """Show a single confirmation dialog with preflight estimates and all settings."""
         total_size_bytes, has_missing = self._safe_total_size_bytes(slides)
         total_size_gb = total_size_bytes / (1024**3)
+        est_output_gb = max(0.5, total_size_gb * 2.5)
 
-        # Rough time estimate
-        est_minutes = len(slides) * 2
-        if config.non_rigid_registration:
-            est_minutes *= 1.5
+        # Time estimate (uses the more detailed formula from the old confirm dialog)
+        est_minutes = len(slides) * (1.6 if config.non_rigid_registration else 0.8)
         if config.max_image_size > 4096:
             est_minutes *= 1.5
         if config.micro_registration:
-            est_minutes *= 2
+            est_minutes *= 1.8
+        if config.use_gpu:
+            est_minutes *= 0.7
         if config.use_masks:
             est_minutes *= 1.2
+        est_minutes = max(1, int(est_minutes))
 
         warning_html = ""
         if has_missing:
@@ -787,9 +746,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         text = f"""<h3>Ready to Register {len(slides)} Slide{"s" if len(slides) != 1 else ""}</h3>
 <table style="margin: 6px 0;">
-<tr><td><b>Total size:</b></td><td>{total_size_gb:.2f} GB</td></tr>
-<tr><td><b>Estimated time:</b></td><td>~{int(est_minutes)} min</td></tr>
 <tr><td><b>Project:</b></td><td>{config.project_name}</td></tr>
+<tr><td><b>Input size:</b></td><td>{total_size_gb:.2f} GB</td></tr>
+<tr><td><b>Estimated output:</b></td><td>~{est_output_gb:.2f} GB</td></tr>
+<tr><td><b>Estimated time:</b></td><td>~{est_minutes} min</td></tr>
+<tr><td><b>Output dir:</b></td><td>{output_dir}</td></tr>
 </table>
 {warning_html}
 <p><b>Registration settings</b></p>
@@ -976,18 +937,28 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._worker_thread.terminate()
                 self._worker_thread.wait(500)
 
+        # Stop and cleanup merge thread if running
+        if self._merge_thread and self._merge_thread.isRunning():
+            logger.warning("Merge thread still running - requesting termination")
+            self._merge_thread.quit()
+            if not self._merge_thread.wait(2000):
+                logger.error("Merge thread did not terminate gracefully, forcing termination")
+                self._merge_thread.terminate()
+                self._merge_thread.wait(500)
+
         # Cleanup napari viewer
         if self._viewer is not None:
             try:
                 logger.info("Closing napari viewer")
                 self._viewer.close()
                 self._viewer = None
-            except Exception as e:
-                logger.exception(f"Failed to close napari viewer: {e}")
+            except Exception:
+                logger.exception("Failed to close napari viewer")
 
         # Clear references to help garbage collection
         self._worker = None
         self._worker_thread = None
+        self._merge_thread = None
         self._last_result = None
 
         logger.info("Cleanup complete, closing application")
@@ -1082,8 +1053,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if sizes[0] > LEFT_SIDEBAR_MIN:
             collapse_panel(self._top_splitter, 0, LEFT_SIDEBAR_MIN)
         else:
+            old_size = sizes[0]
             sizes[0] = LEFT_SIDEBAR_INIT
-            sizes[1] = max(CANVAS_MIN_W, sizes[1] - (LEFT_SIDEBAR_INIT - sizes[0]))
+            sizes[1] = max(CANVAS_MIN_W, sizes[1] - (LEFT_SIDEBAR_INIT - old_size))
             self._top_splitter.setSizes(sizes)
 
     def toggle_right_sidebar(self) -> None:
@@ -1092,8 +1064,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if sizes[2] > RIGHT_SIDEBAR_MIN:
             collapse_panel(self._top_splitter, 2, RIGHT_SIDEBAR_MIN)
         else:
+            old_size = sizes[2]
             sizes[2] = RIGHT_SIDEBAR_INIT
-            sizes[1] = max(CANVAS_MIN_W, sizes[1] - (RIGHT_SIDEBAR_INIT - sizes[2]))
+            sizes[1] = max(CANVAS_MIN_W, sizes[1] - (RIGHT_SIDEBAR_INIT - old_size))
             self._top_splitter.setSizes(sizes)
 
     def expand_center(self) -> None:
@@ -1164,13 +1137,13 @@ class MainWindow(QtWidgets.QMainWindow):
         for url in event.mimeData().urls():
             path = Path(url.toLocalFile())
             if path.is_dir():
-                logger.info(f"Dropped folder: {path}")
+                logger.info("Dropped folder: %s", path)
                 self._load_slides_from_folder(path)
                 break  # Only process first folder
             elif path.is_file():
                 # Check if it's a config file
                 if path.suffix.lower() == ".json":
-                    logger.info(f"Dropped config file: {path}")
+                    logger.info("Dropped config file: %s", path)
                     self._load_config_from_path(path)
                     break
         event.acceptProposedAction()
@@ -1294,7 +1267,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 # Process events to keep UI responsive
                 QtWidgets.QApplication.processEvents()
 
-        logger.info(f"Generated {completed}/{total_slides} thumbnails")
+        logger.info("Generated %d/%d thumbnails", completed, total_slides)
 
     def _add_to_recent_folders(self, folder_path: str) -> None:
         """Add folder to recent folders list."""
@@ -1316,7 +1289,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         settings.setValue("recent_folders", recent)
         self._update_recent_folders_menu()
-        logger.debug(f"Added {folder_path} to recent folders")
+        logger.debug("Added %s to recent folders", folder_path)
 
     def _save_recent_folder_config(self, folder: Path, config_path: Path) -> None:
         settings = QtCore.QSettings("VALIS", "Workstation")
@@ -1507,7 +1480,7 @@ class MainWindow(QtWidgets.QMainWindow):
         dialog = MergeSlidesDialog(slide_names, self)
         if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
             merge_config = dialog.get_merge_config()
-            logger.info(f"Merge configuration: {merge_config}")
+            logger.info("Merge configuration: %s", merge_config)
 
             if not merge_config["channels"]:
                 QtWidgets.QMessageBox.warning(
@@ -1532,7 +1505,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 f"Merging {len(merge_config['channels'])} channels...", 0
             )
 
-            merge_thread = QtCore.QThread(self)
+            self._merge_thread = QtCore.QThread(self)
 
             class _MergeWorker(QtCore.QObject):
                 finished = QtCore.Signal(object)
@@ -1566,31 +1539,33 @@ class MainWindow(QtWidgets.QMainWindow):
             merge_worker = _MergeWorker(
                 registrar, merge_config, output_dir, save_config
             )
-            merge_worker.moveToThread(merge_thread)
+            merge_worker.moveToThread(self._merge_thread)
 
             def on_merge_success(result_path):
-                logger.info(f"Merge completed: {result_path}")
-                self._status_bar.showMessage(f"Slides merged successfully", 5000)
+                logger.info("Merge completed: %s", result_path)
+                self._status_bar.showMessage("Slides merged successfully", 5000)
                 QtWidgets.QMessageBox.information(
                     self,
                     "Merge Complete",
                     f"Successfully merged {len(merge_config['channels'])} channels.\n\n"
                     f"Output: {result_path}",
                 )
-                merge_thread.quit()
+                self._merge_thread.quit()
+                self._merge_thread = None
 
             def on_merge_error(msg):
-                logger.error(f"Merge failed: {msg}")
+                logger.error("Merge failed: %s", msg)
                 self._status_bar.showMessage("Merge failed", 5000)
                 QtWidgets.QMessageBox.critical(
                     self, "Merge Failed", f"Failed to merge slides:\n{msg}"
                 )
-                merge_thread.quit()
+                self._merge_thread.quit()
+                self._merge_thread = None
 
             merge_worker.finished.connect(on_merge_success)
             merge_worker.failed.connect(on_merge_error)
-            merge_thread.started.connect(merge_worker.run)
-            merge_thread.start()
+            self._merge_thread.started.connect(merge_worker.run)
+            self._merge_thread.start()
 
     def _export_roi_crop(self) -> None:
         """Show ROI export dialog and process the crop across all registered slides."""
@@ -1617,8 +1592,6 @@ class MainWindow(QtWidgets.QMainWindow):
             out_path = Path(out_dir)
 
             registrar = self._last_result["registrar"]
-            import os
-
             from valis import warp_tools
 
             self._status_bar.showMessage("Extracting ROIs...")
