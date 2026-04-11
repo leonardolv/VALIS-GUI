@@ -112,7 +112,8 @@ Files are in OME-TIFF format, readable by:
 
 ## 📖 Need More Help?
 
-- **Full Manual:** [USER_MANUAL.md](USER_MANUAL.md)
+- **Full Manual:** [BioSlide-Manual.html](BioSlide-Manual.html)
+- **Step-by-step Tutorial:** [BioSlide-Tutorial.html](BioSlide-Tutorial.html)
 - **VALIS Docs:** https://valis.readthedocs.io/
 - **Report Issues:** https://github.com/leonardolv/VALIS-GUI/issues
 
@@ -141,7 +142,7 @@ python run_valis_workstation.py
 ---
 
 **Next Steps:**
-- Read the [Full User Manual](USER_MANUAL.md) for advanced features
+- Read the [Full User Manual](BioSlide-Manual.html) for advanced features
 - Try warping annotations (Tools → Warp Annotations)
 - Experiment with different parameters
 

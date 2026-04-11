@@ -1,1195 +1,899 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BioSlide v1.1.0 — Tutorial</title>
+<title>VALIS Workstation Tutorial - Step-by-Step Guide</title>
 <style>
-:root{
-  --bg:#f5f8fc;--surface:#fff;--ink:#0f172a;--muted:#475569;--line:#dbe4ef;
-  --brand:#007ACC;--brand-strong:#005a9e;--brand-soft:#e0f2fe;
-  --ok:#0f766e;--warn:#92400e;--danger:#991b1b;
-  --shadow:0 8px 22px rgba(2,10,26,.08);
-  --sidebar-bg:linear-gradient(160deg,#0b1c2f 0%,#10233a 55%,#15324a 100%);
+:root {
+  --bg: #f5f8fc;
+  --surface: #ffffff;
+  --ink: #0f172a;
+  --muted: #475569;
+  --line: #dbe4ef;
+  --brand: #0369a1;
+  --brand-strong: #0c4a6e;
+  --brand-soft: #e0f2fe;
+  --ok: #0f766e;
+  --warn: #92400e;
+  --danger: #991b1b;
+  --shadow: 0 8px 22px rgba(2, 10, 26, 0.08);
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;font-family:"Segoe UI",Inter,-apple-system,BlinkMacSystemFont,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
-a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
 
-/* LAYOUT */
-.page{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+* {
+  box-sizing: border-box;
+}
 
-/* SIDEBAR */
-.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--sidebar-bg);color:#d5e4f4;border-right:1px solid #26405e;padding:14px 12px 20px;font-size:.84rem}
-.sidebar::-webkit-scrollbar{width:6px}
-.sidebar::-webkit-scrollbar-thumb{background:rgba(125,211,252,.25);border-radius:3px}
-.brand{margin-bottom:10px;border:1px solid rgba(148,184,224,.28);background:rgba(8,20,36,.55);border-radius:10px;padding:10px 12px}
-.brand h1{font-size:.96rem;margin:0 0 2px;color:#f1f7ff}
-.brand p{margin:0;font-size:.73rem;color:#9ec1e2}
-.nav-group{margin:10px 0 4px;color:#7fa2c2;font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;font-weight:700}
-.nav-link{display:block;margin-bottom:2px;padding:4px 8px;border-radius:6px;color:#d5e4f4;border:1px solid transparent;font-size:.8rem}
-.nav-link:hover{background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.28);text-decoration:none}
-.nav-link.active{background:rgba(14,165,233,.2);border-color:rgba(56,189,248,.45);color:#fff}
-.sidebar-footer{margin-top:14px;padding:8px;border-radius:8px;border:1px solid rgba(125,211,252,.24);background:rgba(2,15,30,.55);font-size:.74rem;text-align:center}
-.sidebar-footer a{color:#7dd3fc}
+html {
+  scroll-behavior: smooth;
+}
 
-/* MAIN */
-.main{padding:24px 28px;max-width:1100px}
+body {
+  margin: 0;
+  font-family: "Segoe UI", Inter, -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+  color: var(--ink);
+  background: radial-gradient(circle at 10% 0%, #eef6ff 0%, var(--bg) 35%, var(--bg) 100%);
+  line-height: 1.65;
+}
 
-/* HERO */
-.hero{border-radius:14px;overflow:hidden;background:linear-gradient(125deg,#003d66 0%,#005a9e 48%,#007ACC 100%);color:#f5fbff;box-shadow:var(--shadow);margin-bottom:20px;padding:24px 28px}
-.hero h2{margin:0 0 6px;font-size:1.7rem;line-height:1.15}
-.hero p{margin:0 0 12px;font-size:.94rem;color:rgba(245,251,255,.88);max-width:68ch}
-.badges{display:flex;gap:6px;flex-wrap:wrap}
-.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 9px;font-size:.7rem;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.13)}
+a {
+  color: var(--brand);
+  text-decoration: none;
+}
 
-/* LESSON */
-.lesson{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow);margin-bottom:16px;position:relative}
-.lesson h2{margin:0 0 8px;color:var(--brand-strong);font-size:1.2rem;border-bottom:2px solid var(--brand-soft);padding-bottom:6px}
-.lesson h3{margin:12px 0 6px;color:var(--ink);font-size:.96rem}
-.lesson h4{margin:10px 0 4px;color:#1e3a5f;font-size:.88rem}
-.lesson p{margin:0 0 8px;color:#24364b}
-.lesson ul,.lesson ol{margin:0 0 8px;padding-left:20px;color:#24364b}
-.lesson li{margin-bottom:3px}
-.lesson>p:last-child,.lesson>ul:last-child,.lesson>div:last-child{margin-bottom:0}
-.lesson-badge{position:absolute;top:14px;right:16px;display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:.68rem;font-weight:600;border:1px solid}
-.lb-beginner{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}
-.lb-intermediate{background:#fff7ed;color:#92400e;border-color:#fed7aa}
-.lb-advanced{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+a:hover {
+  text-decoration: underline;
+}
 
-/* STEPS */
-.step{display:grid;grid-template-columns:38px 1fr;gap:10px;margin:12px 0;align-items:start}
-.step-num{width:32px;height:32px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0}
-.step-body{min-width:0}
-.step-body h4{margin:0 0 4px;font-size:.9rem;color:#0f172a}
-.step-body p{margin:0 0 4px;font-size:.85rem}
+.page {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 100vh;
+}
 
-/* TABLES */
-.ref-table{width:100%;border-collapse:collapse;margin:8px 0;font-size:.84rem}
-.ref-table th,.ref-table td{border:1px solid var(--line);padding:7px 9px;text-align:left}
-.ref-table th{background:#edf6ff;color:#133a62;font-weight:600;white-space:nowrap}
-.ref-table tr:hover td{background:#f8fbff}
-.ref-table td code{font-size:.82em}
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background: linear-gradient(160deg, #0b1c2f 0%, #10233a 55%, #15324a 100%);
+  color: #d5e4f4;
+  border-right: 1px solid #26405e;
+  padding: 18px 16px 20px;
+}
 
-/* CODE */
-code,.kbd{font-family:Consolas,"Cascadia Code","SFMono-Regular",Menlo,Monaco,monospace}
-code{background:#edf4fc;border:1px solid #d9e8f8;border-radius:5px;padding:1px 5px;font-size:.84em}
-.sc{display:inline-block;background:#1e293b;color:#e2e8f0;border-radius:4px;padding:1px 5px;font-size:.72rem;font-family:Consolas,monospace;vertical-align:middle}
-pre{margin:8px 0;padding:10px 12px;border-radius:8px;border:1px solid #1f3652;background:#0f1b2d;color:#dbeafe;overflow:auto;font-size:.82rem}
+.brand {
+  margin-bottom: 14px;
+  border: 1px solid rgba(148, 184, 224, 0.28);
+  background: rgba(8, 20, 36, 0.55);
+  border-radius: 12px;
+  padding: 12px;
+}
 
-/* ADMONITIONS */
-.tip,.note,.warn,.danger{border-left:4px solid;border-radius:7px;padding:8px 10px;margin:10px 0;font-size:.85rem}
-.tip{background:#ecfdf5;border-color:#10b981}
-.note{background:#eff6ff;border-color:#3b82f6}
-.warn{background:#fff7ed;border-color:#f97316}
-.danger{background:#fef2f2;border-color:#ef4444}
+.brand h1 {
+  font-size: 1.05rem;
+  margin: 0 0 4px;
+  color: #f1f7ff;
+}
 
-/* CARDS */
-.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.card h4{margin:0 0 4px;color:var(--brand-strong);font-size:.88rem}
-.card p{margin:0;font-size:.82rem;color:var(--muted)}
+.brand p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #9ec1e2;
+}
 
-/* CHECKLIST */
-.checklist{list-style:none;padding:0;margin:10px 0}
-.checklist li{padding:6px 0 6px 28px;position:relative;font-size:.88rem;border-bottom:1px solid var(--line)}
-.checklist li:last-child{border-bottom:none}
-.checklist li::before{content:"";position:absolute;left:2px;top:8px;width:16px;height:16px;border-radius:4px;border:2px solid var(--brand);background:var(--brand-soft)}
+.nav-label {
+  margin: 16px 0 8px;
+  color: #7fa2c2;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
 
-/* OUTCOME */
-.outcome{background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 12px;margin:10px 0}
-.outcome h4{margin:0 0 4px;color:#0369a1;font-size:.86rem}
-.outcome p,.outcome ul{font-size:.84rem;color:#0c4a6e}
+.nav-link {
+  display: block;
+  margin-bottom: 4px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  color: #d5e4f4;
+  border: 1px solid transparent;
+  font-size: 0.86rem;
+}
 
-/* FIGURES */
-.figure{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#f8fbff}
-.figure .fig-inner{width:100%;display:flex;align-items:center;justify-content:center;min-height:100px;background:#0f1b2d;padding:14px}
-.figure figcaption{margin:0;padding:8px 10px;font-size:.78rem;color:#41566f;border-top:1px solid var(--line);background:#f3f8ff}
-.illus{display:flex;flex-direction:column;gap:5px;width:100%}
-.illus-row{display:flex;gap:5px;align-items:center}
-.illus-box{border-radius:5px;padding:6px 10px;font-size:.7rem;font-weight:600;text-align:center;color:#fff;flex:1}
-.illus-box.ib-blue{background:#007ACC}.illus-box.ib-dark{background:#333;color:#ddd}
-.illus-box.ib-teal{background:#0f766e}.illus-box.ib-green{background:#16a34a}
-.illus-box.ib-amber{background:#d97706}.illus-box.ib-purple{background:#7c3aed}
-.illus-box.ib-red{background:#dc2626}.illus-box.ib-pink{background:#db2777}
-.illus-arrow{font-size:1rem;color:#7dd3fc;text-align:center}
+.nav-link:hover {
+  background: rgba(56, 189, 248, 0.14);
+  border-color: rgba(56, 189, 248, 0.28);
+  text-decoration: none;
+}
 
-/* ACCORDION */
-details{margin:6px 0;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-details summary{padding:8px 12px;background:#f3f8ff;cursor:pointer;font-weight:600;font-size:.88rem;color:var(--brand-strong);user-select:none}
-details summary:hover{background:#e8f2ff}
-details[open] summary{border-bottom:1px solid var(--line)}
-details .detail-body{padding:10px 12px}
+.nav-link.active {
+  background: rgba(14, 165, 233, 0.2);
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #ffffff;
+}
 
-/* STATUS */
-.status{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.66rem;font-weight:600;vertical-align:middle}
-.status-ok{background:#d1fae5;color:#065f46}
-.status-beta{background:#fef3c7;color:#92400e}
+.quick-actions {
+  margin-top: 16px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  background: rgba(2, 15, 30, 0.55);
+}
 
-footer{text-align:center;color:#50657d;font-size:.82rem;padding:12px}
+.quick-actions a {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(125, 211, 252, 0.36);
+  background: rgba(14, 165, 233, 0.15);
+  color: #dff6ff;
+  font-size: 0.8rem;
+}
 
-/* TRANSITIONS */
-.lesson{transition:transform .22s cubic-bezier(.25,.46,.45,.94),box-shadow .22s ease}
-.lesson:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(0,60,120,.1)}
-.card{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
-.card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,122,204,.12);border-color:var(--brand)}
-.figure{transition:transform .25s ease,box-shadow .25s ease}
-.figure:hover{transform:scale(1.012);box-shadow:0 10px 30px rgba(0,122,204,.15)}
-details summary{transition:background .15s ease}
-.tip,.note,.warn,.danger{transition:transform .15s ease,box-shadow .15s ease}
-.tip:hover,.note:hover,.warn:hover,.danger:hover{transform:translateX(4px);box-shadow:2px 2px 12px rgba(0,0,0,.06)}
+.main {
+  padding: 28px;
+}
 
-/* RESPONSIVE */
-@media(max-width:1080px){.page{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid #26405e}}
-@media(max-width:780px){.main{padding:12px}.grid-2,.grid-3{grid-template-columns:1fr}.hero h2{font-size:1.4rem}}
-@media print{.sidebar{display:none}.page{grid-template-columns:1fr}.lesson{break-inside:avoid;box-shadow:none;border:1px solid #ccc}}
+.hero {
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(125deg, #0a2e4d 0%, #0c4a6e 48%, #0f7492 100%);
+  color: #f5fbff;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+
+.hero-body {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 20px;
+  padding: 24px;
+  align-items: center;
+}
+
+.hero h2 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.hero p {
+  margin: 0 0 14px;
+  font-size: 0.96rem;
+  color: rgba(245, 251, 255, 0.9);
+  max-width: 60ch;
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.74rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.hero img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.callouts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+
+.callout h3 {
+  margin: 0 0 6px;
+  color: var(--brand-strong);
+  font-size: 0.92rem;
+}
+
+.callout p {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.section {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+
+.section h2 {
+  margin: 0 0 10px;
+  color: var(--brand-strong);
+  font-size: 1.28rem;
+}
+
+.section h3 {
+  margin: 14px 0 8px;
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.section p {
+  margin: 0 0 10px;
+  color: #24364b;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.figure {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8fbff;
+}
+
+.figure img {
+  width: 100%;
+  display: block;
+  max-height: 340px;
+  object-fit: cover;
+}
+
+.figure figcaption {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  color: #41566f;
+  border-top: 1px solid var(--line);
+  background: #f3f8ff;
+}
+
+.timeline {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline li {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding: 10px;
+  border: 1px solid #d8e6f5;
+  border-radius: 10px;
+  background: #f8fbff;
+}
+
+.step {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.86rem;
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+}
+
+.label {
+  font-weight: 700;
+  color: #0f3458;
+}
+
+.outcome {
+  font-size: 0.84rem;
+  color: #39526e;
+}
+
+.preflight {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 0.86rem;
+}
+
+.preflight th,
+.preflight td {
+  border: 1px solid var(--line);
+  padding: 9px 10px;
+  text-align: left;
+}
+
+.preflight th {
+  background: #edf6ff;
+  color: #133a62;
+}
+
+code,
+.kbd {
+  font-family: Consolas, "Cascadia Code", "SFMono-Regular", Menlo, Monaco, monospace;
+}
+
+code {
+  background: #edf4fc;
+  border: 1px solid #d9e8f8;
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-size: 0.86em;
+}
+
+.kbd {
+  background: #111827;
+  color: #f8fafc;
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 0.78rem;
+}
+
+pre {
+  margin: 10px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #1f3652;
+  background: #0f1b2d;
+  color: #dbeafe;
+  overflow: auto;
+  font-size: 0.83rem;
+}
+
+.tip,
+.note,
+.warn {
+  border-left: 4px solid;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 12px 0;
+  font-size: 0.87rem;
+}
+
+.tip {
+  background: #ecfdf5;
+  border-color: #10b981;
+}
+
+.note {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.warn {
+  background: #fff7ed;
+  border-color: #f97316;
+}
+
+.checklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.check-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  border: 1px solid #dbe8f5;
+  border-radius: 10px;
+  padding: 10px;
+  background: #f8fbff;
+}
+
+.check-item input {
+  margin-top: 2px;
+}
+
+.compare {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.compare .figure img {
+  max-height: 250px;
+  object-fit: contain;
+  background: #0a0a0a;
+}
+
+footer {
+  text-align: center;
+  color: #50657d;
+  font-size: 0.84rem;
+  padding: 10px;
+}
+
+@media (max-width: 1080px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #26405e;
+  }
+
+  .hero-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 780px) {
+  .main {
+    padding: 14px;
+  }
+
+  .callouts,
+  .grid-2,
+  .checklist,
+  .compare {
+    grid-template-columns: 1fr;
+  }
+
+  .hero h2 {
+    font-size: 1.58rem;
+  }
+}
 </style>
 </head>
 <body>
 <div class="page">
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>VALIS Workstation Tutorial</h1>
+      <p>Hands-on, didactic, image-guided</p>
+    </div>
 
-<!-- ═══════════════════  SIDEBAR  ═══════════════════ -->
-<nav class="sidebar">
-<div class="brand">
-  <h1>BioSlide Tutorial</h1>
-  <p>v1.1.0 &mdash; Step-by-Step Guide</p>
-</div>
+    <div class="nav-label">Learning Path</div>
+    <a class="nav-link" href="#goals">1. Goals and Outcomes</a>
+    <a class="nav-link" href="#preflight">2. Preflight Checklist</a>
+    <a class="nav-link" href="#install">3. Install and Launch</a>
+    <a class="nav-link" href="#ui-map">4. UI Map</a>
+    <a class="nav-link" href="#first-run">5. First Registration</a>
+    <a class="nav-link" href="#quality">6. Quality Validation</a>
+    <a class="nav-link" href="#tools">7. Complete GUI Operations</a>
+    <a class="nav-link" href="#cookbook">8. Settings + VALIS Map</a>
+    <a class="nav-link" href="#troubleshooting">9. Troubleshooting</a>
+    <a class="nav-link" href="#final-check">10. Final Checklist</a>
 
-<div class="nav-group">Foundations</div>
-<a class="nav-link" href="#prerequisites">Prerequisites</a>
-<a class="nav-link" href="#installation">Installation</a>
-<a class="nav-link" href="#ui-orientation">UI Orientation</a>
+    <div class="quick-actions">
+      <div class="nav-label" style="margin-top:0">Quick Links</div>
+      <a href="BioSlide-Manual.html">Open Full Manual</a>
+      <a href="../QUICK_START.md">Open Quick Start (MD)</a>
+    </div>
+  </aside>
 
-<div class="nav-group">Core Workflow</div>
-<a class="nav-link" href="#lesson-project">Create a Project</a>
-<a class="nav-link" href="#lesson-import">Import Slides</a>
-<a class="nav-link" href="#lesson-preview">Preview &amp; Navigate</a>
-<a class="nav-link" href="#lesson-segment">Segment Tissue</a>
-<a class="nav-link" href="#lesson-refine">Refine Segmentation</a>
-<a class="nav-link" href="#lesson-measure">Measure</a>
-<a class="nav-link" href="#lesson-export">Export Results</a>
-
-<div class="nav-group">Advanced Features</div>
-<a class="nav-link" href="#lesson-collage">Build a Collage</a>
-<a class="nav-link" href="#lesson-animation">Animation Studio</a>
-<a class="nav-link" href="#lesson-3d">3D Reconstruction</a>
-<a class="nav-link" href="#lesson-batch">Batch Processing</a>
-
-<div class="nav-group">Appendices</div>
-<a class="nav-link" href="#tips">Tips &amp; Shortcuts</a>
-<a class="nav-link" href="#troubleshooting">Troubleshooting</a>
-<a class="nav-link" href="#next-steps">Next Steps</a>
-
-<div class="sidebar-footer">
-  <a href="BioSlide-Manual.html">Open Reference Manual &rarr;</a>
-</div>
-</nav>
-
-<!-- ═══════════════════  MAIN CONTENT  ═══════════════════ -->
-<main class="main">
-
-<!-- ─── HERO ─── -->
-<header class="hero" id="top">
-  <h2>BioSlide v1.1.0 &mdash; Tutorial</h2>
-  <p>A hands-on, step-by-step guide to mastering BioSlide. By the end you will have imported slides, segmented tissue, exported results, built a collage, created an animation, and explored 3D reconstruction.</p>
-  <div class="badges">
-    <span class="badge">12 Lessons</span>
-    <span class="badge">Beginner &rarr; Advanced</span>
-    <span class="badge">~45 min</span>
-  </div>
-</header>
-
-<!-- ════════════════════════════════════════
-     LESSON 0: PREREQUISITES
-     ════════════════════════════════════════ -->
-<section class="lesson" id="prerequisites" data-search="prerequisites requirements before you begin system hardware software">
-<span class="lesson-badge lb-beginner">Beginner</span>
-<h2>Lesson 0 &mdash; Prerequisites</h2>
-
-<p>Before starting, ensure you have:</p>
-
-<ul class="checklist">
-  <li>Python 3.10 or later installed</li>
-  <li>At least 8 GB RAM (16 GB+ recommended)</li>
-  <li>Windows 10/11 (64-bit)</li>
-  <li>One or more whole-slide image files (.ndpi, .svs, .mrxs, or .tif)</li>
-  <li>A text editor or IDE (optional, for configuration)</li>
-</ul>
-
-<div class="note"><strong>No GPU required.</strong> BioSlide works fully on CPU. CUDA GPU acceleration is optional and provides speed improvements for large slides.</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 1: INSTALLATION
-     ════════════════════════════════════════ -->
-<section class="lesson" id="installation" data-search="installation setup virtual environment pip requirements openslide launch">
-<span class="lesson-badge lb-beginner">Beginner</span>
-<h2>Lesson 1 &mdash; Installation</h2>
-
-<p>Set up BioSlide in a clean virtual environment.</p>
-
-<div class="step">
-  <div class="step-num">1</div>
-  <div class="step-body">
-    <h4>Clone the Repository</h4>
-    <pre>git clone https://github.com/your-org/BioSlide.git
-cd BioSlide</pre>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">2</div>
-  <div class="step-body">
-    <h4>Create a Virtual Environment</h4>
-    <pre>python -m venv .venv
-.venv\Scripts\activate</pre>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">3</div>
-  <div class="step-body">
-    <h4>Install Dependencies</h4>
-    <pre>pip install -r requirements.txt</pre>
-    <p>This installs PySide6, OpenCV, OpenSlide bindings, PyVista, Pydantic, and all supporting libraries.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">4</div>
-  <div class="step-body">
-    <h4>Install OpenSlide (for proprietary WSI formats)</h4>
-    <pre>pip install openslide-bin</pre>
-    <p>Required for .ndpi, .svs, and .mrxs files. Standard TIFF files work without it.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">5</div>
-  <div class="step-body">
-    <h4>Launch BioSlide</h4>
-    <pre>python main.py</pre>
-    <p>You should see a branded splash screen, then the Launcher Dashboard.</p>
-  </div>
-</div>
-
-<div class="outcome">
-  <h4>&#10003; Outcome</h4>
-  <p>BioSlide is installed and the Launcher Dashboard is visible.</p>
-</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 2: UI ORIENTATION
-     ════════════════════════════════════════ -->
-<section class="lesson" id="ui-orientation" data-search="ui orientation launcher main window tabs toolbar dock panels tour getting started">
-<span class="lesson-badge lb-beginner">Beginner</span>
-<h2>Lesson 2 &mdash; UI Orientation</h2>
-
-<p>Take a quick tour of BioSlide&rsquo;s interface components.</p>
-
-<h3>Launcher Dashboard</h3>
-<p>The hub-style entry point. Six feature cards provide one-click access to each workflow. Below the cards you&rsquo;ll find quick actions (New Project, Open Project, Settings, Help) and a list of recent projects.</p>
-
-<h3>Main Window Layout</h3>
-<p>Once you open or create a project, the Main Window appears with:</p>
-
-<div class="grid-2">
-  <div class="card"><h4>Menu Bar</h4><p>Eight menus: File, Edit, View, Segmentation, Export, Tools, Debug, Help</p></div>
-  <div class="card"><h4>Toolbar</h4><p>Quick actions: New, Open, Save, Import, Undo, Redo, Zoom, Export</p></div>
-  <div class="card"><h4>Tab Bar</h4><p>Six tabs: Preview, Segmentation, Statistics, Collage, Animation, 3D Reconstruction</p></div>
-  <div class="card"><h4>Dock Panels</h4><p>Right side: Property Panel, Log Panel (<span class="sc">Ctrl+L</span>), Measurement Panel</p></div>
-  <div class="card"><h4>Central Canvas</h4><p>Active tab&rsquo;s content area &mdash; tile viewer for preview/segmentation</p></div>
-  <div class="card"><h4>Status Bar</h4><p>Bottom: status text, zoom level, GPU indicator</p></div>
-</div>
-
-<h3>Themes</h3>
-<p>BioSlide ships with three themes: <strong>High Contrast</strong> (default), <strong>Dark</strong>, and <strong>Light</strong>. Change via Edit &rarr; Preferences.</p>
-
-<div class="tip"><strong>Tip:</strong> Press <span class="sc">F1</span> anywhere to open the built-in tutorial dialog with guided overlay highlights.</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 3: CREATE A PROJECT
-     ════════════════════════════════════════ -->
-<section class="lesson" id="lesson-project" data-search="create new project hssp save file name location">
-<span class="lesson-badge lb-beginner">Beginner</span>
-<h2>Lesson 3 &mdash; Create a Project</h2>
-
-<p>Projects organize your slides, masks, measurements, and settings in a single <code>.hssp</code> file.</p>
-
-<div class="step">
-  <div class="step-num">1</div>
-  <div class="step-body">
-    <h4>New Project</h4>
-    <p>Click <em>New Project</em> on the Launcher Dashboard, or press <span class="sc">Ctrl+N</span>.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">2</div>
-  <div class="step-body">
-    <h4>Name &amp; Location</h4>
-    <p>Enter a descriptive project name (e.g., <code>Brain_Study_2024</code>). Choose a save folder.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">3</div>
-  <div class="step-body">
-    <h4>Confirm</h4>
-    <p>Click <em>Create</em>. The Main Window opens with your empty project loaded.</p>
-  </div>
-</div>
-
-<div class="note"><strong>Autosave:</strong> BioSlide saves your project every 5 minutes automatically. After a crash, you&rsquo;ll be offered the option to restore your last autosaved state.</div>
-
-<div class="outcome">
-  <h4>&#10003; Outcome</h4>
-  <p>A new <code>.hssp</code> project file is created and the Main Window is ready for slides.</p>
-</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 4: IMPORT SLIDES
-     ════════════════════════════════════════ -->
-<section class="lesson" id="lesson-import" data-search="import slides wsi ndpi svs mrxs tif tiff file dialog open load">
-<span class="lesson-badge lb-beginner">Beginner</span>
-<h2>Lesson 4 &mdash; Import Slides</h2>
-
-<div class="step">
-  <div class="step-num">1</div>
-  <div class="step-body">
-    <h4>Open the Import Dialog</h4>
-    <p>Click <em>Import Slides</em> in the toolbar, or press <span class="sc">Ctrl+I</span>.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">2</div>
-  <div class="step-body">
-    <h4>Select Files</h4>
-    <p>Browse to your WSI files. Supported formats:</p>
-    <table class="ref-table">
-    <thead><tr><th>Extension</th><th>Vendor</th></tr></thead>
-    <tbody>
-    <tr><td><code>.ndpi</code></td><td>Hamamatsu NanoZoomer</td></tr>
-    <tr><td><code>.svs</code></td><td>Aperio / Leica</td></tr>
-    <tr><td><code>.mrxs</code></td><td>3DHISTECH (MIRAX)</td></tr>
-    <tr><td><code>.tif / .tiff</code></td><td>Standard / pyramidal TIFF</td></tr>
-    </tbody>
-    </table>
-    <p>You can select multiple files at once.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">3</div>
-  <div class="step-body">
-    <h4>Confirm Import</h4>
-    <p>Click <em>Open</em>. Slides appear in the file list on the left of the Preview tab.</p>
-  </div>
-</div>
-
-<div class="tip"><strong>Tip:</strong> WSI files can be very large (several GB). BioSlide uses tiled loading, so only visible portions are loaded into memory.</div>
-
-<div class="outcome">
-  <h4>&#10003; Outcome</h4>
-  <p>Your slides are loaded and visible in the Preview tab&rsquo;s file list.</p>
-</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 5: PREVIEW & NAVIGATE
-     ════════════════════════════════════════ -->
-<section class="lesson" id="lesson-preview" data-search="preview navigate zoom pan scroll wheel tile viewer single grid view thumbnail slide metadata">
-<span class="lesson-badge lb-beginner">Beginner</span>
-<h2>Lesson 5 &mdash; Preview &amp; Navigate</h2>
-
-<div class="step">
-  <div class="step-num">1</div>
-  <div class="step-body">
-    <h4>Select a Slide</h4>
-    <p>Click any slide in the left file list. It loads in the central tile viewer.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">2</div>
-  <div class="step-body">
-    <h4>Zoom</h4>
-    <p>Use the <strong>scroll wheel</strong> to zoom in/out. Zoom centers on the cursor position for precise navigation. Alternatively use <span class="sc">Ctrl++</span> and <span class="sc">Ctrl+&minus;</span>.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">3</div>
-  <div class="step-body">
-    <h4>Pan</h4>
-    <p><strong>Click and drag</strong> anywhere on the canvas to move the view.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">4</div>
-  <div class="step-body">
-    <h4>Region Zoom</h4>
-    <p>Click the <em>Region Zoom</em> tool in the toolbar, then draw a rectangle on the slide. The view zooms to fit that rectangle exactly.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">5</div>
-  <div class="step-body">
-    <h4>Grid View</h4>
-    <p>Switch to <em>Grid View</em> mode to see thumbnail overviews of all loaded slides simultaneously. Click any thumbnail to switch back to single view for that slide.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">6</div>
-  <div class="step-body">
-    <h4>View Slide Information</h4>
-    <p>Check the Property Panel (right side) for pixel dimensions, microns per pixel (MPP), vendor, and file path.</p>
-  </div>
-</div>
-
-<div class="outcome">
-  <h4>&#10003; Outcome</h4>
-  <p>You can smoothly navigate multi-gigapixel slides at any zoom level.</p>
-</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 6: SEGMENT TISSUE
-     ════════════════════════════════════════ -->
-<section class="lesson" id="lesson-segment" data-search="segment tissue auto segmentation manual magic wand lasso eraser merge split algorithms pipeline threshold">
-<span class="lesson-badge lb-beginner">Beginner</span>
-<h2>Lesson 6 &mdash; Segment Tissue</h2>
-
-<p>Segmentation identifies tissue regions and separates them from the slide background.</p>
-
-<h3>Option A &mdash; Automatic Segmentation</h3>
-
-<div class="step">
-  <div class="step-num">1</div>
-  <div class="step-body">
-    <h4>Switch to the Segmentation Tab</h4>
-    <p>Click the <em>Segmentation</em> tab in the tab bar.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">2</div>
-  <div class="step-body">
-    <h4>Click &ldquo;Auto Segment&rdquo;</h4>
-    <p>BioSlide runs the automatic pipeline in the background:</p>
-    <div class="figure">
-    <div class="fig-inner">
-      <div class="illus">
-        <div class="illus-row">
-          <div class="illus-box ib-blue">Downsample</div>
-          <div class="illus-arrow">&rarr;</div>
-          <div class="illus-box ib-teal">Dual-Space Detection</div>
-          <div class="illus-arrow">&rarr;</div>
-          <div class="illus-box ib-green">Morphology Cleanup</div>
-          <div class="illus-arrow">&rarr;</div>
-          <div class="illus-box ib-amber">Contouring</div>
+  <main class="main">
+    <header class="hero">
+      <div class="hero-body">
+        <div>
+          <h2>Learn VALIS Workstation by doing</h2>
+          <p>This tutorial teaches the full workflow from opening slides to validating registration quality and exporting outputs. It is designed for first-time users and lab handoff training.</p>
+          <div class="badges">
+            <span class="badge">Standalone HTML</span>
+            <span class="badge">Beginner to Advanced</span>
+            <span class="badge">Real project images</span>
+          </div>
         </div>
+        <img src="_images/banner.gif" alt="VALIS banner showing registration context" loading="eager">
       </div>
-    </div>
-    <figcaption>The pipeline detects tissue in both HSV and Lab color spaces, applies morphological cleanup, and extracts contours</figcaption>
-    </div>
-    <p>Progress is shown in the status bar. The UI remains responsive during processing.</p>
-  </div>
+    </header>
+
+    <section class="callouts">
+      <article class="callout">
+        <h3>What you will produce</h3>
+        <p>Registered slides in <code>output/&lt;project_name&gt;/registered/</code> plus <code>summary.csv</code> for quality metrics.</p>
+      </article>
+      <article class="callout">
+        <h3>Time estimate</h3>
+        <p>First run: 20-40 minutes including setup. Follow-up runs are usually 5-15 minutes depending on slide size.</p>
+      </article>
+      <article class="callout">
+        <h3>Best entry setting</h3>
+        <p>Start with <code>VGG</code>, <code>Rigid + Non-rigid ON</code>, <code>Max image size = 2048</code>, then tune only if needed.</p>
+      </article>
+    </section>
+
+    <section id="goals" class="section">
+      <h2>1. Goals and Outcomes</h2>
+      <p>By the end of this tutorial, you should be able to load a slide folder, run registration, review quality, and use post-registration tools (Blink, Quality Report, Warp Annotations, Save Options, Export ROI Crop, Merge Slides, and Session Bundle export).</p>
+      <div class="grid-2">
+        <figure class="figure">
+          <img src="_images/pipeline.png" alt="VALIS registration pipeline diagram" loading="lazy">
+          <figcaption>Pipeline overview from import to saved registered outputs.</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="_images/valis_logo_black_no_bg.png" alt="VALIS logo" loading="lazy" style="object-fit: contain; background: #eef6ff;">
+          <figcaption>VALIS Workstation is the GUI front-end for the VALIS registration engine.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="preflight" class="section">
+      <h2>2. Preflight Checklist</h2>
+      <table class="preflight">
+        <tr>
+          <th>Check</th>
+          <th>Recommendation</th>
+          <th>Reason</th>
+        </tr>
+        <tr>
+          <td>Python version</td>
+          <td><code>3.9+</code></td>
+          <td>Matches package requirement in <code>pyproject.toml</code>.</td>
+        </tr>
+        <tr>
+          <td>RAM</td>
+          <td>16 GB minimum, 32 GB preferred</td>
+          <td>Large WSI tiles can spike memory usage.</td>
+        </tr>
+        <tr>
+          <td>Disk free space</td>
+          <td>At least 2-3x total input size</td>
+          <td>Registered outputs and intermediates can be large.</td>
+        </tr>
+        <tr>
+          <td>GPU (optional)</td>
+          <td>CUDA + PyTorch CUDA build</td>
+          <td>Improves speed for SuperPoint/DISK/DeDoDe detectors.</td>
+        </tr>
+      </table>
+      <div class="note"><strong>Data prep:</strong> keep one case per folder and avoid mixing unrelated projects in the same input directory.</div>
+    </section>
+
+    <section id="install" class="section">
+      <h2>3. Install and Launch</h2>
+      <h3>Install in a virtual environment</h3>
+      <pre><code>git clone https://github.com/leonardolv/VALIS-GUI.git
+cd VALIS-GUI
+python -m venv .venv
+.venv\Scripts\Activate.ps1   # Windows
+pip install -r requirements.txt
+pip install -e .</code></pre>
+
+      <h3>Run the app</h3>
+      <pre><code>python run_valis_workstation.py</code></pre>
+
+      <h3>Quick health checks</h3>
+      <pre><code>python -c "import valis, napari; print('Core packages OK')"
+python -c "import torch; print(torch.cuda.is_available())"</code></pre>
+
+      <div class="tip"><strong>If the app launches but viewer is missing:</strong> install napari with <code>pip install "napari[all]"</code>, then restart.</div>
+    </section>
+
+    <section id="ui-map" class="section">
+      <h2>4. UI Map</h2>
+      <p>The interface uses a <strong>nested resizable splitter layout</strong> with five areas: Project, Slide Preview, central Napari viewer, Properties/Layers, and Status/Logs. All panels are separated by <strong>grip handles</strong> &mdash; dotted bars that highlight on hover &mdash; which you can drag to resize any panel.</p>
+      <p>The left sidebar has <strong>Project</strong> and <strong>Slide Preview</strong> tabs. The right sidebar has <strong>Properties</strong> and <strong>Layers</strong> tabs. The center holds the Napari viewer. The bottom bar shows progress and logs.</p>
+      <div class="grid-2">
+        <figure class="figure">
+          <img src="_images/merge_ome_tiff.png" alt="Merged OME-TIFF visualization example" loading="lazy">
+          <figcaption>Example downstream result: merged channels from registered slides.</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="_images/annotation_transfer.png" alt="Annotation transfer visual example" loading="lazy">
+          <figcaption>Annotation transfer concept used by the Warp Annotations tool.</figcaption>
+        </figure>
+      </div>
+      <div class="note"><strong>Layout keyboard shortcuts:</strong> <span class="kbd">Ctrl+O</span> open folder, <span class="kbd">Ctrl+R</span> run registration, <span class="kbd">Ctrl+B</span> Blink, <span class="kbd">Ctrl+Shift+P</span> performance stats, <span class="kbd">Ctrl+[</span> toggle left sidebar, <span class="kbd">Ctrl+]</span> toggle right sidebar, <span class="kbd">Ctrl+Shift+L</span> reset layout, <span class="kbd">Ctrl+Shift+C</span> expand center panel.</div>
+    </section>
+
+    <section id="first-run" class="section">
+      <h2>5. First Registration (Hands-On)</h2>
+      <p>Use the bundled example dataset to get a known-good first result:</p>
+      <pre><code>examples/example_datasets/ihc/</code></pre>
+
+      <ol class="timeline">
+        <li>
+          <span class="step">1</span>
+          <div>
+            <div class="label">Open slide folder</div>
+            <p>Use <strong>File -> Open Slide Folder</strong>, select <code>examples/example_datasets/ihc</code>.</p>
+            <div class="outcome">You should see slides listed in Project and thumbnails in Slide Preview.</div>
+          </div>
+        </li>
+        <li>
+          <span class="step">2</span>
+          <div>
+            <div class="label">Confirm baseline settings</div>
+            <p>Project name: <code>IHC_Tutorial</code>. Keep defaults: VGG, Similarity, Rigid + Non-rigid enabled, Max image size 2048.</p>
+            <div class="outcome">This setup is stable and representative for first run validation.</div>
+          </div>
+        </li>
+        <li>
+          <span class="step">3</span>
+          <div>
+            <div class="label">Run registration</div>
+            <p>Use <strong>File -> Run Registration</strong> or <span class="kbd">Ctrl+R</span>. Confirm in the dialog.</p>
+            <div class="outcome">Progress moves to 100%; registered layers appear in viewer when complete.</div>
+          </div>
+        </li>
+        <li>
+          <span class="step">4</span>
+          <div>
+            <div class="label">Inspect outputs on disk</div>
+            <p>Open <code>output/IHC_Tutorial</code> and verify <code>registered/</code> plus <code>summary.csv</code>.</p>
+            <div class="outcome">You now have reproducible artifacts for QA and reporting.</div>
+          </div>
+        </li>
+      </ol>
+
+      <div class="warn"><strong>Cancellation:</strong> use the <strong>Cancel Registration</strong> button in Status dock only when needed. Partial outputs may remain.</div>
+    </section>
+
+    <section id="quality" class="section">
+      <h2>6. Quality Validation (Visual + Quantitative)</h2>
+      <p>Use both overlays and metrics. Do not rely on one signal alone.</p>
+
+      <h3>Visual progression example</h3>
+      <div class="compare">
+        <figure class="figure">
+          <img src="../examples/expected_results/registration/ihc/overlaps/ihc_original_overlap.png" alt="Original unregistered overlap" loading="lazy">
+          <figcaption>Original overlap (pre-registration)</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="../examples/expected_results/registration/ihc/overlaps/ihc_rigid_overlap.png" alt="Rigid registration overlap" loading="lazy">
+          <figcaption>After rigid registration</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="../examples/expected_results/registration/ihc/overlaps/ihc_non_rigid_overlap.png" alt="Non-rigid registration overlap" loading="lazy">
+          <figcaption>After non-rigid registration</figcaption>
+        </figure>
+      </div>
+
+      <h3>Metrics view</h3>
+      <div class="grid-2">
+        <figure class="figure">
+          <img src="_images/new_fd_2025_error_v_time.png" alt="Error over time chart" loading="lazy">
+          <figcaption>Error trend example. Use to compare detector or setting profiles.</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="_images/3D_error_plot.png" alt="3D registration error plot" loading="lazy">
+          <figcaption>3D error surface style visualization for deeper QC analysis.</figcaption>
+        </figure>
+      </div>
+      <div class="note"><strong>Practical rule:</strong> if visual overlap is good but one pair has outlier error metrics, inspect that pair first in Blink before rerunning the full dataset.</div>
+    </section>
+
+    <section id="tools" class="section">
+      <h2>7. Complete GUI Operations (How To Do Everything)</h2>
+      <p>This section is a click-by-click map of all main GUI actions in the current app.</p>
+
+      <h3>File Menu</h3>
+      <table class="preflight">
+        <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
+        <tr><td>Open slides</td><td><code>File -&gt; Open Slide Folder</code></td><td>Select one folder containing your case slides.</td><td>Slides load into Project + Slide Preview docks.</td></tr>
+        <tr><td>Recent folders</td><td><code>File -&gt; Recent Folders</code></td><td>Select previously opened folder.</td><td>Folder is reloaded immediately.</td></tr>
+        <tr><td>Save configuration</td><td><code>File -&gt; Save Configuration...</code></td><td>Choose destination JSON file.</td><td>All Properties settings are saved for reproducibility.</td></tr>
+        <tr><td>Load configuration</td><td><code>File -&gt; Load Configuration...</code></td><td>Select existing JSON config.</td><td>Properties values are restored.</td></tr>
+        <tr><td>Run registration</td><td><code>File -&gt; Run Registration</code> / <span class="kbd">Ctrl+R</span></td><td>Confirm run settings in dialog and proceed.</td><td>Worker starts, progress/logs update, outputs are generated.</td></tr>
+        <tr><td>Resume last registration</td><td><code>File -&gt; Resume Last Registration</code></td><td>Use after cancel/failure to rerun the previous context quickly.</td><td>Last slides + settings are restored and run again.</td></tr>
+        <tr><td>Preferences</td><td><code>File -&gt; Preferences...</code> / <span class="kbd">Ctrl+,</span></td><td>Adjust cache, performance, and UI options.</td><td>Settings persist in QSettings.</td></tr>
+      </table>
+
+      <h3>Tools Menu</h3>
+      <div class="note"><strong>Contextual actions:</strong> Post-registration tools (Blink, Analysis Plot, Quality Report, Warp Annotations, Export ROI Crop, Merge Slides) are <strong>disabled</strong> until a registration run completes. They become active automatically when results are available.</div>
+      <table class="preflight">
+        <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
+        <tr><td>Blink</td><td><code>Tools -&gt; Blink</code> / <span class="kbd">Ctrl+B</span></td><td>Pick Slide A/B, blend or auto-blink.</td><td>Fast visual detection of local drift/misalignment.</td></tr>
+        <tr><td>Analysis Plot</td><td><code>Tools -&gt; Analysis Plot</code></td><td>Open after a completed run.</td><td>Error trend chart + summary stats.</td></tr>
+        <tr><td>Quality Report</td><td><code>Tools -&gt; Quality Report</code></td><td>Sort/report table columns to find outliers.</td><td>Detailed metric table from <code>summary_df</code>.</td></tr>
+        <tr><td>Warp Annotations</td><td><code>Tools -&gt; Warp Annotations</code></td><td>Provide GeoJSON + source slide + output folder.</td><td>One warped GeoJSON for each target slide.</td></tr>
+        <tr><td>Save Options</td><td><code>Tools -&gt; Save Options...</code></td><td>Set format, pyramids, compression, tile size, quality.</td><td>Output settings updated in Properties dock.</td></tr>
+        <tr><td>Export ROI Crop</td><td><code>Tools -&gt; Export ROI Crop...</code></td><td>Set X/Y/Width/Height, choose format and output folder.</td><td>Aligned ROI crops are exported for each registered slide.</td></tr>
+        <tr><td>Merge Slides</td><td><code>Tools -&gt; Merge Slides...</code></td><td>Map channels, set colors, overlap strategy, normalize.</td><td>Merged multi-channel output created.</td></tr>
+        <tr><td>Export Session Bundle</td><td><code>Tools -&gt; Export Session Bundle...</code></td><td>Select destination ZIP path.</td><td>Bundle contains session summary and available logs.</td></tr>
+      </table>
+
+      <h3>View Menu (Layout Controls)</h3>
+      <table class="preflight">
+        <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
+        <tr><td>Reset Layout</td><td><code>View -&gt; Reset Layout</code> / <span class="kbd">Ctrl+Shift+L</span></td><td>Restore all panels to default sizes.</td><td>Sidebars and center return to initial proportions.</td></tr>
+        <tr><td>Toggle Left Sidebar</td><td><code>View -&gt; Toggle Left Sidebar</code> / <span class="kbd">Ctrl+[</span></td><td>Show or hide the Project/Slide Preview panel.</td><td>Left panel collapses or expands.</td></tr>
+        <tr><td>Toggle Right Sidebar</td><td><code>View -&gt; Toggle Right Sidebar</code> / <span class="kbd">Ctrl+]</span></td><td>Show or hide the Properties/Layers panel.</td><td>Right panel collapses or expands.</td></tr>
+        <tr><td>Expand Center</td><td><code>View -&gt; Expand Center</code> / <span class="kbd">Ctrl+Shift+C</span></td><td>Collapse both sidebars to maximize the viewer.</td><td>Napari viewer fills the available width.</td></tr>
+        <tr><td>Fit to Content</td><td><code>View -&gt; Fit to Content</code></td><td>Adjust panel sizes to match their content.</td><td>Panels resize to their optimal widths.</td></tr>
+      </table>
+
+      <h3>Help Menu + Utility Actions</h3>
+      <table class="preflight">
+        <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
+        <tr><td>User Manual</td><td><code>Help -&gt; User Manual</code></td><td>Open local manual.</td><td>Manual opens in default handler.</td></tr>
+        <tr><td>Quick Start</td><td><code>Help -&gt; Quick Start Guide</code></td><td>Open quick-start file.</td><td>Short onboarding guide opens.</td></tr>
+        <tr><td>Report Issue</td><td><code>Help -&gt; Report Issue</code></td><td>Opens issue URL.</td><td>GitHub issue page opens.</td></tr>
+        <tr><td>Performance Statistics</td><td><code>Help -&gt; Performance Statistics</code> / <span class="kbd">Ctrl+Shift+P</span></td><td>Inspect Overview, Thumbnail Cache, Tile Cache, Memory tabs.</td><td>Live telemetry + cache management controls.</td></tr>
+        <tr><td>Diagnostics</td><td><code>Help -&gt; Diagnostics</code></td><td>Open environment and run-context diagnostics.</td><td>Quick troubleshooting snapshot for support.</td></tr>
+        <tr><td>About dialog</td><td><code>Help -&gt; About VALIS Workstation</code></td><td>View app metadata.</td><td>Version and attribution details shown.</td></tr>
+        <tr><td>Drag-and-drop folder</td><td>Main window</td><td>Drop a folder onto the app.</td><td>Folder is scanned and loaded.</td></tr>
+        <tr><td>Drag-and-drop JSON</td><td>Main window</td><td>Drop a config <code>.json</code>.</td><td>Configuration is loaded into Properties dock.</td></tr>
+      </table>
+
+      <h3>Recommended finalization sequence</h3>
+      <ol class="timeline">
+        <li>
+          <span class="step">A</span>
+          <div>
+            <div class="label">Tune output defaults</div>
+            <p>Open <strong>Tools -&gt; Save Options...</strong> and confirm pyramids/compression/tile size for your downstream viewer.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step">B</span>
+          <div>
+            <div class="label">Export ROI crops for focused review</div>
+            <p>Use <strong>Tools -&gt; Export ROI Crop...</strong> to generate aligned ROI subsets for rapid QC and animation workflows.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step">C</span>
+          <div>
+            <div class="label">Package reproducibility artifacts</div>
+            <p>Use <strong>Tools -&gt; Export Session Bundle...</strong> to create a ZIP for collaborators, reviewers, or issue reports.</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="grid-2">
+        <figure class="figure">
+          <img src="_images/point_warping.png" alt="Point warping visualization" loading="lazy">
+          <figcaption>Warp workflows support point/annotation transfer across registered slides.</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="_images/pu_color_mplex.png" alt="Multiplex color channel example" loading="lazy">
+          <figcaption>Merge workflows are especially useful for multiplexed marker panels.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="cookbook" class="section">
+      <h2>8. Settings Cookbook + VALIS Function Map</h2>
+      <table class="preflight">
+        <tr>
+          <th>Scenario</th>
+          <th>Recommended settings</th>
+          <th>Why</th>
+        </tr>
+        <tr>
+          <td>Fast smoke test</td>
+          <td><code>Max image size 1024</code>, non-rigid OFF</td>
+          <td>Quick feedback on data quality and slide order.</td>
+        </tr>
+        <tr>
+          <td>Balanced production</td>
+          <td><code>Max image size 2048-4096</code>, non-rigid ON, VGG</td>
+          <td>Reliable quality without excessive runtime.</td>
+        </tr>
+        <tr>
+          <td>Challenging fluorescence</td>
+          <td>DISK/SuperPoint + GPU, masks ON, non-rigid ON</td>
+          <td>Improves landmark robustness in difficult texture.</td>
+        </tr>
+        <tr>
+          <td>Highest precision</td>
+          <td>Enable micro-registration, increase max sizes</td>
+          <td>Refines local alignment at higher resolution.</td>
+        </tr>
+      </table>
+
+      <h3 style="margin-top:14px">VALIS Modules, Features, and Functions</h3>
+      <p>Use this map to connect GUI actions with VALIS internals and full function references.</p>
+      <table class="preflight">
+        <tr><th>Module</th><th>Core classes / functions</th><th>GUI touchpoint</th><th>Local reference</th></tr>
+        <tr><td><code>valis.registration</code></td><td><code>Valis</code>, <code>register()</code>, <code>warp_and_save_slides()</code>, <code>measure_error()</code></td><td>Run Registration + output generation</td><td><a href="html/registration.html">registration.html</a></td></tr>
+        <tr><td><code>valis.slide_io</code></td><td>Readers, <code>init_jvm()</code>, <code>load_registrar()</code></td><td>Open Slide Folder + format handling</td><td><a href="html/slide_io.html">slide_io.html</a></td></tr>
+        <tr><td><code>valis.feature_detectors</code></td><td>VGG, KAZE, BRISK, ORB, AKAZE, SuperPoint, DISK, DeDoDe</td><td>Feature detector setting</td><td><a href="html/feature_detectors.html">feature_detectors.html</a></td></tr>
+        <tr><td><code>valis.feature_matcher</code></td><td><code>Matcher</code>, <code>LightGlueMatcher</code>, <code>SuperGlueMatcher</code>, match filters</td><td>Implicit during registration</td><td><a href="html/feature_matcher.html">feature_matcher.html</a></td></tr>
+        <tr><td><code>valis.non_rigid_registrars</code></td><td><code>OpticalFlowWarper</code>, <code>RAFTWarper</code>, <code>SimpleElastixWarper</code></td><td>Non-rigid mode</td><td><a href="html/non_rigid_registrars.html">non_rigid_registrars.html</a></td></tr>
+        <tr><td><code>valis.affine_optimizer</code></td><td>Affine optimizer classes (MI/RMI/MSE/KNN)</td><td>Advanced tuning path</td><td><a href="html/affine_optimizer.html">affine_optimizer.html</a></td></tr>
+        <tr><td><code>valis.preprocessing</code></td><td><code>OD</code>, <code>ChannelGetter</code>, masking/denoise utilities</td><td>Use masks + denoise settings</td><td><a href="html/preprocessing.html">preprocessing.html</a></td></tr>
+        <tr><td><code>valis.warp_tools</code></td><td><code>warp_img()</code>, <code>warp_xy()</code>, <code>warp_xy_from_to()</code>, geometry warps</td><td>Warp Annotations + coordinate transfer</td><td><a href="html/registration.html#module-valis.warp_tools">warp_tools section</a></td></tr>
+        <tr><td><code>valis.viz</code></td><td><code>draw_matches()</code>, <code>create_overlap_img()</code>, visualization helpers</td><td>QC plotting + overlays</td><td><a href="html/viz.html">viz.html</a></td></tr>
+      </table>
+      <div class="note"><strong>Complete function coverage:</strong> this tutorial gives practical workflows; the linked local module pages provide exhaustive class/function detail.</div>
+    </section>
+
+    <section id="troubleshooting" class="section">
+      <h2>9. Troubleshooting</h2>
+      <h3>Common issues</h3>
+      <table class="preflight">
+        <tr>
+          <th>Issue</th>
+          <th>Action</th>
+        </tr>
+        <tr>
+          <td>"Napari not available"</td>
+          <td>Install/upgrade napari: <code>pip install "napari[all]"</code>.</td>
+        </tr>
+        <tr>
+          <td>GPU checkbox disabled</td>
+          <td>Install CUDA-capable PyTorch build and verify <code>torch.cuda.is_available()</code>.</td>
+        </tr>
+        <tr>
+          <td>Registration too slow</td>
+          <td>Reduce max image size, disable non-rigid for test runs, use ORB/BRISK for speed checks.</td>
+        </tr>
+        <tr>
+          <td>Out of memory</td>
+          <td>Lower image size/pyramids, close other memory-heavy apps, use smaller batches.</td>
+        </tr>
+      </table>
+      <div class="tip"><strong>Log file:</strong> detailed diagnostics are written to <code>logs/valis_workstation.log</code>.</div>
+    </section>
+
+    <section id="final-check" class="section">
+      <h2>10. Final Checklist</h2>
+      <p>Use this before handing results to collaborators.</p>
+      <div class="checklist">
+        <label class="check-item"><input type="checkbox"> Outputs exist under the expected <code>output/&lt;project_name&gt;</code> folder.</label>
+        <label class="check-item"><input type="checkbox"> <code>summary.csv</code> has no obvious outlier pairs left unreviewed.</label>
+        <label class="check-item"><input type="checkbox"> Visual QC performed in Blink for at least critical slide pairs.</label>
+        <label class="check-item"><input type="checkbox"> Export options (pyramids/compression/tile size) match downstream tools.</label>
+        <label class="check-item"><input type="checkbox"> ROI crops exported when focused review subsets are needed.</label>
+        <label class="check-item"><input type="checkbox"> If using annotations, warped GeoJSON files were spot-checked.</label>
+        <label class="check-item"><input type="checkbox"> Session bundle ZIP generated for handoff/support traceability.</label>
+        <label class="check-item"><input type="checkbox"> Configuration saved to JSON for reproducibility.</label>
+      </div>
+      <div class="note"><strong>Next:</strong> use <a href="BioSlide-Manual.html">the full manual</a> for API details, advanced parameter tables, and architecture reference.</div>
+    </section>
+
+    <footer>
+      VALIS Workstation Tutorial | Standalone HTML | Updated for current GUI behavior in this repository.
+    </footer>
+  </main>
 </div>
 
-<div class="step">
-  <div class="step-num">3</div>
-  <div class="step-body">
-    <h4>Review Results</h4>
-    <p>Detected slices appear as color-coded overlays on the slide and in the <em>Slice List</em> panel on the right. Each slice gets an ID and thumbnail.</p>
-  </div>
-</div>
-
-<h3>Option B &mdash; Manual Tools</h3>
-<p>If automatic detection misses tissue or includes artifacts, use manual tools:</p>
-
-<table class="ref-table">
-<thead><tr><th>Tool</th><th>Shortcut</th><th>When to Use</th></tr></thead>
-<tbody>
-<tr><td><strong>Magic Wand</strong></td><td><span class="sc">W</span></td><td>Click to flood-fill a region with consistent staining. Adjust tolerance (0&ndash;255) in the Property Panel.</td></tr>
-<tr><td><strong>Lasso</strong></td><td><span class="sc">L</span></td><td>Draw a freehand polygon around tissue that auto-detect missed.</td></tr>
-<tr><td><strong>Eraser</strong></td><td><span class="sc">E</span></td><td>Remove parts of a mask: brush, path, or polygon modes.</td></tr>
-</tbody>
-</table>
-
-<h3>Merge &amp; Split</h3>
-<ul>
-  <li><strong>Merge</strong> (<span class="sc">Ctrl+M</span>): Select 2+ slices &rarr; combine into one</li>
-  <li><strong>Split</strong> (<span class="sc">Ctrl+Shift+S</span>): Separate disconnected regions into individual slices</li>
-</ul>
-
-<div class="warn"><strong>Caution:</strong> Very low minimum area thresholds may produce many small noise artifacts. Start with the default and lower it only if tissue is being missed.</div>
-
-<div class="outcome">
-  <h4>&#10003; Outcome</h4>
-  <p>All tissue regions are segmented with clean masks. Each slice has an ID, thumbnail, and color overlay.</p>
-</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 7: REFINE SEGMENTATION
-     ════════════════════════════════════════ -->
-<section class="lesson" id="lesson-refine" data-search="refine segmentation grabcut interactive keep remove strokes boundary refinement edge-aware non-destructive">
-<span class="lesson-badge lb-intermediate">Intermediate</span>
-<h2>Lesson 7 &mdash; Refine Segmentation</h2>
-
-<p>After automatic segmentation, boundaries may need fine-tuning. BioSlide provides interactive GrabCut-based refinement.</p>
-
-<div class="step">
-  <div class="step-num">1</div>
-  <div class="step-body">
-    <h4>Open Refinement</h4>
-    <p>Right-click a slice in the Slice List and select <em>Refine Segmentation</em>. The refinement dialog opens.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">2</div>
-  <div class="step-body">
-    <h4>Mark Areas to Keep</h4>
-    <p>Click <em>Mark Areas to Keep</em> to select the green brush. Paint strokes over tissue regions that should be included but were missed.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">3</div>
-  <div class="step-body">
-    <h4>Mark Areas to Remove</h4>
-    <p>Click <em>Mark Areas to Remove</em> to select the red brush. Paint strokes over background regions that were incorrectly included.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">4</div>
-  <div class="step-body">
-    <h4>Watch GrabCut Refine</h4>
-    <p>The mask updates in real-time as GrabCut propagates your corrections to similar pixels. Repeat keep/remove strokes as needed.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">5</div>
-  <div class="step-body">
-    <h4>Apply or Cancel</h4>
-    <p>Click <em>Apply</em> to accept the refined mask, or <em>Cancel</em> to discard changes.</p>
-  </div>
-</div>
-
-<div class="tip"><strong>Tip:</strong> Start with broad strokes on obvious errors. GrabCut is smart about propagating corrections to neighboring pixels with similar colors.</div>
-
-<div class="outcome">
-  <h4>&#10003; Outcome</h4>
-  <p>Your segmentation masks have clean, accurate boundaries ready for export or measurement.</p>
-</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 8: MEASURE
-     ════════════════════════════════════════ -->
-<section class="lesson" id="lesson-measure" data-search="measure distance area perimeter angle ruler calibration mpp micrometer">
-<span class="lesson-badge lb-intermediate">Intermediate</span>
-<h2>Lesson 8 &mdash; Measure</h2>
-
-<div class="step">
-  <div class="step-num">1</div>
-  <div class="step-body">
-    <h4>Open the Measurement Panel</h4>
-    <p>Go to <em>Tools &rarr; Toggle Measurements Panel</em>. The panel appears on the right.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">2</div>
-  <div class="step-body">
-    <h4>Distance Measurement</h4>
-    <p>Select the <em>Distance</em> tool. Click two points on the slide to draw a ruler line. The distance appears in &micro;m (if MPP metadata is available) or pixels.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">3</div>
-  <div class="step-body">
-    <h4>Area &amp; Perimeter</h4>
-    <p>Segmented slices have automatic area and perimeter values. Check the Slice List or Statistics tab for these metrics.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">4</div>
-  <div class="step-body">
-    <h4>View Statistics</h4>
-    <p>Switch to the <em>Statistics</em> tab to see summary statistics (mean, median, std dev, range, quartiles, CV, skewness, kurtosis) and distribution analysis.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">5</div>
-  <div class="step-body">
-    <h4>Export to CSV</h4>
-    <p>Click <em>Export CSV</em> in the Statistics tab to save all measurements and statistics for analysis in Excel, R, or Python.</p>
-  </div>
-</div>
-
-<div class="outcome">
-  <h4>&#10003; Outcome</h4>
-  <p>Tissue regions are measured with calibrated units. Statistics are computed and exported.</p>
-</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 9: EXPORT RESULTS
-     ════════════════════════════════════════ -->
-<section class="lesson" id="lesson-export" data-search="export results png jpeg tiff pdf profile feathered alpha metadata sidecar filename template panel export quick export">
-<span class="lesson-badge lb-beginner">Beginner</span>
-<h2>Lesson 9 &mdash; Export Results</h2>
-
-<h3>Standard Export</h3>
-
-<div class="step">
-  <div class="step-num">1</div>
-  <div class="step-body">
-    <h4>Open the Export Dialog</h4>
-    <p>Press <span class="sc">Ctrl+E</span> or go to <em>Export &rarr; Export Slices</em>.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">2</div>
-  <div class="step-body">
-    <h4>Choose a Format</h4>
-    <table class="ref-table">
-    <thead><tr><th>Format</th><th>Best For</th></tr></thead>
-    <tbody>
-    <tr><td><strong>PNG</strong></td><td>Alpha transparency, metadata embedding, presentations</td></tr>
-    <tr><td><strong>JPEG</strong></td><td>Quick sharing, web (smaller files)</td></tr>
-    <tr><td><strong>TIFF</strong></td><td>Archival, lossless, further processing</td></tr>
-    <tr><td><strong>PDF</strong></td><td>Publications, printing</td></tr>
-    </tbody>
-    </table>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">3</div>
-  <div class="step-body">
-    <h4>Select an Export Profile</h4>
-    <p>Built-in profiles: <em>PowerPoint PNG</em>, <em>High Quality TIFF</em>, <em>Web JPEG</em>. Or create a custom profile via the <em>Profile Manager</em>.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">4</div>
-  <div class="step-body">
-    <h4>Set Output Folder</h4>
-    <p>Browse for the destination directory. Configure filename templates with placeholders: <code>{slide_name}</code>, <code>{slice_id}</code>, <code>{index}</code>, <code>{timestamp}</code>.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">5</div>
-  <div class="step-body">
-    <h4>Export</h4>
-    <p>Click <em>Export</em>. Each slice is saved with optional JSON sidecar metadata (source slide, coordinates, algorithm, timestamp).</p>
-  </div>
-</div>
-
-<h3>Special Export Options</h3>
-<div class="grid-3">
-  <div class="card"><h4>Feathered Alpha</h4><p>Enable for PNG to get Gaussian-blurred alpha edges &mdash; natural-looking tissue boundaries</p></div>
-  <div class="card"><h4>Quick Export</h4><p>Rapid single-image export for fast iteration &mdash; right-click a slice</p></div>
-  <div class="card"><h4>Panel Export</h4><p>Split a WSI region into printable panels with configurable rows, columns, paper size, and DPI</p></div>
-</div>
-
-<div class="outcome">
-  <h4>&#10003; Outcome</h4>
-  <p>Segmented tissue images are saved in your chosen format with metadata and optional sidecar files.</p>
-</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 10: BUILD A COLLAGE
-     ════════════════════════════════════════ -->
-<section class="lesson" id="lesson-collage" data-search="collage builder grid template drag drop labels dividers publication export pdf">
-<span class="lesson-badge lb-intermediate">Intermediate</span>
-<h2>Lesson 10 &mdash; Build a Collage</h2>
-
-<div class="step">
-  <div class="step-num">1</div>
-  <div class="step-body">
-    <h4>Switch to the Collage Tab</h4>
-    <p>Click the <em>Collage</em> tab in the tab bar.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">2</div>
-  <div class="step-body">
-    <h4>Choose a Template</h4>
-    <p>Select from pre-built templates (2&times;2, 3&times;3, 4&times;5, Panoramic) or create a custom grid with the row/column spinboxes.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">3</div>
-  <div class="step-body">
-    <h4>Drag Slices onto Cells</h4>
-    <p>Your segmented slices appear as draggable thumbnails on the left. Drag them onto grid cells. Rearrange by dragging between cells.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">4</div>
-  <div class="step-body">
-    <h4>Customize Appearance</h4>
-    <ul>
-      <li><strong>Spacing</strong> &mdash; Adjust gap between cells</li>
-      <li><strong>Dividers</strong> &mdash; Add lines between cells (color, thickness)</li>
-      <li><strong>Background</strong> &mdash; Set fill color behind the grid</li>
-      <li><strong>Labels</strong> &mdash; Add text captions to individual cells</li>
-    </ul>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">5</div>
-  <div class="step-body">
-    <h4>Preview &amp; Export</h4>
-    <p>The live preview shows the exact output. Export to PNG (with transparency), JPEG, or publication-ready PDF with configurable DPI.</p>
-  </div>
-</div>
-
-<div class="outcome">
-  <h4>&#10003; Outcome</h4>
-  <p>A professional collage image ready for publication figures or presentations.</p>
-</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 11: ANIMATION STUDIO
-     ════════════════════════════════════════ -->
-<section class="lesson" id="lesson-animation" data-search="animation studio camera keyframes roi region of interest easing branding overlay timeline shot list comparison modes export mp4 gif mov png sequence">
-<span class="lesson-badge lb-advanced">Advanced</span>
-<h2>Lesson 11 &mdash; Animation Studio</h2>
-
-<p>Create cinematic camera animations from whole-slide images for presentations and publications.</p>
-
-<h3>Part A &mdash; Set Up the Source</h3>
-
-<div class="step">
-  <div class="step-num">1</div>
-  <div class="step-body">
-    <h4>Switch to the Animation Tab</h4>
-    <p>Click the <em>Animation</em> tab.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">2</div>
-  <div class="step-body">
-    <h4>Load a Source</h4>
-    <p>Load a WSI slide or regular image as your animation canvas.</p>
-  </div>
-</div>
-
-<h3>Part B &mdash; Define Regions of Interest</h3>
-
-<div class="step">
-  <div class="step-num">3</div>
-  <div class="step-body">
-    <h4>Draw ROIs</h4>
-    <p>Use the ROI drawing tools to define areas of interest. Five shape types are available:</p>
-    <table class="ref-table">
-    <thead><tr><th>Shape</th><th>Use Case</th></tr></thead>
-    <tbody>
-    <tr><td>Rectangle</td><td>Standard region selection</td></tr>
-    <tr><td>Ellipse</td><td>Organic / circular features</td></tr>
-    <tr><td>Polygon</td><td>Complex boundaries</td></tr>
-    <tr><td>Freehand</td><td>Free-drawn irregular regions</td></tr>
-    <tr><td>Point</td><td>Specific coordinate for zoom target</td></tr>
-    </tbody>
-    </table>
-    <p>ROIs can be moved, resized (8 handles), and styled with presets via the ROI Manager.</p>
-  </div>
-</div>
-
-<h3>Part C &mdash; Create Camera Keyframes</h3>
-
-<div class="step">
-  <div class="step-num">4</div>
-  <div class="step-body">
-    <h4>Add Keyframes</h4>
-    <p>Navigate to a view (zoom/pan) and add a keyframe. Each keyframe captures:</p>
-    <ul>
-      <li>Center coordinates (x, y)</li>
-      <li>Zoom level</li>
-      <li>Transition duration (seconds)</li>
-      <li>Easing curve (Linear, Ease In, Ease Out, Ease In-Out, Slow, Fast, Bezier)</li>
-    </ul>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">5</div>
-  <div class="step-body">
-    <h4>Arrange on the Timeline</h4>
-    <p>Drag keyframes on the <em>Keyframe Timeline</em> to reorder. Click any keyframe to edit its parameters. Use <em>Animation Presets</em> for common patterns (overview scan, ROI zoom).</p>
-  </div>
-</div>
-
-<h3>Part D &mdash; Add Branding &amp; Overlays</h3>
-
-<div class="step">
-  <div class="step-num">6</div>
-  <div class="step-body">
-    <h4>Configure Branding</h4>
-    <ul>
-      <li><strong>Scale bar</strong> &mdash; Position, color, thickness, font size; calibrated from MPP</li>
-      <li><strong>Logo watermark</strong> &mdash; Anchor corner, opacity, max size</li>
-      <li><strong>Text overlays</strong> &mdash; Title, subtitle, caption with font settings</li>
-    </ul>
-    <p>Save overlay configurations as templates for reuse across projects.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">7</div>
-  <div class="step-body">
-    <h4>Emphasis Effects (optional)</h4>
-    <p>Apply a <strong>Spotlight</strong> effect to highlight specific ROIs with dimmed surroundings. Additional effects (Vignette, Arrow, Callout, Pulse) are planned for future releases.</p>
-  </div>
-</div>
-
-<h3>Part E &mdash; Comparison Modes (optional)</h3>
-
-<div class="step">
-  <div class="step-num">8</div>
-  <div class="step-body">
-    <h4>Compare Views</h4>
-    <p>Use comparison layouts for side-by-side analysis:</p>
-    <ul>
-      <li><strong>Side-by-Side</strong> &mdash; Two views next to each other</li>
-      <li><strong>Swipe</strong> &mdash; Draggable divider between two views</li>
-      <li><strong>2&times;2 Grid</strong> &mdash; Four simultaneous views</li>
-    </ul>
-  </div>
-</div>
-
-<h3>Part F &mdash; Export the Animation</h3>
-
-<div class="step">
-  <div class="step-num">9</div>
-  <div class="step-body">
-    <h4>Choose Format &amp; Export</h4>
-    <table class="ref-table">
-    <thead><tr><th>Format</th><th>Use Case</th></tr></thead>
-    <tbody>
-    <tr><td><strong>MP4</strong></td><td>Standard video for presentations</td></tr>
-    <tr><td><strong>GIF</strong></td><td>Animated loops for web/social</td></tr>
-    <tr><td><strong>MOV</strong></td><td>High-quality QuickTime video</td></tr>
-    <tr><td><strong>PNG Sequence</strong></td><td>Individual frames for post-processing</td></tr>
-    </tbody>
-    </table>
-    <p>Set resolution preset (1080p, 4K, Square) and frame rate.</p>
-  </div>
-</div>
-
-<div class="outcome">
-  <h4>&#10003; Outcome</h4>
-  <p>A professional camera animation video showcasing your slide with smooth transitions, branding, and optional effects.</p>
-</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 12: 3D RECONSTRUCTION
-     ════════════════════════════════════════ -->
-<section class="lesson" id="lesson-3d" data-search="3d reconstruction serial sections alignment stack rendering pyvista vtk fly-through orbit video">
-<span class="lesson-badge lb-advanced">Advanced</span>
-<h2>Lesson 12 &mdash; 3D Reconstruction</h2>
-
-<p>Build a pseudo-3D volume from serial histological sections.</p>
-
-<h3>Prerequisites</h3>
-<p>You need exported PNG slice images from a serial-sectioning experiment (sequential numbered files from the same specimen).</p>
-
-<div class="step">
-  <div class="step-num">1</div>
-  <div class="step-body">
-    <h4>Switch to the 3D Reconstruction Tab</h4>
-    <p>Click the <em>3D Recon</em> tab.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">2</div>
-  <div class="step-body">
-    <h4>Load Slice Images</h4>
-    <p>Select a directory containing your PNG slice files. BioSlide auto-detects slice ordering from filenames using 7 regex patterns (e.g., <code>slice_001.png</code>, <code>brain_s12.png</code>).</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">3</div>
-  <div class="step-body">
-    <h4>Sort &amp; Reorder</h4>
-    <p>Verify the slice ordering. Reverse if needed. Check for gaps or duplicates (auto-detected).</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">4</div>
-  <div class="step-body">
-    <h4>Preprocess</h4>
-    <p>Configure preprocessing options: grayscale conversion, background removal, intensity normalization, and optional downsampling for faster preview.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">5</div>
-  <div class="step-body">
-    <h4>Align Slices</h4>
-    <p>Choose a feature detector (ORB, SIFT, or AKAZE) and run rigid registration. BioSlide aligns adjacent slices using feature matching with Lowe&rsquo;s ratio test and RANSAC outlier rejection.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">6</div>
-  <div class="step-body">
-    <h4>Render in 3D</h4>
-    <p>Aligned slices are displayed as textured planes in a PyVista/VTK viewport. Adjust:</p>
-    <ul>
-      <li><strong>Slice spacing</strong> &mdash; Z-distance between planes</li>
-      <li><strong>Opacity</strong> &mdash; Per-slice or global transparency</li>
-      <li><strong>Transform</strong> &mdash; Yaw, pitch, roll, scale</li>
-      <li><strong>Show every Nth</strong> &mdash; Display subset for performance</li>
-    </ul>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">7</div>
-  <div class="step-body">
-    <h4>Choose a View Preset</h4>
-    <p>One-click camera presets: Coronal, Sagittal, Dorsal, or custom orientations.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">8</div>
-  <div class="step-body">
-    <h4>Animate &amp; Export</h4>
-    <p>Create 3D animations:</p>
-    <ul>
-      <li><strong>Grid &rarr; 3D Build</strong> &mdash; Transition from flat grid to 3D stack</li>
-      <li><strong>Fly-through</strong> &mdash; Camera travels through the Z-axis</li>
-      <li><strong>Orbit</strong> &mdash; Camera circles around the volume</li>
-    </ul>
-    <p>Export as MP4 with configurable resolution.</p>
-  </div>
-</div>
-
-<div class="outcome">
-  <h4>&#10003; Outcome</h4>
-  <p>A 3D rendering of your serial sections with interactive navigation and exportable animation.</p>
-</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     LESSON 13: BATCH PROCESSING
-     ════════════════════════════════════════ -->
-<section class="lesson" id="lesson-batch" data-search="batch processing export queue multi-slide pause resume cancel segmentation lobe">
-<span class="lesson-badge lb-intermediate">Intermediate</span>
-<h2>Lesson 13 &mdash; Batch Processing</h2>
-
-<h3>Batch Export</h3>
-
-<div class="step">
-  <div class="step-num">1</div>
-  <div class="step-body">
-    <h4>Open the Batch Queue</h4>
-    <p>Go to <em>Export &rarr; Export Slices</em> with multiple slides loaded.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">2</div>
-  <div class="step-body">
-    <h4>Configure &amp; Start</h4>
-    <p>Select an export profile and output directory. Start the batch job. Each slide is processed sequentially.</p>
-  </div>
-</div>
-
-<div class="step">
-  <div class="step-num">3</div>
-  <div class="step-body">
-    <h4>Monitor Progress</h4>
-    <p>The Batch Queue Dialog shows per-job progress bars. Use the controls:</p>
-    <ul>
-      <li><strong>Pause</strong> &mdash; Temporarily halt processing</li>
-      <li><strong>Resume</strong> &mdash; Continue from where you paused</li>
-      <li><strong>Cancel</strong> &mdash; Stop the entire batch</li>
-    </ul>
-    <p>Errors for individual items are displayed in the dialog.</p>
-  </div>
-</div>
-
-<h3>Batch Segmentation</h3>
-<p>Go to <em>Segmentation &rarr; Batch Segment All</em> to apply automatic segmentation to all loaded slides at once.</p>
-
-<div class="outcome">
-  <h4>&#10003; Outcome</h4>
-  <p>Multiple slides are exported or segmented efficiently with full progress tracking and error handling.</p>
-</div>
-</section>
-
-<!-- ════════════════════════════════════════
-     TIPS & SHORTCUTS
-     ════════════════════════════════════════ -->
-<section class="lesson" id="tips" data-search="tips shortcuts keyboard hotkeys best practices productivity efficiency">
-<span class="lesson-badge lb-beginner">Beginner</span>
-<h2>Tips &amp; Shortcuts</h2>
-
-<h3>Essential Keyboard Shortcuts</h3>
-<div class="grid-2">
-<div>
-<table class="ref-table">
-<thead><tr><th colspan="2">File &amp; Project</th></tr></thead>
-<tbody>
-<tr><td><span class="sc">Ctrl+N</span></td><td>New Project</td></tr>
-<tr><td><span class="sc">Ctrl+O</span></td><td>Open Project</td></tr>
-<tr><td><span class="sc">Ctrl+S</span></td><td>Save</td></tr>
-<tr><td><span class="sc">Ctrl+I</span></td><td>Import Slides</td></tr>
-<tr><td><span class="sc">Ctrl+E</span></td><td>Export</td></tr>
-</tbody>
-</table>
-</div>
-<div>
-<table class="ref-table">
-<thead><tr><th colspan="2">Tools &amp; View</th></tr></thead>
-<tbody>
-<tr><td><span class="sc">W</span></td><td>Magic Wand</td></tr>
-<tr><td><span class="sc">L</span></td><td>Lasso</td></tr>
-<tr><td><span class="sc">E</span></td><td>Eraser</td></tr>
-<tr><td><span class="sc">Ctrl+Z / Y</span></td><td>Undo / Redo</td></tr>
-<tr><td><span class="sc">Ctrl+L</span></td><td>Toggle Log Panel</td></tr>
-</tbody>
-</table>
-</div>
-</div>
-
-<h3>Best Practices</h3>
-<ul>
-  <li><strong>Save frequently</strong> &mdash; <span class="sc">Ctrl+S</span> saves your project. Autosave runs every 5 minutes as a safety net.</li>
-  <li><strong>Start coarse, then refine</strong> &mdash; Run auto-segmentation first, then fix issues with manual tools and GrabCut refinement.</li>
-  <li><strong>Use export profiles</strong> &mdash; Create profiles for your common output needs to avoid reconfiguring every time.</li>
-  <li><strong>Check the Log Panel</strong> &mdash; <span class="sc">Ctrl+L</span> reveals detailed processing messages useful for debugging.</li>
-  <li><strong>Use grid view</strong> &mdash; Preview tab&rsquo;s grid mode gives you an overview of all imported slides at a glance.</li>
-  <li><strong>Keep your slides on fast storage</strong> &mdash; SSD storage dramatically improves tile loading speed for large WSIs.</li>
-</ul>
-</section>
-
-<!-- ════════════════════════════════════════
-     TROUBLESHOOTING
-     ════════════════════════════════════════ -->
-<section class="lesson" id="troubleshooting" data-search="troubleshooting errors issues problems solutions common fix debug">
-<span class="lesson-badge lb-beginner">Beginner</span>
-<h2>Troubleshooting</h2>
-
-<table class="ref-table">
-<thead><tr><th>Problem</th><th>Solution</th></tr></thead>
-<tbody>
-<tr><td>BioSlide won&rsquo;t start</td><td>Check: <code>pip install -r requirements.txt</code> &mdash; verify all dependencies installed</td></tr>
-<tr><td>&ldquo;OpenSlide DLL not found&rdquo;</td><td>Run <code>pip install openslide-bin</code></td></tr>
-<tr><td>Slide file won&rsquo;t open</td><td>Verify the file format is supported (.ndpi, .svs, .mrxs, .tif)</td></tr>
-<tr><td>No slices detected after auto-segment</td><td>Lower the minimum area threshold in segmentation settings</td></tr>
-<tr><td>Slow performance on large slides</td><td>Close other applications; BioSlide uses tiled loading but benefits from available RAM</td></tr>
-<tr><td>3D tab is blank / errors</td><td>Install PyVista: <code>pip install pyvista</code>; verify OpenGL support</td></tr>
-<tr><td>Crash during processing</td><td>Check the autosave recovery dialog on next launch</td></tr>
-<tr><td>HiDPI scaling looks wrong</td><td>Set environment variable: <code>QT_SCALE_FACTOR=1</code></td></tr>
-</tbody>
-</table>
-
-<h3>Debug Tools</h3>
-<p>The <em>Debug</em> menu provides: Memory Monitor, System Information, Error Log Viewer, and Error Report generator for filing bugs.</p>
-</section>
-
-<!-- ════════════════════════════════════════
-     NEXT STEPS
-     ════════════════════════════════════════ -->
-<section class="lesson" id="next-steps" data-search="next steps continue learning manual reference documentation further reading">
-<span class="lesson-badge lb-beginner">Beginner</span>
-<h2>Next Steps</h2>
-
-<p>Congratulations! You&rsquo;ve completed the BioSlide tutorial. Here&rsquo;s where to go next:</p>
-
-<div class="grid-3">
-  <div class="card">
-    <h4>Reference Manual</h4>
-    <p>Deep-dive into every feature, dialog, and configuration option: <a href="BioSlide-Manual.html">Open Manual</a></p>
-  </div>
-  <div class="card">
-    <h4>Keyboard Shortcuts</h4>
-    <p>Master all shortcuts for maximum efficiency &mdash; see the <a href="BioSlide-Manual.html#shortcuts">Shortcuts Reference</a></p>
-  </div>
-  <div class="card">
-    <h4>Architecture</h4>
-    <p>Understand BioSlide&rsquo;s internal design for advanced customization &mdash; see the <a href="BioSlide-Manual.html#architecture">Architecture</a> section</p>
-  </div>
-</div>
-
-<h3>Workflow Checklist</h3>
-<ul class="checklist">
-  <li>Install BioSlide and verify it launches</li>
-  <li>Create a new .hssp project</li>
-  <li>Import at least one WSI slide</li>
-  <li>Navigate the slide with zoom and pan</li>
-  <li>Run automatic segmentation</li>
-  <li>Refine at least one slice with GrabCut</li>
-  <li>Take at least one distance measurement</li>
-  <li>Export segmented slices as PNG with feathered alpha</li>
-  <li>Build a 2&times;2 collage and export as PDF</li>
-  <li>Create a 3-keyframe camera animation and export as MP4</li>
-  <li>Load serial sections and render a 3D volume</li>
-  <li>Run a batch export of multiple slides</li>
-</ul>
-</section>
-
-<footer>
-  <p>BioSlide v1.1.0 &mdash; Tutorial &mdash; &copy; 2024&ndash;2026 BioSlide Contributors &mdash; MIT License</p>
-  <p><a href="BioSlide-Manual.html">Open Reference Manual</a> &nbsp;|&nbsp; <a href="#top">Back to Top</a></p>
-</footer>
-
-</main>
-</div>
-
-<!-- ═══════════════════  NAV HIGHLIGHTING  ═══════════════════ -->
 <script>
-(function(){
-  const sections=document.querySelectorAll('.lesson[id]');
-  const navLinks=document.querySelectorAll('.nav-link[href^="#"]');
-  const observer=new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if(e.isIntersecting){
-        navLinks.forEach(function(l){l.classList.remove('active')});
-        const link=document.querySelector('.nav-link[href="#'+e.target.id+'"]');
-        if(link)link.classList.add('active');
+(function () {
+  const links = Array.from(document.querySelectorAll('.nav-link'));
+  const targets = links
+    .map(link => document.querySelector(link.getAttribute('href')))
+    .filter(Boolean);
+
+  const onScroll = () => {
+    let current = null;
+    for (const section of targets) {
+      const rect = section.getBoundingClientRect();
+      if (rect.top <= 120) {
+        current = section.id;
       }
+    }
+
+    links.forEach(link => {
+      const targetId = link.getAttribute('href').slice(1);
+      link.classList.toggle('active', targetId === current);
     });
-  },{rootMargin:'-20% 0px -70% 0px'});
-  sections.forEach(function(s){observer.observe(s)});
+  };
+
+  document.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 })();
 </script>
 </body>

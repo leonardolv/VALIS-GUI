@@ -488,7 +488,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Help menu
         help_menu = self.menuBar().addMenu("Help")
 
-        user_manual_action = QtGui.QAction("User Manual", self)
+        user_manual_action = QtGui.QAction("Manual (HTML)", self)
         user_manual_action.setIcon(
             style.standardIcon(
                 QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView
@@ -496,6 +496,13 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         user_manual_action.triggered.connect(self._open_user_manual)
         help_menu.addAction(user_manual_action)
+
+        tutorial_action = QtGui.QAction("Tutorial (HTML)", self)
+        tutorial_action.setIcon(
+            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogHelpButton)
+        )
+        tutorial_action.triggered.connect(self._open_tutorial)
+        help_menu.addAction(tutorial_action)
 
         quick_start_action = QtGui.QAction("Quick Start Guide", self)
         quick_start_action.setIcon(
@@ -1097,14 +1104,27 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
     def _open_user_manual(self) -> None:
-        """Open the user manual in default browser."""
-        manual_path = self._repo_root / "USER_MANUAL.md"
+        """Open the HTML manual in the default browser."""
+        manual_path = self._repo_root / "BioSlide-Manual.html"
         if manual_path.exists():
             QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(manual_path)))
-            logger.info("Opened user manual")
+            logger.info("Opened manual: %s", manual_path.name)
         else:
             QtWidgets.QMessageBox.information(
-                self, "User Manual", f"User manual not found at {manual_path}"
+                self, "Manual", f"Manual not found at {manual_path}"
+            )
+
+    def _open_tutorial(self) -> None:
+        """Open the HTML tutorial in the default browser."""
+        tutorial_path = self._repo_root / "BioSlide-Tutorial.html"
+        if tutorial_path.exists():
+            QtGui.QDesktopServices.openUrl(
+                QtCore.QUrl.fromLocalFile(str(tutorial_path))
+            )
+            logger.info("Opened tutorial: %s", tutorial_path.name)
+        else:
+            QtWidgets.QMessageBox.information(
+                self, "Tutorial", f"Tutorial not found at {tutorial_path}"
             )
 
     def _open_quick_start(self) -> None:
