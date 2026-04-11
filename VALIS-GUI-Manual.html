@@ -10,11 +10,24 @@
    Standalone HTML · Embedded CSS/JS · SVG diagrams
    ═══════════════════════════════════════════════════════════════ */
 
+:root{
+  --bg-page:#f4f8fc;
+  --bg-surface:#ffffff;
+  --bg-muted:#f8fafc;
+  --ink:#0f172a;
+  --ink-muted:#475569;
+  --line:#d8e3ef;
+  --brand:#0369a1;
+  --brand-deep:#0c4a6e;
+  --brand-soft:#e0f2fe;
+  --shadow-soft:0 4px 16px rgba(2,8,23,.06);
+}
+
 /* ─── RESET & BASE ──────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;font-size:16px}
-body{font-family:'Segoe UI',Inter,-apple-system,BlinkMacSystemFont,Roboto,Oxygen,Ubuntu,sans-serif;color:#1e293b;background:#f8fafc;line-height:1.7}
-a{color:#0369a1;text-decoration:none}a:hover{text-decoration:underline}
+body{font-family:'IBM Plex Sans','Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,Oxygen,Ubuntu,sans-serif;color:var(--ink);background:radial-gradient(circle at 8% -8%,#e6f3ff 0%,var(--bg-page) 36%,var(--bg-page) 100%);line-height:1.7}
+a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
 img,svg{max-width:100%;display:block}
 h1,h2,h3,h4{font-weight:700;line-height:1.3}
 h1{font-size:2.2rem}h2{font-size:1.55rem;margin-top:8px}h3{font-size:1.18rem}h4{font-size:1.02rem}
@@ -65,7 +78,7 @@ li{margin-bottom:4px}
 .nav-badge.api{background:#ede9fe;color:#5b21b6}
 
 /* ─── MAIN CONTENT ──────────────────────────────────────────── */
-.main{padding:0;max-width:960px;overflow-x:hidden}
+.main{padding:0;max-width:1020px;overflow-x:hidden}
 
 /* ─── TOP TAB BAR ───────────────────────────────────────────── */
 .tab-bar{position:sticky;top:0;z-index:15;background:#fff;border-bottom:2px solid #e2e8f0;display:flex;align-items:stretch;padding:0 20px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
@@ -95,7 +108,7 @@ li{margin-bottom:4px}
 .hero-tab-link:hover{background:rgba(255,255,255,.25);text-decoration:none}
 
 /* ─── CARDS ─────────────────────────────────────────────────── */
-.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:26px;margin-bottom:22px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card{background:var(--bg-surface);border:1px solid var(--line);border-radius:10px;padding:26px;margin-bottom:22px;box-shadow:var(--shadow-soft)}
 .card h4{margin-bottom:10px}
 .card-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
 .mini-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:18px 14px;text-align:center;transition:box-shadow .15s,transform .15s}
@@ -106,10 +119,15 @@ li{margin-bottom:4px}
 
 /* ─── TABLES ────────────────────────────────────────────────── */
 table{width:100%;border-collapse:collapse;margin:14px 0 22px}
-th,td{padding:10px 12px;border:1px solid #e2e8f0;text-align:left;font-size:.88rem}
-th{background:#f1f5f9;font-weight:600;color:#334155;white-space:nowrap}
-tr:nth-child(even){background:#f8fafc}
+th,td{padding:10px 12px;border:1px solid var(--line);text-align:left;font-size:.88rem}
+th{background:#f1f6fb;font-weight:600;color:#334155;white-space:nowrap}
+tr:nth-child(even){background:var(--bg-muted)}
 tr:hover{background:#f0f7ff}
+
+.feature-matrix td:first-child{white-space:nowrap;font-weight:600;color:#0f3458}
+.status-pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.72rem;font-weight:600;border:1px solid transparent;white-space:nowrap}
+.status-pill.ready{color:#166534;background:#dcfce7;border-color:#86efac}
+.status-pill.gated{color:#92400e;background:#fef3c7;border-color:#fde68a}
 
 /* ─── CODE ──────────────────────────────────────────────────── */
 pre{background:#0f172a;color:#e2e8f0;padding:16px 20px;border-radius:8px;overflow-x:auto;font-size:.84rem;line-height:1.65;margin:14px 0 22px}
@@ -219,7 +237,7 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <h2>VALIS Workstation</h2>
-    <span class="version-badge">v1.0 Manual</span>
+    <span class="version-badge">v1.1 Manual</span>
     <a class="quick-link" href="VALIS-GUI-Tutorial.html">Open Step-by-Step Tutorial</a>
   </div>
 
@@ -241,6 +259,7 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
       <a href="#first-registration" onclick="activateTab('beginner')"><span class="nav-icon">🚀</span>First Registration</a>
       <a href="#ui-tour" onclick="activateTab('beginner')"><span class="nav-icon">🖥️</span>Interface Tour</a>
       <a href="#gui-tasks" onclick="activateTab('beginner')"><span class="nav-icon">🗂️</span>GUI Task Catalog</a>
+      <a href="#feature-parity" onclick="activateTab('beginner')"><span class="nav-icon">🧩</span>Feature Parity Matrix</a>
       <a href="#after-registration" onclick="activateTab('beginner')"><span class="nav-icon">📊</span>After Registration</a>
       <a href="#use-cases" onclick="activateTab('beginner')"><span class="nav-icon">🔬</span>Use Cases</a>
       <a href="#beginner-faq" onclick="activateTab('beginner')"><span class="nav-icon">❓</span>FAQ</a>
@@ -290,7 +309,7 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 <!-- ─── TAB BAR ─────────────────────────────────────────────── -->
 <div class="tab-bar">
   <button class="tab-btn active" onclick="activateTab('beginner')" data-tab="beginner">
-    <span class="tab-icon">🟢</span> Beginner Guide <span class="tab-count">9</span>
+    <span class="tab-icon">🟢</span> Beginner Guide <span class="tab-count">10</span>
   </button>
   <button class="tab-btn" onclick="activateTab('advanced')" data-tab="advanced">
     <span class="tab-icon">🟡</span> Advanced Guide <span class="tab-count">13</span>
@@ -309,7 +328,7 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 <div class="hero">
   <h1>VALIS Workstation</h1>
   <div class="subtitle">Professional whole-slide image registration, alignment &amp; analysis</div>
-  <span class="version">v 1.0 &nbsp;|&nbsp; Beginner-Friendly User Guide</span>
+  <span class="version">v 1.1 &nbsp;|&nbsp; Beginner-Friendly User Guide</span>
   <div class="hero-tabs">
     <a class="hero-tab-link" href="VALIS-GUI-Tutorial.html">→ Guided Tutorial</a>
     <span class="hero-tab-link" onclick="activateTab('advanced')">→ Advanced Guide</span>
@@ -683,7 +702,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
   <h4 style="margin-top:10px">Help</h4>
   <table>
     <tr><td>Performance Stats</td><td><span class="kbd">Ctrl+Shift+P</span></td></tr>
-    <tr><td>About / Manual</td><td></td></tr>
+    <tr><td>Manual, Tutorial, Diagnostics, About</td><td></td></tr>
   </table>
 </div>
 </div>
@@ -735,7 +754,8 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 <h4 style="margin-top:14px">Help Menu + Utility Actions</h4>
 <table>
   <tr><th>Task</th><th>Where</th><th>How</th><th>Result</th></tr>
-  <tr><td>Open manual</td><td>Help -&gt; User Manual</td><td>Launches local manual path</td><td>Documentation opens in system browser/editor</td></tr>
+  <tr><td>Open manual</td><td>Help -&gt; Manual (HTML)</td><td>Launches local manual path</td><td>Documentation opens in system browser/editor</td></tr>
+  <tr><td>Open tutorial</td><td>Help -&gt; Tutorial (HTML)</td><td>Launches local tutorial path</td><td>Step-by-step tutorial opens</td></tr>
   <tr><td>Open quick start</td><td>Help -&gt; Quick Start Guide</td><td>Launches local quick-start path</td><td>Quick onboarding guide opens</td></tr>
   <tr><td>Report issue</td><td>Help -&gt; Report Issue</td><td>Opens GitHub issue URL</td><td>Bug-report workflow starts</td></tr>
   <tr><td>Performance diagnostics</td><td>Help -&gt; Performance Statistics</td><td>Open dialog (<span class="kbd">Ctrl+Shift+P</span>)</td><td>Live cache/memory/performance telemetry</td></tr>
@@ -757,8 +777,40 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 </div>
 </div>
 
+<span class="section-anchor" id="feature-parity"></span>
+<h2>7 - Feature Parity Matrix</h2>
+<hr>
+<div class="card">
+<p>This matrix maps every user-facing menu action to its operating guidance, prerequisites, and current behavior in the GUI.</p>
+<table class="feature-matrix">
+  <tr><th>Menu</th><th>Action</th><th>Primary Guidance</th><th>Prerequisite</th><th>Status</th></tr>
+  <tr><td>File</td><td>Open Slide Folder</td><td><a href="#first-registration">First Registration</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>File</td><td>Recent Folders</td><td><a href="#gui-tasks">GUI Task Catalog</a></td><td>Previously opened case folder</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>File</td><td>Save Configuration / Load Configuration</td><td><a href="#gui-tasks">GUI Task Catalog</a>, <a href="#config-mgmt">Config Management</a></td><td>Open project context</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>File</td><td>Run Registration</td><td><a href="#first-registration">First Registration</a></td><td>Loaded slides + valid settings</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>File</td><td>Resume Last Registration</td><td><a href="#gui-tasks">GUI Task Catalog</a>, <a href="#troubleshooting">Troubleshooting</a></td><td>Previous run metadata exists</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>File</td><td>Preferences</td><td><a href="#gui-tasks">GUI Task Catalog</a>, <a href="#optimization-tips">Optimization Tips</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
+
+  <tr><td>View</td><td>Reset Layout / Fit to Content</td><td><a href="#ui-tour">Interface Tour</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>View</td><td>Toggle Left Sidebar / Toggle Right Sidebar</td><td><a href="#ui-tour">Interface Tour</a>, <a href="#keyboard-ref">Keyboard Shortcuts</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>View</td><td>Expand Center</td><td><a href="#ui-tour">Interface Tour</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
+
+  <tr><td>Tools</td><td>Blink / Analysis Plot / Quality Report</td><td><a href="#after-registration">After Registration</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>Completed registration</td><td><span class="status-pill gated">Enabled post-run</span></td></tr>
+  <tr><td>Tools</td><td>Warp Annotations</td><td><a href="#after-registration">After Registration</a>, <a href="#warp-api">Warp Tools API</a></td><td>Completed registration + source annotations</td><td><span class="status-pill gated">Enabled post-run</span></td></tr>
+  <tr><td>Tools</td><td>Save Options</td><td><a href="#output-formats">Output &amp; Formats</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>Tools</td><td>Export ROI Crop</td><td><a href="#after-registration">After Registration</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>Completed registration</td><td><span class="status-pill gated">Enabled post-run</span></td></tr>
+  <tr><td>Tools</td><td>Merge Slides</td><td><a href="#after-registration">After Registration</a>, <a href="#use-cases">Use Cases</a></td><td>Completed registration</td><td><span class="status-pill gated">Enabled post-run</span></td></tr>
+  <tr><td>Tools</td><td>Export Session Bundle</td><td><a href="#gui-tasks">GUI Task Catalog</a>, <a href="#troubleshooting">Troubleshooting</a></td><td>Session with logs/results</td><td><span class="status-pill ready">Available</span></td></tr>
+
+  <tr><td>Help</td><td>Manual (HTML) / Tutorial (HTML)</td><td><a href="#beginner-faq">FAQ</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>Help</td><td>Quick Start Guide</td><td><a href="#what-is-valis">What Is VALIS?</a>, <a href="#first-registration">First Registration</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>Help</td><td>Report Issue / Diagnostics / Performance Statistics / About</td><td><a href="#troubleshooting">Troubleshooting</a>, <a href="#gui-arch">GUI Architecture</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
+</table>
+<div class="tip"><strong>How to use this matrix:</strong> start from your menu action, jump to the linked section, then use the prerequisite column to avoid dead-end workflows.</div>
+</div>
+
 <span class="section-anchor" id="after-registration"></span>
-<h2>7 — What to Do After Registration</h2>
+<h2>8 — What to Do After Registration</h2>
 <hr>
 <div class="card">
 <h4>Your toolkit after a successful registration:</h4>
@@ -786,7 +838,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 
 <!-- ─── USE CASES ────────────────────────────────────────────── -->
 <span class="section-anchor" id="use-cases"></span>
-<h2>8 — Common Use Cases</h2>
+<h2>9 — Common Use Cases</h2>
 <hr>
 
 <div class="usecase">
@@ -822,7 +874,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 
 <!-- ─── BEGINNER FAQ ─────────────────────────────────────────── -->
 <span class="section-anchor" id="beginner-faq"></span>
-<h2>9 — Frequently Asked Questions</h2>
+<h2>10 — Frequently Asked Questions</h2>
 <hr>
 <div class="card">
 <h4>Q: What image formats are supported?</h4>
@@ -1880,7 +1932,7 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
 
 <!-- ═══════════════════════════════════════════════════ FOOTER ═══ -->
 <footer>
-  <p><strong>VALIS Workstation — Complete User Manual</strong> — Version 1.0</p>
+  <p><strong>VALIS Workstation — Complete User Manual</strong> — Version 1.1 (Sprint 1)</p>
   <p>Built on the <a href="https://github.com/MathOnco/valis">VALIS library</a> (Nature Communications) by Chandler Gatenbee · MIT License</p>
   <p style="margin-top:6px;font-size:.78rem">Standalone HTML document — no external dependencies required.</p>
 </footer>

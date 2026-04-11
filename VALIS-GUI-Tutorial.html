@@ -8,12 +8,14 @@
 :root {
   --bg: #f5f8fc;
   --surface: #ffffff;
+  --surface-soft: #f4f9ff;
   --ink: #0f172a;
   --muted: #475569;
   --line: #dbe4ef;
   --brand: #0369a1;
   --brand-strong: #0c4a6e;
   --brand-soft: #e0f2fe;
+  --accent: #0ea5e9;
   --ok: #0f766e;
   --warn: #92400e;
   --danger: #991b1b;
@@ -30,9 +32,9 @@ html {
 
 body {
   margin: 0;
-  font-family: "Segoe UI", Inter, -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+  font-family: "Manrope", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
   color: var(--ink);
-  background: radial-gradient(circle at 10% 0%, #eef6ff 0%, var(--bg) 35%, var(--bg) 100%);
+  background: radial-gradient(circle at 10% 0%, #e8f4ff 0%, var(--bg) 35%, var(--bg) 100%);
   line-height: 1.65;
 }
 
@@ -195,6 +197,81 @@ a:hover {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 20px;
+}
+
+.jump-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.jump-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #b7d9f5;
+  background: var(--surface-soft);
+  color: #0f3458;
+  font-size: 0.79rem;
+  font-weight: 700;
+}
+
+.jump-link:hover {
+  background: #dff0ff;
+  border-color: #8ac7f5;
+  text-decoration: none;
+}
+
+.track-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.track-card {
+  border: 1px solid #cde3f6;
+  border-radius: 12px;
+  background: #f8fcff;
+  padding: 14px;
+}
+
+.track-card h3 {
+  margin: 0 0 6px;
+  font-size: 0.96rem;
+  color: #0f3458;
+}
+
+.track-chip {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 2px 10px;
+  border: 1px solid #b4d9f7;
+  background: #e0f2fe;
+  color: #0f4c75;
+  margin: 0 0 8px;
+}
+
+.track-card ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.track-card li {
+  margin-bottom: 4px;
+  color: #2f4661;
+  font-size: 0.84rem;
+}
+
+.track-card .cta {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.79rem;
+  font-weight: 700;
 }
 
 .callout {
@@ -452,6 +529,7 @@ footer {
   }
 
   .callouts,
+  .track-grid,
   .grid-2,
   .checklist,
   .compare {
@@ -474,20 +552,21 @@ footer {
 
     <div class="nav-label">Learning Path</div>
     <a class="nav-link" href="#goals">1. Goals and Outcomes</a>
-    <a class="nav-link" href="#preflight">2. Preflight Checklist</a>
-    <a class="nav-link" href="#install">3. Install and Launch</a>
-    <a class="nav-link" href="#ui-map">4. UI Map</a>
-    <a class="nav-link" href="#first-run">5. First Registration</a>
-    <a class="nav-link" href="#quality">6. Quality Validation</a>
-    <a class="nav-link" href="#tools">7. Complete GUI Operations</a>
-    <a class="nav-link" href="#cookbook">8. Settings + VALIS Map</a>
-    <a class="nav-link" href="#troubleshooting">9. Troubleshooting</a>
-    <a class="nav-link" href="#final-check">10. Final Checklist</a>
+    <a class="nav-link" href="#tracks">2. Choose a Track</a>
+    <a class="nav-link" href="#preflight">3. Preflight Checklist</a>
+    <a class="nav-link" href="#install">4. Install and Launch</a>
+    <a class="nav-link" href="#ui-map">5. UI Map</a>
+    <a class="nav-link" href="#first-run">6. First Registration</a>
+    <a class="nav-link" href="#quality">7. Quality Validation</a>
+    <a class="nav-link" href="#tools">8. Complete GUI Operations</a>
+    <a class="nav-link" href="#cookbook">9. Settings + VALIS Map</a>
+    <a class="nav-link" href="#troubleshooting">10. Troubleshooting</a>
+    <a class="nav-link" href="#final-check">11. Final Checklist</a>
 
     <div class="quick-actions">
       <div class="nav-label" style="margin-top:0">Quick Links</div>
       <a href="VALIS-GUI-Manual.html">Open Full Manual</a>
-      <a href="../QUICK_START.md">Open Quick Start (MD)</a>
+      <a href="QUICK_START.md">Open Quick Start (MD)</a>
     </div>
   </aside>
 
@@ -499,13 +578,21 @@ footer {
           <p>This tutorial teaches the full workflow from opening slides to validating registration quality and exporting outputs. It is designed for first-time users and lab handoff training.</p>
           <div class="badges">
             <span class="badge">Standalone HTML</span>
-            <span class="badge">Beginner to Advanced</span>
+            <span class="badge">Track-based onboarding</span>
             <span class="badge">Real project images</span>
           </div>
         </div>
         <img src="_images/banner.gif" alt="VALIS banner showing registration context" loading="eager">
       </div>
     </header>
+
+    <div class="jump-strip">
+      <a class="jump-link" href="#first-run">Fast path registration</a>
+      <a class="jump-link" href="#quality">Quality checks</a>
+      <a class="jump-link" href="#tools">All GUI actions</a>
+      <a class="jump-link" href="#cookbook">Settings cookbook</a>
+      <a class="jump-link" href="#troubleshooting">Troubleshooting</a>
+    </div>
 
     <section class="callouts">
       <article class="callout">
@@ -537,8 +624,56 @@ footer {
       </div>
     </section>
 
+    <section id="tracks" class="section">
+      <h2>2. Choose a Track</h2>
+      <p>Pick one path based on your immediate outcome. You can complete Track 1 first and then branch into Tracks 2-4.</p>
+      <div class="track-grid">
+        <article class="track-card">
+          <span class="track-chip">Track 1 - Fast Path</span>
+          <h3>First successful registration</h3>
+          <ul>
+            <li>Open a known-good dataset</li>
+            <li>Run with baseline defaults</li>
+            <li>Verify output folder + summary CSV</li>
+          </ul>
+          <a class="cta" href="#first-run">Go to Track 1</a>
+        </article>
+        <article class="track-card">
+          <span class="track-chip">Track 2 - QA</span>
+          <h3>Quality validation and triage</h3>
+          <ul>
+            <li>Compare pre/post overlap quality</li>
+            <li>Use metrics to find outlier pairs</li>
+            <li>Decide rerun vs accept</li>
+          </ul>
+          <a class="cta" href="#quality">Go to Track 2</a>
+        </article>
+        <article class="track-card">
+          <span class="track-chip">Track 3 - ROI Workflow</span>
+          <h3>Export aligned ROI crops</h3>
+          <ul>
+            <li>Set Save Options to WSI-compatible format</li>
+            <li>Export batch ROI crops from registered slides</li>
+            <li>Reopen outputs for animation or review</li>
+          </ul>
+          <a class="cta" href="#tools">Go to Track 3</a>
+        </article>
+        <article class="track-card">
+          <span class="track-chip">Track 4 - Multiplex Merge</span>
+          <h3>Build merged multi-channel outputs</h3>
+          <ul>
+            <li>Map channels and assign colors</li>
+            <li>Tune overlap/normalization options</li>
+            <li>Export a collaboration-ready merged file</li>
+          </ul>
+          <a class="cta" href="#cookbook">Go to Track 4</a>
+        </article>
+      </div>
+      <div class="note"><strong>Recommendation:</strong> complete Tracks 1 and 2 before moving to ROI export or merge workflows.</div>
+    </section>
+
     <section id="preflight" class="section">
-      <h2>2. Preflight Checklist</h2>
+      <h2>3. Preflight Checklist</h2>
       <table class="preflight">
         <tr>
           <th>Check</th>
@@ -570,7 +705,7 @@ footer {
     </section>
 
     <section id="install" class="section">
-      <h2>3. Install and Launch</h2>
+      <h2>4. Install and Launch</h2>
       <h3>Install in a virtual environment</h3>
       <pre><code>git clone https://github.com/leonardolv/VALIS-GUI.git
 cd VALIS-GUI
@@ -590,7 +725,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
     </section>
 
     <section id="ui-map" class="section">
-      <h2>4. UI Map</h2>
+      <h2>5. UI Map</h2>
       <p>The interface uses a <strong>nested resizable splitter layout</strong> with five areas: Project, Slide Preview, central Napari viewer, Properties/Layers, and Status/Logs. All panels are separated by <strong>grip handles</strong> &mdash; dotted bars that highlight on hover &mdash; which you can drag to resize any panel.</p>
       <p>The left sidebar has <strong>Project</strong> and <strong>Slide Preview</strong> tabs. The right sidebar has <strong>Properties</strong> and <strong>Layers</strong> tabs. The center holds the Napari viewer. The bottom bar shows progress and logs.</p>
       <div class="grid-2">
@@ -607,7 +742,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
     </section>
 
     <section id="first-run" class="section">
-      <h2>5. First Registration (Hands-On)</h2>
+      <h2>6. First Registration (Hands-On)</h2>
       <p>Use the bundled example dataset to get a known-good first result:</p>
       <pre><code>examples/example_datasets/ihc/</code></pre>
 
@@ -650,7 +785,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
     </section>
 
     <section id="quality" class="section">
-      <h2>6. Quality Validation (Visual + Quantitative)</h2>
+      <h2>7. Quality Validation (Visual + Quantitative)</h2>
       <p>Use both overlays and metrics. Do not rely on one signal alone.</p>
 
       <h3>Visual progression example</h3>
@@ -684,7 +819,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
     </section>
 
     <section id="tools" class="section">
-      <h2>7. Complete GUI Operations (How To Do Everything)</h2>
+      <h2>8. Complete GUI Operations (How To Do Everything)</h2>
       <p>This section is a click-by-click map of all main GUI actions in the current app.</p>
 
       <h3>File Menu</h3>
@@ -726,7 +861,8 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
       <h3>Help Menu + Utility Actions</h3>
       <table class="preflight">
         <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
-        <tr><td>User Manual</td><td><code>Help -&gt; User Manual</code></td><td>Open local manual.</td><td>Manual opens in default handler.</td></tr>
+        <tr><td>Manual (HTML)</td><td><code>Help -&gt; Manual (HTML)</code></td><td>Open local manual.</td><td>Manual opens in default handler.</td></tr>
+        <tr><td>Tutorial (HTML)</td><td><code>Help -&gt; Tutorial (HTML)</code></td><td>Reopen this tutorial directly from the app.</td><td>Tutorial opens in default handler.</td></tr>
         <tr><td>Quick Start</td><td><code>Help -&gt; Quick Start Guide</code></td><td>Open quick-start file.</td><td>Short onboarding guide opens.</td></tr>
         <tr><td>Report Issue</td><td><code>Help -&gt; Report Issue</code></td><td>Opens issue URL.</td><td>GitHub issue page opens.</td></tr>
         <tr><td>Performance Statistics</td><td><code>Help -&gt; Performance Statistics</code> / <span class="kbd">Ctrl+Shift+P</span></td><td>Inspect Overview, Thumbnail Cache, Tile Cache, Memory tabs.</td><td>Live telemetry + cache management controls.</td></tr>
@@ -774,7 +910,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
     </section>
 
     <section id="cookbook" class="section">
-      <h2>8. Settings Cookbook + VALIS Function Map</h2>
+      <h2>9. Settings Cookbook + VALIS Function Map</h2>
       <table class="preflight">
         <tr>
           <th>Scenario</th>
@@ -821,7 +957,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
     </section>
 
     <section id="troubleshooting" class="section">
-      <h2>9. Troubleshooting</h2>
+      <h2>10. Troubleshooting</h2>
       <h3>Common issues</h3>
       <table class="preflight">
         <tr>
@@ -849,7 +985,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
     </section>
 
     <section id="final-check" class="section">
-      <h2>10. Final Checklist</h2>
+      <h2>11. Final Checklist</h2>
       <p>Use this before handing results to collaborators.</p>
       <div class="checklist">
         <label class="check-item"><input type="checkbox"> Outputs exist under the expected <code>output/&lt;project_name&gt;</code> folder.</label>
@@ -865,7 +1001,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
     </section>
 
     <footer>
-      VALIS Workstation Tutorial | Standalone HTML | Updated for current GUI behavior in this repository.
+      VALIS Workstation Tutorial v1.1 (Sprint 1) | Standalone HTML | Updated for current GUI behavior in this repository.
     </footer>
   </main>
 </div>
