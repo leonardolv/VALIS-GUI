@@ -20,6 +20,7 @@
   --warn: #92400e;
   --danger: #991b1b;
   --shadow: 0 8px 22px rgba(2, 10, 26, 0.08);
+  --shadow-soft: 0 5px 16px rgba(2, 10, 26, 0.06);
 }
 
 * {
@@ -32,10 +33,10 @@ html {
 
 body {
   margin: 0;
-  font-family: "Manrope", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+  font-family: "Manrope", "IBM Plex Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
   color: var(--ink);
   background: radial-gradient(circle at 10% 0%, #e8f4ff 0%, var(--bg) 35%, var(--bg) 100%);
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
 a {
@@ -136,6 +137,8 @@ a:hover {
 
 .main {
   padding: 28px;
+  max-width: 1120px;
+  margin: 0 auto;
 }
 
 .hero {
@@ -145,6 +148,18 @@ a:hover {
   color: #f5fbff;
   box-shadow: var(--shadow);
   margin-bottom: 24px;
+  position: relative;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  right: -80px;
+  top: -90px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 68%);
 }
 
 .hero-body {
@@ -279,7 +294,19 @@ a:hover {
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 14px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.callout::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #0ea5e9 0%, #0369a1 100%);
 }
 
 .callout h3 {
@@ -298,8 +325,8 @@ a:hover {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 20px;
-  box-shadow: var(--shadow);
+  padding: 22px;
+  box-shadow: var(--shadow-soft);
   margin-bottom: 18px;
 }
 
@@ -307,6 +334,7 @@ a:hover {
   margin: 0 0 10px;
   color: var(--brand-strong);
   font-size: 1.28rem;
+  letter-spacing: -0.01em;
 }
 
 .section h3 {
@@ -365,6 +393,12 @@ a:hover {
   border: 1px solid #d8e6f5;
   border-radius: 10px;
   background: #f8fbff;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.timeline li:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 44, 74, 0.08);
 }
 
 .step {
@@ -407,6 +441,14 @@ a:hover {
 .preflight th {
   background: #edf6ff;
   color: #133a62;
+}
+
+.preflight tr:nth-child(even) {
+  background: #f8fbff;
+}
+
+.preflight tr:hover {
+  background: #edf6ff;
 }
 
 code,
@@ -506,6 +548,26 @@ footer {
   padding: 10px;
 }
 
+@media (prefers-reduced-motion:no-preference) {
+  .section,
+  .callout,
+  .track-card,
+  .timeline li {
+    animation: riseIn 0.45s ease both;
+  }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 1080px) {
   .page {
     grid-template-columns: 1fr;
@@ -528,6 +590,10 @@ footer {
     padding: 14px;
   }
 
+  .section {
+    padding: 16px;
+  }
+
   .callouts,
   .track-grid,
   .grid-2,
@@ -538,6 +604,17 @@ footer {
 
   .hero h2 {
     font-size: 1.58rem;
+  }
+
+  .preflight {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .preflight th,
+  .preflight td {
+    white-space: nowrap;
   }
 }
 </style>
@@ -1051,7 +1128,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
     </section>
 
     <footer>
-      VALIS Workstation Tutorial v1.2 (Sprint 2) | Standalone HTML | Updated for current GUI behavior in this repository.
+      VALIS Workstation Tutorial v1.3 (Sprint 3) | Standalone HTML | Updated for current GUI behavior in this repository.
     </footer>
   </main>
 </div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>VALIS Workstation — Complete User Manual</title>
+<title>VALIS Workstation — Complete Manual</title>
 <style>
 /* ═══════════════════════════════════════════════════════════════
    VALIS WORKSTATION v3 – TABBED PROFESSIONAL MANUAL
@@ -21,16 +21,18 @@
   --brand-deep:#0c4a6e;
   --brand-soft:#e0f2fe;
   --shadow-soft:0 4px 16px rgba(2,8,23,.06);
+  --radius-card:12px;
+  --radius-soft:10px;
 }
 
 /* ─── RESET & BASE ──────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;font-size:16px}
-body{font-family:'IBM Plex Sans','Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,Oxygen,Ubuntu,sans-serif;color:var(--ink);background:radial-gradient(circle at 8% -8%,#e6f3ff 0%,var(--bg-page) 36%,var(--bg-page) 100%);line-height:1.7}
+body{font-family:'Manrope','IBM Plex Sans','Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,Oxygen,Ubuntu,sans-serif;color:var(--ink);background:radial-gradient(circle at 8% -8%,#e6f3ff 0%,var(--bg-page) 36%,var(--bg-page) 100%);line-height:1.72}
 a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
 img,svg{max-width:100%;display:block}
-h1,h2,h3,h4{font-weight:700;line-height:1.3}
-h1{font-size:2.2rem}h2{font-size:1.55rem;margin-top:8px}h3{font-size:1.18rem}h4{font-size:1.02rem}
+h1,h2,h3,h4{font-weight:700;line-height:1.28;letter-spacing:-.01em}
+h1{font-size:2.28rem}h2{font-size:1.6rem;margin-top:10px}h3{font-size:1.2rem}h4{font-size:1.04rem}
 p,li{max-width:74ch}
 ul,ol{padding-left:24px;margin:8px 0 14px}
 li{margin-bottom:4px}
@@ -81,7 +83,7 @@ li{margin-bottom:4px}
 .main{padding:0;max-width:1020px;overflow-x:hidden}
 
 /* ─── TOP TAB BAR ───────────────────────────────────────────── */
-.tab-bar{position:sticky;top:0;z-index:15;background:#fff;border-bottom:2px solid #e2e8f0;display:flex;align-items:stretch;padding:0 20px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.tab-bar{position:sticky;top:0;z-index:15;background:rgba(255,255,255,.95);backdrop-filter:saturate(140%) blur(6px);border-bottom:2px solid #e2e8f0;display:flex;align-items:stretch;padding:0 20px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 .tab-btn{padding:14px 24px;font-size:.9rem;font-weight:600;color:#64748b;cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;transition:all .2s;display:flex;align-items:center;gap:8px;white-space:nowrap}
 .tab-btn:hover{color:#0284c7;background:#f0f9ff}
 .tab-btn.active{color:#0284c7;border-bottom-color:#0284c7}
@@ -108,10 +110,11 @@ li{margin-bottom:4px}
 .hero-tab-link:hover{background:rgba(255,255,255,.25);text-decoration:none}
 
 /* ─── CARDS ─────────────────────────────────────────────────── */
-.card{background:var(--bg-surface);border:1px solid var(--line);border-radius:10px;padding:26px;margin-bottom:22px;box-shadow:var(--shadow-soft)}
-.card h4{margin-bottom:10px}
+.card{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-card);padding:28px;margin-bottom:22px;box-shadow:var(--shadow-soft)}
+.card h4{margin-bottom:10px;letter-spacing:-.005em}
+.card>p:first-child{color:#334155;font-size:.93rem}
 .card-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
-.mini-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:18px 14px;text-align:center;transition:box-shadow .15s,transform .15s}
+.mini-card{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-soft);padding:18px 14px;text-align:center;transition:box-shadow .15s,transform .15s}
 .mini-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.07);transform:translateY(-2px)}
 .mini-card .icon{font-size:2rem;margin-bottom:6px}
 .mini-card h4{margin-bottom:4px;font-size:.92rem}
@@ -130,15 +133,21 @@ tr:hover{background:#f0f7ff}
 .status-pill.gated{color:#92400e;background:#fef3c7;border-color:#fde68a}
 
 /* ─── CODE ──────────────────────────────────────────────────── */
-pre{background:#0f172a;color:#e2e8f0;padding:16px 20px;border-radius:8px;overflow-x:auto;font-size:.84rem;line-height:1.65;margin:14px 0 22px}
+pre{background:linear-gradient(180deg,#0f172a 0%,#111d33 100%);color:#e2e8f0;padding:16px 20px;border-radius:8px;overflow-x:auto;font-size:.84rem;line-height:1.65;margin:14px 0 22px;border:1px solid #1f3556;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 code{background:#f1f5f9;padding:2px 7px;border-radius:4px;font-size:.86em;color:#0f172a}
 pre code{background:none;padding:0;color:inherit}
 
 /* ─── ALERTS ────────────────────────────────────────────────── */
-.note{background:#fef9c3;border-left:4px solid #eab308;padding:14px 18px;border-radius:0 8px 8px 0;margin:16px 0 22px;font-size:.9rem}
-.tip{background:#ecfdf5;border-left:4px solid #10b981;padding:14px 18px;border-radius:0 8px 8px 0;margin:16px 0 22px;font-size:.9rem}
-.warn{background:#fef2f2;border-left:4px solid #ef4444;padding:14px 18px;border-radius:0 8px 8px 0;margin:16px 0 22px;font-size:.9rem}
-.info{background:#eff6ff;border-left:4px solid #3b82f6;padding:14px 18px;border-radius:0 8px 8px 0;margin:16px 0 22px;font-size:.9rem}
+.note,.tip,.warn,.info{position:relative;padding:14px 18px 14px 42px;border-radius:0 8px 8px 0;margin:16px 0 22px;font-size:.9rem}
+.note{background:#fef9c3;border-left:4px solid #eab308}
+.tip{background:#ecfdf5;border-left:4px solid #10b981}
+.warn{background:#fef2f2;border-left:4px solid #ef4444}
+.info{background:#eff6ff;border-left:4px solid #3b82f6}
+.note::before,.tip::before,.warn::before,.info::before{position:absolute;left:14px;top:12px;font-size:.9rem}
+.note::before{content:'⚠'}
+.tip::before{content:'✓'}
+.warn::before{content:'!'}
+.info::before{content:'i'}
 
 /* ─── UI ELEMENTS ───────────────────────────────────────────── */
 .kbd{display:inline-block;background:#1e293b;color:#fff;padding:2px 8px;border-radius:4px;font-size:.78rem;font-family:'Consolas','Cascadia Code',monospace;letter-spacing:.02em;box-shadow:0 1px 2px rgba(0,0,0,.2)}
@@ -147,7 +156,7 @@ pre code{background:none;padding:0;color:inherit}
 .step-body{flex:1}
 .step-body strong{color:#0c4a6e}
 hr{border:none;border-top:1px solid #e2e8f0;margin:32px 0}
-.section-anchor{display:block;position:relative;top:-80px;visibility:hidden}
+.section-anchor{display:block;position:relative;top:-88px;visibility:hidden}
 .caption{font-size:.86rem;color:#64748b;text-align:center;margin:-6px 0 24px;font-style:italic}
 .section-divider{margin:40px 0;border:none;border-top:2px solid #e2e8f0}
 .doc-image{width:100%;border-radius:10px;border:1px solid #cbd5e1;box-shadow:0 4px 14px rgba(2,8,23,.08);background:#fff}
@@ -214,9 +223,29 @@ hr{border:none;border-top:1px solid #e2e8f0;margin:32px 0}
 .limit-card h4{margin:0 0 6px;color:#0f3458;font-size:.94rem}
 .limit-card p{font-size:.86rem;color:#334155;max-width:none;margin:0}
 
+@media (prefers-reduced-motion:no-preference){
+  .card,.mini-card,.usecase,.decision-tree,.accordion{animation:fadeUp .45s ease both}
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
 /* ─── FOOTER ────────────────────────────────────────────────── */
 footer{text-align:center;padding:40px 20px;color:#64748b;font-size:.82rem;border-top:1px solid #e2e8f0;margin-top:48px}
 footer strong{color:#334155}
+
+@media(max-width:760px){
+  .tab-bar{padding:0 10px;overflow-x:auto;scrollbar-width:thin}
+  .tab-btn{padding:12px 14px;font-size:.82rem}
+  .hero{padding:34px 20px}
+  .hero h1{font-size:2.02rem}
+  .card{padding:18px}
+  table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  th,td{white-space:nowrap}
+  .note,.tip,.warn,.info{padding-left:38px}
+}
 
 /* ─── PRINT ─────────────────────────────────────────────────── */
 @media print{
@@ -247,7 +276,7 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <h2>VALIS Workstation</h2>
-    <span class="version-badge">v1.2 Manual</span>
+    <span class="version-badge">v1.3 Manual</span>
     <a class="quick-link" href="VALIS-GUI-Tutorial.html">Open Step-by-Step Tutorial</a>
   </div>
 
@@ -341,7 +370,7 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 <div class="hero">
   <h1>VALIS Workstation</h1>
   <div class="subtitle">Professional whole-slide image registration, alignment &amp; analysis</div>
-  <span class="version">v 1.2 &nbsp;|&nbsp; Beginner-Friendly User Guide</span>
+  <span class="version">v 1.3 &nbsp;|&nbsp; Beginner-Friendly User Guide</span>
   <div class="hero-tabs">
     <a class="hero-tab-link" href="VALIS-GUI-Tutorial.html">→ Guided Tutorial</a>
     <span class="hero-tab-link" onclick="activateTab('advanced')">→ Advanced Guide</span>
@@ -2014,7 +2043,7 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
 
 <!-- ═══════════════════════════════════════════════════ FOOTER ═══ -->
 <footer>
-  <p><strong>VALIS Workstation — Complete User Manual</strong> — Version 1.2 (Sprint 2)</p>
+  <p><strong>VALIS Workstation — Complete Manual</strong> — Version 1.3 (Sprint 3)</p>
   <p>Built on the <a href="https://github.com/MathOnco/valis">VALIS library</a> (Nature Communications) by Chandler Gatenbee · MIT License</p>
   <p style="margin-top:6px;font-size:.78rem">Standalone HTML document — no external dependencies required.</p>
 </footer>
