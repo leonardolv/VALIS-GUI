@@ -31,10 +31,14 @@ from valis_workstation.layout_constants import (
 )
 from valis_workstation.models.config import Config
 from valis_workstation.services.slide_scan import scan_slide_folder
+from valis_workstation.ui import (
+    main_window_actions,
+    main_window_documents,
+    main_window_workflow,
+)
 from valis_workstation.ui.dialogs.analysis_plot import AnalysisPlotDialog
 from valis_workstation.ui.dialogs.blink_viewer import BlinkViewerDialog
 from valis_workstation.ui.dialogs.diagnostics_dialog import DiagnosticsDialog
-from valis_workstation.ui.dialogs.error_detail_dialog import show_error_dialog
 from valis_workstation.ui.dialogs.merge_slides_dialog import MergeSlidesDialog
 from valis_workstation.ui.dialogs.quality_report import QualityReportDialog
 from valis_workstation.ui.dialogs.roi_export_dialog import ROIExportDialog
@@ -54,7 +58,6 @@ from valis_workstation.ui.splitter_utils import (
 )
 from valis_workstation.ui.status_dock import StatusDock
 from valis_workstation.utils.qt_logging import QtLogEmitter
-from valis_workstation.utils.validation import validate_slides
 from valis_workstation.workers.valis_worker import ValisWorker
 
 logger = logging.getLogger(__name__)
@@ -321,258 +324,11 @@ class MainWindow(QtWidgets.QMainWindow):
         return widget
 
     def _build_actions(self) -> None:
-        style = self.style()
-
-        file_menu = self.menuBar().addMenu("File")
-
-        open_action = QtGui.QAction("Open Slide Folder", self)
-        open_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DirIcon)
-        )
-        open_action.triggered.connect(self._open_slide_folder)
-        file_menu.addAction(open_action)
-
-        # Recent folders submenu
-        self._recent_menu = file_menu.addMenu("Recent Folders")
-        self._recent_menu.setIcon(
-            style.standardIcon(
-                QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView
-            )
-        )
-        self._update_recent_folders_menu()
-
-        file_menu.addSeparator()
-
-        save_config_action = QtGui.QAction("Save Configuration...", self)
-        save_config_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton)
-        )
-        save_config_action.triggered.connect(self._save_configuration)
-        file_menu.addAction(save_config_action)
-
-        load_config_action = QtGui.QAction("Load Configuration...", self)
-        load_config_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogOpenButton)
-        )
-        load_config_action.triggered.connect(self._load_configuration)
-        file_menu.addAction(load_config_action)
-
-        file_menu.addSeparator()
-
-        run_action = QtGui.QAction("Run Registration", self)
-        run_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MediaPlay)
-        )
-        run_action.triggered.connect(self._start_registration)
-        file_menu.addAction(run_action)
-
-        resume_action = QtGui.QAction("Resume Last Registration", self)
-        resume_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_BrowserReload)
-        )
-        resume_action.triggered.connect(self._resume_last_registration)
-        file_menu.addAction(resume_action)
-
-        file_menu.addSeparator()
-
-        preferences_action = QtGui.QAction("Preferences...", self)
-        preferences_action.setIcon(
-            style.standardIcon(
-                QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView
-            )
-        )
-        preferences_action.setShortcut("Ctrl+,")
-        preferences_action.triggered.connect(self._show_preferences)
-        file_menu.addAction(preferences_action)
-
-        # ── View menu ────────────────────────────────────────────────
-        view_menu = self.menuBar().addMenu("View")
-
-        reset_layout_action = QtGui.QAction("Reset Layout", self)
-        reset_layout_action.setShortcut("Ctrl+Shift+L")
-        reset_layout_action.setToolTip("Reset all panels to their default sizes")
-        reset_layout_action.triggered.connect(self.reset_layout)
-        view_menu.addAction(reset_layout_action)
-
-        toggle_left_action = QtGui.QAction("Toggle Left Sidebar", self)
-        toggle_left_action.setShortcut("Ctrl+[")
-        toggle_left_action.triggered.connect(self.toggle_left_sidebar)
-        view_menu.addAction(toggle_left_action)
-
-        toggle_right_action = QtGui.QAction("Toggle Right Sidebar", self)
-        toggle_right_action.setShortcut("Ctrl+]")
-        toggle_right_action.triggered.connect(self.toggle_right_sidebar)
-        view_menu.addAction(toggle_right_action)
-
-        expand_center_action = QtGui.QAction("Expand Center", self)
-        expand_center_action.setShortcut("Ctrl+Shift+C")
-        expand_center_action.triggered.connect(self.expand_center)
-        view_menu.addAction(expand_center_action)
-
-        fit_content_action = QtGui.QAction("Fit to Content", self)
-        fit_content_action.triggered.connect(self.fit_to_content)
-        view_menu.addAction(fit_content_action)
-
-        tools_menu = self.menuBar().addMenu("Tools")
-
-        blink_action = QtGui.QAction("Blink", self)
-        blink_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_BrowserReload)
-        )
-        blink_action.triggered.connect(self._blink)
-        tools_menu.addAction(blink_action)
-
-        plot_action = QtGui.QAction("Analysis Plot", self)
-        plot_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogInfoView)
-        )
-        plot_action.triggered.connect(self._show_analysis_plot)
-        tools_menu.addAction(plot_action)
-
-        quality_action = QtGui.QAction("Quality Report", self)
-        quality_action.setIcon(
-            style.standardIcon(
-                QtWidgets.QStyle.StandardPixmap.SP_FileDialogContentsView
-            )
-        )
-        quality_action.triggered.connect(self._show_quality_report)
-        tools_menu.addAction(quality_action)
-
-        warp_action = QtGui.QAction("Warp Annotations", self)
-        warp_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogListView)
-        )
-        warp_action.triggered.connect(self._warp_annotations)
-        tools_menu.addAction(warp_action)
-
-        tools_menu.addSeparator()
-
-        save_options_action = QtGui.QAction("Save Options...", self)
-        save_options_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton)
-        )
-        save_options_action.triggered.connect(self._show_save_options)
-        tools_menu.addAction(save_options_action)
-
-        export_roi_action = QtGui.QAction("Export ROI Crop...", self)
-        export_roi_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogInfoView)
-        )
-        export_roi_action.triggered.connect(self._export_roi_crop)
-        tools_menu.addAction(export_roi_action)
-
-        merge_action = QtGui.QAction("Merge Slides...", self)
-        merge_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileDialogListView)
-        )
-        merge_action.triggered.connect(self._merge_slides)
-        tools_menu.addAction(merge_action)
-
-        tools_menu.addSeparator()
-        export_bundle_action = QtGui.QAction("Export Session Bundle...", self)
-        export_bundle_action.triggered.connect(self._export_session_bundle)
-        tools_menu.addAction(export_bundle_action)
-
-        # Store result-dependent actions for contextual enable/disable
-        self._result_actions: list[QtGui.QAction] = [
-            blink_action,
-            plot_action,
-            quality_action,
-            warp_action,
-            save_options_action,
-            export_roi_action,
-            merge_action,
-        ]
-        self._update_tools_enabled()
-
-        # Help menu
-        help_menu = self.menuBar().addMenu("Help")
-
-        user_manual_action = QtGui.QAction("Manual (HTML)", self)
-        user_manual_action.setIcon(
-            style.standardIcon(
-                QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView
-            )
-        )
-        user_manual_action.triggered.connect(self._open_user_manual)
-        help_menu.addAction(user_manual_action)
-
-        tutorial_action = QtGui.QAction("Tutorial (HTML)", self)
-        tutorial_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogHelpButton)
-        )
-        tutorial_action.triggered.connect(self._open_tutorial)
-        help_menu.addAction(tutorial_action)
-
-        quick_start_action = QtGui.QAction("Quick Start Guide", self)
-        quick_start_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_TitleBarMenuButton)
-        )
-        quick_start_action.triggered.connect(self._open_quick_start)
-        help_menu.addAction(quick_start_action)
-
-        help_menu.addSeparator()
-
-        report_issue_action = QtGui.QAction("Report Issue", self)
-        report_issue_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxWarning)
-        )
-        report_issue_action.triggered.connect(self._report_issue)
-        help_menu.addAction(report_issue_action)
-
-        help_menu.addSeparator()
-
-        perf_stats_action = QtGui.QAction("Performance Statistics", self)
-        perf_stats_action.setShortcut("Ctrl+Shift+P")
-        perf_stats_action.triggered.connect(self._show_performance_stats)
-        help_menu.addAction(perf_stats_action)
-
-        diagnostics_action = QtGui.QAction("Diagnostics", self)
-        diagnostics_action.triggered.connect(self._show_diagnostics)
-        help_menu.addAction(diagnostics_action)
-
-        help_menu.addSeparator()
-
-        about_action = QtGui.QAction("About VALIS Workstation", self)
-        about_action.setIcon(
-            style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxInformation)
-        )
-        about_action.triggered.connect(self._show_about)
-        help_menu.addAction(about_action)
+        main_window_actions.build_actions(self)
 
     def _setup_keyboard_shortcuts(self) -> None:
         """Setup keyboard shortcuts for common operations."""
-        # File menu shortcuts
-        open_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+O"), self)
-        open_shortcut.activated.connect(self._open_slide_folder)
-
-        run_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+R"), self)
-        run_shortcut.activated.connect(self._start_registration)
-
-        # View shortcuts
-        blink_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+B"), self)
-        blink_shortcut.activated.connect(self._blink)
-
-        # Layout shortcuts
-        reset_layout_shortcut = QtGui.QShortcut(
-            QtGui.QKeySequence("Ctrl+Shift+L"), self
-        )
-        reset_layout_shortcut.activated.connect(self.reset_layout)
-
-        toggle_left_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+["), self)
-        toggle_left_shortcut.activated.connect(self.toggle_left_sidebar)
-
-        toggle_right_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+]"), self)
-        toggle_right_shortcut.activated.connect(self.toggle_right_sidebar)
-
-        expand_center_shortcut = QtGui.QShortcut(
-            QtGui.QKeySequence("Ctrl+Shift+C"), self
-        )
-        expand_center_shortcut.activated.connect(self.expand_center)
-
-        # General shortcuts
-        quit_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Q"), self)
-        quit_shortcut.activated.connect(self.close)
+        main_window_actions.setup_keyboard_shortcuts(self)
 
         logger.debug("Keyboard shortcuts configured")
 
@@ -589,252 +345,40 @@ class MainWindow(QtWidgets.QMainWindow):
         self._load_slides_from_folder(Path(folder))
 
     def _start_registration(self) -> None:
-        slides = self._project_dock.slides()
-        if not slides:
-            QtWidgets.QMessageBox.warning(self, "VALIS", "No slides to register.")
-            return
-
-        config = self._properties_dock.config()
-        output_dir = self._repo_root / "output" / config.project_name
-
-        # Validate before proceeding
-        validation = validate_slides(slides, output_dir)
-
-        if validation.has_errors():
-            error_msg = (
-                "Cannot start registration due to the following errors:\n\n"
-                + "\n".join(f"• {e}" for e in validation.errors)
-            )
-            QtWidgets.QMessageBox.critical(self, "Validation Failed", error_msg)
-            logger.error(
-                "Pre-registration validation failed: %s", "; ".join(validation.errors)
-            )
-            return
-
-        if validation.has_warnings():
-            warning_msg = "The following warnings were detected:\n\n" + "\n".join(
-                f"• {w}" for w in validation.warnings
-            )
-            warning_msg += "\n\nDo you want to proceed anyway?"
-
-            reply = QtWidgets.QMessageBox.question(
-                self,
-                "Validation Warnings",
-                warning_msg,
-                QtWidgets.QMessageBox.StandardButton.Yes
-                | QtWidgets.QMessageBox.StandardButton.No,
-                QtWidgets.QMessageBox.StandardButton.No,
-            )
-
-            if reply != QtWidgets.QMessageBox.StandardButton.Yes:
-                logger.info("Registration cancelled due to validation warnings")
-                return
-
-        # Confirm before starting registration
-        if not self._confirm_registration(slides, output_dir):
-            logger.info("Registration cancelled by user")
-            return
-
-        context = {
-            "slides": slides,
-            "config": config,
-            "output_dir": output_dir,
-        }
-        self._last_run_context = context
-        self._start_registration_from_context(context)
+        main_window_workflow.start_registration(self)
 
     def _start_registration_from_context(self, context: dict) -> None:
         """Start worker from a stored run context (new run or resume)."""
-        slides: list[Path] = context["slides"]
-        config: Config = context["config"]
-        output_dir: Path = context["output_dir"]
-
-        self._status_bar.showMessage(
-            f"Starting registration of {len(slides)} slides..."
-        )
-        logger.info("Starting registration with %d slides", len(slides))
-
-        self._worker_thread = QtCore.QThread(self)
-        self._worker = ValisWorker(config, slides, output_dir)
-        self._worker.moveToThread(self._worker_thread)
-
-        self._worker_thread.started.connect(self._worker.run)
-        self._worker.started.connect(lambda: self._status_dock.set_progress(0))
-        self._worker.started.connect(lambda: self._status_dock.show_cancel_button(True))
-        self._worker.progress.connect(self._status_dock.set_progress)
-        self._worker.finished.connect(self._on_worker_finished)
-        self._worker.failed.connect(self._on_worker_failed)
-        self._worker.cancelled.connect(self._on_worker_cancelled)
-        self._worker.finished.connect(self._worker_thread.quit)
-        self._worker.failed.connect(self._worker_thread.quit)
-        self._worker.cancelled.connect(self._worker_thread.quit)
-        self._worker_thread.finished.connect(self._cleanup_worker)
-
-        # Connect cancel button
-        self._status_dock.connect_cancel(self._request_cancellation)
-
-        self._worker_thread.start()
+        main_window_workflow.start_registration_from_context(self, context)
 
     def _resume_last_registration(self) -> None:
         """Resume/re-run the last registration context after cancel/failure."""
-        if not self._last_run_context:
-            QtWidgets.QMessageBox.information(
-                self, "Resume", "No previous registration context available."
-            )
-            return
-        if self._worker_thread and self._worker_thread.isRunning():
-            QtWidgets.QMessageBox.information(
-                self, "Resume", "Registration is already running."
-            )
-            return
-        self._status_bar.showMessage("Resuming last registration...", 3000)
-        self._start_registration_from_context(self._last_run_context)
+        main_window_workflow.resume_last_registration(self)
 
     def _cleanup_worker(self) -> None:
-        self._status_dock.show_cancel_button(False)
-        self._worker_thread = None
-        self._worker = None
+        main_window_workflow.cleanup_worker(self)
 
     def _request_cancellation(self) -> None:
         """Handle user request to cancel registration."""
-        if not self._worker:
-            return
-
-        reply = QtWidgets.QMessageBox.question(
-            self,
-            "Cancel Registration",
-            "Are you sure you want to cancel the registration?\nPartial results may be lost.",
-            QtWidgets.QMessageBox.StandardButton.Yes
-            | QtWidgets.QMessageBox.StandardButton.No,
-            QtWidgets.QMessageBox.StandardButton.No,
-        )
-
-        if reply == QtWidgets.QMessageBox.StandardButton.Yes:
-            logger.info("User requested cancellation")
-            self._worker.cancel()
-            self._status_bar.showMessage("Canceling registration...")
+        main_window_workflow.request_cancellation(self)
 
     def _on_worker_cancelled(self) -> None:
         """Handle worker cancellation."""
-        logger.info("Registration cancelled")
-        self._status_dock.set_progress(0)
-        self._status_bar.showMessage("Registration cancelled", 5000)
-        QtWidgets.QMessageBox.information(
-            self,
-            "VALIS",
-            "Registration was cancelled.\nPartial results may have been saved.",
-        )
+        main_window_workflow.on_worker_cancelled(self)
 
     def _confirm_registration(self, slides: list[Path], output_dir: Path) -> bool:
         """Show one confirmation dialog with estimates and settings."""
-        config = self._properties_dock.config()
-
-        total_size_bytes, has_missing = self._safe_total_size_bytes(slides)
-        total_size_gb = total_size_bytes / (1024**3)
-        est_output_gb = max(0.5, total_size_gb * 2.5)
-
-        # Time estimate tuned by selected features.
-        est_minutes = len(slides) * (1.6 if config.non_rigid_registration else 0.8)
-        if config.non_rigid_registration:
-            est_minutes *= 1.1
-        if config.micro_registration:
-            est_minutes *= 1.8
-        if config.max_image_size > 4096:
-            est_minutes *= 1.5
-        if config.use_masks:
-            est_minutes *= 1.2
-        if config.use_gpu:
-            est_minutes *= 0.7
-        est_minutes = max(1, int(est_minutes))
-
-        warning_html = ""
-        if has_missing:
-            warning_html = '<p style="color:#E49B0F; margin: 2px 0;"><b>Warning:</b> Input size calculation incomplete.</p>'
-
-        msg = QtWidgets.QMessageBox(self)
-        msg.setWindowTitle("Confirm Registration")
-        msg.setIcon(QtWidgets.QMessageBox.Icon.Question)
-
-        text = f"""<h3>Ready to Register {len(slides)} Slide{"s" if len(slides) != 1 else ""}</h3>
-<table style="margin: 6px 0;">
-    <tr><td><b>Input size:</b></td><td>{total_size_gb:.2f} GB</td></tr>
-    <tr><td><b>Estimated output:</b></td><td>~{est_output_gb:.2f} GB</td></tr>
-    <tr><td><b>Estimated time:</b></td><td>~{est_minutes} min</td></tr>
-    <tr><td><b>Output dir:</b></td><td>{output_dir}</td></tr>
-<tr><td><b>Project:</b></td><td>{config.project_name}</td></tr>
-</table>
-{warning_html}
-<p><b>Registration settings</b></p>
-<table style="margin: 4px 0;">
-<tr><td>Rigid registration:</td><td>{"Yes" if config.rigid_registration else "No"}</td></tr>
-<tr><td>Non-rigid registration:</td><td>{"Yes" if config.non_rigid_registration else "No"}</td></tr>
-<tr><td>Max image size:</td><td>{config.max_image_size} px</td></tr>
-<tr><td>Feature detector:</td><td>{config.feature_detector}</td></tr>
-<tr><td>Rigid transform:</td><td>{config.transformer_type}</td></tr>
-<tr><td>Reference slide:</td><td>{config.reference_slide or "Auto-detect"}</td></tr>
-<tr><td>Crop mode:</td><td>{config.crop_mode}</td></tr>
-<tr><td>Tissue masks:</td><td>{"Yes" if config.use_masks else "No"}</td></tr>
-<tr><td>Denoise:</td><td>{"Yes" if config.denoise else "No"}</td></tr>
-<tr><td>Slides pre-ordered:</td><td>{"Yes" if config.imgs_ordered else "No (auto-sort)"}</td></tr>
-<tr><td>Micro-registration:</td><td>{"Yes (" + str(config.micro_max_image_size) + " px)" if config.micro_registration else "No"}</td></tr>
-<tr><td>GPU:</td><td>{"Yes" if config.use_gpu else "No"}</td></tr>
-</table>
-<p><b>Output settings</b></p>
-<table style="margin: 4px 0;">
-<tr><td>Compression:</td><td>{config.compression_level}</td></tr>
-<tr><td>Pyramid levels:</td><td>{config.pyramid_levels}</td></tr>
-<tr><td>Tile size:</td><td>{config.tile_size} px</td></tr>
-<tr><td>JPEG quality:</td><td>{config.image_quality}%</td></tr>
-</table>
-<p>Proceed?</p>"""
-
-        msg.setText(text)
-        msg.setStandardButtons(
-            QtWidgets.QMessageBox.StandardButton.Yes
-            | QtWidgets.QMessageBox.StandardButton.No
-        )
-        msg.setDefaultButton(QtWidgets.QMessageBox.StandardButton.Yes)
-
-        return msg.exec() == QtWidgets.QMessageBox.StandardButton.Yes
+        return main_window_workflow.confirm_registration(self, slides, output_dir)
 
     @staticmethod
     def _safe_total_size_bytes(slides: list[Path]) -> tuple[int, bool]:
-        total = 0
-        has_missing = False
-        for slide in slides:
-            try:
-                if slide.exists():
-                    total += slide.stat().st_size
-                else:
-                    has_missing = True
-            except OSError:
-                has_missing = True
-                continue
-        return total, has_missing
+        return main_window_workflow.safe_total_size_bytes(slides)
 
     def _on_worker_finished(self, result: dict) -> None:
-        logger.info("Registration completed")
-        self._status_dock.set_progress(100)
-        self._last_result = result
-        self._update_tools_enabled()
-        self._load_registered_layers(result)
-        self._status_bar.showMessage("Registration completed successfully", 5000)
-        QtWidgets.QMessageBox.information(self, "VALIS", "Registration complete.")
+        main_window_workflow.on_worker_finished(self, result)
 
     def _on_worker_failed(self, message: str) -> None:
-        logger.error("Registration failed: %s", message)
-        self._status_bar.showMessage("Registration failed", 5000)
-
-        # Find log file
-        log_file = self._repo_root / "logs" / "valis_workstation.log"
-
-        # Show enhanced error dialog
-        show_error_dialog(
-            self,
-            f"Registration failed: {message}",
-            exception=None,  # We don't have the exception object here
-            log_file=log_file if log_file.exists() else None,
-        )
+        main_window_workflow.on_worker_failed(self, message)
 
     def _blink(self) -> None:
         if not self._napari_available or self._viewer is None:
@@ -1107,46 +651,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self, relative_name: str, title: str, log_label: str
     ) -> None:
         """Open a repository document in the default browser with a unified fallback."""
-        doc_path = self._repo_root / relative_name
-        if doc_path.exists():
-            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(doc_path)))
-            logger.info("Opened %s: %s", log_label, doc_path.name)
-            return
-        QtWidgets.QMessageBox.information(
-            self,
-            title,
-            f"{title} not found at {doc_path}",
-        )
+        main_window_documents.open_repo_document(self, relative_name, title, log_label)
 
     def _open_user_manual(self) -> None:
         """Open the HTML manual in the default browser."""
-        self._open_repo_document("VALIS-GUI-Manual.html", "Manual", "manual")
+        main_window_documents.open_user_manual(self)
 
     def _open_tutorial(self) -> None:
         """Open the HTML tutorial in the default browser."""
-        self._open_repo_document("VALIS-GUI-Tutorial.html", "Tutorial", "tutorial")
+        main_window_documents.open_tutorial(self)
 
     def _open_quick_start(self) -> None:
         """Open the quick start guide in default browser."""
-        self._open_repo_document("QUICK_START.md", "Quick Start", "quick start guide")
+        main_window_documents.open_quick_start(self)
 
     def _report_issue(self) -> None:
         """Open GitHub issue page."""
-        url = "https://github.com/cdgatenbee/valis-wsi/issues/new"
-        QtGui.QDesktopServices.openUrl(QtCore.QUrl(url))
-        logger.info("Opened GitHub issues page")
+        main_window_documents.report_issue(self)
 
     def _show_about(self) -> None:
         """Show About dialog."""
-        about_text = """<h2>VALIS Workstation</h2>
-<p><b>Version:</b> 1.0.0</p>
-<p><b>Description:</b> Virtual Alignment of pathology Image Series</p>
-<p>A GUI application for registering and aligning whole slide images.</p>
-<p><b>Based on:</b> VALIS library by Chris Gatenbee</p>
-<p><b>License:</b> MIT License</p>
-<p><b>GitHub:</b> <a href='https://github.com/cdgatenbee/valis-wsi'>github.com/cdgatenbee/valis-wsi</a></p>
-"""
-        QtWidgets.QMessageBox.about(self, "About VALIS Workstation", about_text)
+        main_window_documents.show_about(self)
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         """Accept drag events containing file URLs."""
