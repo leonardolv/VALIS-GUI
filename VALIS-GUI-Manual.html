@@ -204,6 +204,16 @@ hr{border:none;border-top:1px solid #e2e8f0;margin:32px 0}
 .dt-node.answer{background:#ecfdf5;border:1px solid #a7f3d0;margin-left:30px}
 .dt-node .dt-icon{font-size:1.2rem;flex-shrink:0}
 
+.decision-matrix td:first-child{white-space:nowrap;font-weight:600;color:#0f3458}
+.playbook-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:8px}
+.playbook-step{background:#f8fafc;border:1px solid #dbe4ef;border-radius:10px;padding:14px}
+.playbook-step h4{margin:0 0 6px;color:#0c4a6e;font-size:.95rem}
+.playbook-step p{font-size:.86rem;color:#334155;max-width:none;margin:0}
+.limits-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:8px}
+.limit-card{border:1px solid #dbe4ef;border-radius:10px;padding:14px;background:#f8fafc}
+.limit-card h4{margin:0 0 6px;color:#0f3458;font-size:.94rem}
+.limit-card p{font-size:.86rem;color:#334155;max-width:none;margin:0}
+
 /* ─── FOOTER ────────────────────────────────────────────────── */
 footer{text-align:center;padding:40px 20px;color:#64748b;font-size:.82rem;border-top:1px solid #e2e8f0;margin-top:48px}
 footer strong{color:#334155}
@@ -237,7 +247,7 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <h2>VALIS Workstation</h2>
-    <span class="version-badge">v1.1 Manual</span>
+    <span class="version-badge">v1.2 Manual</span>
     <a class="quick-link" href="VALIS-GUI-Tutorial.html">Open Step-by-Step Tutorial</a>
   </div>
 
@@ -277,6 +287,9 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
       <a href="#output-formats" onclick="activateTab('advanced')"><span class="nav-icon">💾</span>Output &amp; Formats</a>
       <a href="#optimization-tips" onclick="activateTab('advanced')"><span class="nav-icon">🏎️</span>Optimization Tips</a>
       <a href="#decision-trees" onclick="activateTab('advanced')"><span class="nav-icon">🌳</span>Decision Trees</a>
+      <a href="#decision-support" onclick="activateTab('advanced')"><span class="nav-icon">🧠</span>Decision Support Matrix</a>
+      <a href="#failure-recovery" onclick="activateTab('advanced')"><span class="nav-icon">🛟</span>Failure &amp; Recovery</a>
+      <a href="#known-limits" onclick="activateTab('advanced')"><span class="nav-icon">🚧</span>Known Limits</a>
       <a href="#advanced-dialogs" onclick="activateTab('advanced')"><span class="nav-icon">🧰</span>All Dialogs &amp; Tools</a>
       <a href="#config-mgmt" onclick="activateTab('advanced')"><span class="nav-icon">📋</span>Config Management</a>
       <a href="#troubleshooting" onclick="activateTab('advanced')"><span class="nav-icon">🔧</span>Troubleshooting</a>
@@ -312,7 +325,7 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
     <span class="tab-icon">🟢</span> Beginner Guide <span class="tab-count">10</span>
   </button>
   <button class="tab-btn" onclick="activateTab('advanced')" data-tab="advanced">
-    <span class="tab-icon">🟡</span> Advanced Guide <span class="tab-count">13</span>
+    <span class="tab-icon">🟡</span> Advanced Guide <span class="tab-count">16</span>
   </button>
   <button class="tab-btn" onclick="activateTab('api')" data-tab="api">
     <span class="tab-icon">🟣</span> API Reference <span class="tab-count">15</span>
@@ -328,7 +341,7 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 <div class="hero">
   <h1>VALIS Workstation</h1>
   <div class="subtitle">Professional whole-slide image registration, alignment &amp; analysis</div>
-  <span class="version">v 1.1 &nbsp;|&nbsp; Beginner-Friendly User Guide</span>
+  <span class="version">v 1.2 &nbsp;|&nbsp; Beginner-Friendly User Guide</span>
   <div class="hero-tabs">
     <a class="hero-tab-link" href="VALIS-GUI-Tutorial.html">→ Guided Tutorial</a>
     <span class="hero-tab-link" onclick="activateTab('advanced')">→ Advanced Guide</span>
@@ -1233,6 +1246,75 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 <div class="dt-node answer"><span class="dt-icon">↔️</span><div><strong>unchanged</strong> — No cropping at all.</div></div>
 </div>
 
+<!-- ─── DECISION SUPPORT MATRIX ─────────────────────────────── -->
+<span class="section-anchor" id="decision-support"></span>
+<h2>Advanced Settings Decision Support</h2>
+<hr>
+<div class="card">
+<p>Use this matrix when defaults are close but not quite enough. Start with one row, apply only those changes, then rerun and compare in Blink + Quality Report.</p>
+<table class="decision-matrix">
+  <tr><th>Scenario</th><th>Primary objective</th><th>Recommended stack</th><th>High-value toggles</th></tr>
+  <tr><td>Brightfield serial sections</td><td>Stable baseline alignment</td><td>Detector: <strong>VGG</strong> · Transform: <strong>Similarity</strong> · Non-rigid: <strong>ON</strong></td><td>Masks OFF first pass, then ON only if background noise is high</td></tr>
+  <tr><td>Challenging fluorescence</td><td>Landmark robustness</td><td>Detector: <strong>DISK</strong> or <strong>SuperPoint</strong> · Non-rigid: <strong>ON</strong></td><td>GPU ON, Denoise ON, increase max image size incrementally</td></tr>
+  <tr><td>Need fastest smoke test</td><td>Detect bad inputs quickly</td><td>Detector: <strong>ORB</strong> or <strong>BRISK</strong> · Non-rigid: <strong>OFF</strong></td><td>Max image size 1024, lower pyramid levels</td></tr>
+  <tr><td>Shear or mounting distortion</td><td>Recover global geometry</td><td>Transform: <strong>Affine</strong> + Non-rigid ON</td><td>Inspect outliers in Quality Report before full rerun</td></tr>
+  <tr><td>High precision publication output</td><td>Minimize local residual error</td><td>Detector: <strong>DISK/SuperPoint</strong> + Micro-registration</td><td>Max image size 4096+, monitor memory/performance stats</td></tr>
+  <tr><td>Annotation transfer priority</td><td>Preserve ROI geometry across slides</td><td>Similarity/Affine + Non-rigid ON</td><td>Validate warped annotations on 2-3 sentinel slides first</td></tr>
+</table>
+<div class="note"><strong>Decision rule:</strong> if runtime increases but rTRE does not improve, revert the last change and test a different detector before changing multiple knobs.</div>
+</div>
+
+<!-- ─── FAILURE AND RECOVERY ────────────────────────────────── -->
+<span class="section-anchor" id="failure-recovery"></span>
+<h2>Failure and Recovery Playbooks</h2>
+<hr>
+<div class="card">
+<p>These playbooks are optimized for minimum downtime and reproducible issue reporting.</p>
+<div class="playbook-grid">
+  <div class="playbook-step">
+    <h4>1) Registration canceled intentionally</h4>
+    <p>Use <strong>File -&gt; Resume Last Registration</strong>, confirm settings, and rerun. Partial outputs may remain, so compare timestamps in the output folder before reusing files.</p>
+  </div>
+  <div class="playbook-step">
+    <h4>2) Registration failed with error dialog</h4>
+    <p>Copy technical details, open <strong>Help -&gt; Diagnostics</strong>, then export a session bundle from <strong>Tools -&gt; Export Session Bundle...</strong> for support triage.</p>
+  </div>
+  <div class="playbook-step">
+    <h4>3) Unexpected close or crash</h4>
+    <p>Reopen the app, reload your slide folder, then use <strong>Load Configuration</strong> if available. Resume from the last known-good run context and verify <code>summary.csv</code>.</p>
+  </div>
+  <div class="playbook-step">
+    <h4>4) Out-of-memory or severe slowdown</h4>
+    <p>Lower max image size and pyramid levels, reduce cache limits in Preferences, rerun with non-rigid OFF for triage, then re-enable once baseline rigid alignment looks good.</p>
+  </div>
+  <div class="playbook-step">
+    <h4>5) Quality outliers after success</h4>
+    <p>Open <strong>Quality Report</strong>, locate worst pairs, inspect them in <strong>Blink</strong>, then rerun with one controlled change (detector or transform) rather than a full parameter reset.</p>
+  </div>
+  <div class="playbook-step">
+    <h4>6) Escalation package for maintainers</h4>
+    <p>Attach the exported session bundle, your configuration JSON, and exact reproduction steps. This provides a high-signal issue report with logs and runtime context.</p>
+  </div>
+</div>
+</div>
+
+<!-- ─── KNOWN LIMITS ────────────────────────────────────────── -->
+<span class="section-anchor" id="known-limits"></span>
+<h2>Known Limits and Pending Features</h2>
+<hr>
+<div class="card">
+<p>Status snapshot aligned to repository docs as of 2026-04-11. See <a href="README_VALIS_WORKSTATION.md">README roadmap</a> and <a href="WORKSTATION_CHANGELOG.md">workstation changelog</a> for updates.</p>
+<div class="limits-grid">
+  <div class="limit-card"><h4>Batch project processing</h4><p>Single-project interactive flow is primary today. Batch mode remains under consideration in roadmap planning.</p></div>
+  <div class="limit-card"><h4>Warp points workflow in GUI</h4><p>Annotation warping is exposed; direct point-warp workflows are not yet surfaced as a dedicated GUI action.</p></div>
+  <div class="limit-card"><h4>Non-rigid registrar selection UI</h4><p>Non-rigid registration is available, but explicit registrar-family switching is still a parity-gap candidate.</p></div>
+  <div class="limit-card"><h4>Slide deletion granularity</h4><p>Multi-select exists, while dedicated delete-selected UX remains a pending enhancement.</p></div>
+  <div class="limit-card"><h4>Persistent colormap presets</h4><p>Color controls are available; reusable named colormap preset management is still planned work.</p></div>
+  <div class="limit-card"><h4>Plugin ecosystem hooks</h4><p>Core dialogs are integrated, but a formal plugin API/system is listed as future work.</p></div>
+</div>
+<div class="warn"><strong>Operational guidance:</strong> treat these as roadmap candidates, not regressions. For critical needs, open an issue with your use case and sample data constraints.</div>
+</div>
+
 <!-- ─── ALL DIALOGS ──────────────────────────────────────────── -->
 <span class="section-anchor" id="advanced-dialogs"></span>
 <h2>All Dialogs &amp; Tools (Complete Reference)</h2>
@@ -1932,7 +2014,7 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
 
 <!-- ═══════════════════════════════════════════════════ FOOTER ═══ -->
 <footer>
-  <p><strong>VALIS Workstation — Complete User Manual</strong> — Version 1.1 (Sprint 1)</p>
+  <p><strong>VALIS Workstation — Complete User Manual</strong> — Version 1.2 (Sprint 2)</p>
   <p>Built on the <a href="https://github.com/MathOnco/valis">VALIS library</a> (Nature Communications) by Chandler Gatenbee · MIT License</p>
   <p style="margin-top:6px;font-size:.78rem">Standalone HTML document — no external dependencies required.</p>
 </footer>

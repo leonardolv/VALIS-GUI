@@ -939,6 +939,17 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
         </tr>
       </table>
 
+      <h3 style="margin-top:14px">Decision Support Quick Matrix</h3>
+      <table class="preflight">
+        <tr><th>If you see...</th><th>Change first</th><th>Then verify with...</th></tr>
+        <tr><td>Good global overlap but local drift</td><td>Enable/keep non-rigid ON and test higher max image size</td><td>Blink + outlier rows in Quality Report</td></tr>
+        <tr><td>Very long runtime on first pass</td><td>Set max image size to 1024 and temporarily disable non-rigid</td><td>Runtime drop and basic rigid overlap quality</td></tr>
+        <tr><td>Fluorescence landmarks are inconsistent</td><td>Switch to DISK or SuperPoint, enable GPU if available</td><td>Error trend in Analysis Plot</td></tr>
+        <tr><td>Shear-like mismatch after rigid stage</td><td>Try Affine transform before changing many other parameters</td><td>Pairwise visual alignment in Blink</td></tr>
+        <tr><td>Memory pressure or stutter</td><td>Reduce pyramid levels and tile cache limits in Preferences</td><td>Performance Statistics memory tab</td></tr>
+      </table>
+      <div class="note"><strong>Best practice:</strong> change one parameter group at a time and keep your previous configuration JSON so you can roll back quickly.</div>
+
       <h3 style="margin-top:14px">VALIS Modules, Features, and Functions</h3>
       <p>Use this map to connect GUI actions with VALIS internals and full function references.</p>
       <table class="preflight">
@@ -958,6 +969,42 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
 
     <section id="troubleshooting" class="section">
       <h2>10. Troubleshooting</h2>
+      <h3>Failure and Recovery Playbook</h3>
+      <ol class="timeline">
+        <li>
+          <span class="step">1</span>
+          <div>
+            <div class="label">Cancel or failure during run</div>
+            <p>Stop safely, then use <strong>File -&gt; Resume Last Registration</strong> to continue from the same context.</p>
+            <div class="outcome">You avoid re-entering all settings manually.</div>
+          </div>
+        </li>
+        <li>
+          <span class="step">2</span>
+          <div>
+            <div class="label">Capture diagnostics</div>
+            <p>Open <strong>Help -&gt; Diagnostics</strong> and review runtime/environment state before rerunning.</p>
+            <div class="outcome">You can distinguish environment issues from parameter issues.</div>
+          </div>
+        </li>
+        <li>
+          <span class="step">3</span>
+          <div>
+            <div class="label">Package evidence for support</div>
+            <p>Run <strong>Tools -&gt; Export Session Bundle...</strong> and save the current configuration JSON.</p>
+            <div class="outcome">Issue reports include logs + reproducible settings.</div>
+          </div>
+        </li>
+        <li>
+          <span class="step">4</span>
+          <div>
+            <div class="label">Recover from quality outliers</div>
+            <p>Use Quality Report to identify worst pairs, inspect in Blink, then rerun with one controlled change.</p>
+            <div class="outcome">Faster convergence than full random retuning.</div>
+          </div>
+        </li>
+      </ol>
+
       <h3>Common issues</h3>
       <table class="preflight">
         <tr>
@@ -982,6 +1029,9 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
         </tr>
       </table>
       <div class="tip"><strong>Log file:</strong> detailed diagnostics are written to <code>logs/valis_workstation.log</code>.</div>
+
+      <h3 style="margin-top:14px">Known limits and pending features</h3>
+      <div class="warn"><strong>Roadmap-aware note:</strong> batch processing mode, point-warp GUI workflow, and persistent colormap presets are still under consideration. Check <a href="README_VALIS_WORKSTATION.md">README roadmap</a> and <a href="WORKSTATION_CHANGELOG.md">changelog</a> before planning large pipeline automation around these features.</div>
     </section>
 
     <section id="final-check" class="section">
@@ -1001,7 +1051,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
     </section>
 
     <footer>
-      VALIS Workstation Tutorial v1.1 (Sprint 1) | Standalone HTML | Updated for current GUI behavior in this repository.
+      VALIS Workstation Tutorial v1.2 (Sprint 2) | Standalone HTML | Updated for current GUI behavior in this repository.
     </footer>
   </main>
 </div>
