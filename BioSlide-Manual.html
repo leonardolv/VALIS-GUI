@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BioSlide v1.1.0 — Reference Manual</title>
+<style>
+:root{
+  --bg:#f5f8fc;--surface:#fff;--ink:#0f172a;--muted:#475569;--line:#dbe4ef;
+  --brand:#007ACC;--brand-strong:#005a9e;--brand-soft:#e0f2fe;
+  --ok:#0f766e;--warn:#92400e;--danger:#991b1b;
+  --shadow:0 8px 22px rgba(2,10,26,.08);
+  --sidebar-bg:linear-gradient(160deg,#0b1c2f 0%,#10233a 55%,#15324a 100%);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Segoe UI",Inter,-apple-system,BlinkMacSystemFont,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
+
+/* LAYOUT */
+.page{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--sidebar-bg);color:#d5e4f4;border-right:1px solid #26405e;padding:14px 12px 20px;font-size:.84rem}
+.sidebar::-webkit-scrollbar{width:6px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(125,211,252,.25);border-radius:3px}
+.brand{margin-bottom:10px;border:1px solid rgba(148,184,224,.28);background:rgba(8,20,36,.55);border-radius:10px;padding:10px 12px}
+.brand h1{font-size:.98rem;margin:0 0 2px;color:#f1f7ff}
+.brand p{margin:0;font-size:.74rem;color:#9ec1e2}
+.search-box{margin:8px 0 10px;position:relative}
+.search-box input{width:100%;padding:7px 10px 7px 30px;border-radius:7px;border:1px solid rgba(148,184,224,.28);background:rgba(8,20,36,.55);color:#d5e4f4;font-size:.82rem;outline:none}
+.search-box input::placeholder{color:#7fa2c2}
+.search-box input:focus{border-color:rgba(56,189,248,.6)}
+.search-box svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:14px;height:14px;fill:none;stroke:#7fa2c2;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.search-results{max-height:280px;overflow-y:auto;margin-bottom:6px;display:none}
+.search-results a{display:block;padding:4px 8px;border-radius:5px;color:#d5e4f4;font-size:.78rem;margin-bottom:1px}
+.search-results a:hover{background:rgba(56,189,248,.18);text-decoration:none}
+.search-results .sr-match{color:#7dd3fc;font-weight:600}
+.nav-group{margin:10px 0 4px;color:#7fa2c2;font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;font-weight:700}
+.nav-link{display:block;margin-bottom:2px;padding:4px 8px;border-radius:6px;color:#d5e4f4;border:1px solid transparent;font-size:.8rem}
+.nav-link:hover{background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.28);text-decoration:none}
+.nav-link.active{background:rgba(14,165,233,.2);border-color:rgba(56,189,248,.45);color:#fff}
+.nav-link.sub{padding-left:18px;font-size:.76rem;color:#b0cde8}
+.sidebar-footer{margin-top:14px;padding:8px;border-radius:8px;border:1px solid rgba(125,211,252,.24);background:rgba(2,15,30,.55);font-size:.74rem;text-align:center}
+.sidebar-footer a{color:#7dd3fc}
+
+/* MAIN */
+.main{padding:24px 28px;max-width:1160px}
+
+/* HERO */
+.hero{border-radius:14px;overflow:hidden;background:linear-gradient(125deg,#003d66 0%,#005a9e 48%,#007ACC 100%);color:#f5fbff;box-shadow:var(--shadow);margin-bottom:20px;padding:24px 28px}
+.hero h2{margin:0 0 6px;font-size:1.8rem;line-height:1.15}
+.hero p{margin:0 0 12px;font-size:.94rem;color:rgba(245,251,255,.88);max-width:68ch}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 9px;font-size:.7rem;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.13)}
+
+/* SECTION */
+.section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow);margin-bottom:16px}
+.section h2{margin:0 0 8px;color:var(--brand-strong);font-size:1.22rem;border-bottom:2px solid var(--brand-soft);padding-bottom:6px}
+.section h3{margin:12px 0 6px;color:var(--ink);font-size:.98rem}
+.section h4{margin:10px 0 4px;color:#1e3a5f;font-size:.9rem}
+.section p{margin:0 0 8px;color:#24364b}
+.section ul,.section ol{margin:0 0 8px;padding-left:20px;color:#24364b}
+.section li{margin-bottom:3px}
+.section>p:last-child,.section>ul:last-child,.section>div:last-child{margin-bottom:0}
+
+/* GRIDS */
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* TABLES */
+.ref-table{width:100%;border-collapse:collapse;margin:8px 0;font-size:.84rem}
+.ref-table th,.ref-table td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+.ref-table th{background:#edf6ff;color:#133a62;font-weight:600;white-space:nowrap}
+.ref-table td code{font-size:.82em}
+.ref-table tr:hover td{background:#f8fbff}
+
+/* CODE */
+code,.kbd{font-family:Consolas,"Cascadia Code","SFMono-Regular",Menlo,Monaco,monospace}
+code{background:#edf4fc;border:1px solid #d9e8f8;border-radius:5px;padding:1px 5px;font-size:.84em}
+.kbd{background:#111827;color:#f8fafc;border-radius:5px;padding:2px 6px;font-size:.76rem}
+pre{margin:8px 0;padding:10px 12px;border-radius:8px;border:1px solid #1f3652;background:#0f1b2d;color:#dbeafe;overflow:auto;font-size:.82rem}
+.sc{display:inline-block;background:#1e293b;color:#e2e8f0;border-radius:4px;padding:1px 5px;font-size:.72rem;font-family:Consolas,monospace;vertical-align:middle}
+
+/* ADMONITIONS */
+.tip,.note,.warn,.danger{border-left:4px solid;border-radius:7px;padding:8px 10px;margin:10px 0;font-size:.85rem}
+.tip{background:#ecfdf5;border-color:#10b981}
+.note{background:#eff6ff;border-color:#3b82f6}
+.warn{background:#fff7ed;border-color:#f97316}
+.danger{background:#fef2f2;border-color:#ef4444}
+
+/* FIGURES */
+.figure{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#f8fbff}
+.figure .fig-inner{width:100%;display:flex;align-items:center;justify-content:center;min-height:140px;background:#0f1b2d;padding:14px}
+.figure figcaption{margin:0;padding:8px 10px;font-size:.78rem;color:#41566f;border-top:1px solid var(--line);background:#f3f8ff}
+
+.illus{display:flex;flex-direction:column;gap:5px;width:100%}
+.illus-row{display:flex;gap:5px;align-items:center}
+.illus-box{border-radius:5px;padding:6px 10px;font-size:.7rem;font-weight:600;text-align:center;color:#fff;flex:1}
+.illus-box.ib-blue{background:#007ACC}.illus-box.ib-dark{background:#333;color:#ddd}
+.illus-box.ib-teal{background:#0f766e}.illus-box.ib-green{background:#16a34a}
+.illus-box.ib-amber{background:#d97706}.illus-box.ib-purple{background:#7c3aed}
+.illus-box.ib-red{background:#dc2626}.illus-box.ib-pink{background:#db2777}
+.illus-arrow{font-size:1rem;color:#7dd3fc;text-align:center}
+.illus-group{display:flex;flex-direction:column;gap:3px;flex:1}
+.illus-label{font-size:.64rem;color:#9ec1e2;text-transform:uppercase;letter-spacing:.06em;text-align:center}
+
+/* UI MAP */
+.ui-map{width:100%;border-radius:7px;background:#1e1e1e;padding:8px;display:grid;grid-template-rows:24px 1fr 20px;gap:3px;font-family:Consolas,"Cascadia Code",monospace;font-size:.64rem;color:#ccc;min-height:200px}
+.ui-map .um-menubar{background:#333;border-radius:3px;display:flex;align-items:center;padding:0 6px;gap:10px}
+.ui-map .um-menubar span{color:#9cdcfe;font-size:.62rem}
+.ui-map .um-body{display:grid;grid-template-columns:42px 1fr 160px;gap:3px}
+.ui-map .um-toolbar{background:#252526;border-radius:3px;display:flex;flex-direction:column;align-items:center;padding:4px 2px;gap:3px}
+.ui-map .um-tool{width:24px;height:24px;border-radius:3px;background:#3e3e42;display:flex;align-items:center;justify-content:center;font-size:.62rem;color:#7dd3fc}
+.ui-map .um-tool.active{background:#007ACC;color:#fff}
+.ui-map .um-canvas{background:#0d1117;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#475569;position:relative}
+.ui-map .um-canvas .tab-bar{position:absolute;top:0;left:0;right:0;display:flex;background:#252526;border-radius:3px 3px 0 0;height:22px;align-items:center;gap:1px;padding:0 3px}
+.ui-map .um-canvas .tab-bar span{padding:3px 7px;border-radius:3px 3px 0 0;font-size:.58rem;color:#999}
+.ui-map .um-canvas .tab-bar span.active{background:#1e1e1e;color:#fff}
+.ui-map .um-side{display:flex;flex-direction:column;gap:3px}
+.ui-map .um-panel{background:#252526;border-radius:3px;flex:1;padding:5px}
+.ui-map .um-panel .um-pt{color:#569cd6;font-size:.6rem;font-weight:700;margin-bottom:3px}
+.ui-map .um-panel .um-row{display:flex;align-items:center;gap:3px;margin-bottom:2px}
+.ui-map .um-panel .um-swatch{width:7px;height:7px;border-radius:2px}
+.ui-map .um-panel .um-bar{height:3px;border-radius:2px;flex:1;background:#3e3e42}
+.ui-map .um-statusbar{background:#007ACC;border-radius:3px;display:flex;align-items:center;padding:0 6px;gap:10px;color:#fff;font-size:.58rem}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card h4{margin:0 0 4px;color:var(--brand-strong);font-size:.88rem}
+.card p{margin:0;font-size:.82rem;color:var(--muted)}
+
+/* DIALOG PREVIEW */
+.dialog-mock{border:1px solid #444;border-radius:8px;overflow:hidden;background:#2d2d30;color:#ccc;font-family:"Segoe UI",sans-serif;font-size:.78rem}
+.dialog-mock .dm-title{background:#333;padding:6px 10px;font-weight:600;color:#fff;display:flex;align-items:center;gap:6px}
+.dialog-mock .dm-title .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dialog-mock .dm-body{padding:10px;display:flex;flex-direction:column;gap:4px}
+.dialog-mock .dm-row{display:flex;gap:6px;align-items:center}
+.dialog-mock .dm-label{color:#9ec1e2;min-width:80px;font-size:.72rem}
+.dialog-mock .dm-input{flex:1;background:#3e3e42;border:1px solid #555;border-radius:4px;padding:3px 6px;color:#fff;font-size:.72rem}
+.dialog-mock .dm-btn{background:#007ACC;color:#fff;border:none;border-radius:4px;padding:4px 12px;font-size:.72rem;cursor:pointer}
+.dialog-mock .dm-btn.secondary{background:#3e3e42;color:#ccc}
+
+/* ACCORDION */
+details{margin:6px 0;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+details summary{padding:8px 12px;background:#f3f8ff;cursor:pointer;font-weight:600;font-size:.88rem;color:var(--brand-strong);user-select:none}
+details summary:hover{background:#e8f2ff}
+details[open] summary{border-bottom:1px solid var(--line)}
+details .detail-body{padding:10px 12px}
+
+footer{text-align:center;color:#50657d;font-size:.82rem;padding:12px}
+
+/* FEATURE STATUS */
+.status{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.66rem;font-weight:600;vertical-align:middle}
+.status-ok{background:#d1fae5;color:#065f46}
+.status-beta{background:#fef3c7;color:#92400e}
+.status-stub{background:#fee2e2;color:#991b1b}
+
+/* RESPONSIVE */
+@media(max-width:1080px){
+  .page{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid #26405e}
+}
+@media(max-width:780px){
+  .main{padding:12px}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+  .hero h2{font-size:1.5rem}
+}
+@media print{
+  .sidebar{display:none}
+  .page{grid-template-columns:1fr}
+  .section{break-inside:avoid;box-shadow:none;border:1px solid #ccc}
+  .hero{background:#005a9e!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+/* TRANSITIONS */
+.section{transition:transform .22s cubic-bezier(.25,.46,.45,.94),box-shadow .22s ease}
+.section:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(0,60,120,.1)}
+.card{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,122,204,.12);border-color:var(--brand)}
+.figure{transition:transform .25s ease,box-shadow .25s ease}
+.figure:hover{transform:scale(1.012);box-shadow:0 10px 30px rgba(0,122,204,.15)}
+.badge{transition:background .2s ease,transform .15s ease}
+.badge:hover{background:rgba(255,255,255,.28);transform:scale(1.06)}
+.ref-table tr{transition:background .15s ease}
+.ref-table tbody tr:hover td{background:#e0f0ff}
+pre{transition:border-color .2s ease,box-shadow .2s ease}
+pre:hover{border-color:#38bdf8;box-shadow:0 0 20px rgba(56,189,248,.12)}
+.tip,.note,.warn,.danger{transition:transform .15s ease,box-shadow .15s ease}
+.tip:hover,.note:hover,.warn:hover,.danger:hover{transform:translateX(4px);box-shadow:2px 2px 12px rgba(0,0,0,.06)}
+details summary{transition:background .15s ease}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ═══════════════════  SIDEBAR  ═══════════════════ -->
+<nav class="sidebar" id="sidebar">
+<div class="brand">
+  <h1>BioSlide Manual</h1>
+  <p>v1.1.0 &mdash; Complete Reference</p>
+</div>
+
+<div class="search-box">
+  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+  <input type="text" id="searchInput" placeholder="Search manual&hellip;">
+</div>
+<div class="search-results" id="searchResults"></div>
+
+<div class="nav-group">Getting Started</div>
+<a class="nav-link" href="#introduction">Introduction</a>
+<a class="nav-link" href="#installation">Installation</a>
+<a class="nav-link" href="#quickstart">Quick Start</a>
+
+<div class="nav-group">User Interface</div>
+<a class="nav-link" href="#launcher">Launcher Dashboard</a>
+<a class="nav-link" href="#main-window">Main Window</a>
+<a class="nav-link sub" href="#menus">Menu Bar</a>
+<a class="nav-link sub" href="#toolbar">Toolbar</a>
+<a class="nav-link sub" href="#dock-panels">Dock Panels</a>
+
+<div class="nav-group">Core Tabs</div>
+<a class="nav-link" href="#preview-tab">Preview</a>
+<a class="nav-link" href="#segmentation-tab">Segmentation</a>
+<a class="nav-link" href="#statistics-tab">Statistics</a>
+<a class="nav-link" href="#collage-tab">Collage Builder</a>
+<a class="nav-link" href="#animation-tab">Animation Studio</a>
+<a class="nav-link" href="#reconstruction-tab">3D Reconstruction</a>
+
+<div class="nav-group">Detailed Reference</div>
+<a class="nav-link" href="#segmentation-tools">Segmentation Tools</a>
+<a class="nav-link" href="#segmentation-refinement">Segmentation Refinement</a>
+<a class="nav-link" href="#export-system">Export System</a>
+<a class="nav-link" href="#measurements">Measurements</a>
+<a class="nav-link" href="#batch-processing">Batch Processing</a>
+<a class="nav-link" href="#project-management">Project Management</a>
+
+<div class="nav-group">Advanced</div>
+<a class="nav-link" href="#gpu">GPU Acceleration</a>
+<a class="nav-link" href="#themes">Themes &amp; Customization</a>
+<a class="nav-link" href="#dialogs">Dialogs Reference</a>
+<a class="nav-link" href="#shortcuts">Keyboard Shortcuts</a>
+<a class="nav-link" href="#formats">File Formats</a>
+
+<div class="nav-group">Appendices</div>
+<a class="nav-link" href="#architecture">Architecture</a>
+<a class="nav-link" href="#troubleshooting">Troubleshooting</a>
+<a class="nav-link" href="#glossary">Glossary</a>
+<a class="nav-link" href="#faq">FAQ</a>
+<a class="nav-link" href="#changelog">Changelog</a>
+
+<div class="sidebar-footer">
+  <a href="BioSlide-Tutorial.html">Open Tutorial &rarr;</a>
+</div>
+</nav>
+
+<!-- ═══════════════════  MAIN CONTENT  ═══════════════════ -->
+<main class="main">
+
+<!-- ─── HERO ─── -->
+<header class="hero" id="top">
+  <h2>BioSlide v1.1.0 &mdash; Reference Manual</h2>
+  <p>Complete technical reference for the Histology Slice Segmenter &amp; Exporter. Covers every feature, dialog, keyboard shortcut, and configuration option in the application.</p>
+  <div class="badges">
+    <span class="badge">PySide6 / Qt 6</span>
+    <span class="badge">OpenCV</span>
+    <span class="badge">OpenSlide</span>
+    <span class="badge">PyVista / VTK</span>
+    <span class="badge">Python 3.10+</span>
+    <span class="badge">CUDA Optional</span>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════
+     1. INTRODUCTION
+     ════════════════════════════════════════ -->
+<section class="section" id="introduction" data-search="introduction overview capabilities key features histology analysis suite">
+<h2>1 &nbsp; Introduction</h2>
+
+<h3>1.1 &nbsp; What Is BioSlide?</h3>
+<p>BioSlide is a professional desktop application for whole-slide image (WSI) analysis. Built for researchers, pathologists, and students working with digitized tissue specimens, it provides an end-to-end pipeline from slide import through segmentation, measurement, export, collage composition, camera animation, and 3D serial-section reconstruction.</p>
+
+<h3>1.2 &nbsp; Key Capabilities</h3>
+<div class="grid-4">
+  <div class="card"><h4>WSI Viewing</h4><p>Tiled viewer with multi-level pyramid zoom, pan, and LRU tile cache for .ndpi, .svs, .mrxs, .tif, .tiff</p></div>
+  <div class="card"><h4>Segmentation</h4><p>Automatic (Otsu, dual-space, adaptive) and manual (Magic Wand, Lasso, Eraser, Smart Brush) tissue detection</p></div>
+  <div class="card"><h4>Export</h4><p>PNG, JPEG, TIFF, PDF with feathered alpha, metadata embedding, batch queue with pause/resume/cancel</p></div>
+  <div class="card"><h4>Collage</h4><p>Drag-and-drop grid builder with templates, dividers, labels, and publication-ready PDF export</p></div>
+  <div class="card"><h4>Animation</h4><p>Camera keyframes, ROI system, easing curves, branding overlays, MP4/GIF/MOV/PNG sequence export</p></div>
+  <div class="card"><h4>3D Reconstruction</h4><p>Serial-section alignment (ORB/SIFT/AKAZE), textured stack rendering, fly-through video via PyVista/VTK</p></div>
+  <div class="card"><h4>Measurements</h4><p>Distance, area, perimeter, angle &mdash; calibrated in &micro;m/mm via slide MPP metadata</p></div>
+  <div class="card"><h4>Project System</h4><p>.hssp JSON projects with autosave, crash recovery, undo/redo stack, and export profiles</p></div>
+</div>
+
+<h3>1.3 &nbsp; Technology Stack</h3>
+<table class="ref-table">
+<thead><tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td>GUI Framework</td><td>PySide6 (Qt 6)</td><td>Desktop application, widgets, signals/slots</td></tr>
+<tr><td>WSI Backend</td><td>OpenSlide + tifffile</td><td>Multi-vendor slide reading (.ndpi, .svs, .mrxs, .tif)</td></tr>
+<tr><td>Image Processing</td><td>OpenCV, NumPy, Pillow</td><td>Segmentation, morphology, scale bar rendering</td></tr>
+<tr><td>3D Visualization</td><td>PyVista + VTK</td><td>3D stack rendering, camera animations</td></tr>
+<tr><td>Data Models</td><td>Pydantic</td><td>Validated project, slide, mask, and animation models</td></tr>
+<tr><td>GPU Acceleration</td><td>CUDA (via OpenCV)</td><td>Optional GPU-accelerated resize, threshold, filter</td></tr>
+</tbody>
+</table>
+
+<h3>1.4 &nbsp; Workflow Overview</h3>
+<div class="figure">
+<div class="fig-inner">
+  <div class="illus">
+    <div class="illus-row">
+      <div class="illus-box ib-blue">Import WSI</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-teal">Preview &amp; Navigate</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-green">Segment Tissue</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-amber">Refine Edges</div>
+    </div>
+    <div class="illus-row">
+      <div class="illus-box ib-purple">Measure</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-red">Export / Collage</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-blue">Animate</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-teal">3D Reconstruct</div>
+    </div>
+  </div>
+</div>
+<figcaption>Full BioSlide pipeline: Import &rarr; Preview &rarr; Segment &rarr; Refine &rarr; Measure &rarr; Export &rarr; Animate &rarr; 3D</figcaption>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     2. INSTALLATION
+     ════════════════════════════════════════ -->
+<section class="section" id="installation" data-search="install setup requirements python pip openslide cuda gpu virtual environment">
+<h2>2 &nbsp; Installation</h2>
+
+<h3>2.1 &nbsp; System Requirements</h3>
+<table class="ref-table">
+<thead><tr><th>Component</th><th>Minimum</th><th>Recommended</th></tr></thead>
+<tbody>
+<tr><td>Operating System</td><td>Windows 10 64-bit</td><td>Windows 11</td></tr>
+<tr><td>Python</td><td>3.10</td><td>3.12+</td></tr>
+<tr><td>RAM</td><td>8 GB</td><td>16 GB+</td></tr>
+<tr><td>Disk</td><td>2 GB free</td><td>10 GB+ (for WSI files)</td></tr>
+<tr><td>GPU (optional)</td><td>CUDA-capable NVIDIA</td><td>NVIDIA with 4 GB+ VRAM</td></tr>
+<tr><td>OpenSlide</td><td>Required for .ndpi/.svs/.mrxs</td><td>Installed via <code>openslide-bin</code></td></tr>
+</tbody>
+</table>
+
+<h3>2.2 &nbsp; Step-by-Step Setup</h3>
+<details>
+  <summary>Step 1 &mdash; Clone the Repository</summary>
+  <div class="detail-body">
+    <pre>git clone https://github.com/your-org/BioSlide.git
+cd BioSlide</pre>
+  </div>
+</details>
+<details>
+  <summary>Step 2 &mdash; Create a Virtual Environment</summary>
+  <div class="detail-body">
+    <pre>python -m venv .venv
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # macOS / Linux</pre>
+  </div>
+</details>
+<details>
+  <summary>Step 3 &mdash; Install Dependencies</summary>
+  <div class="detail-body">
+    <pre>pip install -r requirements.txt</pre>
+    <p>Installs PySide6, OpenCV, OpenSlide bindings, PyVista, Pydantic, and all processing libraries.</p>
+  </div>
+</details>
+<details>
+  <summary>Step 4 &mdash; Install OpenSlide (Windows)</summary>
+  <div class="detail-body">
+    <pre>pip install openslide-bin</pre>
+    <p>BioSlide automatically adds the OpenSlide DLL directory at startup via <code>os.add_dll_directory()</code>. On Linux/macOS, install OpenSlide via your system package manager.</p>
+  </div>
+</details>
+<details>
+  <summary>Step 5 &mdash; (Optional) CUDA GPU Acceleration</summary>
+  <div class="detail-body">
+    <p>To enable GPU-accelerated image operations, install a CUDA-enabled build of OpenCV:</p>
+    <pre>pip install opencv-contrib-python-headless   # CPU-only (default)
+# Build/install OpenCV with CUDA for GPU acceleration</pre>
+    <p>BioSlide's <code>GPUAccelerator</code> auto-detects CUDA and falls back to CPU gracefully.</p>
+  </div>
+</details>
+<details>
+  <summary>Step 6 &mdash; Launch BioSlide</summary>
+  <div class="detail-body">
+    <pre>python main.py</pre>
+    <p>A branded splash screen appears, followed by the Launcher Dashboard.</p>
+  </div>
+</details>
+
+<div class="note"><strong>Note:</strong> BioSlide applies GPU runtime preferences (NVIDIA Optimus, AMD PowerXpress) automatically on Windows. Desktop OpenGL is preferred for Qt/VTK rendering via environment variables set at startup.</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     3. QUICK START
+     ════════════════════════════════════════ -->
+<section class="section" id="quickstart" data-search="quick start workflow pipeline first project eight steps">
+<h2>3 &nbsp; Quick Start</h2>
+<p>Go from raw slide to exported results in eight steps:</p>
+
+<ol>
+  <li><strong>Launch BioSlide</strong> &mdash; Run <code>python main.py</code>. The Launcher Dashboard appears with feature cards and recent projects.</li>
+  <li><strong>Create a project</strong> &mdash; Click <em>New Project</em> or press <span class="sc">Ctrl+N</span>. Choose a project name and save location.</li>
+  <li><strong>Import slides</strong> &mdash; Click <em>Import Slides</em> or press <span class="sc">Ctrl+I</span>. Select .ndpi, .svs, .mrxs, or .tif files.</li>
+  <li><strong>Preview</strong> &mdash; Open the <em>Preview</em> tab. Pan (click-drag), zoom (scroll wheel &mdash; centers at cursor), switch between single and grid view.</li>
+  <li><strong>Segment</strong> &mdash; Switch to the <em>Segmentation</em> tab. Click <em>Auto Segment</em> for automatic tissue detection, or use manual tools (Magic Wand, Lasso, Eraser).</li>
+  <li><strong>Refine</strong> &mdash; Right-click a slice and choose <em>Refine Segmentation</em> for interactive GrabCut-based boundary refinement. Merge or split slices as needed.</li>
+  <li><strong>Measure</strong> &mdash; Open the <em>Measurement Panel</em> to draw rulers, measure area, perimeter, or angles on segmented tissue.</li>
+  <li><strong>Export</strong> &mdash; Press <span class="sc">Ctrl+E</span> or click <em>Export</em>. Choose a format, select an export profile, and set the output directory.</li>
+</ol>
+
+<div class="tip"><strong>Tip:</strong> Save your project frequently with <span class="sc">Ctrl+S</span>. Autosave runs every 5 minutes by default. After a crash, BioSlide offers to restore your last autosaved state.</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     4. LAUNCHER DASHBOARD
+     ════════════════════════════════════════ -->
+<section class="section" id="launcher" data-search="launcher dashboard hub feature cards recent projects search top bar responsive">
+<h2>4 &nbsp; Launcher Dashboard</h2>
+<p>BioSlide opens with a modern hub-style Launcher Dashboard&mdash;the central entry point for all workflows. The layout adapts responsively (3-column &rarr; 2-column &rarr; 1-column) as the window resizes.</p>
+
+<h3>4.1 &nbsp; Top Bar</h3>
+<p>Contains the application logo, title (&ldquo;BioSlide&rdquo;), and a global search field. Type to filter features, actions, or documentation topics.</p>
+
+<h3>4.2 &nbsp; Feature Cards</h3>
+<p>Six cards provide one-click access to the core workflows:</p>
+<div class="grid-3">
+  <div class="card"><h4>Import Slides</h4><p>Open the import dialog to load WSI files (.ndpi, .svs, .mrxs, .tif, .tiff)</p></div>
+  <div class="card"><h4>Segmentation</h4><p>Navigate to the Segmentation tab for automatic or manual tissue detection</p></div>
+  <div class="card"><h4>Preview</h4><p>Browse loaded slides in single or grid view with full zoom/pan</p></div>
+  <div class="card"><h4>Animation</h4><p>Create camera-animated presentations from WSI regions of interest</p></div>
+  <div class="card"><h4>Collage Builder</h4><p>Compose publication-ready collages from segmented tissue slices</p></div>
+  <div class="card"><h4>3D Reconstruction</h4><p>Build pseudo-3D volumes from serial histological sections</p></div>
+</div>
+
+<h3>4.3 &nbsp; Quick Actions</h3>
+<p>Buttons for common operations: <em>New Project</em>, <em>Open Project</em>, <em>Settings</em>, and <em>Help</em>.</p>
+
+<h3>4.4 &nbsp; Recent Projects</h3>
+<p>Lists recently opened <code>.hssp</code> project files with timestamps. Click any item to reopen immediately. The list persists across sessions via <code>QSettings</code>.</p>
+
+<div class="note"><strong>Note:</strong> Each feature card opens either a dedicated Feature Window (standalone, themed window matching the launcher aesthetic) or navigates to the corresponding tab within the Main Window.</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     5. MAIN WINDOW
+     ════════════════════════════════════════ -->
+<section class="section" id="main-window" data-search="main window layout ui overview menu toolbar status bar tabs">
+<h2>5 &nbsp; Main Window</h2>
+
+<div class="figure">
+<div class="fig-inner">
+  <div class="ui-map">
+    <div class="um-menubar">
+      <span>File</span><span>Edit</span><span>View</span><span>Segmentation</span><span>Export</span><span>Tools</span><span>Debug</span><span>Help</span>
+    </div>
+    <div class="um-body">
+      <div class="um-toolbar">
+        <div class="um-tool">&#9654;</div>
+        <div class="um-tool">&#128193;</div>
+        <div class="um-tool">&#128190;</div>
+        <div class="um-tool active">&#128269;</div>
+        <div class="um-tool">&#128228;</div>
+      </div>
+      <div class="um-canvas">
+        <div class="tab-bar">
+          <span class="active">Preview</span>
+          <span>Segmentation</span>
+          <span>Statistics</span>
+          <span>Collage</span>
+          <span>Animation</span>
+          <span>3D Recon</span>
+        </div>
+        WSI Canvas / Tab Content
+      </div>
+      <div class="um-side">
+        <div class="um-panel"><div class="um-pt">Properties</div><div class="um-row"><div class="um-swatch" style="background:#007ACC"></div><div class="um-bar"></div></div><div class="um-row"><div class="um-swatch" style="background:#16a34a"></div><div class="um-bar"></div></div></div>
+        <div class="um-panel"><div class="um-pt">Log Panel</div><div class="um-row"><div class="um-bar" style="width:80%"></div></div><div class="um-row"><div class="um-bar" style="width:60%"></div></div></div>
+        <div class="um-panel"><div class="um-pt">Measurements</div><div class="um-row"><div class="um-bar" style="width:70%"></div></div></div>
+      </div>
+    </div>
+    <div class="um-statusbar"><span>Ready</span><span>Zoom: 100%</span><span>GPU: &#10003;</span></div>
+  </div>
+</div>
+<figcaption>Main Window layout: Menu Bar &rarr; Toolbar | Tab Content | Dock Panels &rarr; Status Bar</figcaption>
+</div>
+
+<h3 id="menus">5.1 &nbsp; Menu Bar</h3>
+<table class="ref-table">
+<thead><tr><th>Menu</th><th>Key Items</th></tr></thead>
+<tbody>
+<tr><td><strong>File</strong></td><td>New Project <span class="sc">Ctrl+N</span>, Open <span class="sc">Ctrl+O</span>, Recent Projects, Save <span class="sc">Ctrl+S</span>, Save As <span class="sc">Ctrl+Shift+S</span>, Import Slides <span class="sc">Ctrl+I</span>, Export <span class="sc">Ctrl+E</span>, Quit</td></tr>
+<tr><td><strong>Edit</strong></td><td>Undo <span class="sc">Ctrl+Z</span>, Redo <span class="sc">Ctrl+Y</span>, Preferences <span class="sc">Ctrl+,</span></td></tr>
+<tr><td><strong>View</strong></td><td>Zoom In <span class="sc">Ctrl++</span>, Zoom Out <span class="sc">Ctrl+&minus;</span>, Reset Zoom <span class="sc">Ctrl+0</span>, Toggle Log Panel <span class="sc">Ctrl+L</span></td></tr>
+<tr><td><strong>Segmentation</strong></td><td>Auto Segment Current Slide, Batch Segment All Slides</td></tr>
+<tr><td><strong>Export</strong></td><td>Export Slices, Export Collage, Manage Profiles</td></tr>
+<tr><td><strong>Tools</strong></td><td>Toggle Measurements Panel</td></tr>
+<tr><td><strong>Debug</strong></td><td>Debug Mode, Memory Monitor, System Information, Open Log File, View Error Report, Clear Log Panel</td></tr>
+<tr><td><strong>Help</strong></td><td>Tutorial <span class="sc">F1</span>, Keyboard Shortcuts, About</td></tr>
+</tbody>
+</table>
+
+<h3 id="toolbar">5.2 &nbsp; Toolbar</h3>
+<p>Horizontal toolbar organized into labeled groups:</p>
+<table class="ref-table">
+<thead><tr><th>Group</th><th>Actions</th></tr></thead>
+<tbody>
+<tr><td>Start</td><td>Welcome dialog (guided first-run experience)</td></tr>
+<tr><td>File</td><td>New, Open, Save, Import</td></tr>
+<tr><td>Edit</td><td>Undo, Redo</td></tr>
+<tr><td>View</td><td>Zoom In, Zoom Out, Fit to Window, Region Zoom (rectangle-select to zoom)</td></tr>
+<tr><td>Export</td><td>Export button (opens export dialog)</td></tr>
+</tbody>
+</table>
+
+<h3>5.3 &nbsp; Tab Bar</h3>
+<p>Six tabs organize the core workflows:</p>
+<ol>
+  <li><strong>Preview</strong> &mdash; Slide browsing, viewing, and panel export</li>
+  <li><strong>Segmentation</strong> &mdash; Automatic and manual tissue segmentation</li>
+  <li><strong>Statistics</strong> &mdash; Descriptive statistics and CSV export</li>
+  <li><strong>Collage</strong> &mdash; Grid-based collage composition</li>
+  <li><strong>Animation</strong> &mdash; Camera keyframe animation studio</li>
+  <li><strong>3D Reconstruction</strong> &mdash; Serial section 3D volume builder</li>
+</ol>
+
+<h3 id="dock-panels">5.4 &nbsp; Dock Panels</h3>
+<p>Three dockable, resizable panels on the right side:</p>
+<table class="ref-table">
+<thead><tr><th>Panel</th><th>Purpose</th><th>Toggle</th></tr></thead>
+<tbody>
+<tr><td><strong>Property Panel</strong></td><td>Context-sensitive</td><td>Always visible</td></tr>
+<tr><td><strong>Log Panel</strong></td><td>Real-time log with severity filtering (DEBUG, INFO, WARNING, ERROR, CRITICAL), clear/copy/save, auto-scroll</td><td><span class="sc">Ctrl+L</span></td></tr>
+<tr><td><strong>Measurement Panel</strong></td><td>Current measurements list, add/remove, statistics summary</td><td>Tools &rarr; Measurements</td></tr>
+</tbody>
+</table>
+
+<h3>5.5 &nbsp; Status Bar</h3>
+<p>Displays: current status, zoom level, GPU availability indicator, and slide metadata summary.</p>
+</section>
+
+<!-- ════════════════════════════════════════
+     6. PREVIEW TAB
+     ════════════════════════════════════════ -->
+<section class="section" id="preview-tab" data-search="preview tab tile view zoom pan grid single slide info thumbnails panel export ROI view modes">
+<h2>6 &nbsp; Preview Tab</h2>
+
+<h3>6.1 &nbsp; File List</h3>
+<p>Left panel showing all imported slides. Supports multi-selection, add/remove/reorder. Click a slide to load it in the viewer.</p>
+
+<h3>6.2 &nbsp; Tile Viewer (TileView)</h3>
+<p>The central viewer renders WSI slides using a tiled architecture with a <code>QGraphicsView</code>:</p>
+<ul>
+  <li><strong>Zoom</strong> &mdash; Scroll wheel (zoom centers at cursor position)</li>
+  <li><strong>Pan</strong> &mdash; Click and drag to pan the view</li>
+  <li><strong>Tiled loading</strong> &mdash; Tiles loaded on demand via <code>QThreadPool</code> with an LRU tile cache for performance</li>
+  <li><strong>Pyramid levels</strong> &mdash; Seamless multi-resolution display from the WSI file</li>
+</ul>
+
+<h3>6.3 &nbsp; View Modes</h3>
+<ul>
+  <li><strong>Single view</strong> &mdash; Full-size display of the selected slide</li>
+  <li><strong>Grid view</strong> &mdash; Thumbnail overview of all loaded slides with disk-based thumbnail cache</li>
+</ul>
+
+<h3>6.4 &nbsp; Slide Information</h3>
+<p>Displays slide metadata: pixel dimensions, microns per pixel (MPP), vendor name, file path, and format.</p>
+
+<h3>6.5 &nbsp; ROI Selection</h3>
+<p>Draw a rectangular region of interest for targeted export or further analysis.</p>
+
+<h3>6.6 &nbsp; Panel Export</h3>
+<p>Split a WSI region into printable panels via the Panel Export Dialog. Configure rows, columns, paper dimensions (inches/cm), DPI (72&ndash;1200), resolution level, and output format. Each panel includes a JSON sidecar with source coordinates.</p>
+</section>
+
+<!-- ════════════════════════════════════════
+     7. SEGMENTATION TAB
+     ════════════════════════════════════════ -->
+<section class="section" id="segmentation-tab" data-search="segmentation tab auto segment manual magic wand lasso eraser merge split threshold tissue detection algorithms pipeline">
+<h2>7 &nbsp; Segmentation Tab</h2>
+<p>The most feature-rich tab, providing both automatic and manual segmentation workflows.</p>
+
+<h3>7.1 &nbsp; Automatic Segmentation</h3>
+<p>Click <em>Auto Segment</em> to run the automatic tissue detection pipeline on a downsampled version of the slide:</p>
+
+<div class="figure">
+<div class="fig-inner">
+  <div class="illus">
+    <div class="illus-row">
+      <div class="illus-box ib-blue">Load Image</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-teal">Dual-Space Detection</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-green">Morphology</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-amber">Hemisphere Bridge</div>
+    </div>
+    <div class="illus-row">
+      <div class="illus-box ib-purple">White Matter Exclusion</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-red">Contour Extraction</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-blue">Mask Creation</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-teal">Slice IDs</div>
+    </div>
+  </div>
+</div>
+<figcaption>Automatic segmentation pipeline: dual-space tissue detection &rarr; morphology &rarr; hemisphere bridging &rarr; white matter exclusion &rarr; contour extraction</figcaption>
+</div>
+
+<h4>Segmentation Algorithms</h4>
+<table class="ref-table">
+<thead><tr><th>Algorithm</th><th>Description</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><strong>Otsu Thresholding</strong></td><td>Global threshold via Otsu&rsquo;s method on grayscale image</td><td><span class="status status-ok">Implemented</span></td></tr>
+<tr><td><strong>Dual-Space Tissue Detection</strong></td><td>Combines HSV and Lab color-space masks for robust tissue/background separation with adaptive paper-white estimation</td><td><span class="status status-ok">Implemented</span></td></tr>
+<tr><td><strong>Adaptive Thresholding</strong></td><td>Block-based local threshold for handling uneven illumination</td><td><span class="status status-ok">Implemented</span></td></tr>
+<tr><td><strong>Hemisphere Bridging</strong></td><td>Row-safe horizontal morphological closing to merge bilateral brain hemispheres without cross-row fusion; includes fissure exclusion logic</td><td><span class="status status-ok">Implemented</span></td></tr>
+<tr><td><strong>White Matter Exclusion</strong></td><td>Detects and suppresses pale tissue regions (gray &gt; 220) alongside paper-white pixels</td><td><span class="status status-ok">Implemented</span></td></tr>
+<tr><td><strong>H&amp;E Smart Segment</strong></td><td>Simplified optical-density thresholding for H&amp;E stained sections</td><td><span class="status status-beta">Beta</span></td></tr>
+<tr><td><strong>AI-Assisted</strong></td><td>Machine learning segmentation placeholder &mdash; currently uses Otsu as a fallback; a trained model will be integrated in a future release</td><td><span class="status status-stub">Stub</span></td></tr>
+</tbody>
+</table>
+
+<h4>Configurable Parameters</h4>
+<ul>
+  <li><strong>Minimum area</strong> &mdash; Discard segments smaller than this threshold (pixels)</li>
+  <li><strong>Morphology kernel</strong> &mdash; Size of structuring element for open/close operations</li>
+  <li><strong>RG tolerance</strong> &mdash; Red&ndash;green channel difference tolerance for tissue detection</li>
+</ul>
+
+<h3>7.2 &nbsp; Manual Segmentation Tools</h3>
+<table class="ref-table">
+<thead><tr><th>Tool</th><th>Shortcut</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>Magic Wand</td><td><span class="sc">W</span></td><td>Flood-fill region growing with adjustable tolerance (0&ndash;255)</td></tr>
+<tr><td>Lasso</td><td><span class="sc">L</span></td><td>Freehand polygon &mdash; auto-closes to create a mask</td></tr>
+<tr><td>Eraser</td><td><span class="sc">E</span></td><td>Brush, path, or polygon erasure modes</td></tr>
+<tr><td>Merge</td><td><span class="sc">Ctrl+M</span></td><td>Combine 2+ selected slices into one mask</td></tr>
+<tr><td>Split</td><td><span class="sc">Ctrl+Shift+S</span></td><td>Separate connected components into individual masks</td></tr>
+</tbody>
+</table>
+
+<h3>7.3 &nbsp; Slice List</h3>
+<p>Right-side panel with thumbnails, IDs, and color-coded overlays. Click to center view; right-click for context menu (Rename, Delete, Merge, Split, Refine, Export). Sequential numbering auto-updates after edits.</p>
+
+<h3>7.4 &nbsp; Background Processing</h3>
+<p>Auto-segmentation runs in a <code>QThreadPool</code> worker (<code>AutoSegmentWorker</code>) to keep the UI responsive. Progress updates appear in the status bar.</p>
+</section>
+
+<!-- ════════════════════════════════════════
+     8. STATISTICS TAB
+     ════════════════════════════════════════ -->
+<section class="section" id="statistics-tab" data-search="statistics tab descriptive stats csv export mean median std variance quartiles distribution histogram">
+<h2>8 &nbsp; Statistics Tab</h2>
+<p>Summary and analysis of all measurements and per-slice metrics.</p>
+
+<h3>8.1 &nbsp; Summary Section</h3>
+<p>Overview of total measurements, measurement types, and slides analyzed.</p>
+
+<h3>8.2 &nbsp; Descriptive Statistics</h3>
+<table class="ref-table">
+<thead><tr><th>Statistic</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>Count</td><td>Number of measurements</td></tr>
+<tr><td>Mean / Median</td><td>Central tendency measures</td></tr>
+<tr><td>Std Dev / Variance</td><td>Dispersion measures</td></tr>
+<tr><td>Min / Max / Range</td><td>Extreme values</td></tr>
+<tr><td>Q25 / Q75</td><td>Quartiles</td></tr>
+<tr><td>CV</td><td>Coefficient of Variation</td></tr>
+<tr><td>Skewness / Kurtosis</td><td>Distribution shape</td></tr>
+<tr><td>Mode</td><td>Most frequent value</td></tr>
+</tbody>
+</table>
+
+<h3>8.3 &nbsp; Distribution Analysis</h3>
+<p>Histogram-based visualization with computed skewness, kurtosis, and mode via the <code>StatisticsAnalyzer</code> engine.</p>
+
+<h3>8.4 &nbsp; CSV Export</h3>
+<p>Export all statistics to a comma-separated file for use in Excel, R, or Python/pandas.</p>
+</section>
+
+<!-- ════════════════════════════════════════
+     9. COLLAGE BUILDER TAB
+     ════════════════════════════════════════ -->
+<section class="section" id="collage-tab" data-search="collage builder tab grid template drag drop labels dividers export pdf png jpeg custom">
+<h2>9 &nbsp; Collage Builder Tab</h2>
+<p>Compose publication-ready image collages from segmented tissue slices.</p>
+
+<h3>9.1 &nbsp; Grid Templates</h3>
+<table class="ref-table">
+<thead><tr><th>Template</th><th>Grid</th><th>Use Case</th></tr></thead>
+<tbody>
+<tr><td>Standard 2&times;2</td><td>2 rows &times; 2 columns</td><td>Side-by-side comparisons</td></tr>
+<tr><td>Medium 3&times;3</td><td>3 rows &times; 3 columns</td><td>Multi-specimen overview</td></tr>
+<tr><td>Large 4&times;5</td><td>4 rows &times; 5 columns</td><td>Comprehensive series</td></tr>
+<tr><td>Panoramic</td><td>1 row &times; 6 columns</td><td>Horizontal serial sections</td></tr>
+<tr><td>Custom</td><td>User-defined</td><td>Any layout</td></tr>
+</tbody>
+</table>
+
+<h3>9.2 &nbsp; Drag-and-Drop</h3>
+<p>Source slices appear as draggable widgets. Drag onto grid cells using MIME data. Rearrange by dragging between cells.</p>
+
+<h3>9.3 &nbsp; Grid Controls</h3>
+<ul>
+  <li><strong>Rows / Columns</strong> &mdash; Spinboxes to adjust grid dimensions</li>
+  <li><strong>Spacing</strong> &mdash; Gap between cells (pixels)</li>
+  <li><strong>Dividers</strong> &mdash; Visible lines between cells with configurable color and thickness</li>
+  <li><strong>Background color</strong> &mdash; Fill color behind the grid</li>
+  <li><strong>Labels</strong> &mdash; Optional per-cell text labels for specimen identification</li>
+</ul>
+
+<h3>9.4 &nbsp; Preview &amp; Export</h3>
+<p>Live preview at exact export dimensions. Export to PNG (with transparency), JPEG (configurable quality), or PDF (publication-ready, configurable DPI).</p>
+</section>
+
+<!-- ════════════════════════════════════════
+     10. ANIMATION STUDIO TAB
+     ════════════════════════════════════════ -->
+<section class="section" id="animation-tab" data-search="animation tab camera keyframe ROI easing branding shot list presets export mp4 gif mov png sequence emphasis spotlight comparison overlay">
+<h2>10 &nbsp; Animation Studio Tab</h2>
+<p>A professional camera-animation system for creating presentations and videos from WSIs or standard images.</p>
+
+<h3>10.1 &nbsp; Source Management</h3>
+<p>Load WSI slides or regular images as animation sources. The loaded source provides the canvas for camera movements and ROI definitions.</p>
+
+<h3>10.2 &nbsp; ROI System</h3>
+<p>Define Regions of Interest for camera targets with five shape types:</p>
+<table class="ref-table">
+<thead><tr><th>Shape</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>Rectangle</td><td>Axis-aligned bounding box</td></tr>
+<tr><td>Ellipse</td><td>Oval region</td></tr>
+<tr><td>Polygon</td><td>Multi-point enclosed area</td></tr>
+<tr><td>Freehand</td><td>Free-drawn enclosed region</td></tr>
+<tr><td>Point</td><td>Single coordinate for zoom targeting</td></tr>
+</tbody>
+</table>
+<p>ROIs are managed via the <strong>ROI Manager</strong> with interactive drawing, editing, moving, and resizing via 8 directional handles. Style presets provide consistent visual theming across ROIs.</p>
+
+<h3>10.3 &nbsp; Camera Keyframes</h3>
+<p>Define camera poses (zoom/pan positions) at specific points in time:</p>
+<ul>
+  <li><strong>Center</strong> &mdash; (x, y) focus coordinate</li>
+  <li><strong>Zoom level</strong> &mdash; Magnification factor</li>
+  <li><strong>Duration</strong> &mdash; Transition time in seconds</li>
+  <li><strong>Easing curve</strong> &mdash; Linear, Ease In, Ease Out, Ease In-Out, Slow, Fast, Bezier (7 functions)</li>
+</ul>
+<p>The <strong>Keyframe Animator Engine</strong> performs smooth frame-by-frame interpolation using the selected easing function.</p>
+
+<h3>10.4 &nbsp; Animation Presets</h3>
+<p>Reusable templates (overview scan, ROI zoom, comparison, etc.) for quickly setting up common camera movements.</p>
+
+<h3>10.5 &nbsp; Timeline</h3>
+<p>Visual <strong>Keyframe Timeline</strong> widget: drag to reorder keyframes, click to edit parameters, view applied preset blocks.</p>
+
+<h3>10.6 &nbsp; Shot List</h3>
+<p>Multi-sequence project management via <strong>Shot List Panel</strong>. Organize complex presentations into multiple shots, each with its own keyframe sequence.</p>
+
+<h3>10.7 &nbsp; Branding &amp; Overlays</h3>
+<ul>
+  <li><strong>Scale bar</strong> &mdash; Configurable position (4 corners), color, thickness, font size; calibrated from slide MPP</li>
+  <li><strong>Logo watermark</strong> &mdash; Anchor position, opacity, max width ratio</li>
+  <li><strong>Text overlays</strong> &mdash; Title, subtitle, caption with font family, size, color, weight</li>
+</ul>
+<p>Overlay templates are saved and reused via the <strong>Overlay Template Editor</strong>. All branding settings are managed centrally by the <strong>BrandingService</strong> with load/save/reset and mutation callbacks.</p>
+
+<h3>10.8 &nbsp; Emphasis Effects</h3>
+<table class="ref-table">
+<thead><tr><th>Effect</th><th>Description</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Spotlight</td><td>Bright elliptical highlight around selected ROI with dimmed surroundings</td><td><span class="status status-ok">Implemented</span></td></tr>
+<tr><td>Vignette</td><td>Edge darkening to focus attention on center</td><td><span class="status status-beta">Planned</span></td></tr>
+<tr><td>Arrow</td><td>Directional pointer annotations</td><td><span class="status status-beta">Planned</span></td></tr>
+<tr><td>Callout</td><td>Text boxes with leader lines</td><td><span class="status status-beta">Planned</span></td></tr>
+<tr><td>Pulse</td><td>Animated scaling pulse effect</td><td><span class="status status-beta">Planned</span></td></tr>
+</tbody>
+</table>
+
+<h3>10.9 &nbsp; Comparison Modes</h3>
+<p>Four layouts for side-by-side analysis: <strong>Single</strong>, <strong>Side-by-Side</strong>, <strong>Swipe</strong> (draggable divider), and <strong>2&times;2 Grid</strong>.</p>
+
+<h3>10.10 &nbsp; Export</h3>
+<table class="ref-table">
+<thead><tr><th>Format</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>MP4</td><td>H.264 video at configurable resolution and FPS</td></tr>
+<tr><td>GIF</td><td>Animated GIF for presentations</td></tr>
+<tr><td>MOV</td><td>QuickTime-compatible video</td></tr>
+<tr><td>PNG Sequence</td><td>Individual frames saved as <code>frame_XXXX.png</code></td></tr>
+</tbody>
+</table>
+<p>Resolution presets: 1080p, 4K, Square. Configurable frame rate.</p>
+</section>
+
+<!-- ════════════════════════════════════════
+     11. 3D RECONSTRUCTION TAB
+     ════════════════════════════════════════ -->
+<section class="section" id="reconstruction-tab" data-search="3d reconstruction tab vtk pyvista alignment serial sections stack rendering fly-through orbit video export preprocessing rigid">
+<h2>11 &nbsp; 3D Reconstruction Tab</h2>
+<p>Build pseudo-3D volumes from serial histological sections using PyVista/VTK.</p>
+
+<h3>11.1 &nbsp; Workflow</h3>
+<div class="figure">
+<div class="fig-inner">
+  <div class="illus">
+    <div class="illus-row">
+      <div class="illus-box ib-blue">1. Load Slices</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-teal">2. Sort &amp; Order</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-green">3. Preprocess</div>
+    </div>
+    <div class="illus-row">
+      <div class="illus-box ib-amber">4. Align</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-purple">5. Render 3D</div>
+      <div class="illus-arrow">&rarr;</div>
+      <div class="illus-box ib-red">6. Export Video</div>
+    </div>
+  </div>
+</div>
+<figcaption>3D reconstruction pipeline: load &rarr; sort &rarr; preprocess &rarr; align &rarr; render &rarr; export</figcaption>
+</div>
+
+<h3>11.2 &nbsp; Slice Loading &amp; Ordering</h3>
+<p>Load PNG slice images from a directory. Smart filename parsing uses 7 regex patterns for automatic index extraction with gap/duplicate detection and reverse ordering support.</p>
+
+<h3>11.3 &nbsp; Preprocessing</h3>
+<ul>
+  <li><strong>Grayscale conversion</strong> &mdash; Single-channel for alignment</li>
+  <li><strong>Background removal</strong> &mdash; Auto-threshold or alpha-based</li>
+  <li><strong>Intensity normalization</strong> &mdash; Percentile-based for consistent contrast</li>
+  <li><strong>Downsampling</strong> &mdash; Configurable resolution reduction for preview</li>
+</ul>
+
+<h3>11.4 &nbsp; Rigid Alignment</h3>
+<p>Feature-based registration aligns adjacent slices:</p>
+<table class="ref-table">
+<thead><tr><th>Detector</th><th>Properties</th></tr></thead>
+<tbody>
+<tr><td>ORB</td><td>Fast, patent-free &mdash; default choice</td></tr>
+<tr><td>SIFT</td><td>Scale-invariant; good for large deformations</td></tr>
+<tr><td>AKAZE</td><td>Non-linear diffusion; robust on histology</td></tr>
+</tbody>
+</table>
+<p>Lowe&rsquo;s ratio test + RANSAC for outlier rejection. Translation + rotation with configurable constraints and smoothing/regularization.</p>
+
+<h3>11.5 &nbsp; 3D Stack Rendering</h3>
+<p>Renders aligned slices as textured 3D planes in a PyVista/VTK viewport:</p>
+<ul>
+  <li><strong>Global transforms</strong> &mdash; Yaw, pitch, roll, scale</li>
+  <li><strong>Per-slice transforms</strong> &mdash; Individual adjustments</li>
+  <li><strong>Slice spacing</strong> &mdash; Z-distance between planes</li>
+  <li><strong>Opacity</strong> &mdash; Per-slice or global transparency</li>
+  <li><strong>Show every Nth</strong> &mdash; Display subset for performance</li>
+</ul>
+
+<h3>11.6 &nbsp; Preset Views</h3>
+<p>One-click camera positions: Coronal, Sagittal, Dorsal, and custom orientations.</p>
+
+<h3>11.7 &nbsp; Animations</h3>
+<ul>
+  <li><strong>Grid &rarr; 3D Build</strong> &mdash; Animated transition from flat grid to 3D stack</li>
+  <li><strong>Fly-through</strong> &mdash; Camera flies through the volume along the Z-axis</li>
+  <li><strong>Orbit</strong> &mdash; Camera orbits around the volume center</li>
+  <li><strong>Custom camera path</strong> &mdash; User-defined keyframes for the 3D camera</li>
+</ul>
+
+<h3>11.8 &nbsp; Video Export</h3>
+<p>Export animations as MP4 with configurable resolution and camera mode.</p>
+</section>
+
+<!-- ════════════════════════════════════════
+     12. SEGMENTATION TOOLS IN DEPTH
+     ════════════════════════════════════════ -->
+<section class="section" id="segmentation-tools" data-search="segmentation tools magic wand lasso eraser smart brush merge split undo redo edge refiner threshold selector">
+<h2>12 &nbsp; Segmentation Tools &mdash; In Depth</h2>
+
+<h3>12.1 &nbsp; Magic Wand <span class="sc">W</span></h3>
+<p>Flood-fill region growing from a clicked seed point. Expands to neighboring pixels within the specified tolerance (0&ndash;255) of the seed color. Tolerance slider in the Property Panel. Creates a new slice mask from the filled region. Best for well-defined tissue regions with consistent staining.</p>
+
+<h3>12.2 &nbsp; Lasso Tool <span class="sc">L</span></h3>
+<p>Freehand polygon selection. Click and drag to trace the tissue boundary. Release to auto-close the polygon and create a mask.</p>
+
+<h3>12.3 &nbsp; Eraser Tool <span class="sc">E</span></h3>
+<p>Three modes for removing parts of existing masks:</p>
+<ul>
+  <li><strong>Brush</strong> &mdash; Click and drag to erase with a circular brush</li>
+  <li><strong>Path</strong> &mdash; Draw a freehand line to erase along its path</li>
+  <li><strong>Polygon</strong> &mdash; Enclose a region to erase everything inside</li>
+</ul>
+
+<h3>12.4 &nbsp; Merge / Split</h3>
+<ul>
+  <li><strong>Merge</strong> (<span class="sc">Ctrl+M</span>) &mdash; Select 2+ masks and combine via OR union</li>
+  <li><strong>Split</strong> (<span class="sc">Ctrl+Shift+S</span>) &mdash; Separate a single mask into individual connected components</li>
+</ul>
+
+<h3>12.5 &nbsp; Smart Brush (Advanced)</h3>
+<p>Gradient-guided circular brush that follows tissue edges while painting. Part of the advanced segmentation toolkit.</p>
+
+<h3>12.6 &nbsp; Edge-Aware Refiner (Advanced)</h3>
+<p>Contour smoothing via morphological operations. Cleans jagged mask boundaries while preserving overall shape.</p>
+
+<h3>12.7 &nbsp; Threshold Selector (Advanced)</h3>
+<p>Range-based pixel intensity selector. Set min/max intensity values to create masks from specific staining intensities.</p>
+
+<h3>12.8 &nbsp; Undo / Redo</h3>
+<p>All segmentation operations are recorded in a command stack (Command Pattern via <code>CommandHistory</code>):</p>
+<ul>
+  <li>Create, Edit, Merge, Split, and Delete mask commands</li>
+  <li><span class="sc">Ctrl+Z</span> to undo, <span class="sc">Ctrl+Y</span> to redo</li>
+  <li>Signal-based notifications for automatic UI updates</li>
+</ul>
+</section>
+
+<!-- ════════════════════════════════════════
+     13. SEGMENTATION REFINEMENT
+     ════════════════════════════════════════ -->
+<section class="section" id="segmentation-refinement" data-search="segmentation refinement grabcut interactive refine background removal strokes keep remove boundary edge-aware non-destructive">
+<h2>13 &nbsp; Segmentation Refinement</h2>
+<p>A PowerPoint-style &ldquo;Remove Background&rdquo; interactive tool powered by OpenCV&rsquo;s GrabCut algorithm.</p>
+
+<h3>13.1 &nbsp; How It Works</h3>
+<ol>
+  <li>Right-click a segmented slice and select <em>Refine Segmentation</em></li>
+  <li>The refinement dialog shows the slice with the current mask overlay</li>
+  <li>Use <strong>Mark Areas to Keep</strong> to stroke over tissue regions</li>
+  <li>Use <strong>Mark Areas to Remove</strong> to stroke over background regions</li>
+  <li>GrabCut iteratively refines the mask boundary based on your strokes</li>
+  <li>Real-time mask updates with edge-aware propagation</li>
+  <li>Click <em>Apply</em> to accept or <em>Cancel</em> to discard</li>
+</ol>
+
+<h3>13.2 &nbsp; Key Features</h3>
+<ul>
+  <li>Non-destructive editing with conflict resolution</li>
+  <li>Visual feedback showing foreground/background stroke regions</li>
+  <li>Multiple iterations of keep/remove strokes for progressive refinement</li>
+  <li>Edge-aware propagation respects tissue boundaries</li>
+</ul>
+
+<div class="tip"><strong>Tip:</strong> Start with broad strokes on clearly wrong regions. GrabCut propagates corrections to similar areas automatically.</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     14. EXPORT SYSTEM
+     ════════════════════════════════════════ -->
+<section class="section" id="export-system" data-search="export system png jpeg tiff pdf format profile resolution feathered alpha metadata json sidecar provenance filename template quick panel">
+<h2>14 &nbsp; Export System</h2>
+
+<h3>14.1 &nbsp; Export Formats</h3>
+<table class="ref-table">
+<thead><tr><th>Format</th><th>Features</th><th>Best For</th></tr></thead>
+<tbody>
+<tr><td>PNG</td><td>Lossless, alpha transparency, text chunk metadata, feathered alpha edges</td><td>Digital analysis, web, presentations</td></tr>
+<tr><td>JPEG</td><td>Lossy compression, configurable quality</td><td>Web, quick sharing</td></tr>
+<tr><td>TIFF</td><td>Lossless, high bit depth</td><td>Archival, further processing</td></tr>
+<tr><td>PDF</td><td>Vector-quality document embedding</td><td>Publications, printing</td></tr>
+</tbody>
+</table>
+
+<h3>14.2 &nbsp; Feathered Alpha Edges</h3>
+<p>When exporting PNG with transparency, BioSlide applies Gaussian blur to the alpha channel to create soft, natural-looking edges around segmented tissue. Controlled by the <code>feather_alpha</code> option in export profiles.</p>
+
+<h3>14.3 &nbsp; Metadata Embedding</h3>
+<p>PNG exports embed metadata in text chunks: source slide filename, slice ID, segmentation parameters, export timestamp, and BioSlide version.</p>
+
+<h3>14.4 &nbsp; JSON Sidecar Files</h3>
+<p>Each export optionally includes a <code>.json</code> sidecar with full provenance: coordinates, parent slide, algorithm, export profile, and processing history.</p>
+
+<h3>14.5 &nbsp; Export Profiles</h3>
+<p>Reusable presets managed via the <strong>Profile Manager Dialog</strong>:</p>
+<table class="ref-table">
+<thead><tr><th>Default Profile</th><th>Format</th><th>Settings</th></tr></thead>
+<tbody>
+<tr><td>PowerPoint PNG</td><td>PNG</td><td>150 DPI, transparency, optimized for slides</td></tr>
+<tr><td>High Quality TIFF</td><td>TIFF</td><td>Full resolution, lossless compression</td></tr>
+<tr><td>Web JPEG</td><td>JPEG</td><td>Compressed, 85% quality</td></tr>
+</tbody>
+</table>
+<p>Custom profiles can be created, edited, and deleted. All profiles persist to disk.</p>
+
+<h3>14.6 &nbsp; Export Dialogs</h3>
+<ul>
+  <li><strong>Export Dialog</strong> &mdash; Full-featured: output folder, filename template, profile selector</li>
+  <li><strong>Quick Export</strong> &mdash; Rapid single-image export</li>
+  <li><strong>Panel Export</strong> &mdash; Split WSI into printable grids (rows, cols, dimensions, DPI)</li>
+</ul>
+
+<h3>14.7 &nbsp; Filename Templates</h3>
+<p>Use placeholders: <code>{slide_name}</code>, <code>{slice_id}</code>, <code>{index}</code>, <code>{timestamp}</code>.</p>
+</section>
+
+<!-- ════════════════════════════════════════
+     15. MEASUREMENTS
+     ════════════════════════════════════════ -->
+<section class="section" id="measurements" data-search="measurements distance area perimeter angle calibration mpp micrometer ruler pixel um mm">
+<h2>15 &nbsp; Measurements</h2>
+
+<h3>15.1 &nbsp; Measurement Types</h3>
+<table class="ref-table">
+<thead><tr><th>Type</th><th>How</th><th>Output</th></tr></thead>
+<tbody>
+<tr><td>Distance</td><td>Click two points to draw a ruler line</td><td>Length in &micro;m/mm (calibrated) or pixels</td></tr>
+<tr><td>Area</td><td>Computed from segmented mask polygons</td><td>px&sup2; or &micro;m&sup2;</td></tr>
+<tr><td>Perimeter</td><td>Computed from mask boundary contour</td><td>&micro;m or px</td></tr>
+<tr><td>Angle</td><td>Click three points</td><td>Degrees</td></tr>
+</tbody>
+</table>
+
+<h3>15.2 &nbsp; Calibration</h3>
+<p>If the source WSI provides microns-per-pixel (MPP) metadata, all measurements are automatically calibrated to physical units. Otherwise, measurements are in pixel units.</p>
+
+<h3>15.3 &nbsp; Per-Slice Metrics</h3>
+<p>Each segmented slice receives automatic metrics: bounding box, centroid, area, and perimeter. These appear in the slice list and statistics tab.</p>
+
+<h3>15.4 &nbsp; Measurement Manager</h3>
+<p>Central manager with add/remove/clear functionality and Qt signal notifications. Measurements render as overlays on the slide view via <code>QPainter</code> and persist within the project file.</p>
+</section>
+
+<!-- ════════════════════════════════════════
+     16. BATCH PROCESSING
+     ════════════════════════════════════════ -->
+<section class="section" id="batch-processing" data-search="batch processing export queue pause resume cancel progress lobe segmentation">
+<h2>16 &nbsp; Batch Processing</h2>
+
+<h3>16.1 &nbsp; Batch Export Queue</h3>
+<p>The <strong>Batch Queue Dialog</strong> manages multi-slide export with:</p>
+<ul>
+  <li>Per-job progress bars showing completion percentage</li>
+  <li><strong>Pause</strong> &mdash; Temporarily halt processing; resumes exactly where stopped</li>
+  <li><strong>Resume</strong> &mdash; Continue paused export</li>
+  <li><strong>Cancel</strong> &mdash; Stop the entire batch</li>
+  <li>Error display for failed jobs with detailed messages</li>
+</ul>
+<p>Runs in a dedicated <code>QThread</code> (<code>BatchExportWorker</code>) with throttled progress signals.</p>
+
+<h3>16.2 &nbsp; Batch Segmentation</h3>
+<p>Via <strong>Segmentation &rarr; Batch Segment All</strong>: applies automatic segmentation to all loaded slides sequentially.</p>
+
+<h3>16.3 &nbsp; Batch Lobe Processing</h3>
+<p>Specialized workflow for brain tissue: lobe merging and cross-slide consistency tools via the <strong>Lobe Merge Dialog</strong>.</p>
+</section>
+
+<!-- ════════════════════════════════════════
+     17. PROJECT MANAGEMENT
+     ════════════════════════════════════════ -->
+<section class="section" id="project-management" data-search="project management hssp json save load autosave crash recovery recent sequential numbering workflow">
+<h2>17 &nbsp; Project Management</h2>
+
+<h3>17.1 &nbsp; .hssp Project Files</h3>
+<p>Projects are saved as <code>.hssp</code> files (JSON format, version 1.1.0). Contents:</p>
+<ul>
+  <li>Slide list with file paths and metadata</li>
+  <li>Segmentation masks (contour data)</li>
+  <li>Measurements and statistics</li>
+  <li>Export profile settings</li>
+  <li>Animation keyframes and ROI definitions</li>
+  <li>Version tracking for backward compatibility with migration/backfill for legacy files</li>
+</ul>
+
+<h3>17.2 &nbsp; Autosave</h3>
+<p>The <strong>AutosaveService</strong> provides automatic periodic saving:</p>
+<ul>
+  <li>Configurable interval (default: 5 minutes)</li>
+  <li>Dirty flag tracking &mdash; only saves when changes exist</li>
+  <li>Saves to a recovery file alongside the project</li>
+</ul>
+
+<h3>17.3 &nbsp; Crash Recovery</h3>
+<ol>
+  <li>On launch after a crash, the application checks for a recovery file</li>
+  <li>If found, offers to restore the last autosaved state</li>
+  <li>User can accept (load recovery) or decline (start fresh)</li>
+  <li>Recovery file is cleared after successful load</li>
+</ol>
+
+<h3>17.4 &nbsp; Recent Projects</h3>
+<p>Tracked in <code>QSettings</code>; displayed in the Launcher Dashboard and File &rarr; Recent Projects menu.</p>
+
+<h3>17.5 &nbsp; Sequential Slice Numbering</h3>
+<p>The <strong>SequentialNumberer</strong> maintains consistent slice IDs:</p>
+<ul>
+  <li>Global and per-slide sequential numbering</li>
+  <li>Automatic renumbering after insertions or deletions</li>
+  <li>Range-based renumbering for bulk edits</li>
+</ul>
+
+<h3>17.6 &nbsp; Workflow Service</h3>
+<p>Guided workflow definitions (e.g., Extract &rarr; Segment &rarr; Export) with step-by-step execution, timing, status tracking, and JSONL run logs for provenance.</p>
+</section>
+
+<!-- ════════════════════════════════════════
+     18. GPU ACCELERATION
+     ════════════════════════════════════════ -->
+<section class="section" id="gpu" data-search="gpu acceleration cuda cpu fallback nvidia amd performance gpuaccelerator wmic detection">
+<h2>18 &nbsp; GPU Acceleration</h2>
+<p>BioSlide includes a <strong>GPUAccelerator</strong> singleton that detects CUDA availability and provides GPU-accelerated operations with automatic CPU fallback.</p>
+
+<h3>18.1 &nbsp; Detection</h3>
+<ul>
+  <li>Checks for CUDA-enabled OpenCV build at startup</li>
+  <li>Detects system GPU adapters via <code>wmic</code> (Windows) or <code>lspci</code> (Linux)</li>
+  <li>Reports dedicated GPU name and VRAM information</li>
+  <li>GPU status shown in the status bar and logged at startup</li>
+</ul>
+
+<h3>18.2 &nbsp; Accelerated Operations</h3>
+<table class="ref-table">
+<thead><tr><th>Operation</th><th>GPU Method</th><th>CPU Fallback</th></tr></thead>
+<tbody>
+<tr><td>Image resize</td><td><code>resize_gpu()</code></td><td><code>cv2.resize()</code></td></tr>
+<tr><td>Color conversion</td><td><code>cvt_color_gpu()</code></td><td><code>cv2.cvtColor()</code></td></tr>
+<tr><td>Thresholding</td><td><code>threshold_gpu()</code></td><td><code>cv2.threshold()</code></td></tr>
+<tr><td>Filtering</td><td><code>apply_filter_gpu()</code></td><td><code>cv2.filter2D()</code></td></tr>
+</tbody>
+</table>
+
+<h3>18.3 &nbsp; GPU Preferences</h3>
+<p>On Windows, startup hints prefer the dedicated GPU:</p>
+<ul>
+  <li><code>NvOptimusEnablement = 1</code> for NVIDIA Optimus laptops</li>
+  <li><code>AmdPowerXpressRequestHighPerformance = 1</code> for AMD switchable graphics</li>
+  <li>Desktop OpenGL preferred over ANGLE for Qt/VTK rendering</li>
+</ul>
+
+<div class="note"><strong>Note:</strong> GPU acceleration is optional. All operations have CPU fallbacks. The application works identically (just slower for large images) without a GPU.</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     19. THEMES & CUSTOMIZATION
+     ════════════════════════════════════════ -->
+<section class="section" id="themes" data-search="theme customization dark light high contrast design system colors typography spacing layout tokens">
+<h2>19 &nbsp; Themes &amp; Customization</h2>
+
+<h3>19.1 &nbsp; Available Themes</h3>
+<table class="ref-table">
+<thead><tr><th>Theme</th><th>Description</th><th>Default</th></tr></thead>
+<tbody>
+<tr><td><strong>High Contrast</strong></td><td>Maximum readability with strong contrast ratios; optimized for clinical/research use</td><td>&#10003;</td></tr>
+<tr><td><strong>Dark</strong></td><td>Low-light optimized with muted tones; reduced eye strain</td><td></td></tr>
+<tr><td><strong>Light</strong></td><td>Traditional light-background interface</td><td></td></tr>
+</tbody>
+</table>
+
+<h3>19.2 &nbsp; Design Token System</h3>
+<p>The theme engine (<code>ui_theme.py</code>, ~2440 lines) provides structured design tokens:</p>
+<ul>
+  <li><strong>Colors</strong> &mdash; Primary, secondary, background, surface, text, error, warning, success</li>
+  <li><strong>Typography</strong> &mdash; Font families, sizes, weights</li>
+  <li><strong>Spacing</strong> &mdash; 8px grid system with scale levels 0&ndash;16px</li>
+  <li><strong>Radii</strong> &mdash; Border radius presets (sm, md, lg, xl)</li>
+  <li><strong>Shadows</strong> &mdash; Elevation levels for cards, dialogs, dropdowns</li>
+  <li><strong>Z-Index</strong> &mdash; Layer ordering for overlays, modals, tooltips</li>
+  <li><strong>Button Colors</strong> &mdash; State-aware (default, hover, active, disabled)</li>
+</ul>
+
+<h3>19.3 &nbsp; Layout Configuration</h3>
+<p>The layout system (<code>layout_config.py</code>, ~667 lines) provides: margin presets (compact/normal/spacious), button/icon/input sizes, splitter/scrollbar/dialog/panel dimensions.</p>
+</section>
+
+<!-- ════════════════════════════════════════
+     20. DIALOGS REFERENCE
+     ════════════════════════════════════════ -->
+<section class="section" id="dialogs" data-search="dialogs settings profile manager batch queue export import welcome tutorial help segmentation refinement lobe merge statistics error about">
+<h2>20 &nbsp; Dialogs Reference</h2>
+
+<div class="grid-3">
+  <div class="card"><h4>Settings Dialog</h4><p>Tabbed preferences: Export, Segmentation, UI, Performance, Autosave</p></div>
+  <div class="card"><h4>New Project</h4><p>Create a new .hssp project with name and save location</p></div>
+  <div class="card"><h4>Welcome Dialog</h4><p>First-run experience: New/Open/Import/Tutorial</p></div>
+  <div class="card"><h4>Import Slides</h4><p>Multi-file WSI import with preview thumbnails</p></div>
+  <div class="card"><h4>Export Dialog</h4><p>Output folder, filename template, profile selection</p></div>
+  <div class="card"><h4>Quick Export</h4><p>Rapid single-image export for fast iteration</p></div>
+  <div class="card"><h4>Panel Export</h4><p>WSI panel splitting: rows, cols, paper size, DPI</p></div>
+  <div class="card"><h4>Profile Manager</h4><p>CRUD for export profiles with live preview</p></div>
+  <div class="card"><h4>Batch Queue</h4><p>Multi-job export with per-job progress, pause/resume/cancel</p></div>
+  <div class="card"><h4>Segmentation Refinement</h4><p>GrabCut interactive refinement with keep/remove strokes</p></div>
+  <div class="card"><h4>Lobe Merge</h4><p>Cross-slide lobe merging for brain tissue workflows</p></div>
+  <div class="card"><h4>Statistics Dialog</h4><p>Pop-up statistics view with charts</p></div>
+  <div class="card"><h4>Tutorial Dialog</h4><p>Step-by-step tutorial with guided overlay highlights</p></div>
+  <div class="card"><h4>Help Browser</h4><p>In-app searchable help system</p></div>
+  <div class="card"><h4>Error Log Viewer</h4><p>Browse, search, and export application errors</p></div>
+  <div class="card"><h4>Error Report</h4><p>Generate detailed error reports for bug filing</p></div>
+  <div class="card"><h4>Animation Windows</h4><p>Animation-specific export configuration dialogs</p></div>
+  <div class="card"><h4>About Dialog</h4><p>Version, license, and system information</p></div>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     21. KEYBOARD SHORTCUTS
+     ════════════════════════════════════════ -->
+<section class="section" id="shortcuts" data-search="keyboard shortcuts hotkeys accelerators keybindings">
+<h2>21 &nbsp; Keyboard Shortcuts</h2>
+
+<div class="grid-2">
+<div>
+<h4>File Operations</h4>
+<table class="ref-table">
+<tbody>
+<tr><td>New Project</td><td><span class="sc">Ctrl+N</span></td></tr>
+<tr><td>Open Project</td><td><span class="sc">Ctrl+O</span></td></tr>
+<tr><td>Save</td><td><span class="sc">Ctrl+S</span></td></tr>
+<tr><td>Save As</td><td><span class="sc">Ctrl+Shift+S</span></td></tr>
+<tr><td>Import Slides</td><td><span class="sc">Ctrl+I</span></td></tr>
+<tr><td>Export</td><td><span class="sc">Ctrl+E</span></td></tr>
+</tbody>
+</table>
+
+<h4>Edit</h4>
+<table class="ref-table">
+<tbody>
+<tr><td>Undo</td><td><span class="sc">Ctrl+Z</span></td></tr>
+<tr><td>Redo</td><td><span class="sc">Ctrl+Y</span></td></tr>
+<tr><td>Preferences</td><td><span class="sc">Ctrl+,</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div>
+<h4>View</h4>
+<table class="ref-table">
+<tbody>
+<tr><td>Zoom In</td><td><span class="sc">Ctrl++</span></td></tr>
+<tr><td>Zoom Out</td><td><span class="sc">Ctrl+&minus;</span></td></tr>
+<tr><td>Reset Zoom</td><td><span class="sc">Ctrl+0</span></td></tr>
+<tr><td>Toggle Log</td><td><span class="sc">Ctrl+L</span></td></tr>
+</tbody>
+</table>
+
+<h4>Segmentation Tools</h4>
+<table class="ref-table">
+<tbody>
+<tr><td>Magic Wand</td><td><span class="sc">W</span></td></tr>
+<tr><td>Lasso</td><td><span class="sc">L</span></td></tr>
+<tr><td>Eraser</td><td><span class="sc">E</span></td></tr>
+<tr><td>Merge</td><td><span class="sc">Ctrl+M</span></td></tr>
+<tr><td>Split</td><td><span class="sc">Ctrl+Shift+S</span></td></tr>
+</tbody>
+</table>
+
+<h4>Application</h4>
+<table class="ref-table">
+<tbody>
+<tr><td>Help / Tutorial</td><td><span class="sc">F1</span></td></tr>
+<tr><td>Quit</td><td><span class="sc">Alt+F4</span></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════
+     22. FILE FORMATS
+     ════════════════════════════════════════ -->
+<section class="section" id="formats" data-search="file formats wsi ndpi svs mrxs tif tiff hssp png jpeg pdf tiff mp4 gif mov csv json jsonl">
+<h2>22 &nbsp; File Formats</h2>
+
+<h3>22.1 &nbsp; Supported WSI Formats</h3>
+<table class="ref-table">
+<thead><tr><th>Extension</th><th>Vendor</th><th>Backend</th></tr></thead>
+<tbody>
+<tr><td><code>.ndpi</code></td><td>Hamamatsu NanoZoomer</td><td>OpenSlide</td></tr>
+<tr><td><code>.svs</code></td><td>Aperio (Leica)</td><td>OpenSlide</td></tr>
+<tr><td><code>.mrxs</code></td><td>3DHISTECH (MIRAX)</td><td>OpenSlide</td></tr>
+<tr><td><code>.tif</code> / <code>.tiff</code></td><td>Standard / BigTIFF</td><td>tifffile (pyramidal) or Pillow (flat)</td></tr>
+</tbody>
+</table>
+
+<h3>22.2 &nbsp; Image Export Formats</h3>
+<table class="ref-table">
+<thead><tr><th>Format</th><th>Use</th></tr></thead>
+<tbody>
+<tr><td><code>.png</code></td><td>Export with alpha, metadata; input for animation and 3D</td></tr>
+<tr><td><code>.jpeg/.jpg</code></td><td>Compressed export; input for animation</td></tr>
+<tr><td><code>.tiff</code></td><td>High-quality lossless export</td></tr>
+<tr><td><code>.pdf</code></td><td>Publication-quality document export</td></tr>
+</tbody>
+</table>
+
+<h3>22.3 &nbsp; Video Formats</h3>
+<table class="ref-table">
+<thead><tr><th>Format</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>.mp4</code></td><td>H.264 video</td></tr>
+<tr><td><code>.gif</code></td><td>Animated GIF</td></tr>
+<tr><td><code>.mov</code></td><td>QuickTime video</td></tr>
+<tr><td>PNG Sequence</td><td>Individual frames as <code>frame_XXXX.png</code></td></tr>
+</tbody>
+</table>
+
+<h3>22.4 &nbsp; Project &amp; Data Formats</h3>
+<table class="ref-table">
+<thead><tr><th>Extension</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>.hssp</code></td><td>BioSlide project file (JSON, v1.1.0)</td></tr>
+<tr><td><code>.json</code></td><td>Sidecar metadata, export provenance, branding</td></tr>
+<tr><td><code>.csv</code></td><td>Statistics and measurement export</td></tr>
+<tr><td><code>.jsonl</code></td><td>Workflow run logs (line-delimited JSON)</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ════════════════════════════════════════
+     23. ARCHITECTURE
+     ════════════════════════════════════════ -->
+<section class="section" id="architecture" data-search="architecture design patterns modules packages structure dependency injection command observer singleton worker thread service">
+<h2>23 &nbsp; Architecture</h2>
+
+<h3>23.1 &nbsp; Package Structure</h3>
+<pre>
+histology/
+&#9500;&#9472;&#9472; app_context.py          # DI container, service access
+&#9500;&#9472;&#9472; constants.py            # Enums, shortcuts, version
+&#9500;&#9472;&#9472; analysis/               # StatisticsAnalyzer
+&#9500;&#9472;&#9472; commands/               # Undo/redo stack, mask commands
+&#9500;&#9472;&#9472; io/                     # WSI reader, metadata, export writer
+&#9500;&#9472;&#9472; models/                 # Pydantic data models
+&#9500;&#9472;&#9472; processing/             # Segmentation, batch, collage, animation
+&#9500;&#9472;&#9472; reconstruction/         # 3D preprocessing, alignment, rendering
+&#9500;&#9472;&#9472; services/               # Project, autosave, profile, branding, workflow
+&#9500;&#9472;&#9472; tools/                  # Interactive measurement tools
+&#9500;&#9472;&#9472; ui/
+&#9474;   &#9500;&#9472;&#9472; launcher_window.py  # Hub dashboard
+&#9474;   &#9500;&#9472;&#9472; main_window.py      # Main application window
+&#9474;   &#9500;&#9472;&#9472; ui_theme.py         # 3-theme design token system
+&#9474;   &#9500;&#9472;&#9472; tabs/               # 6 tab implementations
+&#9474;   &#9500;&#9472;&#9472; widgets/            # TileView, overlay, timeline, ROI
+&#9474;   &#9492;&#9472;&#9472; dialogs/            # 18 dialogs
+&#9492;&#9472;&#9472; utils/                  # Logging, GPU, caching, debugging
+</pre>
+
+<h3>23.2 &nbsp; Design Patterns</h3>
+<table class="ref-table">
+<thead><tr><th>Pattern</th><th>Where</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td>Dependency Injection</td><td><code>AppContext</code></td><td>Centralized, lazy service initialization</td></tr>
+<tr><td>Command</td><td><code>CommandHistory</code> + <code>MaskCommands</code></td><td>Undo/redo with signal notifications</td></tr>
+<tr><td>Observer</td><td>Qt Signals/Slots</td><td>Loose coupling between UI and logic</td></tr>
+<tr><td>Singleton</td><td><code>GPUAccelerator</code>, <code>ErrorMonitor</code></td><td>Single-instance resource management</td></tr>
+<tr><td>Worker Thread</td><td><code>QThreadPool</code>, <code>QThread</code></td><td>Background operations</td></tr>
+<tr><td>Service Layer</td><td>All <code>*Service</code> classes</td><td>Business logic separated from UI</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ════════════════════════════════════════
+     24. TROUBLESHOOTING
+     ════════════════════════════════════════ -->
+<section class="section" id="troubleshooting" data-search="troubleshooting errors issues problems solutions debug log crash memory performance">
+<h2>24 &nbsp; Troubleshooting</h2>
+
+<table class="ref-table">
+<thead><tr><th>Symptom</th><th>Cause</th><th>Solution</th></tr></thead>
+<tbody>
+<tr><td>Application won&rsquo;t start</td><td>Missing dependencies</td><td>Run <code>pip install -r requirements.txt</code></td></tr>
+<tr><td>&ldquo;OpenSlide DLL not found&rdquo;</td><td>openslide-bin missing</td><td><code>pip install openslide-bin</code></td></tr>
+<tr><td>WSI files won&rsquo;t open</td><td>Unsupported format</td><td>Verify format; try OpenSlide CLI tools</td></tr>
+<tr><td>No slices detected</td><td>Min area too high</td><td>Lower minimum area threshold</td></tr>
+<tr><td>Slow on large slides</td><td>CPU-only or low RAM</td><td>Enable GPU; increase tile cache; close other apps</td></tr>
+<tr><td>3D view blank</td><td>PyVista/VTK missing</td><td><code>pip install pyvista</code>; check OpenGL</td></tr>
+<tr><td>Black export images</td><td>Empty mask data</td><td>Verify segmentation exists before export</td></tr>
+<tr><td>Crash during batch</td><td>Out of memory</td><td>Reduce batch size; increase RAM</td></tr>
+<tr><td>Blank icons</td><td>SVG rendering issue</td><td>Update PySide6; check Qt SVG plugin</td></tr>
+<tr><td>HiDPI scaling issues</td><td>Inconsistent scale factors</td><td>Set <code>QT_SCALE_FACTOR</code> env variable</td></tr>
+</tbody>
+</table>
+
+<h3>Debug Tools</h3>
+<p>Access via the <strong>Debug</strong> menu:</p>
+<ul>
+  <li><strong>Debug Mode</strong> &mdash; Verbose logging and development features</li>
+  <li><strong>Memory Monitor</strong> &mdash; Real-time memory usage tracking</li>
+  <li><strong>System Information</strong> &mdash; OS, Python, Qt, GPU, library versions</li>
+  <li><strong>Error Log Viewer</strong> &mdash; Browse and filter errors by session</li>
+  <li><strong>Error Report</strong> &mdash; Generate comprehensive reports for bug filing</li>
+  <li><strong>Open Log File</strong> &mdash; Opens <code>~/.bioslide/logs/bioslide.log</code></li>
+</ul>
+</section>
+
+<!-- ════════════════════════════════════════
+     25. GLOSSARY
+     ════════════════════════════════════════ -->
+<section class="section" id="glossary" data-search="glossary terms definitions vocabulary">
+<h2>25 &nbsp; Glossary</h2>
+<table class="ref-table">
+<thead><tr><th>Term</th><th>Definition</th></tr></thead>
+<tbody>
+<tr><td><strong>WSI</strong></td><td>Whole-Slide Image &mdash; a digitized tissue slide at high resolution</td></tr>
+<tr><td><strong>MPP</strong></td><td>Microns Per Pixel &mdash; physical scale factor</td></tr>
+<tr><td><strong>.hssp</strong></td><td>BioSlide project file format (JSON)</td></tr>
+<tr><td><strong>Mask</strong></td><td>Binary or contour-based representation of a segmented region</td></tr>
+<tr><td><strong>Slice</strong></td><td>A single segmented tissue region with its own ID and measurements</td></tr>
+<tr><td><strong>Otsu</strong></td><td>Automatic thresholding that minimizes intra-class variance</td></tr>
+<tr><td><strong>GrabCut</strong></td><td>Iterative foreground/background segmentation for interactive refinement</td></tr>
+<tr><td><strong>Keyframe</strong></td><td>A defined camera state (position, zoom, duration) in the animation timeline</td></tr>
+<tr><td><strong>ROI</strong></td><td>Region of Interest &mdash; a user-defined area for focused analysis</td></tr>
+<tr><td><strong>Sidecar</strong></td><td>Companion .json metadata file exported alongside each image</td></tr>
+<tr><td><strong>Export Profile</strong></td><td>Saved export configuration (format, DPI, compression, feathering)</td></tr>
+<tr><td><strong>Pyramid</strong></td><td>Multi-resolution WSI representation for fast zoom</td></tr>
+<tr><td><strong>Tile</strong></td><td>Rectangular sub-region loaded on demand for viewport rendering</td></tr>
+<tr><td><strong>Easing Curve</strong></td><td>Function controlling rate of change during animation transitions</td></tr>
+<tr><td><strong>Feathered Alpha</strong></td><td>Gaussian-blurred alpha channel edges for natural-looking exports</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ════════════════════════════════════════
+     26. FAQ
+     ════════════════════════════════════════ -->
+<section class="section" id="faq" data-search="faq frequently asked questions">
+<h2>26 &nbsp; FAQ</h2>
+
+<details>
+  <summary>Can BioSlide open proprietary scanner formats?</summary>
+  <div class="detail-body"><p>Yes. BioSlide uses OpenSlide for .ndpi (Hamamatsu), .svs (Aperio/Leica), and .mrxs (3DHISTECH). Standard TIFF pyramids use tifffile.</p></div>
+</details>
+<details>
+  <summary>Does BioSlide require a GPU?</summary>
+  <div class="detail-body"><p>No. GPU acceleration is optional. All features work on CPU with automatic fallback.</p></div>
+</details>
+<details>
+  <summary>Can I use BioSlide on macOS or Linux?</summary>
+  <div class="detail-body"><p>BioSlide is developed and tested on Windows. PySide6 and core libraries are cross-platform, so it may work on other systems with appropriate OpenSlide installation, but this is not officially supported.</p></div>
+</details>
+<details>
+  <summary>How large can slide files be?</summary>
+  <div class="detail-body"><p>BioSlide handles slides of any size via tiled loading. Only visible tiles are in memory with an LRU cache. Multi-gigapixel slides are supported.</p></div>
+</details>
+<details>
+  <summary>Is there a plugin system?</summary>
+  <div class="detail-body"><p>A plugin architecture is under development. The PluginService provides registration hooks but plugin loading/execution is not yet functional. This will be expanded in a future release.</p></div>
+</details>
+<details>
+  <summary>Can I export measurements to Excel?</summary>
+  <div class="detail-body"><p>Statistics can be exported as CSV via the Statistics tab. CSV files open directly in Excel, Google Sheets, and pandas. JSON sidecar files also contain per-slice data.</p></div>
+</details>
+<details>
+  <summary>What is AI-Assisted segmentation?</summary>
+  <div class="detail-body"><p>This is a planned feature. The current implementation uses Otsu thresholding as a placeholder. A trained ML model for histology tissue detection will be integrated in a future release.</p></div>
+</details>
+<details>
+  <summary>How do I recover from a crash?</summary>
+  <div class="detail-body"><p>BioSlide&rsquo;s autosave system saves every 5 minutes by default. After a crash, a recovery dialog offers to restore your last autosaved state.</p></div>
+</details>
+</section>
+
+<!-- ════════════════════════════════════════
+     27. CHANGELOG
+     ════════════════════════════════════════ -->
+<section class="section" id="changelog" data-search="changelog version history release notes">
+<h2>27 &nbsp; Changelog</h2>
+
+<h3>v1.1.0 (Current)</h3>
+<ul>
+  <li>Launcher Dashboard &mdash; Hub-style entry point with feature cards, recent projects, search</li>
+  <li>3D Reconstruction &mdash; Serial-section alignment, PyVista/VTK rendering, fly-through video</li>
+  <li>Animation Studio &mdash; ROI system, camera keyframes, branding overlays, MP4/GIF/MOV/PNG export</li>
+  <li>Segmentation Refinement &mdash; GrabCut-based interactive boundary refinement</li>
+  <li>Batch Export &mdash; Pause/resume/cancel with per-job progress</li>
+  <li>GPU Acceleration &mdash; CUDA operations with CPU fallback</li>
+  <li>Autosave &amp; Crash Recovery</li>
+  <li>Theme System &mdash; Three themes (dark, light, high_contrast)</li>
+  <li>Sequential Numbering &mdash; Consistent slice ID management</li>
+  <li>Workflow Service &mdash; Guided workflows with execution logging</li>
+  <li>Panel Export &mdash; WSI panel splitting with sidecar metadata</li>
+  <li>Feathered Alpha &mdash; Gaussian-blurred alpha edges</li>
+</ul>
+
+<h3>v1.0.0</h3>
+<ul>
+  <li>Initial release: Preview, Segmentation, Statistics, Collage, Export</li>
+  <li>Auto-segmentation (Otsu, dual-space, adaptive)</li>
+  <li>Manual tools (Magic Wand, Lasso, Eraser, Merge, Split)</li>
+  <li>Measurement tools with calibration</li>
+  <li>Export profiles with PNG metadata embedding</li>
+</ul>
+</section>
+
+<footer>
+  <p>BioSlide v1.1.0 &mdash; Reference Manual &mdash; &copy; 2024&ndash;2026 BioSlide Contributors &mdash; MIT License</p>
+  <p><a href="BioSlide-Tutorial.html">Open Tutorial</a> &nbsp;|&nbsp; <a href="#top">Back to Top</a></p>
+</footer>
+
+</main>
+</div>
+
+<!-- ═══════════════════  SEARCH SCRIPT  ═══════════════════ -->
+<script>
+(function(){
+  const input=document.getElementById('searchInput');
+  const resultsBox=document.getElementById('searchResults');
+  const sections=document.querySelectorAll('.section[id]');
+  const index=[];
+  sections.forEach(s=>{
+    const id=s.id;
+    const h2=s.querySelector('h2');
+    const title=h2?h2.textContent:'';
+    const search=(s.dataset.search||'')+' '+title+' '+s.textContent.substring(0,2000);
+    index.push({id,title,text:search.toLowerCase()});
+  });
+  input.addEventListener('input',function(){
+    const q=this.value.trim().toLowerCase();
+    if(q.length<2){resultsBox.style.display='none';return;}
+    const hits=index.filter(e=>e.text.includes(q)).slice(0,12);
+    if(!hits.length){resultsBox.style.display='none';return;}
+    resultsBox.innerHTML=hits.map(h=>'<a href="#'+h.id+'"><span class="sr-match">'+h.title+'</span></a>').join('');
+    resultsBox.style.display='block';
+  });
+  resultsBox.addEventListener('click',function(){resultsBox.style.display='none';input.value='';});
+
+  // Active nav link highlighting on scroll
+  const navLinks=document.querySelectorAll('.nav-link[href^="#"]');
+  const observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        navLinks.forEach(function(l){l.classList.remove('active')});
+        const link=document.querySelector('.nav-link[href="#'+e.target.id+'"]');
+        if(link)link.classList.add('active');
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  sections.forEach(function(s){observer.observe(s)});
+})();
+</script>
+</body>
+</html>
