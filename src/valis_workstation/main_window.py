@@ -1103,44 +1103,32 @@ class MainWindow(QtWidgets.QMainWindow):
             [self.height() - TIMELINE_INIT_H - SPLITTER_HANDLE_W, TIMELINE_INIT_H]
         )
 
+    def _open_repo_document(
+        self, relative_name: str, title: str, log_label: str
+    ) -> None:
+        """Open a repository document in the default browser with a unified fallback."""
+        doc_path = self._repo_root / relative_name
+        if doc_path.exists():
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(doc_path)))
+            logger.info("Opened %s: %s", log_label, doc_path.name)
+            return
+        QtWidgets.QMessageBox.information(
+            self,
+            title,
+            f"{title} not found at {doc_path}",
+        )
+
     def _open_user_manual(self) -> None:
         """Open the HTML manual in the default browser."""
-        manual_path = self._repo_root / "BioSlide-Manual.html"
-        if manual_path.exists():
-            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(manual_path)))
-            logger.info("Opened manual: %s", manual_path.name)
-        else:
-            QtWidgets.QMessageBox.information(
-                self, "Manual", f"Manual not found at {manual_path}"
-            )
+        self._open_repo_document("VALIS-GUI-Manual.html", "Manual", "manual")
 
     def _open_tutorial(self) -> None:
         """Open the HTML tutorial in the default browser."""
-        tutorial_path = self._repo_root / "BioSlide-Tutorial.html"
-        if tutorial_path.exists():
-            QtGui.QDesktopServices.openUrl(
-                QtCore.QUrl.fromLocalFile(str(tutorial_path))
-            )
-            logger.info("Opened tutorial: %s", tutorial_path.name)
-        else:
-            QtWidgets.QMessageBox.information(
-                self, "Tutorial", f"Tutorial not found at {tutorial_path}"
-            )
+        self._open_repo_document("VALIS-GUI-Tutorial.html", "Tutorial", "tutorial")
 
     def _open_quick_start(self) -> None:
         """Open the quick start guide in default browser."""
-        quick_start_path = self._repo_root / "QUICK_START.md"
-        if quick_start_path.exists():
-            QtGui.QDesktopServices.openUrl(
-                QtCore.QUrl.fromLocalFile(str(quick_start_path))
-            )
-            logger.info("Opened quick start guide")
-        else:
-            QtWidgets.QMessageBox.information(
-                self,
-                "Quick Start",
-                f"Quick start guide not found at {quick_start_path}",
-            )
+        self._open_repo_document("QUICK_START.md", "Quick Start", "quick start guide")
 
     def _report_issue(self) -> None:
         """Open GitHub issue page."""

@@ -272,15 +272,15 @@ Logs are written to `logs/valis_workstation.log`:
 
 Tip: use **Help -> Diagnostics** and **Tools -> Export Session Bundle...** when preparing a bug report.
 
-**📖 [See Full Troubleshooting Guide](BioSlide-Manual.html#troubleshooting-and-faq)**
+**📖 [See Full Troubleshooting Guide](VALIS-GUI-Manual.html#troubleshooting-and-faq)**
 
 ---
 
 ## 📚 Documentation
 
 - **[Quick Start Guide](QUICK_START.md)** - Get running in 5 minutes
-- **[User Manual](BioSlide-Manual.html)** - Comprehensive documentation
-- **[Guided Tutorial](BioSlide-Tutorial.html)** - Step-by-step workflow
+- **[User Manual](VALIS-GUI-Manual.html)** - Comprehensive documentation
+- **[Guided Tutorial](VALIS-GUI-Tutorial.html)** - Step-by-step workflow
 - **[VALIS Library Docs](https://valis.readthedocs.io/)** - Core library documentation
 - **[Examples](examples/)** - Sample scripts and datasets
 
