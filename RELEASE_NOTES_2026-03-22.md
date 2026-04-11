@@ -39,7 +39,8 @@ This release focuses on workflow quality-of-life improvements, stronger reliabil
 - Status dock now shows a stage label and safer cancel rebinding:
   - `src/valis_workstation/ui/status_dock.py`
 - Documentation refreshed for current behavior and menus:
-  - `USER_MANUAL.md`
+  - `VALIS-GUI-Manual.html`
+  - `VALIS-GUI-Tutorial.html`
   - `README_VALIS_WORKSTATION.md`
 
 ### Fixed
@@ -71,3 +72,17 @@ This release focuses on workflow quality-of-life improvements, stronger reliabil
 
 - Blink viewer `Side-by-side` and `Swipe` are practical UI-level comparison modes built on current layer stack behavior.
 - For full implementation details, see `WORKSTATION_CHANGELOG.md`.
+
+## 2026-04-11 Addendum
+
+### Documentation Corrections
+
+- Updated manual references to HTML docs in the repository root:
+  - `VALIS-GUI-Manual.html`
+  - `VALIS-GUI-Tutorial.html`
+- Roadmap/docs corrected to reflect that registration cancellation is implemented.
+
+### Upstream VALIS Check
+
+- Upstream repository checked at `MathOnco/valis` `v1.2.0`.
+- Local bundled `valis/` matches upstream version at audit time; no core-library sync delta found.

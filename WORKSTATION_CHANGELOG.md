@@ -1,5 +1,29 @@
 # VALIS Workstation Changelog
 
+## 2026-04-11
+
+### Added
+- Main window modularization helpers:
+	- `src/valis_workstation/ui/main_window_actions.py`
+	- `src/valis_workstation/ui/main_window_documents.py`
+	- `src/valis_workstation/ui/main_window_workflow.py`
+- Global non-interactive UI test fixture in `tests/conftest.py` to prevent blocking dialogs during automated runs.
+- Dedicated non-interactive regression checks in `tests/test_non_interactive_ui.py`.
+
+### Changed
+- `src/valis_workstation/main_window.py` now delegates menu/action wiring, document handlers, and registration workflow orchestration to dedicated modules.
+- README architecture and roadmap updated to reflect current implementation status.
+
+### Fixed
+- Corrected stale documentation links that referenced removed `USER_MANUAL.md`.
+- Corrected roadmap status for registration cancellation (implemented).
+
+### Testing
+- Full automated suite (no manual clicking required): `320 passed`.
+
+### Notes
+- Upstream VALIS parity audit completed against `MathOnco/valis` `v1.2.0`; local bundled `valis/` is aligned at audit time.
+
 ## 2026-03-22
 
 ### Added

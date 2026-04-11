@@ -90,6 +90,9 @@ VALIS-GUI/
 │   ├── app.py                  # Application lifecycle
 │   ├── main_window.py          # Main UI window
 │   ├── ui/                     # UI components
+│   │   ├── main_window_actions.py    # Menu/actions wiring
+│   │   ├── main_window_documents.py  # Manual/tutorial/help handlers
+│   │   ├── main_window_workflow.py   # Registration orchestration helpers
 │   │   ├── project_dock.py
 │   │   ├── properties_dock.py
 │   │   ├── status_dock.py
@@ -368,10 +371,21 @@ Future features under consideration:
 - [ ] Multi-select slide deletion
 - [ ] Custom colormap presets
 - [ ] Batch processing mode
-- [ ] Registration cancellation
+- [x] Registration cancellation
 - [ ] ROI-based registration
 - [ ] Cloud storage integration
 - [ ] Plugin system
 - [ ] Undo/redo functionality
+
+### 2026-04-11 Feature Audit (VALIS Parity)
+
+- Core VALIS library status: current workspace tracks VALIS `1.2.0`, matching upstream `MathOnco/valis` `v1.2.0`.
+- No upstream core-library delta detected under `valis/` versus `upstream/main` at audit time.
+- GUI parity gaps identified (pending):
+  - Expose non-rigid registrar selection (e.g., optical flow vs groupwise/SimpleElastix workflows).
+  - Add warp-points workflow in GUI (VALIS supports point/geometry warping, GUI currently focuses on annotations).
+  - Add "delete selected slides" action (multi-select exists, but only "Clear All" is exposed).
+  - Add persistent colormap presets for layer controls.
+  - Add batch project/folder processing mode.
 
 **Have a feature request?** [Open an issue](https://github.com/leonardolv/VALIS-GUI/issues/new)!
