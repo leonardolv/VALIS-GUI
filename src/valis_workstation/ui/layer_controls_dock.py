@@ -4,6 +4,9 @@ import logging
 
 from PySide6 import QtCore, QtWidgets
 
+from valis_workstation.layout_constants import GRID_SPACING
+from valis_workstation.ui.icons import load_icon
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,11 +32,21 @@ class LayerControlsDock(QtWidgets.QDockWidget):
 
         container = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(container)
+        layout.setContentsMargins(
+            GRID_SPACING, GRID_SPACING, GRID_SPACING, GRID_SPACING
+        )
+        layout.setSpacing(GRID_SPACING)
+
+        self._layers_header = QtWidgets.QLabel("Layer Controls")
+        self._layers_header.setProperty("role", "sidebar-header")
+        layout.addWidget(self._layers_header)
 
         toolbar = QtWidgets.QHBoxLayout()
+        toolbar.setSpacing(GRID_SPACING)
         toolbar.addWidget(QtWidgets.QLabel("Search"))
         self._search_edit = QtWidgets.QLineEdit()
         self._search_edit.setPlaceholderText("layer name...")
+        self._search_edit.setClearButtonEnabled(True)
         self._search_edit.textChanged.connect(self._apply_filter)
         toolbar.addWidget(self._search_edit, 1)
 
@@ -44,12 +57,33 @@ class LayerControlsDock(QtWidgets.QDockWidget):
         toolbar.addWidget(self._lock_check)
 
         self._solo_btn = QtWidgets.QPushButton("Solo Selected")
+        self._solo_btn.setIcon(
+            load_icon("play", self, QtWidgets.QStyle.StandardPixmap.SP_MediaPlay)
+        )
+        self._solo_btn.setProperty("panelAction", True)
+        self._solo_btn.setToolTip("Show only the selected layer")
         self._solo_btn.clicked.connect(self._solo_selected)
         toolbar.addWidget(self._solo_btn)
 
         self._reset_opacity_btn = QtWidgets.QPushButton("Reset Opacity")
+        self._reset_opacity_btn.setIcon(
+            load_icon(
+                "refresh", self, QtWidgets.QStyle.StandardPixmap.SP_BrowserReload
+            )
+        )
+        self._reset_opacity_btn.setProperty("panelAction", True)
+        self._reset_opacity_btn.setToolTip("Set all visible layers to 100% opacity")
         self._reset_opacity_btn.clicked.connect(self._reset_opacity)
         toolbar.addWidget(self._reset_opacity_btn)
+
+        self._show_all_btn = QtWidgets.QPushButton("Show All")
+        self._show_all_btn.setIcon(
+            load_icon("eye", self, QtWidgets.QStyle.StandardPixmap.SP_DialogApplyButton)
+        )
+        self._show_all_btn.setProperty("panelAction", True)
+        self._show_all_btn.setToolTip("Make all layers visible")
+        self._show_all_btn.clicked.connect(self._show_all_layers)
+        toolbar.addWidget(self._show_all_btn)
         layout.addLayout(toolbar)
 
         self._table = QtWidgets.QTableWidget()
@@ -57,7 +91,17 @@ class LayerControlsDock(QtWidgets.QDockWidget):
         self._table.setHorizontalHeaderLabels(
             ["Visible", "Name", "Opacity", "Colormap"]
         )
-        self._table.horizontalHeader().setStretchLastSection(True)
+        self._table.setAlternatingRowColors(True)
+        self._table.verticalHeader().setVisible(False)
+        self._table.verticalHeader().setDefaultSectionSize(26)
+        self._table.setSelectionBehavior(
+            QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows
+        )
+        header = self._table.horizontalHeader()
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         layout.addWidget(self._table)
         self.setWidget(container)
         self._layers: list = []
@@ -181,6 +225,13 @@ class LayerControlsDock(QtWidgets.QDockWidget):
             return
         for layer in self._layers:
             layer.opacity = 1.0
+        self.refresh()
+
+    def _show_all_layers(self) -> None:
+        if self._lock_check.isChecked():
+            return
+        for layer in self._layers:
+            layer.visible = True
         self.refresh()
 
     @staticmethod

@@ -8,7 +8,9 @@ import re
 from PySide6 import QtCore, QtWidgets
 
 from valis_workstation.constants import CropModes, FeatureDetectors, TransformerTypes
+from valis_workstation.layout_constants import GRID_SPACING
 from valis_workstation.models.config import Config
+from valis_workstation.ui.icons import load_icon
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +30,10 @@ class PropertiesDock(QtWidgets.QDockWidget):
 
         container = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(container)
+        layout.setContentsMargins(
+            GRID_SPACING, GRID_SPACING, GRID_SPACING, GRID_SPACING
+        )
+        layout.setSpacing(GRID_SPACING)
 
         self._banner = QtWidgets.QLabel()
         self._banner.setWordWrap(True)
@@ -35,27 +41,53 @@ class PropertiesDock(QtWidgets.QDockWidget):
         layout.addWidget(self._banner)
 
         # ── Presets ──────────────────────────────────────────────────
+        presets_header = QtWidgets.QLabel("Presets")
+        presets_header.setProperty("role", "sidebar-header")
+        layout.addWidget(presets_header)
+
         preset_row = QtWidgets.QHBoxLayout()
+        preset_row.setSpacing(GRID_SPACING)
         preset_row.addWidget(QtWidgets.QLabel("Preset"))
         self._preset_combo = QtWidgets.QComboBox()
         self._preset_combo.setToolTip("Load a saved registration preset")
         preset_row.addWidget(self._preset_combo, 1)
 
         self._save_preset_btn = QtWidgets.QPushButton("Save")
+        self._save_preset_btn.setIcon(
+            load_icon("save", self, QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton)
+        )
+        self._save_preset_btn.setProperty("panelAction", True)
         self._save_preset_btn.clicked.connect(self._save_current_preset)
         preset_row.addWidget(self._save_preset_btn)
 
         self._load_preset_btn = QtWidgets.QPushButton("Load")
+        self._load_preset_btn.setIcon(
+            load_icon("open", self, QtWidgets.QStyle.StandardPixmap.SP_DialogOpenButton)
+        )
+        self._load_preset_btn.setProperty("panelAction", True)
         self._load_preset_btn.clicked.connect(self._load_selected_preset)
         preset_row.addWidget(self._load_preset_btn)
 
         self._delete_preset_btn = QtWidgets.QPushButton("Delete")
+        self._delete_preset_btn.setIcon(
+            load_icon("trash", self, QtWidgets.QStyle.StandardPixmap.SP_TrashIcon)
+        )
+        self._delete_preset_btn.setProperty("panelAction", True)
         self._delete_preset_btn.clicked.connect(self._delete_selected_preset)
         preset_row.addWidget(self._delete_preset_btn)
         layout.addLayout(preset_row)
 
         # ── Basic settings ──────────────────────────────────────────
+        registration_header = QtWidgets.QLabel("Registration")
+        registration_header.setProperty("role", "sidebar-header")
+        layout.addWidget(registration_header)
+
         form = QtWidgets.QFormLayout()
+        form.setHorizontalSpacing(GRID_SPACING)
+        form.setVerticalSpacing(max(4, GRID_SPACING - 1))
+        form.setFieldGrowthPolicy(
+            QtWidgets.QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
 
         self._project_name = QtWidgets.QLineEdit("New Project")
         self._project_name.setToolTip(
@@ -117,6 +149,11 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._advanced_group.setToolTip("Show / hide advanced registration options")
 
         adv = QtWidgets.QFormLayout()
+        adv.setHorizontalSpacing(GRID_SPACING)
+        adv.setVerticalSpacing(max(4, GRID_SPACING - 1))
+        adv.setFieldGrowthPolicy(
+            QtWidgets.QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
 
         # Feature detector – show human-readable labels
         self._feature_detector = QtWidgets.QComboBox()
@@ -223,6 +260,11 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._output_group.setToolTip("Settings for saved registered images")
 
         out = QtWidgets.QFormLayout()
+        out.setHorizontalSpacing(GRID_SPACING)
+        out.setVerticalSpacing(max(4, GRID_SPACING - 1))
+        out.setFieldGrowthPolicy(
+            QtWidgets.QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
 
         self._output_profile = QtWidgets.QComboBox()
         self._output_profile.addItems(

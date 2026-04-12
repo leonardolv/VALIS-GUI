@@ -9,29 +9,29 @@ change.
 from __future__ import annotations
 
 # ── Left sidebar (Project + Slide Preview tabs) ────────────────
-LEFT_SIDEBAR_MIN: int = 200
-LEFT_SIDEBAR_INIT: int = 260
-LEFT_SIDEBAR_MAX: int = 400
+LEFT_SIDEBAR_MIN: int = 220
+LEFT_SIDEBAR_INIT: int = 280
+LEFT_SIDEBAR_MAX: int = 420
 
 # ── Right sidebar (Properties + Layers tabs) ───────────────────
-RIGHT_SIDEBAR_MIN: int = 240
-RIGHT_SIDEBAR_INIT: int = 320
-RIGHT_SIDEBAR_MAX: int = 480
+RIGHT_SIDEBAR_MIN: int = 280
+RIGHT_SIDEBAR_INIT: int = 360
+RIGHT_SIDEBAR_MAX: int = 520
 
 # ── Central canvas (Napari viewer) ─────────────────────────────
 CANVAS_MIN_W: int = 400
 CANVAS_MIN_H: int = 300
 
 # ── Bottom status / timeline panel ─────────────────────────────
-TIMELINE_MIN_H: int = 160
-TIMELINE_INIT_H: int = 240
-TIMELINE_MAX_H: int = 500
+TIMELINE_MIN_H: int = 140
+TIMELINE_INIT_H: int = 210
+TIMELINE_MAX_H: int = 420
 
 # ── Splitter handles ───────────────────────────────────────────
 SPLITTER_HANDLE_W: int = 6
 
 # ── General spacing ────────────────────────────────────────────
-GRID_SPACING: int = 8
+GRID_SPACING: int = 6
 
 # ── Minimum window size ────────────────────────────────────────
 WINDOW_MIN_W: int = (

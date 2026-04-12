@@ -229,20 +229,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self._outer_splitter.setCollapsible(idx, False)
 
         # -- initial sizes --------------------------------------------
-        canvas_init = max(
-            CANVAS_MIN_W,
-            self.width()
-            - LEFT_SIDEBAR_INIT
-            - RIGHT_SIDEBAR_INIT
-            - 2 * SPLITTER_HANDLE_W,
-        )
-        self._top_splitter.setSizes(
-            [LEFT_SIDEBAR_INIT, canvas_init, RIGHT_SIDEBAR_INIT]
-        )
-        main_area_h = max(
-            CANVAS_MIN_H, self.height() - TIMELINE_INIT_H - SPLITTER_HANDLE_W
-        )
-        self._outer_splitter.setSizes([main_area_h, TIMELINE_INIT_H])
+        self._top_splitter.setSizes(self._default_top_splitter_sizes())
+        self._outer_splitter.setSizes(self._default_outer_splitter_sizes())
 
         # -- connect splitter-moved to auto-persist -------------------
         self._top_splitter.splitterMoved.connect(
@@ -550,6 +538,68 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # ── Splitter persistence ─────────────────────────────────────
 
+    def _normalize_top_splitter_sizes(self, sizes: list[int]) -> list[int]:
+        """Clamp left/right sidebars and preserve minimum canvas width."""
+        min_total = LEFT_SIDEBAR_MIN + CANVAS_MIN_W + RIGHT_SIDEBAR_MIN
+        total = max(sum(sizes), min_total)
+
+        left = max(LEFT_SIDEBAR_MIN, min(LEFT_SIDEBAR_MAX, int(sizes[0])))
+        right = max(RIGHT_SIDEBAR_MIN, min(RIGHT_SIDEBAR_MAX, int(sizes[2])))
+        center = total - left - right
+
+        if center < CANVAS_MIN_W:
+            deficit = CANVAS_MIN_W - center
+            shrink_left = min(deficit // 2 + deficit % 2, left - LEFT_SIDEBAR_MIN)
+            left -= shrink_left
+            deficit -= shrink_left
+
+            shrink_right = min(deficit, right - RIGHT_SIDEBAR_MIN)
+            right -= shrink_right
+            center = total - left - right
+
+        if center < CANVAS_MIN_W:
+            left = LEFT_SIDEBAR_MIN
+            right = RIGHT_SIDEBAR_MIN
+            center = max(CANVAS_MIN_W, total - left - right)
+
+        return [left, center, right]
+
+    def _normalize_outer_splitter_sizes(self, sizes: list[int]) -> list[int]:
+        """Clamp timeline size while preserving minimum canvas height."""
+        min_total = CANVAS_MIN_H + TIMELINE_MIN_H
+        total = max(sum(sizes), min_total)
+
+        timeline = max(TIMELINE_MIN_H, min(TIMELINE_MAX_H, int(sizes[1])))
+        main_area = total - timeline
+
+        if main_area < CANVAS_MIN_H:
+            timeline = max(TIMELINE_MIN_H, total - CANVAS_MIN_H)
+            main_area = total - timeline
+
+        if main_area < CANVAS_MIN_H:
+            main_area = CANVAS_MIN_H
+            timeline = TIMELINE_MIN_H
+
+        return [main_area, timeline]
+
+    def _default_top_splitter_sizes(self) -> list[int]:
+        """Return default top-splitter sizes for the current window width."""
+        total = max(
+            WINDOW_MIN_W - 2 * SPLITTER_HANDLE_W,
+            self.width() - 2 * SPLITTER_HANDLE_W,
+        )
+        return self._normalize_top_splitter_sizes(
+            [LEFT_SIDEBAR_INIT, total - LEFT_SIDEBAR_INIT - RIGHT_SIDEBAR_INIT, RIGHT_SIDEBAR_INIT]
+        )
+
+    def _default_outer_splitter_sizes(self) -> list[int]:
+        """Return default outer-splitter sizes for the current window height."""
+        total = max(
+            WINDOW_MIN_H - SPLITTER_HANDLE_W,
+            self.height() - SPLITTER_HANDLE_W,
+        )
+        return self._normalize_outer_splitter_sizes([total - TIMELINE_INIT_H, TIMELINE_INIT_H])
+
     def _save_splitter_state(self) -> None:
         """Persist both splitter size lists to QSettings."""
         persist_splitter_state(self._top_splitter, _KEY_TOP_SPLITTER)
@@ -558,27 +608,37 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _restore_splitter_state(self) -> None:
         """Restore splitter sizes from QSettings, falling back to defaults."""
-        canvas_init = max(
-            CANVAS_MIN_W,
-            self.width()
-            - LEFT_SIDEBAR_INIT
-            - RIGHT_SIDEBAR_INIT
-            - 2 * SPLITTER_HANDLE_W,
-        )
-        restore_splitter_state(
+        restored_top = restore_splitter_state(
             self._top_splitter,
             _KEY_TOP_SPLITTER,
-            default_sizes=[LEFT_SIDEBAR_INIT, canvas_init, RIGHT_SIDEBAR_INIT],
+            default_sizes=self._default_top_splitter_sizes(),
         )
-        main_area_h = max(
-            CANVAS_MIN_H,
-            self.height() - TIMELINE_INIT_H - SPLITTER_HANDLE_W,
-        )
-        restore_splitter_state(
+        top_sizes = self._top_splitter.sizes()
+        normalized_top = self._normalize_top_splitter_sizes(top_sizes)
+        if normalized_top != top_sizes:
+            self._top_splitter.setSizes(normalized_top)
+            if restored_top:
+                logger.info(
+                    "Normalized restored top splitter sizes from %s to %s",
+                    top_sizes,
+                    normalized_top,
+                )
+
+        restored_outer = restore_splitter_state(
             self._outer_splitter,
             _KEY_OUTER_SPLITTER,
-            default_sizes=[main_area_h, TIMELINE_INIT_H],
+            default_sizes=self._default_outer_splitter_sizes(),
         )
+        outer_sizes = self._outer_splitter.sizes()
+        normalized_outer = self._normalize_outer_splitter_sizes(outer_sizes)
+        if normalized_outer != outer_sizes:
+            self._outer_splitter.setSizes(normalized_outer)
+            if restored_outer:
+                logger.info(
+                    "Normalized restored outer splitter sizes from %s to %s",
+                    outer_sizes,
+                    normalized_outer,
+                )
 
     # ── Programmatic layout helpers ──────────────────────────────
 
@@ -590,21 +650,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def reset_layout(self) -> None:
         """Reset splitters to default sizes."""
-        canvas_init = max(
-            CANVAS_MIN_W,
-            self.width()
-            - LEFT_SIDEBAR_INIT
-            - RIGHT_SIDEBAR_INIT
-            - 2 * SPLITTER_HANDLE_W,
-        )
-        self._top_splitter.setSizes(
-            [LEFT_SIDEBAR_INIT, canvas_init, RIGHT_SIDEBAR_INIT]
-        )
-        main_area_h = max(
-            CANVAS_MIN_H,
-            self.height() - TIMELINE_INIT_H - SPLITTER_HANDLE_W,
-        )
-        self._outer_splitter.setSizes([main_area_h, TIMELINE_INIT_H])
+        self._top_splitter.setSizes(self._default_top_splitter_sizes())
+        self._outer_splitter.setSizes(self._default_outer_splitter_sizes())
 
         # Clear persisted state so next launch also uses defaults
         clear_splitter_state(_KEY_TOP_SPLITTER)
@@ -621,7 +668,7 @@ class MainWindow(QtWidgets.QMainWindow):
             old_size = sizes[0]
             sizes[0] = LEFT_SIDEBAR_INIT
             sizes[1] = max(CANVAS_MIN_W, sizes[1] - (LEFT_SIDEBAR_INIT - old_size))
-            self._top_splitter.setSizes(sizes)
+            self._top_splitter.setSizes(self._normalize_top_splitter_sizes(sizes))
 
     def toggle_right_sidebar(self) -> None:
         """Collapse or restore the right sidebar."""
@@ -632,20 +679,22 @@ class MainWindow(QtWidgets.QMainWindow):
             old_size = sizes[2]
             sizes[2] = RIGHT_SIDEBAR_INIT
             sizes[1] = max(CANVAS_MIN_W, sizes[1] - (RIGHT_SIDEBAR_INIT - old_size))
-            self._top_splitter.setSizes(sizes)
+            self._top_splitter.setSizes(self._normalize_top_splitter_sizes(sizes))
 
     def expand_center(self) -> None:
         """Minimise both sidebars so the canvas gets maximum space."""
         total = sum(self._top_splitter.sizes())
         center = total - LEFT_SIDEBAR_MIN - RIGHT_SIDEBAR_MIN
-        self._top_splitter.setSizes([LEFT_SIDEBAR_MIN, center, RIGHT_SIDEBAR_MIN])
+        self._top_splitter.setSizes(
+            self._normalize_top_splitter_sizes(
+                [LEFT_SIDEBAR_MIN, center, RIGHT_SIDEBAR_MIN]
+            )
+        )
         logger.debug("Center panel expanded")
 
     def fit_to_content(self) -> None:
         """Resize timeline to its preferred height."""
-        self._outer_splitter.setSizes(
-            [self.height() - TIMELINE_INIT_H - SPLITTER_HANDLE_W, TIMELINE_INIT_H]
-        )
+        self._outer_splitter.setSizes(self._default_outer_splitter_sizes())
 
     def _open_repo_document(
         self, relative_name: str, title: str, log_label: str

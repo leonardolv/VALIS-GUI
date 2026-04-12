@@ -11,7 +11,7 @@ import pytest
 
 pytest.importorskip("PySide6")
 
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from valis_workstation.models.config import Config
 from valis_workstation.utils.qt_logging import QtLogEmitter, QtSignalHandler
@@ -113,6 +113,70 @@ class TestProjectDock:
         dock.set_slides([f1, f2])
         assert len(dock.slides()) == 2
 
+    def test_filter_hides_non_matching_slides(self, dock, tmp_path: Path) -> None:
+        f1 = tmp_path / "alpha.tif"
+        f2 = tmp_path / "beta.tif"
+        f1.write_text("a")
+        f2.write_text("b")
+        dock.set_slides([f1, f2])
+
+        dock._filter_edit.setText("alp")
+        hidden = {
+            dock._list.item(i).text(): dock._list.item(i).isHidden()
+            for i in range(dock._list.count())
+        }
+        assert hidden["alpha.tif"] is False
+        assert hidden["beta.tif"] is True
+        assert "1/2" in dock.windowTitle()
+
+    def test_remove_selected_button(self, dock, tmp_path: Path) -> None:
+        f1 = tmp_path / "alpha.tif"
+        f2 = tmp_path / "beta.tif"
+        f1.write_text("a")
+        f2.write_text("b")
+        dock.set_slides([f1, f2])
+
+        dock._list.setCurrentRow(0)
+        assert dock._remove_selected_button.isEnabled() is True
+        dock._remove_selected_slides()
+        assert len(dock.slides()) == 1
+        assert dock.slides()[0].name == "beta.tif"
+
+
+# ---------- SlidePreviewDock ----------
+class TestSlidePreviewDock:
+    @pytest.fixture()
+    def dock(self, qtbot):
+        from valis_workstation.ui.slide_preview_dock import SlidePreviewDock
+
+        d = SlidePreviewDock()
+        qtbot.addWidget(d)
+        d.show()
+        return d
+
+    def test_responsive_columns_change_with_width(self, dock, qtbot) -> None:
+        for idx in range(8):
+            px = QtGui.QPixmap(64, 64)
+            px.fill(QtGui.QColor("blue"))
+            dock.add_slide(f"slide_{idx}", px)
+
+        dock.resize(900, 500)
+        qtbot.wait(50)
+        wide_cols = dock._column_count_for_width()
+
+        dock.resize(320, 500)
+        qtbot.wait(50)
+        narrow_cols = dock._column_count_for_width()
+
+        assert wide_cols >= 1
+        assert narrow_cols >= 1
+        assert narrow_cols <= wide_cols
+
+    def test_list_mode_forces_single_column(self, dock) -> None:
+        dock._list_view.setChecked(True)
+        dock._toggle_view_mode()
+        assert dock._column_count_for_width() == 1
+
 
 # ---------- StatusDock ----------
 class TestStatusDock:
@@ -132,6 +196,42 @@ class TestStatusDock:
     def test_show_cancel_button(self, dock) -> None:
         dock.show_cancel_button(True)
         dock.show_cancel_button(False)
+
+    def test_log_controls(self, dock) -> None:
+        dock._append_log("hello")
+        assert "hello" in dock._log_console.toPlainText()
+        dock._copy_log()
+        dock._clear_log()
+        assert dock._log_console.toPlainText() == ""
+
+
+# ---------- MainWindow Quick Toolbar ----------
+class TestMainWindowQuickToolbar:
+    def test_quick_actions_toolbar_exists(self, qtbot, tmp_path, monkeypatch) -> None:
+        from valis_workstation.main_window import MainWindow
+
+        # Force fallback central widget (no napari) to keep test lightweight.
+        original_find_spec = importlib.util.find_spec
+
+        def _patched_find_spec(name, *args, **kwargs):
+            if name == "napari":
+                return None
+            return original_find_spec(name, *args, **kwargs)
+
+        monkeypatch.setattr(importlib.util, "find_spec", _patched_find_spec)
+
+        emitter = QtLogEmitter()
+        win = MainWindow(
+            repo_root=tmp_path,
+            log_emitter=emitter,
+            simple_elastix_available=False,
+        )
+        qtbot.addWidget(win)
+
+        toolbars = win.findChildren(QtWidgets.QToolBar)
+        quick = [tb for tb in toolbars if tb.objectName() == "QuickActionsToolbar"]
+        assert len(quick) == 1
+        assert quick[0].actions()
 
 
 # ---------- QtLogEmitter ----------
