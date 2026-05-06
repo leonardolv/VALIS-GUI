@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -7,6 +8,23 @@ from valis_workstation.ui.icons import load_icon
 
 if TYPE_CHECKING:
     from valis_workstation.main_window import MainWindow
+
+
+logger = logging.getLogger(__name__)
+
+
+def _configure_action(
+    window: MainWindow,
+    action: QtGui.QAction,
+    *,
+    status_tip: str,
+    tool_tip: str | None = None,
+) -> None:
+    action.setStatusTip(status_tip)
+    action.setToolTip(tool_tip or status_tip)
+    action.hovered.connect(
+        lambda a=action: window._status_bar.showMessage(a.statusTip(), 5000)
+    )
 
 
 def build_actions(window: MainWindow) -> None:
@@ -24,9 +42,30 @@ def build_actions(window: MainWindow) -> None:
         load_icon("folder_open", window, QtWidgets.QStyle.StandardPixmap.SP_DirIcon)
     )
     open_action.setShortcut("Ctrl+O")
-    open_action.setToolTip("Open Slide Folder (Ctrl+O)")
+    _configure_action(
+        window,
+        open_action,
+        status_tip="Open a slide folder (Ctrl+O)",
+    )
     open_action.triggered.connect(window._open_slide_folder)
     file_menu.addAction(open_action)
+
+    open_recent_action = QtGui.QAction("Open Most Recent Folder", window)
+    open_recent_action.setShortcut("Ctrl+Shift+O")
+    open_recent_action.setIcon(
+        load_icon(
+            "recent",
+            window,
+            QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView,
+        )
+    )
+    _configure_action(
+        window,
+        open_recent_action,
+        status_tip="Open the most recent folder (Ctrl+Shift+O)",
+    )
+    open_recent_action.triggered.connect(window._open_most_recent_folder)
+    file_menu.addAction(open_recent_action)
 
     # Recent folders submenu
     window._recent_menu = file_menu.addMenu("Recent Folders")
@@ -49,6 +88,11 @@ def build_actions(window: MainWindow) -> None:
             QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton,
         )
     )
+    _configure_action(
+        window,
+        save_config_action,
+        status_tip="Save current registration settings to JSON",
+    )
     save_config_action.triggered.connect(window._save_configuration)
     file_menu.addAction(save_config_action)
 
@@ -60,6 +104,11 @@ def build_actions(window: MainWindow) -> None:
             QtWidgets.QStyle.StandardPixmap.SP_DialogOpenButton,
         )
     )
+    _configure_action(
+        window,
+        load_config_action,
+        status_tip="Load registration settings from JSON",
+    )
     load_config_action.triggered.connect(window._load_configuration)
     file_menu.addAction(load_config_action)
 
@@ -69,10 +118,28 @@ def build_actions(window: MainWindow) -> None:
     run_action.setIcon(
         load_icon("play", window, QtWidgets.QStyle.StandardPixmap.SP_MediaPlay)
     )
-    run_action.setShortcut("Ctrl+R")
-    run_action.setToolTip("Run Registration (Ctrl+R)")
+    run_action.setShortcuts([QtGui.QKeySequence("Ctrl+R"), QtGui.QKeySequence("F5")])
+    _configure_action(
+        window,
+        run_action,
+        status_tip="Start registration (Ctrl+R, F5)",
+    )
     run_action.triggered.connect(window._start_registration)
     file_menu.addAction(run_action)
+
+    cancel_action = QtGui.QAction("Cancel Registration", window)
+    cancel_action.setIcon(
+        load_icon("cancel", window, QtWidgets.QStyle.StandardPixmap.SP_DialogCancelButton)
+    )
+    cancel_action.setShortcut("Esc")
+    cancel_action.setEnabled(False)
+    _configure_action(
+        window,
+        cancel_action,
+        status_tip="Cancel active registration",
+    )
+    cancel_action.triggered.connect(window._request_cancellation)
+    file_menu.addAction(cancel_action)
 
     resume_action = QtGui.QAction("Resume Last Registration", window)
     resume_action.setIcon(
@@ -80,7 +147,11 @@ def build_actions(window: MainWindow) -> None:
             "refresh", window, QtWidgets.QStyle.StandardPixmap.SP_BrowserReload
         )
     )
-    resume_action.setToolTip("Resume Last Registration")
+    _configure_action(
+        window,
+        resume_action,
+        status_tip="Resume the last registration context",
+    )
     resume_action.triggered.connect(window._resume_last_registration)
     file_menu.addAction(resume_action)
 
@@ -95,6 +166,11 @@ def build_actions(window: MainWindow) -> None:
         )
     )
     preferences_action.setShortcut("Ctrl+,")
+    _configure_action(
+        window,
+        preferences_action,
+        status_tip="Open application preferences (Ctrl+,)",
+    )
     preferences_action.triggered.connect(window._show_preferences)
     file_menu.addAction(preferences_action)
 
@@ -107,7 +183,11 @@ def build_actions(window: MainWindow) -> None:
             "refresh", window, QtWidgets.QStyle.StandardPixmap.SP_BrowserReload
         )
     )
-    reset_layout_action.setToolTip("Reset all panels to their default sizes")
+    _configure_action(
+        window,
+        reset_layout_action,
+        status_tip="Reset all panels to their default sizes (Ctrl+Shift+L)",
+    )
     reset_layout_action.triggered.connect(window.reset_layout)
     view_menu.addAction(reset_layout_action)
 
@@ -120,6 +200,13 @@ def build_actions(window: MainWindow) -> None:
         )
     )
     toggle_left_action.setShortcut("Ctrl+[")
+    toggle_left_action.setCheckable(True)
+    toggle_left_action.setChecked(True)
+    _configure_action(
+        window,
+        toggle_left_action,
+        status_tip="Show or hide the left sidebar (Ctrl+[)",
+    )
     toggle_left_action.triggered.connect(window.toggle_left_sidebar)
     view_menu.addAction(toggle_left_action)
 
@@ -132,18 +219,31 @@ def build_actions(window: MainWindow) -> None:
         )
     )
     toggle_right_action.setShortcut("Ctrl+]")
+    toggle_right_action.setCheckable(True)
+    toggle_right_action.setChecked(True)
+    _configure_action(
+        window,
+        toggle_right_action,
+        status_tip="Show or hide the right sidebar (Ctrl+])",
+    )
     toggle_right_action.triggered.connect(window.toggle_right_sidebar)
     view_menu.addAction(toggle_right_action)
 
-    expand_center_action = QtGui.QAction("Expand Center", window)
-    expand_center_action.setShortcut("Ctrl+Shift+C")
-    expand_center_action.setIcon(
+    focus_mode_action = QtGui.QAction("Toggle Focus Mode", window)
+    focus_mode_action.setShortcut("Ctrl+Shift+\\")
+    focus_mode_action.setCheckable(True)
+    focus_mode_action.setIcon(
         load_icon(
             "expand_center", window, QtWidgets.QStyle.StandardPixmap.SP_ArrowForward
         )
     )
-    expand_center_action.triggered.connect(window.expand_center)
-    view_menu.addAction(expand_center_action)
+    _configure_action(
+        window,
+        focus_mode_action,
+        status_tip="Collapse sidebars for focus mode (Ctrl+Shift+\\)",
+    )
+    focus_mode_action.toggled.connect(window.toggle_focus_mode)
+    view_menu.addAction(focus_mode_action)
 
     fit_content_action = QtGui.QAction("Fit to Content", window)
     fit_content_action.setIcon(
@@ -151,16 +251,23 @@ def build_actions(window: MainWindow) -> None:
             "fit_content", window, QtWidgets.QStyle.StandardPixmap.SP_ComputerIcon
         )
     )
+    _configure_action(
+        window,
+        fit_content_action,
+        status_tip="Fit timeline and reset viewer framing",
+    )
     fit_content_action.triggered.connect(window.fit_to_content)
     view_menu.addAction(fit_content_action)
 
     # Quick toolbar actions (pro workflow: most-used commands one click away)
     quick_toolbar.addAction(open_action)
     quick_toolbar.addAction(run_action)
+    quick_toolbar.addAction(cancel_action)
+    quick_toolbar.addAction(open_recent_action)
     quick_toolbar.addAction(resume_action)
     quick_toolbar.addSeparator()
     quick_toolbar.addAction(reset_layout_action)
-    quick_toolbar.addAction(expand_center_action)
+    quick_toolbar.addAction(focus_mode_action)
     quick_toolbar.addAction(fit_content_action)
 
     tools_menu = window.menuBar().addMenu("Tools")
@@ -173,6 +280,11 @@ def build_actions(window: MainWindow) -> None:
             QtWidgets.QStyle.StandardPixmap.SP_BrowserReload,
         )
     )
+    _configure_action(
+        window,
+        blink_action,
+        status_tip="Open blink comparison viewer for registered slides",
+    )
     blink_action.triggered.connect(window._blink)
     tools_menu.addAction(blink_action)
 
@@ -183,6 +295,11 @@ def build_actions(window: MainWindow) -> None:
             window,
             QtWidgets.QStyle.StandardPixmap.SP_FileDialogInfoView,
         )
+    )
+    _configure_action(
+        window,
+        plot_action,
+        status_tip="Open summary analysis plot",
     )
     plot_action.triggered.connect(window._show_analysis_plot)
     tools_menu.addAction(plot_action)
@@ -195,6 +312,11 @@ def build_actions(window: MainWindow) -> None:
             QtWidgets.QStyle.StandardPixmap.SP_FileDialogContentsView,
         )
     )
+    _configure_action(
+        window,
+        quality_action,
+        status_tip="Open tabular quality report",
+    )
     quality_action.triggered.connect(window._show_quality_report)
     tools_menu.addAction(quality_action)
 
@@ -205,6 +327,11 @@ def build_actions(window: MainWindow) -> None:
             window,
             QtWidgets.QStyle.StandardPixmap.SP_FileDialogListView,
         )
+    )
+    _configure_action(
+        window,
+        warp_action,
+        status_tip="Warp annotation files into registered space",
     )
     warp_action.triggered.connect(window._warp_annotations)
     tools_menu.addAction(warp_action)
@@ -219,6 +346,11 @@ def build_actions(window: MainWindow) -> None:
             QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton,
         )
     )
+    _configure_action(
+        window,
+        save_options_action,
+        status_tip="Configure save/export options",
+    )
     save_options_action.triggered.connect(window._show_save_options)
     tools_menu.addAction(save_options_action)
 
@@ -230,6 +362,11 @@ def build_actions(window: MainWindow) -> None:
             QtWidgets.QStyle.StandardPixmap.SP_FileDialogInfoView,
         )
     )
+    _configure_action(
+        window,
+        export_roi_action,
+        status_tip="Export a region of interest from registered slides",
+    )
     export_roi_action.triggered.connect(window._export_roi_crop)
     tools_menu.addAction(export_roi_action)
 
@@ -240,6 +377,11 @@ def build_actions(window: MainWindow) -> None:
             window,
             QtWidgets.QStyle.StandardPixmap.SP_FileDialogListView,
         )
+    )
+    _configure_action(
+        window,
+        merge_action,
+        status_tip="Merge registered slides into a multi-channel output",
     )
     merge_action.triggered.connect(window._merge_slides)
     tools_menu.addAction(merge_action)
@@ -253,8 +395,30 @@ def build_actions(window: MainWindow) -> None:
             QtWidgets.QStyle.StandardPixmap.SP_DirIcon,
         )
     )
+    _configure_action(
+        window,
+        export_bundle_action,
+        status_tip="Export config + diagnostics + logs as a session bundle",
+    )
     export_bundle_action.triggered.connect(window._export_session_bundle)
     tools_menu.addAction(export_bundle_action)
+
+    # Results toolbar (visible once a registration completes)
+    results_toolbar = window.addToolBar("Results")
+    results_toolbar.setObjectName("ResultsToolbar")
+    results_toolbar.setMovable(False)
+    results_toolbar.setFloatable(False)
+    results_toolbar.setVisible(False)
+    results_toolbar.addAction(blink_action)
+    results_toolbar.addAction(plot_action)
+    results_toolbar.addAction(quality_action)
+    results_toolbar.addAction(warp_action)
+    results_toolbar.addAction(export_roi_action)
+    results_toolbar.addAction(merge_action)
+    window._results_toolbar = results_toolbar
+
+    quick_toolbar.addSeparator()
+    quick_toolbar.addAction(blink_action)
 
     # Store result-dependent actions for contextual enable/disable
     window._result_actions: list[QtGui.QAction] = [
@@ -266,6 +430,12 @@ def build_actions(window: MainWindow) -> None:
         export_roi_action,
         merge_action,
     ]
+    window._registration_run_actions = [run_action, resume_action]
+    window._cancel_registration_action = cancel_action
+
+    window._toggle_left_action = toggle_left_action
+    window._toggle_right_action = toggle_right_action
+    window._focus_mode_action = focus_mode_action
     window._update_tools_enabled()
 
     help_menu = window.menuBar().addMenu("Help")
@@ -278,6 +448,11 @@ def build_actions(window: MainWindow) -> None:
             QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView,
         )
     )
+    _configure_action(
+        window,
+        user_manual_action,
+        status_tip="Open the local user manual",
+    )
     user_manual_action.triggered.connect(window._open_user_manual)
     help_menu.addAction(user_manual_action)
 
@@ -289,6 +464,11 @@ def build_actions(window: MainWindow) -> None:
             QtWidgets.QStyle.StandardPixmap.SP_DialogHelpButton,
         )
     )
+    _configure_action(
+        window,
+        tutorial_action,
+        status_tip="Open the local tutorial",
+    )
     tutorial_action.triggered.connect(window._open_tutorial)
     help_menu.addAction(tutorial_action)
 
@@ -299,6 +479,11 @@ def build_actions(window: MainWindow) -> None:
             window,
             QtWidgets.QStyle.StandardPixmap.SP_TitleBarMenuButton,
         )
+    )
+    _configure_action(
+        window,
+        quick_start_action,
+        status_tip="Open quick-start documentation",
     )
     quick_start_action.triggered.connect(window._open_quick_start)
     help_menu.addAction(quick_start_action)
@@ -312,6 +497,11 @@ def build_actions(window: MainWindow) -> None:
             window,
             QtWidgets.QStyle.StandardPixmap.SP_MessageBoxWarning,
         )
+    )
+    _configure_action(
+        window,
+        report_issue_action,
+        status_tip="Open issue tracker",
     )
     report_issue_action.triggered.connect(window._report_issue)
     help_menu.addAction(report_issue_action)
@@ -327,6 +517,11 @@ def build_actions(window: MainWindow) -> None:
         )
     )
     perf_stats_action.setShortcut("Ctrl+Shift+P")
+    _configure_action(
+        window,
+        perf_stats_action,
+        status_tip="Open performance diagnostics (Ctrl+Shift+P)",
+    )
     perf_stats_action.triggered.connect(window._show_performance_stats)
     help_menu.addAction(perf_stats_action)
 
@@ -337,6 +532,11 @@ def build_actions(window: MainWindow) -> None:
             window,
             QtWidgets.QStyle.StandardPixmap.SP_FileDialogContentsView,
         )
+    )
+    _configure_action(
+        window,
+        diagnostics_action,
+        status_tip="Open environment diagnostics",
     )
     diagnostics_action.triggered.connect(window._show_diagnostics)
     help_menu.addAction(diagnostics_action)
@@ -351,36 +551,15 @@ def build_actions(window: MainWindow) -> None:
             QtWidgets.QStyle.StandardPixmap.SP_MessageBoxInformation,
         )
     )
+    _configure_action(
+        window,
+        about_action,
+        status_tip="Show application version and credits",
+    )
     about_action.triggered.connect(window._show_about)
     help_menu.addAction(about_action)
 
 
 def setup_keyboard_shortcuts(window: MainWindow) -> None:
-    """Setup keyboard shortcuts for common operations."""
-    open_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+O"), window)
-    open_shortcut.activated.connect(window._open_slide_folder)
-
-    run_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+R"), window)
-    run_shortcut.activated.connect(window._start_registration)
-
-    blink_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+B"), window)
-    blink_shortcut.activated.connect(window._blink)
-
-    reset_layout_shortcut = QtGui.QShortcut(
-        QtGui.QKeySequence("Ctrl+Shift+L"), window
-    )
-    reset_layout_shortcut.activated.connect(window.reset_layout)
-
-    toggle_left_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+["), window)
-    toggle_left_shortcut.activated.connect(window.toggle_left_sidebar)
-
-    toggle_right_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+]"), window)
-    toggle_right_shortcut.activated.connect(window.toggle_right_sidebar)
-
-    expand_center_shortcut = QtGui.QShortcut(
-        QtGui.QKeySequence("Ctrl+Shift+C"), window
-    )
-    expand_center_shortcut.activated.connect(window.expand_center)
-
-    quit_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Q"), window)
-    quit_shortcut.activated.connect(window.close)
+    """Keyboard shortcuts are registered directly on ``QAction`` instances."""
+    logger.debug("QAction-based shortcuts configured")

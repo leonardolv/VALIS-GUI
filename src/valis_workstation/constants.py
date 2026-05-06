@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from enum import StrEnum
+from pathlib import Path
 
 
 class ConfigKeys(StrEnum):
@@ -169,3 +170,32 @@ class ImageFormats(StrEnum):
     def all(cls) -> list[str]:
         """Get all formats."""
         return [member.value for member in cls]
+
+
+# Shared supported extensions for slide discovery/validation.
+SUPPORTED_EXTENSIONS: frozenset[str] = frozenset(
+    {
+        ".tif",
+        ".tiff",
+        ".ome.tif",
+        ".ome.tiff",
+        ".svs",
+        ".ndpi",
+        ".vsi",
+        ".czi",
+        ".scn",
+        ".png",
+        ".jpg",
+        ".jpeg",
+    }
+)
+
+
+def has_supported_extension(path: str | Path) -> bool:
+    """Return ``True`` when *path* matches one of ``SUPPORTED_EXTENSIONS``.
+
+    ``Path.suffix`` cannot detect compound extensions such as ``.ome.tiff``,
+    so we normalize and use ``endswith`` checks.
+    """
+    suffix_target = str(path).lower()
+    return any(suffix_target.endswith(ext) for ext in SUPPORTED_EXTENSIONS)

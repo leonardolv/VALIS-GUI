@@ -8,7 +8,12 @@ from typing import Callable
 
 import numpy as np
 
-from valis_workstation.constants import CropModes, FeatureDetectors, TransformerTypes
+from valis_workstation.constants import (
+    CropModes,
+    FeatureDetectors,
+    ImageFormats,
+    TransformerTypes,
+)
 from valis_workstation.models.config import Config
 from valis_workstation.utils.exceptions import UserVisibleError
 
@@ -217,6 +222,7 @@ def run_valis_pipeline(
     slides: list[Path],
     output_dir: Path,
     progress_callback: Callable[[int], None] | None = None,
+    stage_callback: Callable[[str], None] | None = None,
     cancel_check: Callable[[], bool] | None = None,
 ) -> dict:
     """Run the VALIS registration pipeline.
@@ -254,6 +260,8 @@ def run_valis_pipeline(
     valis_registration = importlib.import_module("valis.registration")
 
     logger.info("Starting VALIS pipeline with %d slides", len(slides))
+    if stage_callback:
+        stage_callback("Preparing pipeline")
     if progress_callback:
         progress_callback(10)
 
@@ -297,6 +305,8 @@ def run_valis_pipeline(
         if cancel_check and cancel_check():
             raise UserVisibleError("Registration cancelled by user")
 
+        if stage_callback:
+            stage_callback("Feature detection and rigid alignment")
         logger.info("Starting registration process")
         rigid_registrar, non_rigid_registrar, summary_df = registrar.register()
         logger.info(
@@ -322,6 +332,8 @@ def run_valis_pipeline(
             save_kwargs["Q"] = config.image_quality
 
         registered_dir = output_dir / "registered"
+        if stage_callback:
+            stage_callback("Warping and saving registered slides")
         logger.info(
             "Warping and saving slides to %s with options: %s",
             registered_dir,
@@ -345,6 +357,8 @@ def run_valis_pipeline(
 
     # ── Persist summary CSV ────────────────────────────────────────
     summary_csv = output_dir / "summary.csv"
+    if stage_callback:
+        stage_callback("Finalizing outputs")
     summary_df.to_csv(summary_csv, index=False)
     logger.info("Summary CSV saved to %s", summary_csv)
 
@@ -371,6 +385,7 @@ def run_valis_pipeline(
     return {
         "output_dir": output_dir,
         "registered_dir": registered_dir,
+        "format": getattr(config, "image_format", ImageFormats.OME_TIFF),
         "summary_csv": summary_csv,
         "summary_df": summary_df,
         "slides": slides_info,

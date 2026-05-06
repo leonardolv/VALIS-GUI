@@ -30,6 +30,7 @@ from valis_workstation.layout_constants import (
     WINDOW_MIN_W,
 )
 from valis_workstation.models.config import Config
+from valis_workstation.settings_keys import SettingsKeys, SplitterKeys
 from valis_workstation.services.slide_scan import scan_slide_folder
 from valis_workstation.ui import (
     main_window_actions,
@@ -63,8 +64,8 @@ from valis_workstation.workers.valis_worker import ValisWorker
 logger = logging.getLogger(__name__)
 
 # QSettings keys for splitter persistence
-_KEY_TOP_SPLITTER = "layout/topSplitter/sizes"
-_KEY_OUTER_SPLITTER = "layout/outerSplitter/sizes"
+_KEY_TOP_SPLITTER = SplitterKeys.TOP_SPLITTER
+_KEY_OUTER_SPLITTER = SplitterKeys.OUTER_SPLITTER
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -73,6 +74,7 @@ class MainWindow(QtWidgets.QMainWindow):
         repo_root: Path,
         log_emitter: QtLogEmitter,
         simple_elastix_available: bool,
+        gpu_available: bool,
         parent: QtWidgets.QWidget | None = None,
     ) -> None:
         super().__init__(parent)
@@ -88,6 +90,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._last_run_context: dict | None = None
         self._current_slide_folder: Path | None = None
         self._last_loaded_config_path: Path | None = None
+        self._focus_mode_active = False
+        self._focus_mode_restore_sizes: list[int] | None = None
+        self._drag_active = False
 
         self.setWindowTitle("VALIS Workstation")
         self.resize(1400, 900)
@@ -95,22 +100,31 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # ── Create panel content holders (docks kept for API compat) ──
         self._project_dock = ProjectDock(self)
-        self._properties_dock = PropertiesDock(simple_elastix_available, self)
+        self._properties_dock = PropertiesDock(
+            simple_elastix_available,
+            gpu_available=gpu_available,
+            parent=self,
+        )
         self._status_dock = StatusDock(log_emitter, self)
         self._layer_controls_dock: LayerControlsDock | None = None
         self._slide_preview_dock = SlidePreviewDock(self)
 
         # ── Build splitter-based layout ──────────────────────────────
         self._build_splitter_layout()
+        self._project_dock.count_changed.connect(self._update_left_tab_titles)
+        self._slide_preview_dock.count_changed.connect(self._update_left_tab_titles)
+        self._update_left_tab_titles()
 
         self._build_actions()
         self._setup_keyboard_shortcuts()
         self._setup_status_bar()
         self._restore_window_state()
         self._restore_splitter_state()
+        self._sync_sidebar_toggle_actions()
 
         # Enable drag and drop
         self.setAcceptDrops(True)
+        self._create_drop_overlay()
 
     # ── Splitter layout construction ─────────────────────────────
 
@@ -121,9 +135,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self._left_tabs = QtWidgets.QTabWidget()
         self._left_tabs.setObjectName("LeftPanelTabs")
 
-        left_project_scroll = self._wrap_in_scroll_area(self._project_dock.widget())
+        left_project_scroll = self._wrap_in_scroll_area(
+            self._dock_widget_or_error(self._project_dock, "ProjectDock")
+        )
         left_preview_scroll = self._wrap_in_scroll_area(
-            self._slide_preview_dock.widget()
+            self._dock_widget_or_error(self._slide_preview_dock, "SlidePreviewDock")
         )
         self._left_tabs.addTab(left_project_scroll, "Project")
         self._left_tabs.addTab(left_preview_scroll, "Slide Preview")
@@ -154,6 +170,8 @@ class MainWindow(QtWidgets.QMainWindow):
         canvas_layout = QtWidgets.QVBoxLayout(canvas_panel)
         canvas_layout.setContentsMargins(0, 0, 0, 0)
         canvas_layout.setSpacing(0)
+        self._workflow_strip = self._build_workflow_strip()
+        canvas_layout.addWidget(self._workflow_strip)
         canvas_layout.addWidget(canvas_widget)
         canvas_panel.setMinimumSize(CANVAS_MIN_W, CANVAS_MIN_H)
         canvas_panel.setSizePolicy(
@@ -162,7 +180,9 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         # -- right panel: tabbed Properties + Layers ------------------
-        right_props_scroll = self._wrap_in_scroll_area(self._properties_dock.widget())
+        right_props_scroll = self._wrap_in_scroll_area(
+            self._dock_widget_or_error(self._properties_dock, "PropertiesDock")
+        )
         self._right_tabs.addTab(right_props_scroll, "Properties")
         # Layer controls tab is added when napari is ready (see
         # _build_central_widget).  A placeholder is stored so it can be
@@ -201,7 +221,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._top_splitter.setCollapsible(idx, False)
 
         # -- bottom status panel --------------------------------------
-        status_content = self._status_dock.widget()
+        status_content = self._dock_widget_or_error(self._status_dock, "StatusDock")
         status_panel = QtWidgets.QFrame()
         status_panel.setObjectName("StatusPanel")
         status_panel.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
@@ -248,8 +268,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self._canvas_panel = canvas_panel
         self._right_panel = right_panel
         self._status_panel = status_panel
+        self._set_workflow_step("Load")
 
     # ── Scroll-area wrapper ──────────────────────────────────────
+
+    @staticmethod
+    def _dock_widget_or_error(
+        dock: QtWidgets.QDockWidget,
+        dock_name: str,
+    ) -> QtWidgets.QWidget:
+        widget = dock.widget()
+        if widget is None:
+            raise RuntimeError(f"{dock_name}.widget() returned None")
+        return widget
 
     @staticmethod
     def _wrap_in_scroll_area(widget: QtWidgets.QWidget) -> QtWidgets.QScrollArea:
@@ -261,6 +292,65 @@ class MainWindow(QtWidgets.QMainWindow):
         scroll.setWidget(widget)
         scroll.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         return scroll
+
+    def _build_workflow_strip(self) -> QtWidgets.QWidget:
+        strip = QtWidgets.QFrame()
+        strip.setObjectName("WorkflowStrip")
+        strip.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+        layout = QtWidgets.QHBoxLayout(strip)
+        layout.setContentsMargins(8, 6, 8, 6)
+        layout.setSpacing(8)
+
+        self._workflow_steps = ["Load", "Configure", "Register", "Review"]
+        self._workflow_labels: dict[str, QtWidgets.QLabel] = {}
+
+        for idx, name in enumerate(self._workflow_steps):
+            label = QtWidgets.QLabel(name)
+            label.setProperty("workflowStep", True)
+            label.setProperty("active", False)
+            self._workflow_labels[name] = label
+            layout.addWidget(label)
+            if idx < len(self._workflow_steps) - 1:
+                arrow = QtWidgets.QLabel("→")
+                arrow.setProperty("role", "sidebar-subtle")
+                layout.addWidget(arrow)
+
+        layout.addStretch(1)
+        return strip
+
+    def _set_workflow_step(self, step: str) -> None:
+        if not hasattr(self, "_workflow_labels"):
+            return
+        for name, label in self._workflow_labels.items():
+            label.setProperty("active", name == step)
+            label.style().unpolish(label)
+            label.style().polish(label)
+            label.update()
+
+    def _create_drop_overlay(self) -> None:
+        self._drop_overlay = QtWidgets.QLabel("Drop a slide folder here", self)
+        self._drop_overlay.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self._drop_overlay.setStyleSheet(
+            "background: rgba(45, 122, 237, 0.18);"
+            "border: 2px dashed #2d7aed;"
+            "color: #dfe9ff;"
+            "font-size: 16px;"
+            "font-weight: 600;"
+        )
+        self._drop_overlay.setVisible(False)
+        self._drop_overlay.setAttribute(
+            QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents, True
+        )
+        self._drop_overlay.raise_()
+
+    def _set_drop_overlay_visible(self, visible: bool) -> None:
+        self._drag_active = visible
+        if not hasattr(self, "_drop_overlay"):
+            return
+        self._drop_overlay.setGeometry(self.rect())
+        self._drop_overlay.setVisible(visible)
+        if visible:
+            self._drop_overlay.raise_()
 
     def _build_central_widget(self) -> QtWidgets.QWidget:
         napari_spec = importlib.util.find_spec("napari")
@@ -276,9 +366,10 @@ class MainWindow(QtWidgets.QMainWindow):
             # Add layer controls as a tab in the right panel
             self._layer_controls_dock = LayerControlsDock(self._viewer, self)
             layer_widget = self._layer_controls_dock.widget()
-            if layer_widget is not None:
-                layer_scroll = self._wrap_in_scroll_area(layer_widget)
-                self._right_tabs.addTab(layer_scroll, "Layers")
+            if layer_widget is None:
+                raise RuntimeError("LayerControlsDock.widget() returned None")
+            layer_scroll = self._wrap_in_scroll_area(layer_widget)
+            self._right_tabs.addTab(layer_scroll, "Layers")
         except Exception:
             logger.exception("Failed to start napari viewer")
             return self._napari_unavailable_widget()
@@ -324,7 +415,26 @@ class MainWindow(QtWidgets.QMainWindow):
         """Setup status bar at the bottom of the window."""
         self._status_bar = self.statusBar()
         self._status_bar.showMessage("Ready")
+
+        self._open_output_folder_link = QtWidgets.QPushButton("Open output folder")
+        self._open_output_folder_link.setVisible(False)
+        self._open_output_folder_link.setProperty("panelAction", True)
+        self._open_output_folder_link.clicked.connect(self._open_last_output_folder)
+        self._status_bar.addPermanentWidget(self._open_output_folder_link)
         logger.debug("Status bar configured")
+
+    def _update_left_tab_titles(self) -> None:
+        project_count = len(self._project_dock.slides())
+        preview_count = self._slide_preview_dock.slide_count()
+        self._left_tabs.setTabText(0, f"Project ({project_count})")
+        self._left_tabs.setTabText(1, f"Slide Preview ({preview_count})")
+
+    def _open_last_output_folder(self) -> None:
+        if not self._last_result:
+            return
+        output_dir = Path(self._last_result.get("output_dir", ""))
+        if output_dir.exists():
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(output_dir)))
 
     def _open_slide_folder(self) -> None:
         folder = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Slide Folder")
@@ -365,8 +475,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def _on_worker_finished(self, result: dict) -> None:
         main_window_workflow.on_worker_finished(self, result)
 
-    def _on_worker_failed(self, message: str) -> None:
-        main_window_workflow.on_worker_failed(self, message)
+    def _on_worker_failed(self, message: str, technical_details: str = "") -> None:
+        main_window_workflow.on_worker_failed(self, message, technical_details)
 
     def _blink(self) -> None:
         if not self._napari_available or self._viewer is None:
@@ -379,11 +489,6 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         registered_dir = Path(self._last_result["registered_dir"])
         slide_paths = sorted(registered_dir.glob("*.ome.tiff"))
-        if len(slide_paths) < 2:
-            QtWidgets.QMessageBox.warning(
-                self, "Blink", "Need at least two registered slides."
-            )
-            return
         dialog = BlinkViewerDialog(self._viewer, slide_paths, self)
         dialog.exec()
 
@@ -432,16 +537,52 @@ class MainWindow(QtWidgets.QMainWindow):
             if layer.name.startswith("Registered:"):
                 self._viewer.layers.remove(layer)
 
-        slides = list(sorted(registered_dir.glob("*.ome.tiff")))
-        progress.setMaximum(len(slides))
+        output_format = str(result.get("format", ImageFormats.OME_TIFF))
+        patterns_map = {
+            str(ImageFormats.OME_TIFF): ["*.ome.tiff"],
+            str(ImageFormats.TIFF): ["*.tif", "*.tiff"],
+            str(ImageFormats.PNG): ["*.png"],
+            str(ImageFormats.JPEG): ["*.jpg", "*.jpeg"],
+        }
+        patterns = patterns_map.get(output_format, ["*.ome.tiff"])
 
-        for i, slide_path in enumerate(slides):
-            if progress.wasCanceled():
-                break
+        slides: list[Path] = []
+        for pattern in patterns:
+            slides.extend(sorted(registered_dir.glob(pattern)))
 
-            progress.setValue(i)
+        if not slides:
+            fallback_patterns = ["*.ome.tiff", "*.tif", "*.tiff", "*.png", "*.jpg", "*.jpeg"]
+            for pattern in fallback_patterns:
+                slides.extend(sorted(registered_dir.glob(pattern)))
+
+        # Preserve sort order while deduplicating possible multi-pattern overlaps.
+        unique_slides: list[Path] = []
+        seen: set[Path] = set()
+        for slide in sorted(slides):
+            if slide not in seen:
+                seen.add(slide)
+                unique_slides.append(slide)
+        slides = unique_slides
+
+        progress.setMaximum(max(1, len(slides)))
+        if not slides:
+            progress.setLabelText("No registered image files found to load.")
+            progress.setValue(1)
+            QtCore.QTimer.singleShot(800, progress.close)
+            return
+
+        load_index = 0
+
+        def _load_next() -> None:
+            nonlocal load_index
+            if progress.wasCanceled() or load_index >= len(slides):
+                progress.setValue(len(slides))
+                progress.close()
+                return
+
+            slide_path = slides[load_index]
+            progress.setValue(load_index)
             progress.setLabelText(f"Loading: {slide_path.name}...")
-            QtWidgets.QApplication.processEvents()
 
             try:
                 layer_result = self._viewer.open(
@@ -453,7 +594,15 @@ class MainWindow(QtWidgets.QMainWindow):
             except Exception:
                 logger.exception("Failed to load registered slide %s", slide_path)
 
-        progress.setValue(len(slides))
+            load_index += 1
+            QtCore.QTimer.singleShot(0, _load_next)
+
+        _load_next()
+
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(event)
+        if hasattr(self, "_drop_overlay"):
+            self._drop_overlay.setGeometry(self.rect())
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """Handle window close event with proper resource cleanup."""
@@ -504,8 +653,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 logger.info("Closing napari viewer")
                 self._viewer.close()
                 self._viewer = None
-            except Exception as e:
-                logger.exception("Failed to close napari viewer: %s", e)
+            except (RuntimeError, AttributeError) as exc:
+                logger.warning(
+                    "Suppressed known napari close exception (%s): %s",
+                    type(exc).__name__,
+                    exc,
+                )
+            except Exception as exc:
+                logger.exception("Unexpected viewer close failure: %s", exc)
+                raise
 
         # Clear references to help garbage collection
         self._worker = None
@@ -520,21 +676,32 @@ class MainWindow(QtWidgets.QMainWindow):
     def _save_window_state(self) -> None:
         """Save window geometry and dock states to QSettings."""
         settings = QtCore.QSettings("VALIS", "Workstation")
-        settings.setValue("geometry", self.saveGeometry())
-        settings.setValue("windowState", self.saveState())
+        settings.setValue(SettingsKeys.GEOMETRY, self.saveGeometry())
+        settings.setValue(SettingsKeys.WINDOW_STATE, self.saveState())
+        settings.setValue(SettingsKeys.LEFT_TAB_INDEX, self._left_tabs.currentIndex())
+        settings.setValue(
+            SettingsKeys.RIGHT_TAB_INDEX,
+            self._right_tabs.currentIndex(),
+        )
         logger.debug("Window state saved")
 
     def _restore_window_state(self) -> None:
         """Restore window geometry and dock states from QSettings."""
         settings = QtCore.QSettings("VALIS", "Workstation")
-        geometry = settings.value("geometry")
+        geometry = settings.value(SettingsKeys.GEOMETRY)
         if geometry:
             self.restoreGeometry(geometry)
             logger.debug("Window geometry restored")
-        window_state = settings.value("windowState")
+        window_state = settings.value(SettingsKeys.WINDOW_STATE)
         if window_state:
             self.restoreState(window_state)
             logger.debug("Window state restored")
+        left_idx = settings.value(SettingsKeys.LEFT_TAB_INDEX, 0, type=int)
+        right_idx = settings.value(SettingsKeys.RIGHT_TAB_INDEX, 0, type=int)
+        if 0 <= left_idx < self._left_tabs.count():
+            self._left_tabs.setCurrentIndex(left_idx)
+        if 0 <= right_idx < self._right_tabs.count():
+            self._right_tabs.setCurrentIndex(right_idx)
 
     # ── Splitter persistence ─────────────────────────────────────
 
@@ -647,6 +814,16 @@ class MainWindow(QtWidgets.QMainWindow):
         has_result = self._last_result is not None
         for action in getattr(self, "_result_actions", []):
             action.setEnabled(has_result)
+        results_toolbar = getattr(self, "_results_toolbar", None)
+        if results_toolbar is not None:
+            results_toolbar.setVisible(has_result)
+
+    def _set_registration_running(self, running: bool) -> None:
+        for action in getattr(self, "_registration_run_actions", []):
+            action.setEnabled(not running)
+        cancel_action = getattr(self, "_cancel_registration_action", None)
+        if cancel_action is not None:
+            cancel_action.setEnabled(running)
 
     def reset_layout(self) -> None:
         """Reset splitters to default sizes."""
@@ -669,6 +846,7 @@ class MainWindow(QtWidgets.QMainWindow):
             sizes[0] = LEFT_SIDEBAR_INIT
             sizes[1] = max(CANVAS_MIN_W, sizes[1] - (LEFT_SIDEBAR_INIT - old_size))
             self._top_splitter.setSizes(self._normalize_top_splitter_sizes(sizes))
+        self._sync_sidebar_toggle_actions()
 
     def toggle_right_sidebar(self) -> None:
         """Collapse or restore the right sidebar."""
@@ -680,21 +858,56 @@ class MainWindow(QtWidgets.QMainWindow):
             sizes[2] = RIGHT_SIDEBAR_INIT
             sizes[1] = max(CANVAS_MIN_W, sizes[1] - (RIGHT_SIDEBAR_INIT - old_size))
             self._top_splitter.setSizes(self._normalize_top_splitter_sizes(sizes))
+        self._sync_sidebar_toggle_actions()
+
+    def _sync_sidebar_toggle_actions(self) -> None:
+        sizes = self._top_splitter.sizes()
+        left_visible = sizes[0] > LEFT_SIDEBAR_MIN
+        right_visible = sizes[2] > RIGHT_SIDEBAR_MIN
+        left_action = getattr(self, "_toggle_left_action", None)
+        if left_action is not None:
+            left_action.setChecked(left_visible)
+        right_action = getattr(self, "_toggle_right_action", None)
+        if right_action is not None:
+            right_action.setChecked(right_visible)
+        focus_action = getattr(self, "_focus_mode_action", None)
+        if focus_action is not None:
+            old_state = focus_action.blockSignals(True)
+            focus_action.setChecked(self._focus_mode_active)
+            focus_action.blockSignals(old_state)
 
     def expand_center(self) -> None:
-        """Minimise both sidebars so the canvas gets maximum space."""
-        total = sum(self._top_splitter.sizes())
-        center = total - LEFT_SIDEBAR_MIN - RIGHT_SIDEBAR_MIN
-        self._top_splitter.setSizes(
-            self._normalize_top_splitter_sizes(
-                [LEFT_SIDEBAR_MIN, center, RIGHT_SIDEBAR_MIN]
+        """Backward-compatible alias for enabling focus mode."""
+        self.toggle_focus_mode(True)
+
+    def toggle_focus_mode(self, enabled: bool) -> None:
+        """Toggle focus mode by collapsing/restoring sidebars."""
+        if enabled and not self._focus_mode_active:
+            self._focus_mode_restore_sizes = self._top_splitter.sizes()
+            total = sum(self._focus_mode_restore_sizes)
+            center = total - LEFT_SIDEBAR_MIN - RIGHT_SIDEBAR_MIN
+            self._top_splitter.setSizes(
+                self._normalize_top_splitter_sizes(
+                    [LEFT_SIDEBAR_MIN, center, RIGHT_SIDEBAR_MIN]
+                )
             )
-        )
-        logger.debug("Center panel expanded")
+            self._focus_mode_active = True
+            logger.debug("Focus mode enabled")
+        elif not enabled and self._focus_mode_active:
+            restore = self._focus_mode_restore_sizes
+            if restore and len(restore) == 3:
+                self._top_splitter.setSizes(self._normalize_top_splitter_sizes(restore))
+            self._focus_mode_active = False
+            logger.debug("Focus mode disabled")
+        self._sync_sidebar_toggle_actions()
 
     def fit_to_content(self) -> None:
-        """Resize timeline to its preferred height."""
+        """Resize timeline and reset the viewer to fit loaded layers."""
         self._outer_splitter.setSizes(self._default_outer_splitter_sizes())
+        if self._viewer is not None:
+            reset_fn = getattr(self._viewer, "reset_view", None)
+            if callable(reset_fn):
+                reset_fn()
 
     def _open_repo_document(
         self, relative_name: str, title: str, log_label: str
@@ -726,10 +939,16 @@ class MainWindow(QtWidgets.QMainWindow):
         """Accept drag events containing file URLs."""
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
+            self._set_drop_overlay_visible(True)
             logger.debug("Drag enter accepted")
+
+    def dragLeaveEvent(self, event: QtGui.QDragLeaveEvent) -> None:
+        self._set_drop_overlay_visible(False)
+        super().dragLeaveEvent(event)
 
     def dropEvent(self, event: QtGui.QDropEvent) -> None:
         """Handle dropped files/folders."""
+        self._set_drop_overlay_visible(False)
         for url in event.mimeData().urls():
             path = Path(url.toLocalFile())
             if path.is_dir():
@@ -746,6 +965,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _load_slides_from_folder(self, folder: Path) -> None:
         """Load slides from a folder path."""
+        self._set_workflow_step("Load")
         overlay = LoadingOverlay(self, f"Scanning {folder.name}…")
         overlay.set_stage("Scan")
         overlay.set_progress(5)
@@ -758,6 +978,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._current_slide_folder = folder
                 self._project_dock.set_slides(slides)
                 self._add_to_recent_folders(str(folder))
+                self._set_workflow_step("Configure")
 
                 # Update reference slide list in properties dock
                 slide_names = [s.stem for s in slides]
@@ -780,6 +1001,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._status_bar.showMessage(
                     f"Loaded {len(slides)} slides from {folder.name}"
                 )
+                self._update_left_tab_titles()
             else:
                 QtWidgets.QMessageBox.warning(
                     self,
@@ -868,7 +1090,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def _add_to_recent_folders(self, folder_path: str) -> None:
         """Add folder to recent folders list."""
         settings = QtCore.QSettings("VALIS", "Workstation")
-        recent = settings.value("recent_folders", [])
+        recent = settings.value(SettingsKeys.RECENT_FOLDERS, [])
 
         if not isinstance(recent, list):
             recent = []
@@ -880,32 +1102,53 @@ class MainWindow(QtWidgets.QMainWindow):
         # Add to front
         recent.insert(0, folder_path)
 
-        # Keep only last 10
-        recent = recent[:10]
+        max_recent = settings.value(SettingsKeys.UI_RECENT_FILES_COUNT, 10, type=int)
+        max_recent = max(5, min(20, max_recent))
+        recent = recent[:max_recent]
 
-        settings.setValue("recent_folders", recent)
+        settings.setValue(SettingsKeys.RECENT_FOLDERS, recent)
         self._update_recent_folders_menu()
         logger.debug("Added %s to recent folders", folder_path)
 
     def _save_recent_folder_config(self, folder: Path, config_path: Path) -> None:
         settings = QtCore.QSettings("VALIS", "Workstation")
-        raw = settings.value("recent_folder_configs", "{}")
+        raw = settings.value(SettingsKeys.RECENT_FOLDER_CONFIGS, "{}")
         try:
             mapping = json.loads(raw) if isinstance(raw, str) else dict(raw)
         except Exception:
             mapping = {}
         mapping[str(folder)] = str(config_path)
-        settings.setValue("recent_folder_configs", json.dumps(mapping))
+        settings.setValue(SettingsKeys.RECENT_FOLDER_CONFIGS, json.dumps(mapping))
 
     def _get_recent_folder_config(self, folder: Path) -> Path | None:
         settings = QtCore.QSettings("VALIS", "Workstation")
-        raw = settings.value("recent_folder_configs", "{}")
+        raw = settings.value(SettingsKeys.RECENT_FOLDER_CONFIGS, "{}")
         try:
             mapping = json.loads(raw) if isinstance(raw, str) else dict(raw)
         except Exception:
             mapping = {}
         path = mapping.get(str(folder))
         return Path(path) if path else None
+
+    def _open_most_recent_folder(self) -> None:
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        recent = settings.value(SettingsKeys.RECENT_FOLDERS, [])
+        if not isinstance(recent, list) or not recent:
+            QtWidgets.QMessageBox.information(
+                self,
+                "Open Recent",
+                "No recent folders available.",
+            )
+            return
+        path = Path(recent[0])
+        if not path.exists():
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Open Recent",
+                f"Most recent folder no longer exists:\n{path}",
+            )
+            return
+        self._load_slides_from_folder(path)
 
     def _open_recent_with_config(self, folder: Path) -> None:
         # `_load_slides_from_folder` already auto-loads linked configs.
@@ -915,22 +1158,29 @@ class MainWindow(QtWidgets.QMainWindow):
         """Update the recent folders menu."""
         self._recent_menu.clear()
         settings = QtCore.QSettings("VALIS", "Workstation")
-        recent = settings.value("recent_folders", [])
+        recent = settings.value(SettingsKeys.RECENT_FOLDERS, [])
 
         if not isinstance(recent, list):
             recent = []
+
+        max_recent = settings.value(SettingsKeys.UI_RECENT_FILES_COUNT, 10, type=int)
+        max_recent = max(5, min(20, max_recent))
+        recent = recent[:max_recent]
+        settings.setValue(SettingsKeys.RECENT_FOLDERS, recent)
 
         if not recent:
             action = self._recent_menu.addAction("(No recent folders)")
             action.setEnabled(False)
         else:
-            for folder_path in recent:
+            for idx, folder_path in enumerate(recent):
                 path = Path(folder_path)
                 exists = path.exists()
                 label = path.name if exists else f"[missing] {path.name}"
                 action = self._recent_menu.addAction(label)
                 action.setToolTip(folder_path)
                 action.setEnabled(exists)
+                if idx < 9:
+                    action.setShortcut(QtGui.QKeySequence(f"Ctrl+{idx + 1}"))
                 action.triggered.connect(
                     lambda checked=False, p=path: self._load_slides_from_folder(p)
                 )

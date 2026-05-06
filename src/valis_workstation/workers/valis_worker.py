@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import traceback
 from pathlib import Path
 
 from PySide6 import QtCore
@@ -14,8 +15,9 @@ logger = logging.getLogger(__name__)
 class ValisWorker(QtCore.QObject):
     started = QtCore.Signal()
     progress = QtCore.Signal(int)
+    stage_changed = QtCore.Signal(str)
     finished = QtCore.Signal(dict)
-    failed = QtCore.Signal(str)
+    failed = QtCore.Signal(str, str)
     cancelled = QtCore.Signal()
 
     def __init__(self, config: Config, slides: list[Path], output_dir: Path) -> None:
@@ -33,22 +35,27 @@ class ValisWorker(QtCore.QObject):
     @QtCore.Slot()
     def run(self) -> None:
         self.started.emit()
+        self.stage_changed.emit("Starting")
         try:
             result = run_valis_pipeline(
                 self._config,
                 self._slides,
                 self._output_dir,
                 progress_callback=self.progress.emit,
+                stage_callback=self.stage_changed.emit,
                 cancel_check=lambda: self._cancel_requested,
             )
 
             if self._cancel_requested:
                 logger.info("Registration cancelled")
+                self.stage_changed.emit("Cancelled")
                 self.cancelled.emit()
                 return
 
         except Exception as exc:
             logger.exception("VALIS pipeline failed")
-            self.failed.emit(str(exc))
+            self.stage_changed.emit("Failed")
+            self.failed.emit(str(exc), traceback.format_exc())
             return
+        self.stage_changed.emit("Complete")
         self.finished.emit(result)

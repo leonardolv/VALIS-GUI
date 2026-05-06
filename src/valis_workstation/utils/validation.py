@@ -6,6 +6,8 @@ import logging
 import shutil
 from pathlib import Path
 
+from valis_workstation.constants import has_supported_extension
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,19 +56,8 @@ def validate_slides(
         )
 
     # Check file formats (basic check - just extension)
-    supported_extensions = {
-        ".tif",
-        ".tiff",
-        ".ome.tif",
-        ".ome.tiff",
-        ".svs",
-        ".ndpi",
-        ".vsi",
-        ".czi",
-        ".scn",
-    }
     unsupported_files = [
-        s for s in slides if s.suffix.lower() not in supported_extensions
+        s for s in slides if not has_supported_extension(s)
     ]
     if unsupported_files:
         warnings.append(

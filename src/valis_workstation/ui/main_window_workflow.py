@@ -78,6 +78,10 @@ def start_registration_from_context(window: MainWindow, context: dict) -> None:
     output_dir: Path = context["output_dir"]
 
     window._status_bar.showMessage(f"Starting registration of {len(slides)} slides...")
+    window._set_workflow_step("Register")
+    window._set_registration_running(True)
+    if hasattr(window, "_open_output_folder_link"):
+        window._open_output_folder_link.setVisible(False)
     logger.info("Starting registration with %d slides", len(slides))
 
     window._worker_thread = QtCore.QThread(window)
@@ -86,8 +90,10 @@ def start_registration_from_context(window: MainWindow, context: dict) -> None:
 
     window._worker_thread.started.connect(window._worker.run)
     window._worker.started.connect(lambda: window._status_dock.set_progress(0))
+    window._worker.started.connect(lambda: window._status_dock.set_stage("Starting"))
     window._worker.started.connect(lambda: window._status_dock.show_cancel_button(True))
     window._worker.progress.connect(window._status_dock.set_progress)
+    window._worker.stage_changed.connect(window._status_dock.set_stage)
     window._worker.finished.connect(window._on_worker_finished)
     window._worker.failed.connect(window._on_worker_failed)
     window._worker.cancelled.connect(window._on_worker_cancelled)
@@ -119,6 +125,7 @@ def resume_last_registration(window: MainWindow) -> None:
 
 def cleanup_worker(window: MainWindow) -> None:
     window._status_dock.show_cancel_button(False)
+    window._set_registration_running(False)
     window._worker_thread = None
     window._worker = None
 
@@ -131,7 +138,9 @@ def request_cancellation(window: MainWindow) -> None:
     reply = QtWidgets.QMessageBox.question(
         window,
         "Cancel Registration",
-        "Are you sure you want to cancel the registration?\nPartial results may be lost.",
+        "Are you sure you want to cancel the registration?\n"
+        "Slides processed so far will remain in the output folder. "
+        "Pending slides will not be registered.",
         QtWidgets.QMessageBox.StandardButton.Yes
         | QtWidgets.QMessageBox.StandardButton.No,
         QtWidgets.QMessageBox.StandardButton.No,
@@ -146,12 +155,15 @@ def request_cancellation(window: MainWindow) -> None:
 def on_worker_cancelled(window: MainWindow) -> None:
     """Handle worker cancellation."""
     logger.info("Registration cancelled")
-    window._status_dock.set_progress(0)
+    window._status_dock.reset_progress()
+    window._status_dock.set_stage("Cancelled")
+    window._set_workflow_step("Configure")
     window._status_bar.showMessage("Registration cancelled", 5000)
     QtWidgets.QMessageBox.information(
         window,
         "VALIS",
-        "Registration was cancelled.\nPartial results may have been saved.",
+        "Registration was cancelled.\n"
+        "Slides processed so far remain in the output folder.",
     )
 
 
@@ -248,15 +260,21 @@ def safe_total_size_bytes(slides: list[Path]) -> tuple[int, bool]:
 def on_worker_finished(window: MainWindow, result: dict) -> None:
     logger.info("Registration completed")
     window._status_dock.set_progress(100)
+    window._status_dock.set_stage("Complete")
     window._last_result = result
     window._update_tools_enabled()
+    window._set_workflow_step("Review")
     window._load_registered_layers(result)
     window._status_bar.showMessage("Registration completed successfully", 5000)
+    if hasattr(window, "_open_output_folder_link"):
+        window._open_output_folder_link.setVisible(True)
     QtWidgets.QMessageBox.information(window, "VALIS", "Registration complete.")
 
 
-def on_worker_failed(window: MainWindow, message: str) -> None:
+def on_worker_failed(window: MainWindow, message: str, technical_details: str = "") -> None:
     logger.error("Registration failed: %s", message)
+    window._status_dock.set_stage("Failed")
+    window._set_workflow_step("Configure")
     window._status_bar.showMessage("Registration failed", 5000)
 
     log_file = window._repo_root / "logs" / "valis_workstation.log"
@@ -264,6 +282,6 @@ def on_worker_failed(window: MainWindow, message: str) -> None:
     show_error_dialog(
         window,
         f"Registration failed: {message}",
-        exception=None,
+        technical_details=technical_details,
         log_file=log_file if log_file.exists() else None,
     )
