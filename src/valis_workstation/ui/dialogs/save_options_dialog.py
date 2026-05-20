@@ -25,9 +25,15 @@ class SaveOptionsDialog(QtWidgets.QDialog):
         # Form layout for options
         form = QtWidgets.QFormLayout()
 
+        # Write pyramid checkbox (C4)
+        self._write_pyramid = QtWidgets.QCheckBox("Write image pyramid")
+        self._write_pyramid.setChecked(True)
+        self._write_pyramid.setToolTip("Enable multi-resolution pyramid output for faster viewer performance")
+        form.addRow("", self._write_pyramid)
+
         # Pyramid levels
         self._pyramid_levels = QtWidgets.QSpinBox()
-        self._pyramid_levels.setRange(1, 10)
+        self._pyramid_levels.setRange(0, 10)
         self._pyramid_levels.setValue(4)
         self._pyramid_levels.setToolTip(
             "Number of pyramid levels for multi-resolution images.\n"
@@ -35,6 +41,7 @@ class SaveOptionsDialog(QtWidgets.QDialog):
             "Recommended: 4-6 for whole slide images."
         )
         form.addRow("Pyramid levels:", self._pyramid_levels)
+        self._write_pyramid.toggled.connect(self._pyramid_levels.setEnabled)
 
         # Compression level
         self._compression = QtWidgets.QSpinBox()
@@ -126,7 +133,7 @@ class SaveOptionsDialog(QtWidgets.QDialog):
             comp_name = comp_names.get(compression, f"level {compression}")
             info = f"Lossless compression: {comp_name}, {pyramids} pyramid levels"
 
-        self._info_label.setText(f"ℹ️ {info}")
+        self._info_label.setText(f"Info: {info}")
 
     def get_options(self) -> dict:
         """Get the selected save options.
@@ -137,6 +144,7 @@ class SaveOptionsDialog(QtWidgets.QDialog):
             Dictionary with save option keys and values
         """
         return {
+            "write_pyramid": self._write_pyramid.isChecked(),
             "pyramid_levels": self._pyramid_levels.value(),
             "compression": self._compression.value(),
             "quality": self._quality.value(),

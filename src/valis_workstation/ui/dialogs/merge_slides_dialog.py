@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING
 
 from PySide6 import QtCore, QtWidgets
@@ -41,7 +42,7 @@ class MergeSlidesDialog(QtWidgets.QDialog):
 
         # Info banner
         info = QtWidgets.QLabel(
-            "📊 Merge registered slides into a single multi-channel image.\n"
+            "Merge registered slides into a single multi-channel image.\n"
             "Each slide becomes a channel. Useful for CyCIF, CODEX, and other multiplexed imaging."
         )
         info.setWordWrap(True)
@@ -148,6 +149,10 @@ class MergeSlidesDialog(QtWidgets.QDialog):
         select_none.clicked.connect(self._select_none)
         buttons.addButton(select_none, QtWidgets.QDialogButtonBox.ActionRole)
 
+        export_config = QtWidgets.QPushButton("Export config...")
+        export_config.clicked.connect(self._export_config)
+        buttons.addButton(export_config, QtWidgets.QDialogButtonBox.ActionRole)
+
         layout.addWidget(buttons)
 
     def _select_all(self) -> None:
@@ -163,6 +168,28 @@ class MergeSlidesDialog(QtWidgets.QDialog):
             cb = self._table.cellWidget(i, 0)
             if isinstance(cb, QtWidgets.QCheckBox):
                 cb.setChecked(False)
+
+    def _export_config(self) -> None:
+        """Export channel config as JSON file."""
+        config = self.get_merge_config()
+        out_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Export Merge Config",
+            "merge_config.json",
+            "JSON Files (*.json)",
+        )
+        if not out_path:
+            return
+        try:
+            with open(out_path, "w") as f:
+                json.dump(config, f, indent=2)
+            QtWidgets.QMessageBox.information(
+                self, "Exported", f"Config exported to {out_path}"
+            )
+        except Exception as exc:
+            QtWidgets.QMessageBox.critical(
+                self, "Export Error", f"Failed to export config: {exc}"
+            )
 
     def get_merge_config(self) -> dict:
         """Get the merge configuration.

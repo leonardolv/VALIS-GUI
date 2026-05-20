@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib
 import importlib.util
 import logging
+import shutil
+import time
 from pathlib import Path
 from typing import Callable
 
@@ -25,7 +27,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-def _get_feature_detector_cls(detector_key: str):
+def _get_feature_detector_cls(detector_key: str, use_color: bool = False):
     """Return the VALIS ``FeatureDD`` **class** for *detector_key*.
 
     The class (not an instance) is returned so that ``Valis.__init__`` can
@@ -59,6 +61,23 @@ def _get_feature_detector_cls(detector_key: str):
             "Unknown feature detector '%s' – falling back to VGG", detector_key
         )
         return None  # VALIS will use its own default (VGG)
+
+    # RGB/color mode: wrap class to inject rgb=True (VALIS v1.2.0+)
+    _RGB_CAPABLE = {FeatureDetectors.DISK, FeatureDetectors.DEDODE, FeatureDetectors.SUPERPOINT}
+    if use_color and detector_key in _RGB_CAPABLE:
+        try:
+            original_cls = cls
+
+            class _ColorWrapper(original_cls):  # type: ignore[valid-type]
+                def __init__(self, *a, **kw):
+                    kw.setdefault("rgb", True)
+                    super().__init__(*a, **kw)
+
+            _ColorWrapper.__name__ = f"{original_cls.__name__}RGB"
+            cls = _ColorWrapper
+            logger.info("Color feature mode enabled for %s", original_cls.__name__)
+        except Exception as exc:
+            logger.warning("Could not enable color features: %s", exc)
 
     logger.info("Feature detector class: %s", cls.__name__)
     return cls
@@ -135,27 +154,38 @@ def build_registrar_kwargs(config: Config) -> dict:
         "imgs_ordered": config.imgs_ordered,
     }
 
-    # ── Non-rigid registrar ─────────────────────────────────────────
+    # ── Non-rigid registrar (C2: RAFT support) ─────────────────────
     if config.non_rigid_registration:
-        try:
-            from valis import non_rigid_registrars  # type: ignore[import-untyped]
-
-            kwargs["non_rigid_registrar_cls"] = non_rigid_registrars.OpticalFlowWarper
-        except ImportError:
+        use_raft = getattr(config, "non_rigid_method", "optical_flow") == "raft"
+        nr_cls = None
+        if use_raft:
             try:
-                from valis import serial_non_rigid  # type: ignore[import-untyped]
-
-                kwargs["non_rigid_registrar_cls"] = (
-                    serial_non_rigid.SerialNonRigidRegistrar
-                )
+                from valis import non_rigid_registrars  # type: ignore[import-untyped]
+                if hasattr(non_rigid_registrars, "RAFTWarper"):
+                    nr_cls = non_rigid_registrars.RAFTWarper
+                    logger.info("Non-rigid method: RAFTWarper")
+                else:
+                    logger.warning("RAFTWarper not found in this VALIS version – falling back to OpticalFlow")
             except ImportError:
-                logger.warning("No non-rigid registrar available – disabling non-rigid")
-                kwargs["non_rigid_registrar_cls"] = None
+                pass
+        if nr_cls is None:
+            try:
+                from valis import non_rigid_registrars  # type: ignore[import-untyped]
+                nr_cls = non_rigid_registrars.OpticalFlowWarper
+                logger.info("Non-rigid method: OpticalFlowWarper")
+            except ImportError:
+                try:
+                    from valis import serial_non_rigid  # type: ignore[import-untyped]
+                    nr_cls = serial_non_rigid.SerialNonRigidRegistrar
+                except ImportError:
+                    logger.warning("No non-rigid registrar available – disabling non-rigid")
+        kwargs["non_rigid_registrar_cls"] = nr_cls
     else:
         kwargs["non_rigid_registrar_cls"] = None
 
     # ── Feature detector (class, not instance) ──────────────────────
-    fd_cls = _get_feature_detector_cls(config.feature_detector)
+    use_color = getattr(config, "use_color_features", False)
+    fd_cls = _get_feature_detector_cls(config.feature_detector, use_color=use_color)
     if fd_cls is not None:
         kwargs["feature_detector_cls"] = fd_cls
 
@@ -173,6 +203,13 @@ def build_registrar_kwargs(config: Config) -> dict:
     # ── Denoise before rigid registration ───────────────────────────
     if config.denoise:
         kwargs["denoise_rigid"] = True
+
+    # ── Crop before rigid registration (C1: VALIS v1.2.0+) ─────────
+    crop_for_rigid = getattr(config, "crop_for_rigid_reg", True)
+    try:
+        kwargs["crop_for_rigid_reg"] = crop_for_rigid
+    except Exception:
+        pass  # older VALIS versions may not accept this parameter
 
     # ── Micro-registration ──────────────────────────────────────────
     if config.micro_registration:
@@ -210,10 +247,13 @@ def _collect_transform_paths(output_dir: Path, slide_obj) -> dict:
     elif slide_obj.bk_dxdy is not None:
         bk_path = transforms_dir / f"{slide_obj.name}_bk_dxdy.npy"
         fwd_path = transforms_dir / f"{slide_obj.name}_fwd_dxdy.npy"
-        np.save(bk_path, slide_obj.bk_dxdy)
-        np.save(fwd_path, slide_obj.fwd_dxdy)
-        transform_payload["bk_dxdy_path"] = str(bk_path)
-        transform_payload["fwd_dxdy_path"] = str(fwd_path)
+        try:
+            np.save(bk_path, slide_obj.bk_dxdy)
+            np.save(fwd_path, slide_obj.fwd_dxdy)
+            transform_payload["bk_dxdy_path"] = str(bk_path)
+            transform_payload["fwd_dxdy_path"] = str(fwd_path)
+        except Exception as exc:
+            logger.warning("Could not save transform arrays for %s: %s", slide_obj.name, exc)
     return transform_payload
 
 
@@ -250,6 +290,8 @@ def run_valis_pipeline(
     """
     if not slides:
         raise UserVisibleError("No slides provided for registration.")
+    if len(slides) < 2:
+        raise UserVisibleError("At least 2 slides are required for registration.")
     if not _valis_available():
         raise UserVisibleError("VALIS library not available. Please install valis-wsi.")
 
@@ -259,7 +301,9 @@ def run_valis_pipeline(
 
     valis_registration = importlib.import_module("valis.registration")
 
+    _start_time = time.monotonic()
     logger.info("Starting VALIS pipeline with %d slides", len(slides))
+    logger.info("Config: %s", vars(config))
     if stage_callback:
         stage_callback("Preparing pipeline")
     if progress_callback:
@@ -271,19 +315,23 @@ def run_valis_pipeline(
     # ── Determine reference image ──────────────────────────────────
     reference_img_f: str | None = None
     if config.reference_slide and config.reference_slide != "auto-detect":
-        # GUI dropdown contains stem names (no extension).  Match by stem.
+        ref_lower = config.reference_slide.lower()
         for sp in slide_paths:
-            if Path(sp).stem == config.reference_slide:
+            if Path(sp).stem.lower() == ref_lower:
                 reference_img_f = sp
                 logger.info("Reference slide (by stem): %s", reference_img_f)
                 break
         if reference_img_f is None:
-            # Fallback: try full-name match
             for sp in slide_paths:
-                if Path(sp).name == config.reference_slide:
+                if Path(sp).name.lower() == ref_lower:
                     reference_img_f = sp
                     logger.info("Reference slide (by name): %s", reference_img_f)
                     break
+        if reference_img_f is None:
+            logger.warning(
+                "Reference slide '%s' not found – VALIS will auto-select",
+                config.reference_slide,
+            )
 
     if reference_img_f is None:
         logger.info("No explicit reference – VALIS will auto-select")
@@ -298,12 +346,20 @@ def run_valis_pipeline(
     if reference_img_f is not None:
         init_kwargs["reference_img_f"] = reference_img_f
 
-    registrar = valis_registration.Valis(**init_kwargs)
-
     # ── Run registration ───────────────────────────────────────────
     try:
         if cancel_check and cancel_check():
             raise UserVisibleError("Registration cancelled by user")
+
+        registrar = valis_registration.Valis(**init_kwargs)
+
+        # F5: log which slide VALIS auto-selected as reference
+        try:
+            _ref_name = getattr(registrar, "reference_img_name", None)
+            if _ref_name:
+                logger.info("VALIS reference slide: %s", _ref_name)
+        except Exception:
+            pass
 
         if stage_callback:
             stage_callback("Feature detection and rigid alignment")
@@ -320,10 +376,21 @@ def run_valis_pipeline(
         if cancel_check and cancel_check():
             raise UserVisibleError("Registration cancelled by user")
 
+        # ── Disk space check before saving ────────────────────────
+        try:
+            _disk = shutil.disk_usage(output_dir)
+            if _disk.free < 2 * 1024 ** 3:
+                raise UserVisibleError(
+                    f"Not enough disk space to save results: "
+                    f"{_disk.free / 1024**3:.1f} GB free (2 GB minimum required)."
+                )
+        except UserVisibleError:
+            raise
+        except Exception as exc:
+            logger.warning("Could not check disk space: %s", exc)
+
         # ── Save warped slides ─────────────────────────────────────
-        save_kwargs: dict = {}
-        if config.pyramid_levels is not None and config.pyramid_levels > 0:
-            save_kwargs["pyramid"] = True
+        save_kwargs: dict = {"pyramid": config.write_pyramid}
         if config.compression_level is not None:
             save_kwargs["compression"] = config.compression_level
         if config.tile_size is not None:
@@ -346,6 +413,14 @@ def run_valis_pipeline(
             **save_kwargs,
         )
 
+        # F2: log per-slide output file sizes
+        try:
+            for f in sorted(registered_dir.glob("*")):
+                if f.is_file():
+                    logger.info("Output: %s → %.1f MB", f.name, f.stat().st_size / 1e6)
+        except Exception:
+            pass
+
         logger.info("Slides saved successfully")
         if progress_callback:
             progress_callback(90)
@@ -359,8 +434,11 @@ def run_valis_pipeline(
     summary_csv = output_dir / "summary.csv"
     if stage_callback:
         stage_callback("Finalizing outputs")
-    summary_df.to_csv(summary_csv, index=False)
-    logger.info("Summary CSV saved to %s", summary_csv)
+    try:
+        summary_df.to_csv(summary_csv, index=False)
+        logger.info("Summary CSV saved to %s", summary_csv)
+    except Exception as exc:
+        logger.warning("Could not save summary CSV: %s", exc)
 
     # ── Collect per-slide info ─────────────────────────────────────
     slides_info: list[dict] = []
@@ -378,6 +456,7 @@ def run_valis_pipeline(
         entry.update(_collect_transform_paths(output_dir, slide_obj))
         slides_info.append(entry)
 
+    logger.info("Pipeline completed in %.1f s", time.monotonic() - _start_time)
     logger.info("VALIS pipeline completed successfully")
     if progress_callback:
         progress_callback(100)
@@ -385,7 +464,7 @@ def run_valis_pipeline(
     return {
         "output_dir": output_dir,
         "registered_dir": registered_dir,
-        "format": getattr(config, "image_format", ImageFormats.OME_TIFF),
+        "format": config.image_format,
         "summary_csv": summary_csv,
         "summary_df": summary_df,
         "slides": slides_info,

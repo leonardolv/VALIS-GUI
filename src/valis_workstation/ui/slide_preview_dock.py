@@ -46,7 +46,7 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         toolbar.addWidget(QtWidgets.QLabel("Filter:"))
         self._filter_edit = QtWidgets.QLineEdit()
         self._filter_edit.setPlaceholderText("slide name...")
-        self._filter_edit.setToolTip("Filter thumbnails by slide name")
+        self._filter_edit.setToolTip("Filter thumbnails by filename")
         self._filter_edit.setClearButtonEnabled(True)
         self._filter_edit.textChanged.connect(self._apply_filter_sort)
         self._filter_edit.setMaximumWidth(220)
@@ -55,6 +55,7 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         toolbar.addWidget(QtWidgets.QLabel("Sort:"))
         self._sort_combo = QtWidgets.QComboBox()
         self._sort_combo.addItems(["Name (A-Z)", "Name (Z-A)"])
+        self._sort_combo.setToolTip("Sort order for thumbnails")
         self._sort_combo.currentTextChanged.connect(self._apply_filter_sort)
         toolbar.addWidget(self._sort_combo)
 
@@ -64,7 +65,7 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         self._size_slider.setRange(64, 256)
         self._size_slider.setValue(128)
         self._size_slider.setMaximumWidth(150)
-        self._size_slider.setToolTip("Adjust thumbnail size")
+        self._size_slider.setToolTip("Thumbnail size (64–256 px)")
         self._size_slider.valueChanged.connect(self._update_thumbnail_size)
         toolbar.addWidget(self._size_slider)
 

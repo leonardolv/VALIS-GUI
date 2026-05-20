@@ -61,6 +61,7 @@ class LayerControlsDock(QtWidgets.QDockWidget):
             load_icon("play", self, QtWidgets.QStyle.StandardPixmap.SP_MediaPlay)
         )
         self._solo_btn.setProperty("panelAction", True)
+        self._solo_btn.setEnabled(False)
         self._solo_btn.setToolTip("Show only the selected layer")
         self._solo_btn.clicked.connect(self._solo_selected)
         toolbar.addWidget(self._solo_btn)
@@ -72,6 +73,7 @@ class LayerControlsDock(QtWidgets.QDockWidget):
             )
         )
         self._reset_opacity_btn.setProperty("panelAction", True)
+        self._reset_opacity_btn.setEnabled(False)
         self._reset_opacity_btn.setToolTip("Set all visible layers to 100% opacity")
         self._reset_opacity_btn.clicked.connect(self._reset_opacity)
         toolbar.addWidget(self._reset_opacity_btn)
@@ -81,6 +83,7 @@ class LayerControlsDock(QtWidgets.QDockWidget):
             load_icon("eye", self, QtWidgets.QStyle.StandardPixmap.SP_DialogApplyButton)
         )
         self._show_all_btn.setProperty("panelAction", True)
+        self._show_all_btn.setEnabled(False)
         self._show_all_btn.setToolTip("Make all layers visible")
         self._show_all_btn.clicked.connect(self._show_all_layers)
         toolbar.addWidget(self._show_all_btn)
@@ -102,6 +105,12 @@ class LayerControlsDock(QtWidgets.QDockWidget):
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+
+        # Column header tooltips (E4)
+        self._table.horizontalHeaderItem(0).setToolTip("Show/hide the layer")
+        self._table.horizontalHeaderItem(1).setToolTip("Layer name")
+        self._table.horizontalHeaderItem(2).setToolTip("Layer transparency (0–100%)")
+        self._table.horizontalHeaderItem(3).setToolTip("Color map for grayscale layers")
         layout.addWidget(self._table)
         self.setWidget(container)
         self._layers: list = []
@@ -130,6 +139,11 @@ class LayerControlsDock(QtWidgets.QDockWidget):
         self._layers = layers
         self._table.setRowCount(len(layers))
         logger.debug("Refreshing layer controls: %d layers", len(layers))
+
+        has_layers = len(layers) > 0
+        self._solo_btn.setEnabled(has_layers)
+        self._reset_opacity_btn.setEnabled(has_layers)
+        self._show_all_btn.setEnabled(has_layers)
 
         for row_idx, layer in enumerate(layers):
             visible = QtWidgets.QCheckBox()

@@ -815,7 +815,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
           <figcaption>Annotation transfer concept used by the Warp Annotations tool.</figcaption>
         </figure>
       </div>
-      <div class="note"><strong>Layout keyboard shortcuts:</strong> <span class="kbd">Ctrl+O</span> open folder, <span class="kbd">Ctrl+R</span> run registration, <span class="kbd">Ctrl+B</span> Blink, <span class="kbd">Ctrl+Shift+P</span> performance stats, <span class="kbd">Ctrl+[</span> toggle left sidebar, <span class="kbd">Ctrl+]</span> toggle right sidebar, <span class="kbd">Ctrl+Shift+L</span> reset layout, <span class="kbd">Ctrl+Shift+C</span> expand center panel.</div>
+      <div class="note"><strong>Layout keyboard shortcuts:</strong> <span class="kbd">Ctrl+O</span> open folder, <span class="kbd">Ctrl+R</span> / <span class="kbd">F5</span> run registration, <span class="kbd">Esc</span> cancel registration, <span class="kbd">Ctrl+Shift+P</span> performance stats, <span class="kbd">Ctrl+[</span> toggle left sidebar, <span class="kbd">Ctrl+]</span> toggle right sidebar, <span class="kbd">Ctrl+Shift+L</span> reset layout, <span class="kbd">Ctrl+Shift+\</span> toggle focus mode.</div>
     </section>
 
     <section id="first-run" class="section">
@@ -906,7 +906,8 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
         <tr><td>Recent folders</td><td><code>File -&gt; Recent Folders</code></td><td>Select previously opened folder.</td><td>Folder is reloaded immediately.</td></tr>
         <tr><td>Save configuration</td><td><code>File -&gt; Save Configuration...</code></td><td>Choose destination JSON file.</td><td>All Properties settings are saved for reproducibility.</td></tr>
         <tr><td>Load configuration</td><td><code>File -&gt; Load Configuration...</code></td><td>Select existing JSON config.</td><td>Properties values are restored.</td></tr>
-        <tr><td>Run registration</td><td><code>File -&gt; Run Registration</code> / <span class="kbd">Ctrl+R</span></td><td>Confirm run settings in dialog and proceed.</td><td>Worker starts, progress/logs update, outputs are generated.</td></tr>
+        <tr><td>Run registration</td><td><code>File -&gt; Run Registration</code> / <span class="kbd">Ctrl+R</span> / <span class="kbd">F5</span></td><td>Confirm run settings in dialog and proceed.</td><td>Worker starts, progress/logs update, outputs are generated.</td></tr>
+        <tr><td>Cancel registration</td><td><code>File -&gt; Cancel Registration</code> / <span class="kbd">Esc</span></td><td>Stop the active registration safely.</td><td>Run stops; partial output may remain on disk.</td></tr>
         <tr><td>Resume last registration</td><td><code>File -&gt; Resume Last Registration</code></td><td>Use after cancel/failure to rerun the previous context quickly.</td><td>Last slides + settings are restored and run again.</td></tr>
         <tr><td>Preferences</td><td><code>File -&gt; Preferences...</code> / <span class="kbd">Ctrl+,</span></td><td>Adjust cache, performance, and UI options.</td><td>Settings persist in QSettings.</td></tr>
       </table>
@@ -915,7 +916,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
       <div class="note"><strong>Contextual actions:</strong> Post-registration tools (Blink, Analysis Plot, Quality Report, Warp Annotations, Export ROI Crop, Merge Slides) are <strong>disabled</strong> until a registration run completes. They become active automatically when results are available.</div>
       <table class="preflight">
         <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
-        <tr><td>Blink</td><td><code>Tools -&gt; Blink</code> / <span class="kbd">Ctrl+B</span></td><td>Pick Slide A/B, blend or auto-blink.</td><td>Fast visual detection of local drift/misalignment.</td></tr>
+        <tr><td>Blink</td><td><code>Tools -&gt; Blink</code></td><td>Pick Slide A/B, blend or auto-blink.</td><td>Fast visual detection of local drift/misalignment.</td></tr>
         <tr><td>Analysis Plot</td><td><code>Tools -&gt; Analysis Plot</code></td><td>Open after a completed run.</td><td>Error trend chart + summary stats.</td></tr>
         <tr><td>Quality Report</td><td><code>Tools -&gt; Quality Report</code></td><td>Sort/report table columns to find outliers.</td><td>Detailed metric table from <code>summary_df</code>.</td></tr>
         <tr><td>Warp Annotations</td><td><code>Tools -&gt; Warp Annotations</code></td><td>Provide GeoJSON + source slide + output folder.</td><td>One warped GeoJSON for each target slide.</td></tr>
@@ -931,7 +932,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
         <tr><td>Reset Layout</td><td><code>View -&gt; Reset Layout</code> / <span class="kbd">Ctrl+Shift+L</span></td><td>Restore all panels to default sizes.</td><td>Sidebars and center return to initial proportions.</td></tr>
         <tr><td>Toggle Left Sidebar</td><td><code>View -&gt; Toggle Left Sidebar</code> / <span class="kbd">Ctrl+[</span></td><td>Show or hide the Project/Slide Preview panel.</td><td>Left panel collapses or expands.</td></tr>
         <tr><td>Toggle Right Sidebar</td><td><code>View -&gt; Toggle Right Sidebar</code> / <span class="kbd">Ctrl+]</span></td><td>Show or hide the Properties/Layers panel.</td><td>Right panel collapses or expands.</td></tr>
-        <tr><td>Expand Center</td><td><code>View -&gt; Expand Center</code> / <span class="kbd">Ctrl+Shift+C</span></td><td>Collapse both sidebars to maximize the viewer.</td><td>Napari viewer fills the available width.</td></tr>
+        <tr><td>Toggle Focus Mode</td><td><code>View -&gt; Toggle Focus Mode</code> / <span class="kbd">Ctrl+Shift+\</span></td><td>Collapse both sidebars to maximize the viewer.</td><td>Napari viewer fills the available width.</td></tr>
         <tr><td>Fit to Content</td><td><code>View -&gt; Fit to Content</code></td><td>Adjust panel sizes to match their content.</td><td>Panels resize to their optimal widths.</td></tr>
       </table>
 

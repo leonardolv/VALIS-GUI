@@ -8,7 +8,7 @@ from PySide6 import QtCore, QtWidgets
 
 from valis_workstation.models.config import Config
 from valis_workstation.ui.dialogs.error_detail_dialog import show_error_dialog
-from valis_workstation.utils.validation import validate_slides
+from valis_workstation.utils.validation import validate_slides, log_validation_result
 from valis_workstation.workers.valis_worker import ValisWorker
 
 if TYPE_CHECKING:
@@ -22,11 +22,17 @@ def start_registration(window: MainWindow) -> None:
     if not slides:
         QtWidgets.QMessageBox.warning(window, "VALIS", "No slides to register.")
         return
+    if len(slides) < 2:
+        QtWidgets.QMessageBox.warning(
+            window, "VALIS", "At least 2 slides are required for registration."
+        )
+        return
 
     config = window._properties_dock.config()
     output_dir = window._repo_root / "output" / config.project_name
 
     validation = validate_slides(slides, output_dir)
+    log_validation_result(validation, len(slides), output_dir)
 
     if validation.has_errors():
         error_msg = (

@@ -7,7 +7,7 @@ import re
 
 from PySide6 import QtCore, QtWidgets
 
-from valis_workstation.constants import CropModes, FeatureDetectors, TransformerTypes
+from valis_workstation.constants import CropModes, FeatureDetectors, NonRigidMethods, TransformerTypes
 from valis_workstation.layout_constants import GRID_SPACING
 from valis_workstation.models.config import Config
 from valis_workstation.ui.icons import load_icon
@@ -57,6 +57,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
             load_icon("save", self, QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton)
         )
         self._save_preset_btn.setProperty("panelAction", True)
+        self._save_preset_btn.setToolTip("Save current settings as a named preset for quick reuse")
         self._save_preset_btn.clicked.connect(self._save_current_preset)
         preset_row.addWidget(self._save_preset_btn)
 
@@ -65,6 +66,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
             load_icon("open", self, QtWidgets.QStyle.StandardPixmap.SP_DialogOpenButton)
         )
         self._load_preset_btn.setProperty("panelAction", True)
+        self._load_preset_btn.setToolTip("Load selected preset into all settings fields")
         self._load_preset_btn.clicked.connect(self._load_selected_preset)
         preset_row.addWidget(self._load_preset_btn)
 
@@ -73,6 +75,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
             load_icon("trash", self, QtWidgets.QStyle.StandardPixmap.SP_TrashIcon)
         )
         self._delete_preset_btn.setProperty("panelAction", True)
+        self._delete_preset_btn.setToolTip("Permanently remove the selected preset")
         self._delete_preset_btn.clicked.connect(self._delete_selected_preset)
         preset_row.addWidget(self._delete_preset_btn)
         layout.addLayout(preset_row)
@@ -111,13 +114,13 @@ class PropertiesDock(QtWidgets.QDockWidget):
         )
 
         self._max_size = QtWidgets.QSpinBox()
-        self._max_size.setRange(256, 16384)
+        self._max_size.setRange(64, 32768)
         self._max_size.setValue(2048)
         self._max_size.setSuffix(" px")
         self._max_size.setToolTip(
-            "Maximum image dimension (pixels) for processing.\n"
-            "Larger = better accuracy but slower and more memory.\n"
-            "Recommended: 2048 for quick tests, 4096+ for production."
+            "Max pixel dimension for registration image.\n"
+            "Higher = better quality but slower and more memory.\n"
+            "Default: 2048 (adjust 1024–4096 based on hardware)"
         )
 
         self._use_gpu = QtWidgets.QCheckBox()
@@ -223,6 +226,35 @@ class PropertiesDock(QtWidgets.QDockWidget):
             "based on feature similarity before alignment."
         )
 
+        # Crop before rigid registration (C1)
+        self._crop_for_rigid = QtWidgets.QCheckBox()
+        self._crop_for_rigid.setChecked(True)
+        self._crop_for_rigid.setToolTip(
+            "Pre-crop tissue regions before rigid alignment.\n"
+            "Improves accuracy at higher resolution (VALIS v1.2.0+)."
+        )
+
+        # Non-rigid method (C2)
+        self._non_rigid_method = QtWidgets.QComboBox()
+        for key in NonRigidMethods.all():
+            self._non_rigid_method.addItem(NonRigidMethods.label_for(key), key)
+        self._non_rigid_method.setCurrentIndex(0)  # Optical Flow
+        self._non_rigid_method.setEnabled(False)
+        self._non_rigid_method.setToolTip(
+            "Non-rigid deformation method:\n"
+            "• Optical Flow (default): fast, works well on most images\n"
+            "• RAFT (v1.2.0+): deep learning, better on challenging cases"
+        )
+        self._non_rigid.toggled.connect(self._non_rigid_method.setEnabled)
+
+        # Use color features / RGB mode (C3)
+        self._use_color_features = QtWidgets.QCheckBox()
+        self._use_color_features.setToolTip(
+            "Enable color (RGB) feature detection for DISK/DeDoDe/SuperPoint.\n"
+            "Uses RGB instead of grayscale for deep-learning detectors.\n"
+            "May improve accuracy on histology images (VALIS v1.2.0+)."
+        )
+
         # Micro-registration
         self._micro_registration = QtWidgets.QCheckBox()
         self._micro_registration.setToolTip(
@@ -230,23 +262,27 @@ class PropertiesDock(QtWidgets.QDockWidget):
             "Refines alignment at finer resolution (slower but more precise)."
         )
         self._micro_max_size = QtWidgets.QSpinBox()
-        self._micro_max_size.setRange(2048, 32768)
+        self._micro_max_size.setRange(512, 65536)
         self._micro_max_size.setValue(4096)
         self._micro_max_size.setSuffix(" px")
         self._micro_max_size.setEnabled(False)
         self._micro_max_size.setToolTip(
-            "Maximum size for micro-registration.\n"
-            "Higher = better precision but slower."
+            "Max pixel dimension for micro-registration refinement pass.\n"
+            "Higher than main resolution for finer detail.\n"
+            "Default: 4096"
         )
         self._micro_registration.toggled.connect(self._micro_max_size.setEnabled)
 
         adv.addRow("Feature detector", self._feature_detector)
         adv.addRow("Rigid transform", self._transformer_type)
+        adv.addRow("Use color features (RGB)", self._use_color_features)
         adv.addRow("Reference slide", self._reference_slide)
         adv.addRow("Crop mode", self._crop_mode)
+        adv.addRow("Crop before rigid reg.", self._crop_for_rigid)
         adv.addRow("Use tissue masks", self._use_masks)
         adv.addRow("Denoise images", self._denoise)
         adv.addRow("Slides pre-ordered", self._imgs_ordered)
+        adv.addRow("Non-rigid method", self._non_rigid_method)
         adv.addRow("Micro-registration", self._micro_registration)
         adv.addRow("Micro max size", self._micro_max_size)
 
@@ -277,17 +313,18 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._compression_level_spin.setRange(0, 9)
         self._compression_level_spin.setValue(1)
         self._compression_level_spin.setToolTip(
-            "TIFF compression level (0 = none, 9 = maximum).\n"
-            "Higher compression = smaller files, slower saving."
+            "zlib compression level for TIFF output.\n"
+            "0 = no compression (fastest), 9 = maximum compression (slowest).\n"
+            "Default: 1"
         )
 
         self._pyramid_levels_spin = QtWidgets.QSpinBox()
         self._pyramid_levels_spin.setRange(0, 10)
         self._pyramid_levels_spin.setValue(4)
         self._pyramid_levels_spin.setToolTip(
-            "Number of resolution pyramid levels.\n"
-            "0 = no pyramid; 4 = default for OME-TIFF viewers.\n"
-            "Pyramids enable fast multi-scale viewing."
+            "Number of resolution levels in output pyramid.\n"
+            "More levels = better viewer performance. 0 = let VALIS choose.\n"
+            "Default: 4"
         )
 
         self._tile_size_spin = QtWidgets.QSpinBox()
@@ -296,8 +333,9 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._tile_size_spin.setValue(512)
         self._tile_size_spin.setSuffix(" px")
         self._tile_size_spin.setToolTip(
-            "Tile width/height for tiled TIFF output.\n"
-            "512 is a good default for most viewers."
+            "Output tile size in pixels.\n"
+            "512 is a good default for most WSI viewers.\n"
+            "Larger tiles = faster I/O, smaller tiles = better granularity"
         )
 
         self._image_quality_spin = QtWidgets.QSpinBox()
@@ -305,7 +343,9 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._image_quality_spin.setValue(95)
         self._image_quality_spin.setSuffix(" %")
         self._image_quality_spin.setToolTip(
-            "JPEG compression quality (1–100).\nOnly affects JPEG-compressed TIFFs."
+            "JPEG quality when saving as JPEG format (1–100).\n"
+            "95 = high quality, 75 = smaller files.\n"
+            "Only affects JPEG-compressed TIFFs"
         )
 
         out.addRow("Output profile", self._output_profile)
@@ -373,6 +413,8 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._refresh_preset_list()
         self._preset_combo.setCurrentText(name)
         logger.info("Saved preset '%s'", name)
+        if hasattr(self, "window") and callable(self.window):
+            self.window().statusBar().showMessage(f"Preset '{name}' saved", 3000)
 
     def _load_selected_preset(self) -> None:
         name = self._preset_combo.currentText()
@@ -386,6 +428,8 @@ class PropertiesDock(QtWidgets.QDockWidget):
         )
         self.set_config(cfg)
         logger.info("Loaded preset '%s'", name)
+        if hasattr(self, "window") and callable(self.window):
+            self.window().statusBar().showMessage(f"Preset '{name}' loaded", 3000)
 
     def _delete_selected_preset(self) -> None:
         name = self._preset_combo.currentText()
@@ -393,10 +437,21 @@ class PropertiesDock(QtWidgets.QDockWidget):
             return
         presets = self._get_presets()
         if name in presets:
-            presets.pop(name)
-            self._set_presets(presets)
-            self._refresh_preset_list()
-            logger.info("Deleted preset '%s'", name)
+            reply = QtWidgets.QMessageBox.question(
+                self,
+                "Delete Preset",
+                f"Are you sure you want to delete the preset '{name}'?",
+                QtWidgets.QMessageBox.StandardButton.Yes
+                | QtWidgets.QMessageBox.StandardButton.No,
+                QtWidgets.QMessageBox.StandardButton.No,
+            )
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+                presets.pop(name)
+                self._set_presets(presets)
+                self._refresh_preset_list()
+                logger.info("Deleted preset '%s'", name)
+                if hasattr(self, "window") and callable(self.window):
+                    self.window().statusBar().showMessage(f"Preset '{name}' deleted", 3000)
 
     def apply_output_profile(self, profile_name: str) -> None:
         """Apply output profile template values.
@@ -515,9 +570,12 @@ class PropertiesDock(QtWidgets.QDockWidget):
             or TransformerTypes.SIMILARITY,
             reference_slide=ref_slide,
             crop_mode=self._crop_mode.currentText(),
+            crop_for_rigid_reg=self._crop_for_rigid.isChecked(),
             use_masks=self._use_masks.isChecked(),
             denoise=self._denoise.isChecked(),
             imgs_ordered=self._imgs_ordered.isChecked(),
+            use_color_features=self._use_color_features.isChecked(),
+            non_rigid_method=self._non_rigid_method.currentData() or NonRigidMethods.OPTICAL_FLOW,
             # Micro-registration
             micro_registration=self._micro_registration.isChecked(),
             micro_max_image_size=int(self._micro_max_size.value()),
@@ -526,6 +584,8 @@ class PropertiesDock(QtWidgets.QDockWidget):
             pyramid_levels=int(self._pyramid_levels_spin.value()),
             tile_size=int(self._tile_size_spin.value()),
             image_quality=int(self._image_quality_spin.value()),
+            image_format="OME-TIFF",
+            write_pyramid=True,
         )
 
     def set_config(self, cfg: Config) -> None:
@@ -555,9 +615,17 @@ class PropertiesDock(QtWidgets.QDockWidget):
             self._reference_slide.setCurrentIndex(0)  # Auto-detect
 
         self._crop_mode.setCurrentText(cfg.crop_mode)
+        self._crop_for_rigid.setChecked(cfg.crop_for_rigid_reg)
         self._use_masks.setChecked(cfg.use_masks)
         self._denoise.setChecked(cfg.denoise)
         self._imgs_ordered.setChecked(cfg.imgs_ordered)
+        self._use_color_features.setChecked(cfg.use_color_features)
+
+        # Non-rigid method — find by data key
+        nr_idx = self._non_rigid_method.findData(cfg.non_rigid_method)
+        if nr_idx >= 0:
+            self._non_rigid_method.setCurrentIndex(nr_idx)
+
         self._micro_registration.setChecked(cfg.micro_registration)
         self._micro_max_size.setValue(cfg.micro_max_image_size)
 

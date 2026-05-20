@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 import traceback
 from pathlib import Path
 
@@ -25,12 +26,12 @@ class ValisWorker(QtCore.QObject):
         self._config = config
         self._slides = slides
         self._output_dir = output_dir
-        self._cancel_requested = False
+        self._cancel_event = threading.Event()
 
     def cancel(self) -> None:
-        """Request cancellation of the registration."""
+        """Request cancellation of the registration (thread-safe)."""
         logger.info("Cancellation requested")
-        self._cancel_requested = True
+        self._cancel_event.set()
 
     @QtCore.Slot()
     def run(self) -> None:
@@ -43,10 +44,10 @@ class ValisWorker(QtCore.QObject):
                 self._output_dir,
                 progress_callback=self.progress.emit,
                 stage_callback=self.stage_changed.emit,
-                cancel_check=lambda: self._cancel_requested,
+                cancel_check=self._cancel_event.is_set,
             )
 
-            if self._cancel_requested:
+            if self._cancel_event.is_set():
                 logger.info("Registration cancelled")
                 self.stage_changed.emit("Cancelled")
                 self.cancelled.emit()

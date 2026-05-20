@@ -211,13 +211,15 @@ class PreferencesDialog(QtWidgets.QDialog):
         """Browse for cache directory."""
         current_dir = self._cache_dir_edit.text()
         if not current_dir:
-            current_dir = str(Path.home() / ".valis_cache")
+            last_dir = self._settings.value("ui/last_cache_dir_browse", str(Path.home()))
+            current_dir = last_dir
 
         directory = QtWidgets.QFileDialog.getExistingDirectory(
             self, "Select Cache Directory", current_dir
         )
 
         if directory:
+            self._settings.setValue("ui/last_cache_dir_browse", directory)
             self._cache_dir_edit.setText(directory)
 
     def _load_settings(self):

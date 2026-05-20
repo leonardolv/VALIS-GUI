@@ -158,6 +158,39 @@ class CropModes(StrEnum):
         return [member.value for member in cls]
 
 
+class NonRigidMethods(StrEnum):
+    """Non-rigid registration methods."""
+
+    OPTICAL_FLOW = "optical_flow"
+    RAFT = "raft"
+
+    @property
+    def label(self) -> str:
+        labels: dict[NonRigidMethods, str] = {
+            NonRigidMethods.OPTICAL_FLOW: "Optical Flow (default)",
+            NonRigidMethods.RAFT: "RAFT (deep learning, VALIS v1.2.0+)",
+        }
+        return labels[self]
+
+    @classmethod
+    def all(cls) -> list[str]:
+        return [member.value for member in cls]
+
+    @classmethod
+    def label_for(cls, key: str) -> str:
+        try:
+            return cls(key).label
+        except ValueError:
+            return str(key)
+
+    @classmethod
+    def key_for_label(cls, label: str) -> str:
+        for member in cls:
+            if member.label == label:
+                return member.value
+        return label
+
+
 class ImageFormats(StrEnum):
     """Supported output image formats."""
 

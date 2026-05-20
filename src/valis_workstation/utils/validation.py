@@ -68,7 +68,12 @@ def validate_slides(
     # Calculate total size
     existing_slides = [s for s in slides if s.exists()]
     if existing_slides:
-        total_size_bytes = sum(s.stat().st_size for s in existing_slides)
+        total_size_bytes = 0
+        for s in existing_slides:
+            try:
+                total_size_bytes += s.stat().st_size
+            except OSError as exc:
+                warnings.append(f"Could not read file size for {s.name}: {exc}")
         total_size_gb = total_size_bytes / (1024**3)
 
         logger.info(f"Total slide size: {total_size_gb:.2f} GB")
@@ -110,6 +115,10 @@ def validate_slides(
                 f"Registration may require significant memory and time."
             )
 
+    # Check if output path is a file (not a directory)
+    if output_dir.exists() and not output_dir.is_dir():
+        errors.append("Output path exists as a file, not a directory")
+
     # Check if output directory is writable
     try:
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -121,3 +130,32 @@ def validate_slides(
 
     is_valid = len(errors) == 0
     return ValidationResult(is_valid, warnings, errors)
+
+
+def log_validation_result(
+    result: ValidationResult, slide_count: int, output_dir: Path
+) -> None:
+    """Log a structured summary of validation results.
+
+    Parameters
+    ----------
+    result : ValidationResult
+        Validation result from validate_slides()
+    slide_count : int
+        Number of slides to be registered
+    output_dir : Path
+        Output directory path
+    """
+    logger.info(
+        "Validation: %d slides, output → %s",
+        slide_count,
+        output_dir,
+    )
+    if result.warnings:
+        for warning in result.warnings:
+            logger.warning("  ⚠ %s", warning)
+    if result.errors:
+        for error in result.errors:
+            logger.error("  ✗ %s", error)
+    if result.is_valid:
+        logger.info("Validation passed")

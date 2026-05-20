@@ -33,8 +33,10 @@ class StatusDock(QtWidgets.QDockWidget):
         self._progress.setFormat("%p%")
 
         self._stage_label = QtWidgets.QLabel("Stage: Idle")
+        self._stage_label.setToolTip("Current pipeline stage")
         self._timing_label = QtWidgets.QLabel("Elapsed: 00:00:00 | ETA: --:--:--")
         self._timing_label.setProperty("role", "sidebar-subtle")
+        self._timing_label.setToolTip("Elapsed time since run started and estimated time remaining")
         self._run_started_at: float | None = None
         self._last_progress_value = 0
 
@@ -50,12 +52,17 @@ class StatusDock(QtWidgets.QDockWidget):
         self._filter_edit = QtWidgets.QLineEdit()
         self._filter_edit.setPlaceholderText("Filter log lines...")
         self._filter_edit.setClearButtonEnabled(True)
+        self._filter_edit.setToolTip("Filter log lines by keyword (case-insensitive)")
         self._filter_edit.textChanged.connect(self._rebuild_log_view)
         filter_row.addWidget(self._filter_edit)
 
         log_controls = QtWidgets.QHBoxLayout()
         self._auto_scroll_check = QtWidgets.QCheckBox("Auto-scroll")
         self._auto_scroll_check.setChecked(True)
+        self._auto_scroll_check.setToolTip(
+            "Automatically scroll the log to show new lines as they arrive"
+        )
+
         self._clear_log_button = QtWidgets.QPushButton("Clear Log")
         self._clear_log_button.setIcon(
             load_icon(
@@ -63,6 +70,8 @@ class StatusDock(QtWidgets.QDockWidget):
             )
         )
         self._clear_log_button.setProperty("panelAction", True)
+        self._clear_log_button.setEnabled(False)
+        self._clear_log_button.setToolTip("Clear the log display. The log file on disk is not affected.")
         self._clear_log_button.clicked.connect(self._clear_log)
 
         self._copy_log_button = QtWidgets.QPushButton("Copy Log")
@@ -72,6 +81,8 @@ class StatusDock(QtWidgets.QDockWidget):
             )
         )
         self._copy_log_button.setProperty("panelAction", True)
+        self._copy_log_button.setEnabled(False)
+        self._copy_log_button.setToolTip("Copy all log lines to clipboard")
         self._copy_log_button.clicked.connect(self._copy_log)
 
         log_controls.addWidget(self._auto_scroll_check)
@@ -90,23 +101,23 @@ class StatusDock(QtWidgets.QDockWidget):
 
         self._log_console = QtWidgets.QTextEdit()
         self._log_console.setReadOnly(True)
-    self._log_console.setAccessibleName("Registration log")
+        self._log_console.setAccessibleName("Registration log")
         self._log_console.document().setMaximumBlockCount(2000)
-    self._log_console.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
-    self._log_console.customContextMenuRequested.connect(self._show_log_context_menu)
-    self._log_lines: list[str] = []
+        self._log_console.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self._log_console.customContextMenuRequested.connect(self._show_log_context_menu)
+        self._log_lines: list[str] = []
 
-    divider = QtWidgets.QFrame()
-    divider.setFrameShape(QtWidgets.QFrame.Shape.HLine)
-    divider.setFrameShadow(QtWidgets.QFrame.Shadow.Plain)
+        divider = QtWidgets.QFrame()
+        divider.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        divider.setFrameShadow(QtWidgets.QFrame.Shadow.Plain)
 
         layout.addWidget(self._stage_label)
         layout.addWidget(self._progress)
-    layout.addWidget(self._timing_label)
+        layout.addWidget(self._timing_label)
         layout.addWidget(self._cancel_button)
-    layout.addWidget(divider)
+        layout.addWidget(divider)
         layout.addWidget(self._log_header)
-    layout.addLayout(filter_row)
+        layout.addLayout(filter_row)
         layout.addLayout(log_controls)
         layout.addWidget(self._log_console)
         self.setWidget(container)
@@ -118,6 +129,9 @@ class StatusDock(QtWidgets.QDockWidget):
         if not clean:
             return
         self._log_lines.append(clean)
+
+        self._clear_log_button.setEnabled(True)
+        self._copy_log_button.setEnabled(True)
 
         if self._filter_edit.text().strip():
             self._rebuild_log_view()
@@ -165,25 +179,46 @@ class StatusDock(QtWidgets.QDockWidget):
             self._save_log_as()
 
     def _clear_log(self) -> None:
+        if len(self._log_lines) > 0:
+            reply = QtWidgets.QMessageBox.question(
+                self,
+                "Clear Log",
+                "Clear the log display? This cannot be undone.",
+                QtWidgets.QMessageBox.StandardButton.Yes
+                | QtWidgets.QMessageBox.StandardButton.No,
+                QtWidgets.QMessageBox.StandardButton.No,
+            )
+            if reply != QtWidgets.QMessageBox.StandardButton.Yes:
+                return
         self._log_lines.clear()
         self._log_console.clear()
+        self._clear_log_button.setEnabled(False)
+        self._copy_log_button.setEnabled(False)
 
     def _copy_log(self) -> None:
         text = "\n".join(self._log_lines)
         QtWidgets.QApplication.clipboard().setText(text)
+        if hasattr(self, "window") and callable(self.window):
+            self.window().statusBar().showMessage("Log copied to clipboard", 3000)
 
     def _save_log_as(self) -> None:
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        last_dir = settings.value("ui/last_log_save_dir", str(__import__('pathlib').Path.home()))
+
         out_path, _ = QtWidgets.QFileDialog.getSaveFileName(
             self,
             "Save Log",
-            "registration_log.txt",
+            last_dir + "/registration_log.txt",
             "Text Files (*.txt)",
         )
         if not out_path:
             return
         try:
+            settings.setValue("ui/last_log_save_dir", str(__import__('pathlib').Path(out_path).parent))
             with open(out_path, "w", encoding="utf-8") as handle:
                 handle.write("\n".join(self._log_lines))
+            if hasattr(self, "window") and callable(self.window):
+                self.window().statusBar().showMessage(f"Log saved to {out_path}", 4000)
         except Exception as exc:
             logger.exception("Failed to save log output: %s", exc)
 

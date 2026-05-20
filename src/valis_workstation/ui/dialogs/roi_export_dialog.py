@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from PySide6 import QtWidgets
 
 from valis_workstation.constants import ImageFormats
@@ -29,20 +31,24 @@ class ROIExportDialog(QtWidgets.QDialog):
 
         self._x = QtWidgets.QSpinBox()
         self._x.setRange(0, 1_000_000)
+        self._x.setToolTip("Top-left corner of the ROI in the registered coordinate space (pixels)")
         form.addRow("X Coordinate (px):", self._x)
 
         self._y = QtWidgets.QSpinBox()
         self._y.setRange(0, 1_000_000)
+        self._y.setToolTip("Top-left corner of the ROI in the registered coordinate space (pixels)")
         form.addRow("Y Coordinate (px):", self._y)
 
         self._width = QtWidgets.QSpinBox()
         self._width.setRange(10, 100_000)
         self._width.setValue(1000)
+        self._width.setToolTip("Size of the ROI region to export (pixels in registered space)")
         form.addRow("Width (px):", self._width)
 
         self._height = QtWidgets.QSpinBox()
         self._height.setRange(10, 100_000)
         self._height.setValue(1000)
+        self._height.setToolTip("Size of the ROI region to export (pixels in registered space)")
         form.addRow("Height (px):", self._height)
 
         self._format = QtWidgets.QComboBox()
@@ -59,13 +65,34 @@ class ROIExportDialog(QtWidgets.QDialog):
         layout.addLayout(form)
 
         # Buttons
+        button_layout = QtWidgets.QHBoxLayout()
+        copy_json_btn = QtWidgets.QPushButton("Copy as JSON")
+        copy_json_btn.clicked.connect(self._copy_as_json)
+        button_layout.addWidget(copy_json_btn)
+        button_layout.addStretch()
+
         btns = QtWidgets.QDialogButtonBox(
             QtWidgets.QDialogButtonBox.StandardButton.Ok
             | QtWidgets.QDialogButtonBox.StandardButton.Cancel
         )
         btns.accepted.connect(self.accept)
         btns.rejected.connect(self.reject)
-        layout.addWidget(btns)
+        button_layout.addWidget(btns)
+        layout.addLayout(button_layout)
+
+    def _copy_as_json(self) -> None:
+        """Copy ROI coordinates as JSON to clipboard."""
+        data = {
+            "x": self._x.value(),
+            "y": self._y.value(),
+            "width": self._width.value(),
+            "height": self._height.value(),
+        }
+        json_str = json.dumps(data, indent=2)
+        QtWidgets.QApplication.clipboard().setText(json_str)
+        QtWidgets.QMessageBox.information(
+            self, "Copied", "ROI coordinates copied to clipboard as JSON"
+        )
 
     def get_options(self) -> dict:
         """Returns the configured bounding box and format options."""

@@ -27,7 +27,9 @@ class BlinkViewerDialog(QtWidgets.QDialog):
         form = QtWidgets.QFormLayout()
 
         self._slide_a = QtWidgets.QComboBox()
+        self._slide_a.setToolTip("Select a registered slide for this channel")
         self._slide_b = QtWidgets.QComboBox()
+        self._slide_b.setToolTip("Select a registered slide for this channel")
         for slide in slide_paths:
             self._slide_a.addItem(slide.name, slide)
             self._slide_b.addItem(slide.name, slide)
@@ -35,10 +37,12 @@ class BlinkViewerDialog(QtWidgets.QDialog):
         self._opacity = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
         self._opacity.setRange(0, 100)
         self._opacity.setValue(50)
+        self._opacity.setToolTip("0% = Slide A only · 100% = Slide B only · 50% = equal blend")
         self._opacity.valueChanged.connect(self._apply_opacity)
 
         self._mode = QtWidgets.QComboBox()
         self._mode.addItems(["Blink", "Side-by-side", "Swipe"])
+        self._mode.setToolTip("Blink: auto-toggle · Blend: manual crossfade · Swipe: horizontal split")
         self._mode.currentTextChanged.connect(self._on_mode_changed)
 
         self._blink_toggle = QtWidgets.QPushButton("Start Blink")

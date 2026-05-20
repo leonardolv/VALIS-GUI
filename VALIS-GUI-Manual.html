@@ -601,7 +601,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 
 <div class="step"><span class="step-num">7</span><div class="step-body"><strong>Explore results</strong> — Registered slides load into the Napari viewer. Toggle visibility, opacity, and colormaps in the <strong>Layers</strong> panel.</div></div>
 
-<div class="step"><span class="step-num">8</span><div class="step-body"><strong>Check quality</strong> — Use <strong>Tools → Quality Report</strong> to see error metrics, or <strong>Tools → Blink</strong> (<span class="kbd">Ctrl+B</span>) for visual comparison.</div></div>
+<div class="step"><span class="step-num">8</span><div class="step-body"><strong>Check quality</strong> — Use <strong>Tools → Quality Report</strong> to see error metrics, or <strong>Tools → Blink</strong> for visual comparison.</div></div>
 
 <h4 style="margin-top:10px">What good registration should look like</h4>
 <div class="image-grid">
@@ -713,7 +713,8 @@ pip install -r requirements.txt && pip install -e .</code></pre>
     <tr><td>Recent Folders</td><td>Last 10 folders</td></tr>
     <tr><td>Save Configuration</td><td>Export JSON</td></tr>
     <tr><td>Load Configuration</td><td>Import JSON</td></tr>
-    <tr><td>Run Registration</td><td><span class="kbd">Ctrl+R</span></td></tr>
+    <tr><td>Run Registration</td><td><span class="kbd">Ctrl+R</span> / <span class="kbd">F5</span></td></tr>
+    <tr><td>Cancel Registration</td><td><span class="kbd">Esc</span></td></tr>
     <tr><td>Preferences</td><td><span class="kbd">Ctrl+,</span></td></tr>
     <tr><td>Quit</td><td><span class="kbd">Ctrl+Q</span></td></tr>
   </table>
@@ -724,7 +725,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
     <tr><td>Reset Layout</td><td><span class="kbd">Ctrl+Shift+L</span></td></tr>
     <tr><td>Toggle Left Sidebar</td><td><span class="kbd">Ctrl+[</span></td></tr>
     <tr><td>Toggle Right Sidebar</td><td><span class="kbd">Ctrl+]</span></td></tr>
-    <tr><td>Expand Center</td><td><span class="kbd">Ctrl+Shift+C</span></td></tr>
+    <tr><td>Toggle Focus Mode</td><td><span class="kbd">Ctrl+Shift+\</span></td></tr>
     <tr><td>Fit to Content</td><td></td></tr>
   </table>
 </div>
@@ -732,7 +733,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
   <h4>Tools</h4>
   <p style="font-size:0.85em;color:#94a3b8;margin:0 0 6px">Post-registration tools are disabled until results exist.</p>
   <table>
-    <tr><td>Blink</td><td><span class="kbd">Ctrl+B</span></td></tr>
+    <tr><td>Blink</td><td></td></tr>
     <tr><td>Analysis Plot</td><td></td></tr>
     <tr><td>Quality Report</td><td></td></tr>
     <tr><td>Warp Annotations</td><td></td></tr>
@@ -765,6 +766,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
   <tr><td>Save settings profile</td><td>File -&gt; Save Configuration</td><td>Choose destination JSON file</td><td>Current Properties values exported</td></tr>
   <tr><td>Load settings profile</td><td>File -&gt; Load Configuration</td><td>Select a previously saved JSON file</td><td>Properties panel updates to saved values</td></tr>
   <tr><td>Run registration</td><td>File -&gt; Run Registration</td><td>Review confirmation dialog and proceed (<span class="kbd">Ctrl+R</span>)</td><td>Worker starts, progress/logs update, outputs written</td></tr>
+  <tr><td>Cancel registration</td><td>File -&gt; Cancel Registration</td><td>Stop the active registration safely (<span class="kbd">Esc</span>)</td><td>Run stops; partial output may remain</td></tr>
   <tr><td>Resume last run</td><td>File -&gt; Resume Last Registration</td><td>Re-run the most recent context after cancel/failure</td><td>Previous run settings are reused without reconfiguration</td></tr>
   <tr><td>Open Preferences</td><td>File -&gt; Preferences</td><td>Adjust cache/performance/UI options (<span class="kbd">Ctrl+,</span>)</td><td>Settings persisted via QSettings</td></tr>
 </table>
@@ -775,7 +777,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
   <tr><td>Reset Layout</td><td>View -&gt; Reset Layout</td><td>Restore all panels to default sizes (<span class="kbd">Ctrl+Shift+L</span>)</td><td>Sidebars and center return to initial proportions</td></tr>
   <tr><td>Toggle Left Sidebar</td><td>View -&gt; Toggle Left Sidebar</td><td>Show/hide the Project &amp; Slide Preview panel (<span class="kbd">Ctrl+[</span>)</td><td>Left panel collapses or expands</td></tr>
   <tr><td>Toggle Right Sidebar</td><td>View -&gt; Toggle Right Sidebar</td><td>Show/hide the Properties &amp; Layers panel (<span class="kbd">Ctrl+]</span>)</td><td>Right panel collapses or expands</td></tr>
-  <tr><td>Expand Center</td><td>View -&gt; Expand Center</td><td>Collapse both sidebars to maximize viewer (<span class="kbd">Ctrl+Shift+C</span>)</td><td>Napari viewer fills available width</td></tr>
+  <tr><td>Toggle Focus Mode</td><td>View -&gt; Toggle Focus Mode</td><td>Collapse both sidebars to maximize viewer (<span class="kbd">Ctrl+Shift+\</span>)</td><td>Napari viewer fills available width</td></tr>
   <tr><td>Fit to Content</td><td>View -&gt; Fit to Content</td><td>Adjust panel sizes to match current content</td><td>Panels resize to optimal widths</td></tr>
 </table>
 
@@ -783,7 +785,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 <p style="font-size:0.9em;color:#94a3b8;margin:0 0 8px">Tools menu actions are <strong>contextually enabled</strong> &mdash; post-registration tools are disabled until a registration run completes successfully.</p>
 <table>
   <tr><th>Task</th><th>Where</th><th>How</th><th>Result</th></tr>
-  <tr><td>Blink comparison</td><td>Tools -&gt; Blink</td><td>Select two registered slides, adjust blend, start/stop blink (<span class="kbd">Ctrl+B</span>)</td><td>Visual A/B alignment validation</td></tr>
+  <tr><td>Blink comparison</td><td>Tools -&gt; Blink</td><td>Select two registered slides, adjust blend, start/stop blink</td><td>Visual A/B alignment validation</td></tr>
   <tr><td>Error trend plot</td><td>Tools -&gt; Analysis Plot</td><td>Open after successful run</td><td>Pairwise error chart + summary metrics</td></tr>
   <tr><td>Quality table</td><td>Tools -&gt; Quality Report</td><td>Open after successful run and sort columns</td><td>Detailed metric table for outlier review</td></tr>
   <tr><td>Warp annotations</td><td>Tools -&gt; Warp Annotations</td><td>Select GeoJSON + source slide + output folder</td><td>One warped GeoJSON per registered target slide</td></tr>
@@ -830,12 +832,13 @@ pip install -r requirements.txt && pip install -e .</code></pre>
   <tr><td>File</td><td>Recent Folders</td><td><a href="#gui-tasks">GUI Task Catalog</a></td><td>Previously opened case folder</td><td><span class="status-pill ready">Available</span></td></tr>
   <tr><td>File</td><td>Save Configuration / Load Configuration</td><td><a href="#gui-tasks">GUI Task Catalog</a>, <a href="#config-mgmt">Config Management</a></td><td>Open project context</td><td><span class="status-pill ready">Available</span></td></tr>
   <tr><td>File</td><td>Run Registration</td><td><a href="#first-registration">First Registration</a></td><td>Loaded slides + valid settings</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>File</td><td>Cancel Registration (<span class="kbd">Esc</span>)</td><td><a href="#gui-tasks">GUI Task Catalog</a></td><td>Active registration in progress</td><td><span class="status-pill gated">Active during run</span></td></tr>
   <tr><td>File</td><td>Resume Last Registration</td><td><a href="#gui-tasks">GUI Task Catalog</a>, <a href="#troubleshooting">Troubleshooting</a></td><td>Previous run metadata exists</td><td><span class="status-pill ready">Available</span></td></tr>
   <tr><td>File</td><td>Preferences</td><td><a href="#gui-tasks">GUI Task Catalog</a>, <a href="#optimization-tips">Optimization Tips</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
 
   <tr><td>View</td><td>Reset Layout / Fit to Content</td><td><a href="#ui-tour">Interface Tour</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
   <tr><td>View</td><td>Toggle Left Sidebar / Toggle Right Sidebar</td><td><a href="#ui-tour">Interface Tour</a>, <a href="#keyboard-ref">Keyboard Shortcuts</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
-  <tr><td>View</td><td>Expand Center</td><td><a href="#ui-tour">Interface Tour</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>View</td><td>Toggle Focus Mode</td><td><a href="#ui-tour">Interface Tour</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
 
   <tr><td>Tools</td><td>Blink / Analysis Plot / Quality Report</td><td><a href="#after-registration">After Registration</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>Completed registration</td><td><span class="status-pill gated">Enabled post-run</span></td></tr>
   <tr><td>Tools</td><td>Warp Annotations</td><td><a href="#after-registration">After Registration</a>, <a href="#warp-api">Warp Tools API</a></td><td>Completed registration + source annotations</td><td><span class="status-pill gated">Enabled post-run</span></td></tr>
@@ -1352,7 +1355,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 <div class="accordion">
   <div class="accordion-header" onclick="toggleAccordion(this)">🔄 Blink Viewer <span class="arrow">▶</span></div>
   <div class="accordion-body">
-    <p><strong>Shortcut:</strong> <span class="kbd">Ctrl+B</span> · <strong>Purpose:</strong> A/B comparison of registered slides.</p>
+    <p><strong>Purpose:</strong> A/B comparison of registered slides.</p>
     <ul>
       <li><strong>Slide A / B:</strong> ComboBox selectors for any two registered slides</li>
       <li><strong>Blend slider:</strong> Manual crossfade 0–100%</li>
@@ -1992,12 +1995,12 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
 <table>
   <tr><th style="width:160px">Shortcut</th><th>Action</th><th>Menu</th></tr>
   <tr><td><span class="kbd">Ctrl+O</span></td><td>Open Slide Folder</td><td>File</td></tr>
-  <tr><td><span class="kbd">Ctrl+R</span></td><td>Run Registration</td><td>File</td></tr>
-  <tr><td><span class="kbd">Ctrl+B</span></td><td>Blink Viewer</td><td>Tools</td></tr>
+  <tr><td><span class="kbd">Ctrl+R</span>, <span class="kbd">F5</span></td><td>Run Registration</td><td>File</td></tr>
+  <tr><td><span class="kbd">Esc</span></td><td>Cancel Registration</td><td>File</td></tr>
   <tr><td><span class="kbd">Ctrl+[</span></td><td>Toggle Left Sidebar</td><td>View</td></tr>
   <tr><td><span class="kbd">Ctrl+]</span></td><td>Toggle Right Sidebar</td><td>View</td></tr>
   <tr><td><span class="kbd">Ctrl+Shift+L</span></td><td>Reset Layout</td><td>View</td></tr>
-  <tr><td><span class="kbd">Ctrl+Shift+C</span></td><td>Expand Center</td><td>View</td></tr>
+  <tr><td><span class="kbd">Ctrl+Shift+\</span></td><td>Toggle Focus Mode</td><td>View</td></tr>
   <tr><td><span class="kbd">Ctrl+,</span></td><td>Preferences</td><td>File</td></tr>
   <tr><td><span class="kbd">Ctrl+Shift+P</span></td><td>Performance Statistics</td><td>Help</td></tr>
   <tr><td><span class="kbd">Ctrl+Q</span></td><td>Quit Application</td><td>File</td></tr>

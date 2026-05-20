@@ -21,6 +21,15 @@ class ProjectDock(QtWidgets.QDockWidget):
         self._filter_edit.setClearButtonEnabled(True)
         self._filter_edit.textChanged.connect(self._apply_filter)
 
+        self._empty_label = QtWidgets.QLabel(
+            "Open a folder to load slides\n(File → Open Slide Folder)"
+        )
+        self._empty_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self._empty_label.setStyleSheet(
+            "color: #999; font-style: italic; padding: 20px;"
+        )
+        self._empty_label.setVisible(False)
+
         self._list = QtWidgets.QListWidget()
         self._list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self._list.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
@@ -45,12 +54,15 @@ class ProjectDock(QtWidgets.QDockWidget):
             )
         )
         self._remove_selected_button.setProperty("panelAction", True)
-        self._remove_selected_button.setToolTip("Remove selected slides (Del)")
+        self._remove_selected_button.setToolTip("Remove selected slides from the project (Del key). Right-click for options.")
         self._remove_selected_button.clicked.connect(self._remove_selected_slides)
         self._remove_selected_button.setEnabled(False)
 
         self._delete_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Delete"), self._list)
         self._delete_shortcut.activated.connect(self._remove_selected_slides)
+
+        self._select_all_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+A"), self._list)
+        self._select_all_shortcut.activated.connect(self._list.selectAll)
 
         self._list.itemSelectionChanged.connect(self._update_action_states)
 
@@ -62,6 +74,7 @@ class ProjectDock(QtWidgets.QDockWidget):
         layout.setSpacing(GRID_SPACING)
         layout.addWidget(self._slides_header)
         layout.addWidget(self._filter_edit)
+        layout.addWidget(self._empty_label)
         layout.addWidget(self._list)
 
         actions_row = QtWidgets.QHBoxLayout()
@@ -141,6 +154,7 @@ class ProjectDock(QtWidgets.QDockWidget):
         visible = self._visible_count()
         self._update_action_states()
         self._clear_button.setEnabled(total > 0)
+        self._empty_label.setVisible(total == 0)
 
         if total == 0:
             self.setWindowTitle("Project")

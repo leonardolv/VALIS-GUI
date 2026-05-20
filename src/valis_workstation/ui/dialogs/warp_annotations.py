@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from PySide6 import QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 
 class WarpAnnotationsDialog(QtWidgets.QDialog):
@@ -24,6 +24,7 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
         form = QtWidgets.QFormLayout()
 
         self._annotation_path = QtWidgets.QLineEdit()
+        self._annotation_path.setToolTip("GeoJSON file containing regions of interest from the source slide")
         browse_btn = QtWidgets.QPushButton("Browse")
         browse_btn.clicked.connect(self._browse_annotation)
         path_layout = QtWidgets.QHBoxLayout()
@@ -31,6 +32,7 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
         path_layout.addWidget(browse_btn)
 
         self._source_slide = QtWidgets.QComboBox()
+        self._source_slide.setToolTip("The slide the annotations were drawn on")
         for slide_path in registrar.get_sorted_img_f_list():
             slide_obj = registrar.get_slide(slide_path)
             self._source_slide.addItem(slide_obj.name, slide_path)
@@ -38,6 +40,7 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
         self._output_dir_edit = QtWidgets.QLineEdit(
             str(self._output_dir / "warped_annotations")
         )
+        self._output_dir_edit.setToolTip("Directory where warped GeoJSON files will be saved (one per target slide)")
         out_btn = QtWidgets.QPushButton("Browse")
         out_btn.clicked.connect(self._browse_output)
         out_layout = QtWidgets.QHBoxLayout()
@@ -62,17 +65,25 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
         layout.addWidget(button_box)
 
     def _browse_annotation(self) -> None:
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        last_dir = settings.value("ui/last_warp_annotation_dir", str(Path.home()))
+
         path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select Annotation File", filter="GeoJSON (*.geojson)"
+            self, "Select Annotation File", last_dir, filter="GeoJSON (*.geojson)"
         )
         if path:
+            settings.setValue("ui/last_warp_annotation_dir", str(Path(path).parent))
             self._annotation_path.setText(path)
 
     def _browse_output(self) -> None:
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        last_dir = settings.value("ui/last_warp_output_dir", str(Path.home()))
+
         folder = QtWidgets.QFileDialog.getExistingDirectory(
-            self, "Select Output Folder"
+            self, "Select Output Folder", last_dir
         )
         if folder:
+            settings.setValue("ui/last_warp_output_dir", folder)
             self._output_dir_edit.setText(folder)
 
     def _run_warp(self) -> None:
