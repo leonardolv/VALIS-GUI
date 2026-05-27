@@ -440,6 +440,26 @@ def build_actions(window: MainWindow) -> None:
 
     help_menu = window.menuBar().addMenu("Help")
 
+    quick_tutorial_action = QtGui.QAction("Quick Tutorial", window)
+    quick_tutorial_action.setIcon(
+        load_icon(
+            "tutorial",
+            window,
+            QtWidgets.QStyle.StandardPixmap.SP_DialogHelpButton,
+        )
+    )
+    quick_tutorial_action.setShortcut("F1")
+    _configure_action(
+        window,
+        quick_tutorial_action,
+        status_tip="Open the in-app quick tutorial (F1)",
+        tool_tip="Step-by-step guide to VALIS Workstation (F1)",
+    )
+    quick_tutorial_action.triggered.connect(window._show_quick_tutorial)
+    help_menu.addAction(quick_tutorial_action)
+
+    help_menu.addSeparator()
+
     user_manual_action = QtGui.QAction("Manual (HTML)", window)
     user_manual_action.setIcon(
         load_icon(
@@ -471,6 +491,10 @@ def build_actions(window: MainWindow) -> None:
     )
     tutorial_action.triggered.connect(window._open_tutorial)
     help_menu.addAction(tutorial_action)
+
+    # Add Quick Tutorial to the quick toolbar
+    quick_toolbar.addSeparator()
+    quick_toolbar.addAction(quick_tutorial_action)
 
     quick_start_action = QtGui.QAction("Quick Start Guide", window)
     quick_start_action.setIcon(

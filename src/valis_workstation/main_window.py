@@ -1585,3 +1585,18 @@ class MainWindow(QtWidgets.QMainWindow):
             "Preferences Saved",
             "Some preference changes require restarting the application to take effect.",
         )
+
+    def _show_quick_tutorial(self) -> None:
+        """Show the in-app quick tutorial wizard (non-modal)."""
+        from valis_workstation.ui.dialogs.quick_tutorial_dialog import (
+            QuickTutorialDialog,
+        )
+
+        if not hasattr(self, "_quick_tutorial_dialog") or self._quick_tutorial_dialog is None:
+            self._quick_tutorial_dialog = QuickTutorialDialog(self)
+
+        self._quick_tutorial_dialog.show()
+        self._quick_tutorial_dialog.raise_()
+        self._quick_tutorial_dialog.activateWindow()
+        logger.info("Quick tutorial dialog opened (non-modal)")
+
