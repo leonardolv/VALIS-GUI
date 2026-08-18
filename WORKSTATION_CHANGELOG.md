@@ -1,5 +1,23 @@
 # VALIS Workstation Changelog
 
+## 2026-08-18
+
+### Fixed
+- The Preferences dialog persisted 13 settings to `QSettings` that nothing in the application ever read back, so every field was a no-op even after a restart — `_on_preferences_changed`'s "Some preference changes require restarting the application to take effect" was true of nothing. Wired seven of them into their real call sites (`src/valis_workstation/main_window.py`, `src/valis_workstation/services/thumbnail_cache.py`, `src/valis_workstation/utils/tile_cache.py`, `src/valis_workstation/ui/dialogs/performance_stats_dialog.py`):
+	- `performance/parallel_workers` — thumbnail generation's `ThreadPoolExecutor` was hardcoded to `min(4, total_slides)`.
+	- `ui/recent_files_count` — the recent-folders list was hardcoded to `recent[:10]`.
+	- `ui/confirm_close` — the checkbox existed with no confirmation dialog behind it anywhere; `closeEvent` now asks before closing when enabled.
+	- `ui/show_statusbar` — the status bar was always shown regardless of the setting.
+	- `cache/directory` / `cache/max_thumbnail_mb` — `get_thumbnail_cache()` always constructed `ThumbnailCache()` with its built-in defaults (`~/.valis_cache`, 500 MB), ignoring both fields.
+	- `cache/max_tile_mb` / `performance/tile_size` — same shape in `get_tile_cache()`, always called with no arguments from both its call sites.
+	- `ui/default_thumbnail_size` — thumbnail generation was hardcoded to `max_size=512`.
+	- `performance/auto_refresh_seconds` — the Performance Statistics dialog's refresh timer was hardcoded to 2000 ms.
+
+	Three settings remain unwired and are not fixed here: `ui/show_tooltips` (would need an application-wide event filter, not a single call site), `cache/persist` (would need cache-clearing-on-exit logic, a behavior decision rather than a wiring fix), and `performance/monitoring_enabled` (moot — `PerformanceMonitor.track_thumbnail_load`/etc. have no caller anywhere in the app, so its metrics are always empty regardless of the toggle; that's a separate, deeper gap worth its own pass). See `AGENT_TASK_LOG.md`'s matching entry.
+
+### Testing
+- `QT_API=pyside6 QT_QPA_PLATFORM=offscreen pytest tests/` (this environment's `xvfb-run` aborts on plain `QApplication()` construction even on a clean checkout — a pre-existing sandbox/display issue, not a regression; `QT_QPA_PLATFORM=offscreen` sidesteps it without `xvfb` at all): **313 passed, 4 failed** — the 4 failures (`test_pipeline.py::TestBuildRegistrarKwargs`) reproduce identically with this change's files stashed, caused by `torch` not being installed in this environment (`valis.feature_detectors not importable: No module named 'torch'`), unrelated to this change. Targeted subset most relevant to the fix (`test_thumbnail_cache.py`, `test_app.py`, `test_gui_components.py`, `test_all_features.py`): **153 passed, 0 failed**.
+
 ## 2026-03-22
 
 ### Added

@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 import numpy as np
+from PySide6.QtCore import QSettings
 
 logger = logging.getLogger(__name__)
 
@@ -462,16 +463,20 @@ class TiledImageLoader:
 _global_tile_cache: Optional[LRUTileCache] = None
 
 
-def get_tile_cache(max_memory_mb: float = 1024.0, tile_size: int = 512) -> LRUTileCache:
+def get_tile_cache(
+    max_memory_mb: Optional[float] = None, tile_size: Optional[int] = None
+) -> LRUTileCache:
     """
     Get the global tile cache instance.
 
     Parameters
     ----------
-    max_memory_mb : float
-        Maximum memory for cache (only used on first call)
-    tile_size : int
-        Tile size (only used on first call)
+    max_memory_mb : float | None
+        Maximum memory for cache (only used on first call). ``None`` reads
+        the user's configured ``cache/max_tile_mb`` preference (default 1024).
+    tile_size : int | None
+        Tile size (only used on first call). ``None`` reads the user's
+        configured ``performance/tile_size`` preference (default 512).
 
     Returns
     -------
@@ -481,6 +486,12 @@ def get_tile_cache(max_memory_mb: float = 1024.0, tile_size: int = 512) -> LRUTi
     global _global_tile_cache
 
     if _global_tile_cache is None:
+        if max_memory_mb is None or tile_size is None:
+            settings = QSettings("VALIS", "Workstation")
+            if max_memory_mb is None:
+                max_memory_mb = settings.value("cache/max_tile_mb", 1024, type=int)
+            if tile_size is None:
+                tile_size = settings.value("performance/tile_size", 512, type=int)
         _global_tile_cache = LRUTileCache(max_memory_mb, tile_size)
 
     return _global_tile_cache
