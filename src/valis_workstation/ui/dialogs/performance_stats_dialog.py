@@ -37,8 +37,12 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
         self._update_timer.timeout.connect(self._update_stats)
         self._update_stats()  # Initial update
 
-        # Auto-refresh every 2 seconds
-        self._update_timer.start(2000)
+        # Auto-refresh at the configured interval (default 2 seconds)
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        refresh_seconds = settings.value(
+            "performance/auto_refresh_seconds", 2, type=int
+        )
+        self._update_timer.start(refresh_seconds * 1000)
 
     def _setup_ui(self):
         """Setup the user interface."""

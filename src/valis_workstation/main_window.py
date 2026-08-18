@@ -570,6 +570,11 @@ class MainWindow(QtWidgets.QMainWindow):
         """Setup status bar at the bottom of the window."""
         self._status_bar = self.statusBar()
         self._status_bar.showMessage("Ready")
+
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        show_statusbar = settings.value("ui/show_statusbar", True, type=bool)
+        self._status_bar.setVisible(show_statusbar)
+
         logger.debug("Status bar configured")
 
     def _open_slide_folder(self) -> None:
@@ -953,6 +958,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """Handle window close event with proper resource cleanup."""
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        confirm_close = settings.value("ui/confirm_close", False, type=bool)
+        if confirm_close:
+            reply = QtWidgets.QMessageBox.question(
+                self,
+                "Confirm Close",
+                "Are you sure you want to close VALIS Workstation?",
+                QtWidgets.QMessageBox.StandardButton.Yes
+                | QtWidgets.QMessageBox.StandardButton.No,
+                QtWidgets.QMessageBox.StandardButton.No,
+            )
+            if reply != QtWidgets.QMessageBox.StandardButton.Yes:
+                event.ignore()
+                return
+
         logger.info("Closing main window - initiating cleanup")
 
         # Save window state and splitter layout
@@ -1248,12 +1268,18 @@ class MainWindow(QtWidgets.QMainWindow):
         # Update status bar
         self._status_bar.showMessage(f"Generating thumbnails: 0/{total_slides}")
 
+        thumbnail_size = QtCore.QSettings("VALIS", "Workstation").value(
+            "ui/default_thumbnail_size", 512, type=int
+        )
+
         def generate_and_update(
             slide_path: Path,
         ) -> tuple[str, QtGui.QPixmap | None, dict]:
             """Generate thumbnail and return results."""
             try:
-                thumbnail, metadata = generate_thumbnail(slide_path, max_size=512)
+                thumbnail, metadata = generate_thumbnail(
+                    slide_path, max_size=thumbnail_size
+                )
                 return slide_path.stem, thumbnail, metadata
             except Exception as e:
                 logger.warning(
@@ -1262,8 +1288,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 return slide_path.stem, None, {"file_path": str(slide_path)}
 
         # Use ThreadPoolExecutor with limited workers to avoid overwhelming disk I/O
-        # 4 workers is a good balance for I/O bound operations
-        max_workers = min(4, total_slides)
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        configured_workers = settings.value(
+            "performance/parallel_workers", 4, type=int
+        )
+        max_workers = min(configured_workers, total_slides)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Submit all tasks
@@ -1311,8 +1340,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # Add to front
         recent.insert(0, folder_path)
 
-        # Keep only last 10
-        recent = recent[:10]
+        # Keep only the configured number of entries
+        recent_count = settings.value("ui/recent_files_count", 10, type=int)
+        recent = recent[:recent_count]
 
         settings.setValue("recent_folders", recent)
         self._update_recent_folders_menu()
