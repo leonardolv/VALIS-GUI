@@ -85,7 +85,7 @@ rather than folding into this one.
 write-up, matching this repo's existing Added/Changed/Fixed/Testing
 convention.
 
-**PR.** PR_LINK_PLACEHOLDER
+**PR.** #4 — https://github.com/leonardolv/VALIS-GUI/pull/4
 
 ## Backlog
 
