@@ -85,11 +85,15 @@ def validate_slides(
         # Estimate required disk space (slides + registration results ~2-3x)
         estimated_space_needed = total_size_gb * 3
 
-        # Check available disk space
+        # Check available disk space. output_dir may not exist yet (it is
+        # created later, below) so walk up to its nearest existing ancestor
+        # rather than falling back to the process's cwd, which can be on a
+        # different filesystem than the actual output target.
         try:
-            disk_usage = shutil.disk_usage(
-                output_dir.parent if output_dir.exists() else Path.cwd()
-            )
+            disk_check_path = output_dir.resolve()
+            while not disk_check_path.exists():
+                disk_check_path = disk_check_path.parent
+            disk_usage = shutil.disk_usage(disk_check_path)
             available_gb = disk_usage.free / (1024**3)
 
             logger.info(f"Available disk space: {available_gb:.2f} GB")
