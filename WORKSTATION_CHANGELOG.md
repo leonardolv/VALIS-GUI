@@ -1,5 +1,18 @@
 # VALIS Workstation Changelog
 
+## 2026-08-19
+
+### Fixed
+- The last two Preferences fields left disconnected by 2026-08-18's pass, both of which needed a design decision rather than a call site:
+	- `ui/show_tooltips` — no single call site can own "was a tooltip shown", since Qt dispatches `QEvent.Type.ToolTip` to whichever widget is under the cursor. Added `app._ToolTipSuppressionFilter`, a `QObject` event filter installed on the `QApplication` (`src/valis_workstation/app.py`) that consumes every `ToolTip` event while the setting is off, re-reading `QSettings` on each event so a Preferences change applies immediately without a restart.
+	- `cache/persist` ("Keep cache between sessions") — `MainWindow.closeEvent` now clears `ThumbnailCache`'s on-disk contents when unchecked (`src/valis_workstation/main_window.py`), in its own `try`/`except` so a clear failure can't block the window from closing.
+
+### Testing
+- New `tests/test_preferences_wiring_followups.py` (9 tests) covering both.
+- This environment was missing `torch` and the system `libvips.so.42` library that the 2026-08-18 run's environment also lacked (`apt-get install libvips42` resolves the latter); with both present, the four `test_pipeline.py::TestBuildRegistrarKwargs` failures noted in that entry as unrelated now pass as well.
+- Full suite: **326 passed, 0 failed** (up from 313/4 — the 13 new tests plus the 4 now-environment-satisfied ones account for the difference; 0 failures caused by this change).
+- `ruff check` on the two touched source files: finding count unchanged.
+
 ## 2026-08-18
 
 ### Fixed
