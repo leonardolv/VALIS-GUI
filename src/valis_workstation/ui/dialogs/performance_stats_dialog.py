@@ -3,7 +3,6 @@ Performance statistics dialog for viewing cache hit rates, memory usage, and met
 
 This dialog provides a comprehensive view of application performance including:
 - Thumbnail cache statistics
-- Tile cache statistics
 - Memory usage tracking
 - Load time metrics
 - Cache management controls
@@ -19,7 +18,6 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from valis_workstation.services.thumbnail_cache import get_thumbnail_cache
 from valis_workstation.ui.form_layout_utils import add_form_spacer
 from valis_workstation.utils.performance import get_performance_monitor
-from valis_workstation.utils.tile_cache import get_tile_cache
 
 logger = logging.getLogger(__name__)
 
@@ -59,10 +57,6 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
         thumb_widget = self._create_thumbnail_tab()
         tabs.addTab(thumb_widget, "Thumbnail Cache")
 
-        # Tile cache tab
-        tile_widget = self._create_tile_tab()
-        tabs.addTab(tile_widget, "Tile Cache")
-
         # Memory tab
         memory_widget = self._create_memory_tab()
         tabs.addTab(memory_widget, "Memory")
@@ -79,10 +73,6 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
         self._clear_thumb_cache_btn = QtWidgets.QPushButton("Clear Thumbnail Cache")
         self._clear_thumb_cache_btn.clicked.connect(self._clear_thumbnail_cache)
         button_layout.addWidget(self._clear_thumb_cache_btn)
-
-        self._clear_tile_cache_btn = QtWidgets.QPushButton("Clear Tile Cache")
-        self._clear_tile_cache_btn.clicked.connect(self._clear_tile_cache)
-        button_layout.addWidget(self._clear_tile_cache_btn)
 
         button_layout.addStretch()
 
@@ -113,10 +103,6 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
         self._thumb_hit_rate_label = QtWidgets.QLabel("0%")
         layout.addRow("Thumbnail Cache Hit Rate:", self._thumb_hit_rate_label)
 
-        # Tile cache hit rate
-        self._tile_hit_rate_label = QtWidgets.QLabel("0%")
-        layout.addRow("Tile Cache Hit Rate:", self._tile_hit_rate_label)
-
         # Average thumbnail load time
         self._thumb_load_time_label = QtWidgets.QLabel("0 ms")
         layout.addRow("Avg Thumbnail Load:", self._thumb_load_time_label)
@@ -134,9 +120,6 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
         # Progress bars for cache usage
         self._thumb_cache_bar = QtWidgets.QProgressBar()
         layout.addRow("Thumbnail Cache:", self._thumb_cache_bar)
-
-        self._tile_cache_bar = QtWidgets.QProgressBar()
-        layout.addRow("Tile Cache:", self._tile_cache_bar)
 
         add_form_spacer(layout)
 
@@ -171,36 +154,6 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
 
         self._thumb_avg_time_label = QtWidgets.QLabel("0 ms")
         layout.addRow("Avg Load Time:", self._thumb_avg_time_label)
-
-        add_form_spacer(layout)
-
-        return widget
-
-    def _create_tile_tab(self):
-        """Create the tile cache statistics tab."""
-        widget = QtWidgets.QWidget()
-        layout = QtWidgets.QFormLayout(widget)
-
-        self._tile_count_label = QtWidgets.QLabel("0")
-        layout.addRow("Tiles Cached:", self._tile_count_label)
-
-        self._tile_mem_label = QtWidgets.QLabel("0 MB")
-        layout.addRow("Memory Used:", self._tile_mem_label)
-
-        self._tile_max_mem_label = QtWidgets.QLabel("0 MB")
-        layout.addRow("Memory Limit:", self._tile_max_mem_label)
-
-        self._tile_hits_label = QtWidgets.QLabel("0")
-        layout.addRow("Cache Hits:", self._tile_hits_label)
-
-        self._tile_misses_label = QtWidgets.QLabel("0")
-        layout.addRow("Cache Misses:", self._tile_misses_label)
-
-        self._tile_evictions_label = QtWidgets.QLabel("0")
-        layout.addRow("Evictions:", self._tile_evictions_label)
-
-        self._tile_hit_rate_label2 = QtWidgets.QLabel("0%")
-        layout.addRow("Hit Rate:", self._tile_hit_rate_label2)
 
         add_form_spacer(layout)
 
@@ -247,9 +200,6 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
             thumb_hit_rate = summary["thumbnails"]["cache_hit_rate"]
             self._thumb_hit_rate_label.setText(f"{thumb_hit_rate * 100:.1f}%")
 
-            tile_hit_rate = summary["tiles"]["cache_hit_rate"]
-            self._tile_hit_rate_label.setText(f"{tile_hit_rate * 100:.1f}%")
-
             thumb_load_time = summary["thumbnails"]["avg_load_time_ms"]
             self._thumb_load_time_label.setText(f"{thumb_load_time:.1f} ms")
 
@@ -285,29 +235,6 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
                 self._thumb_cache_bar.setValue(thumb_pct)
                 self._thumb_cache_bar.setFormat(
                     f"{thumb_stats['size_mb']:.1f} / {thumb_stats['max_size_mb']:.1f} MB ({thumb_pct}%)"
-                )
-
-            # Tile cache tab
-            tile_cache = get_tile_cache()
-            tile_stats = tile_cache.get_stats()
-
-            self._tile_count_label.setText(str(tile_stats["tile_count"]))
-            self._tile_mem_label.setText(f"{tile_stats['memory_usage_mb']:.1f} MB")
-            self._tile_max_mem_label.setText(f"{tile_stats['memory_limit_mb']:.1f} MB")
-            self._tile_hits_label.setText(str(tile_stats["hits"]))
-            self._tile_misses_label.setText(str(tile_stats["misses"]))
-            self._tile_evictions_label.setText(str(tile_stats["evictions"]))
-            self._tile_hit_rate_label2.setText(f"{tile_stats['hit_rate'] * 100:.1f}%")
-
-            # Tile cache progress bar
-            if tile_stats["memory_limit_mb"] > 0:
-                tile_pct = int(
-                    (tile_stats["memory_usage_mb"] / tile_stats["memory_limit_mb"])
-                    * 100
-                )
-                self._tile_cache_bar.setValue(tile_pct)
-                self._tile_cache_bar.setFormat(
-                    f"{tile_stats['memory_usage_mb']:.1f} / {tile_stats['memory_limit_mb']:.1f} MB ({tile_pct}%)"
                 )
 
             # Memory tab
@@ -364,36 +291,6 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
                 logger.error(f"Failed to clear thumbnail cache: {e}")
                 QtWidgets.QMessageBox.critical(
                     self, "Error", f"Failed to clear thumbnail cache:\n{str(e)}"
-                )
-
-    def _clear_tile_cache(self):
-        """Clear the tile cache."""
-        reply = QtWidgets.QMessageBox.question(
-            self,
-            "Clear Tile Cache",
-            "Are you sure you want to clear the tile cache?\n"
-            "This will free up memory but tiles will need to be reloaded.",
-            QtWidgets.QMessageBox.StandardButton.Yes
-            | QtWidgets.QMessageBox.StandardButton.No,
-            QtWidgets.QMessageBox.StandardButton.No,
-        )
-
-        if reply == QtWidgets.QMessageBox.StandardButton.Yes:
-            try:
-                cache = get_tile_cache()
-                cache.clear()
-                self._update_stats()
-
-                QtWidgets.QMessageBox.information(
-                    self, "Cache Cleared", "Tile cache has been cleared successfully."
-                )
-
-                logger.info("Tile cache cleared by user")
-
-            except Exception as e:
-                logger.error(f"Failed to clear tile cache: {e}")
-                QtWidgets.QMessageBox.critical(
-                    self, "Error", f"Failed to clear tile cache:\n{str(e)}"
                 )
 
     def closeEvent(self, event):

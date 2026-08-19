@@ -54,7 +54,6 @@ class TestPerformanceMetrics:
         m = PerformanceMetrics()
         s = m.get_summary()
         assert s["thumbnails"]["total_generated"] == 0
-        assert s["tiles"]["cache_hit_rate"] == 0
         assert s["registration"]["total_runs"] == 0
         assert s["memory"]["peak_mb"] == 0.0
         assert s["slides"]["count"] == 0
@@ -74,11 +73,6 @@ class TestPerformanceMonitor:
         assert mon.metrics.thumbnail_cache_hits == 1
         assert mon.metrics.thumbnail_cache_misses == 1
         assert len(mon.metrics.thumbnail_load_times) == 2
-
-    def test_track_tile(self) -> None:
-        mon = PerformanceMonitor()
-        mon.track_tile_load(0.02, from_cache=True)
-        assert mon.metrics.tile_cache_hits == 1
 
     def test_track_registration(self) -> None:
         mon = PerformanceMonitor()

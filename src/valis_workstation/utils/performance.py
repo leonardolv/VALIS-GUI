@@ -51,11 +51,6 @@ class PerformanceMetrics:
     thumbnail_cache_hits: int = 0
     thumbnail_cache_misses: int = 0
 
-    # Tile cache metrics
-    tile_cache_hits: int = 0
-    tile_cache_misses: int = 0
-    tile_load_times: List[float] = field(default_factory=list)
-
     # Registration metrics
     registration_times: List[float] = field(default_factory=list)
 
@@ -83,19 +78,6 @@ class PerformanceMetrics:
                     self.thumbnail_cache_hits
                     / (self.thumbnail_cache_hits + self.thumbnail_cache_misses)
                     if (self.thumbnail_cache_hits + self.thumbnail_cache_misses) > 0
-                    else 0
-                ),
-            },
-            "tiles": {
-                "cache_hit_rate": (
-                    self.tile_cache_hits
-                    / (self.tile_cache_hits + self.tile_cache_misses)
-                    if (self.tile_cache_hits + self.tile_cache_misses) > 0
-                    else 0
-                ),
-                "avg_load_time_ms": (
-                    sum(self.tile_load_times) / len(self.tile_load_times) * 1000
-                    if self.tile_load_times
                     else 0
                 ),
             },
@@ -168,26 +150,6 @@ class PerformanceMonitor:
             f"Thumbnail load: {duration * 1000:.1f}ms "
             f"({'cache' if from_cache else 'generated'})"
         )
-
-    def track_tile_load(self, duration: float, from_cache: bool = False) -> None:
-        """
-        Track tile loading time.
-
-        Parameters
-        ----------
-        duration : float
-            Load time in seconds
-        from_cache : bool
-            Whether loaded from cache
-        """
-        if not _monitoring_enabled():
-            return
-        self.metrics.tile_load_times.append(duration)
-
-        if from_cache:
-            self.metrics.tile_cache_hits += 1
-        else:
-            self.metrics.tile_cache_misses += 1
 
     def track_registration(self, duration: float) -> None:
         """
@@ -287,14 +249,6 @@ class PerformanceMonitor:
             f"{thumb['cache_hit_rate'] * 100:.1f}% cache hit rate"
         )
 
-        # Tiles
-        tiles = summary["tiles"]
-        if tiles["cache_hit_rate"] > 0:
-            logger.info(
-                f"Tiles: {tiles['cache_hit_rate'] * 100:.1f}% cache hit rate, "
-                f"{tiles['avg_load_time_ms']:.1f}ms avg load time"
-            )
-
         # Registration
         reg = summary["registration"]
         if reg["total_runs"] > 0:
@@ -345,13 +299,6 @@ class PerformanceMonitor:
                 self.metrics.thumbnail_cache_hits + self.metrics.thumbnail_cache_misses
             )
             parts.append(f"Thumb Cache: {hit_rate * 100:.0f}%")
-
-        # Tile cache hit rate
-        if self.metrics.tile_cache_hits + self.metrics.tile_cache_misses > 0:
-            hit_rate = self.metrics.tile_cache_hits / (
-                self.metrics.tile_cache_hits + self.metrics.tile_cache_misses
-            )
-            parts.append(f"Tile Cache: {hit_rate * 100:.0f}%")
 
         return " | ".join(parts)
 
