@@ -8,6 +8,69 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-08-19 — The last two design-decision Preferences fields: tooltips and cache persistence
+
+**Item claimed.** Backlog: "`ui/show_tooltips` and `cache/persist` are the
+two remaining disconnected Preferences fields that need a design decision,
+not just a call site" (filed by the 2026-08-18 run). No other agent had
+this repo claimed (In Progress was empty; the only commit since 2026-08-18
+was #4 itself, already reflected here).
+
+**The two decisions.**
+* `ui/show_tooltips` — the Backlog entry was right that no single call site
+  can own this: tooltips are dispatched by Qt's own hover machinery to
+  whichever of dozens of widgets happens to be under the cursor, not
+  requested by app code. The one place that sees all of them is the
+  `QApplication` itself, via `QEvent.Type.ToolTip`.
+* `cache/persist` ("Keep cache between sessions") — took the entry's
+  smaller-risk option: clear `ThumbnailCache`'s on-disk contents on exit
+  when unchecked, rather than rearchitecting it into an in-memory-only
+  cache for the session (a much larger change to a class three other call
+  sites already depend on being disk-backed, for one checkbox).
+
+**Solution.**
+* `app._ToolTipSuppressionFilter` (`src/valis_workstation/app.py`), a
+  `QObject` event filter installed on the `QApplication` in `run_app`
+  (kept alive as `app._tooltip_suppression_filter` — `installEventFilter`
+  does not take Python-level ownership, so an unreferenced filter object
+  can be garbage-collected out from under the app). Its `eventFilter`
+  re-reads `ui/show_tooltips` from `QSettings` on every `ToolTip` event
+  (not cached), so a Preferences change takes effect immediately without
+  restarting the app, and consumes the event (returns `True`) to block it
+  only when the setting is off. Every other event type passes through
+  unchanged.
+* `MainWindow.closeEvent` (`main_window.py`) reads `cache/persist` after
+  its existing cleanup steps and calls `get_thumbnail_cache().clear()`
+  when it's `False`, in its own `try`/`except` so a clear failure (e.g. a
+  read-only cache directory) can't block the window from closing — the
+  same principle the method's existing worker-thread and napari-viewer
+  cleanup already follow.
+
+**Validation.**
+* New `tests/test_preferences_wiring_followups.py` (9 tests): the tooltip
+  filter suppresses `ToolTip` events only when the setting is off, defaults
+  to shown when unset (matching the checkbox's own default), never
+  consumes an unrelated event type, and is confirmed installed on the real
+  `QApplication`; `closeEvent` clears the cache only when `cache/persist`
+  is `False`, leaves it alone when `True` or unset, and still accepts the
+  close event when the clear itself raises.
+* This environment needed `torch` and system `libvips.so.42`
+  (`apt-get install libvips42`) that the 2026-08-18 run's environment
+  didn't have — installed both; with them, `test_pipeline.py::
+  TestBuildRegistrarKwargs`'s four `libvips`-dependent tests (the previous
+  run's one known-unrelated failure) now pass too.
+* Full suite: **326 passed, 0 failed** (up from the prior run's 313/4,
+  entirely from the two now-satisfied environment deps above — 0 failures
+  attributable to this change).
+* `ruff check` on the two touched source files: finding count unchanged at
+  5 (no new findings); the new test file is itself ruff-clean.
+* `python3 -c "import ast; ..."` syntax check on both touched files.
+
+**Docs.** `WORKSTATION_CHANGELOG.md` gains a 2026-08-19 entry with the same
+write-up.
+
+**PR.** #5 — https://github.com/leonardolv/VALIS-GUI/pull/5
+
 ### 2026-08-18 — The Preferences dialog persisted 13 settings; nothing ever read 7 of them back
 
 **First run against this repo** — `AGENT_TASK_LOG.md` did not exist, created per
@@ -89,6 +152,14 @@ convention.
 
 ## Backlog
 
+- ~~**`ui/show_tooltips` and `cache/persist` are the two remaining
+  disconnected Preferences fields that need a design decision, not just a
+  call site.**~~ Done by the 2026-08-19 run — see the Completed entry.
+  `show_tooltips` got an application-wide `QEvent.ToolTip` filter on the
+  `QApplication`; `cache/persist` got the smaller-risk of the two options
+  this entry weighed (clear the on-disk cache in `closeEvent`, rather than
+  an in-memory-only cache for the session).
+  (original entry follows)
 - **`ui/show_tooltips` and `cache/persist` are the two remaining
   disconnected Preferences fields that need a design decision, not just a
   call site.** Filed by the 2026-08-18 run. `show_tooltips` needs an

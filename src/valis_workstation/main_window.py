@@ -30,6 +30,7 @@ from valis_workstation.layout_constants import (
 )
 from valis_workstation.models.config import Config
 from valis_workstation.services.slide_scan import scan_slide_folder
+from valis_workstation.services.thumbnail_cache import get_thumbnail_cache
 from valis_workstation.ui.dialogs.analysis_plot import AnalysisPlotDialog
 from valis_workstation.ui.dialogs.blink_viewer import BlinkViewerDialog
 from valis_workstation.ui.dialogs.diagnostics_dialog import DiagnosticsDialog
@@ -1009,6 +1010,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self._worker = None
         self._worker_thread = None
         self._last_result = None
+
+        # "Keep cache between sessions" unchecked means exactly that: the
+        # on-disk thumbnail cache is wiped now so the next launch starts
+        # from a clean cache rather than silently reusing this session's
+        # thumbnails. Checked (the default) leaves the cache untouched.
+        if not settings.value("cache/persist", True, type=bool):
+            try:
+                get_thumbnail_cache().clear()
+                logger.info("cache/persist is off - cleared thumbnail cache on exit")
+            except Exception as e:
+                logger.exception(f"Failed to clear thumbnail cache on exit: {e}")
 
         logger.info("Cleanup complete, closing application")
         super().closeEvent(event)
