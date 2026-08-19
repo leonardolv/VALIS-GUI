@@ -21,14 +21,21 @@ Three real call sites are wired:
 * ``ValisWorker.run`` times the ``run_valis_pipeline`` call and calls
   ``track_registration`` right before emitting ``finished``.
 
-``TileCache`` (``utils/tile_cache.py``) is a separate, deeper gap: nothing in
-the app outside its own module and the stats dialog ever calls
-``get_tile_cache()`` at all, so there is no real tile-loading call site to
-wire ``track_tile_load`` into yet (filed back to the Backlog rather than
-folded in here) — that tab's numbers already come from the cache's own
-internal hit/miss counters (``TileCache.get_stats()``), not from
-``PerformanceMonitor``, so it was not actually broken the way the thumbnail
-and registration numbers were.
+``TileCache`` (``utils/tile_cache.py``) was a separate, deeper gap, filed
+back to the Backlog rather than folded in here: nothing in the app outside
+its own module and the stats dialog ever called ``get_tile_cache()`` at
+all — the real image display goes through napari's own ``viewer.open()``,
+never through this cache — so there was no real tile-loading call site to
+wire ``track_tile_load`` into. Resolved by removal rather than wiring
+(2026-08-19): ``utils/tile_cache.py`` (``LRUTileCache``/``TiledImageLoader``,
+both untested and uncalled outside their own module), ``track_tile_load``
+and the ``tile_cache_hits``/``tile_cache_misses``/``tile_load_times``
+metrics fields, the Performance Stats dialog's "Tile Cache" tab and Overview
+tile-hit-rate row (both permanently zero, and the "Clear Tile Cache" button
+cleared a cache nothing ever populated), and the Preferences "Max Tile
+Cache" spinbox (a setting with no reader — the same "control that does not
+control" shape as the ``show_tooltips``/``cache/persist`` fields fixed
+earlier). See ``AGENT_TASK_LOG.md`` for the full writeup.
 
 All tracking is gated by ``performance/monitoring_enabled`` (default
 ``True``), read fresh on every call the same way the app's existing

@@ -1,5 +1,24 @@
 # VALIS Workstation Changelog
 
+## 2026-08-19 (3)
+
+### Removed
+- Resolved the Backlog item filed by 2026-08-19 (2) — "worth deciding whether `TileCache` is meant to be wired into real tile rendering (a real, larger feature) or removed as speculative infrastructure" — by removing it. The real image display goes through napari's own `viewer.open()` (`MainWindow`); nothing in the app calls `TiledImageLoader.get_tile`/`get_region` (the only methods that would actually read a WSI tile and populate the cache) or `LRUTileCache.get`/`put` directly, and neither class had any test coverage of its own — wiring it into rendering would duplicate napari's own multiscale reading with no code path to hang it on, which is the "real, larger feature" the Backlog entry deferred, not a few-hours fix.
+
+	Removed:
+	- `src/valis_workstation/utils/tile_cache.py` in full (`TileKey`, `LRUTileCache`, `TiledImageLoader`, `get_tile_cache`).
+	- `PerformanceMonitor.track_tile_load` and the `tile_cache_hits`/`tile_cache_misses`/`tile_load_times` fields on `PerformanceMetrics`, plus the `"tiles"` key of `get_summary()` and its two log/status-bar readers (`src/valis_workstation/utils/performance.py`) — this tracker had no caller either, a fact the 2026-08-19 (2) entry already noted when it wired the other three.
+	- The Performance Statistics dialog's "Tile Cache" tab (7 fields + progress bar), its Overview-tab "Tile Cache Hit Rate" row, and the "Clear Tile Cache" button (`src/valis_workstation/ui/dialogs/performance_stats_dialog.py`) — all three showed permanently-zero numbers and the clear button cleared a cache nothing had ever put anything into, which is user-visible-misleading rather than merely inert.
+	- The Preferences "Max Tile Cache" spinbox (`cache/max_tile_mb`) (`src/valis_workstation/ui/dialogs/preferences_dialog.py`) — it *was* read (into `LRUTileCache`'s constructor, `get_tile_cache()`'s default-arg fallback), which is a subtler case than the other "control that does not control" fixes in this log: the setting genuinely reached the object it was meant to configure, but that object's memory limit has no observable effect on anything, because nothing ever populates it. A setting a user can change with no way to ever notice the change is the same bug from their side of the screen.
+
+	- The Preferences "Tile Size (pixels)" combo box (`performance/tile_size`) — its *only* consumer was `get_tile_cache()`'s default-arg fallback, so deleting that module orphaned this setting too; not a pre-existing gap, a consequence of removing the field above it. (Registration's own, unrelated tile size — `properties_dock.py`'s `_tile_size_spin` feeding `RegistrationConfig.tile_size`/`save_kwargs["tile_wh"]` — is a different setting under a different key and is untouched.)
+
+### Testing
+- Removed the two tests exercising the deleted surface: `TestPerformanceMonitor::test_track_tile` and the `s["tiles"]["cache_hit_rate"]` assertion in `TestPerformanceMetrics::test_empty_summary` (`tests/test_utils.py`).
+- `python -c "import ast; ast.parse(...)"` on all four edited files: syntax OK.
+- `grep -rn "tile_cache\|TileCache\|TiledImageLoader\|max_tile" src/ tests/`: zero remaining references outside this changelog and `AGENT_TASK_LOG.md`.
+- Full suite: see `AGENT_TASK_LOG.md`'s matching entry for the run.
+
 ## 2026-08-19 (2)
 
 ### Fixed

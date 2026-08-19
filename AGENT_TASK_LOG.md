@@ -8,6 +8,103 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-08-19 (2) — `get_tile_cache()` has no caller anywhere in the app outside its own module and the stats dialog
+
+**Item claimed.** Backlog: "`get_tile_cache()` has no caller anywhere in the
+app outside `utils/tile_cache.py` and the stats dialog itself... Worth
+deciding whether `TileCache` is meant to be wired into real tile rendering
+(a real, larger feature) or removed as speculative infrastructure." (filed
+by the run that landed PR #6, immediately above this entry.) No other agent
+had this repo claimed — In Progress was empty, and both entries above this
+one were already reflected in the log at the start of this run.
+
+**Investigation.** Confirmed the premise before acting on it, rather than
+trusting the Backlog's own framing:
+* `MainWindow` (the app's real image display path) never calls
+  `TiledImageLoader.get_tile`/`.get_region` — the only methods that would
+  actually read a WSI tile through the cache. It opens slides via napari's
+  own `self._viewer.open(...)`, confirmed by grepping for `add_image`/
+  `viewer.open` call sites — there are none in the tile-cache module's
+  favor, and one (`viewer.open`) outside it.
+* `get_tile_cache()` itself is called from exactly two places, both in
+  `performance_stats_dialog.py`, both only for `.get_stats()`/`.clear()` —
+  never `.get()`/`.put()`. `TiledImageLoader` is never constructed anywhere
+  outside its own module at all.
+* Neither `LRUTileCache` nor `TiledImageLoader` had a single test of their
+  own (`grep -rn "LRUTileCache\|TiledImageLoader" tests/` — zero hits),
+  unlike every other cache in the app.
+* So wiring this up for real would mean writing a whole new WSI-tile-read
+  call site inside (or instead of) napari's own multiscale loading — the
+  "real, larger feature" the Backlog entry itself flagged as out of scope —
+  not finding an existing call site that merely forgot to track a metric,
+  which is what the sibling `PerformanceMonitor` items (previous entry)
+  turned out to be.
+
+**Decision.** Removed as speculative infrastructure. Two things made this
+the right call over leaving it in place pending a future "wire it up" pass:
+(a) it is not just inert, it is actively misleading — the Performance
+Stats dialog's "Tile Cache" tab (7 stat fields + a progress bar) and
+Overview-tab hit-rate row can never show anything but zero, and its "Clear
+Tile Cache" button clears a cache that can never hold anything, which reads
+to a user as "the app isn't caching your tiles" rather than "this feature
+doesn't exist yet"; (b) the Preferences "Max Tile Cache" setting is a
+control that does not control anything a user could ever observe — it
+*does* reach `LRUTileCache`'s constructor via `get_tile_cache()`'s
+default-arg fallback, so it is not literally unread (a subtler case than
+the `ui/show_tooltips`-style gaps fixed in the two entries above this one),
+but the memory limit of a cache nothing ever populates has no observable
+effect from the user's side of the screen.
+
+**Solution.**
+* Deleted `src/valis_workstation/utils/tile_cache.py` in full (`TileKey`,
+  `LRUTileCache`, `TiledImageLoader`, `get_tile_cache`).
+* Removed `PerformanceMonitor.track_tile_load` and the
+  `tile_cache_hits`/`tile_cache_misses`/`tile_load_times` fields (dead
+  regardless of this decision — nothing called `track_tile_load` either,
+  confirmed by the same grep the previous entry ran for the other three
+  trackers) plus the `"tiles"` key of `get_summary()` and its two
+  log/status-bar readers (`utils/performance.py`).
+* Removed the "Tile Cache" tab, the Overview "Tile Cache Hit Rate" row, and
+  the "Clear Tile Cache" button (`ui/dialogs/performance_stats_dialog.py`).
+* Removed the Preferences "Max Tile Cache" spinbox (`cache/max_tile_mb`)
+  (`ui/dialogs/preferences_dialog.py`).
+* Removed the Preferences "Tile Size (pixels)" combo (`performance/
+  tile_size`) too — not part of the original plan, found while removing the
+  spinbox above: its *only* consumer anywhere was `get_tile_cache()`'s
+  other default-arg fallback, so deleting that module orphaned this field
+  as a direct consequence. (Registration's own tile size —
+  `properties_dock.py`'s `_tile_size_spin` feeding `RegistrationConfig.
+  tile_size`/`save_kwargs["tile_wh"]` — is a separate setting under a
+  separate key and is untouched; confirmed by reading every remaining
+  `tile_size` reference in `src/` after the edit.)
+
+**Validation.**
+* Removed the two tests exercising the deleted surface:
+  `TestPerformanceMonitor::test_track_tile` and the
+  `s["tiles"]["cache_hit_rate"]` assertion in
+  `TestPerformanceMetrics::test_empty_summary` (`tests/test_utils.py`).
+* `grep -rn "tile_cache\|TileCache\|TiledImageLoader\|max_tile" src/ tests/`
+  → zero remaining references outside this log and `WORKSTATION_CHANGELOG.md`.
+* Targeted: `test_utils.py` + `test_all_features.py` +
+  `test_preferences_wiring_followups.py` +
+  `test_performance_monitoring_wiring.py` → **156 passed**.
+* Full suite (`QT_API=pyside6 QT_QPA_PLATFORM=offscreen pytest tests/`):
+  **336 passed, 4 failed**. The 4 (`test_pipeline.py::TestBuildRegistrarKwargs`)
+  are the same pre-existing, order-dependent failure the 2026-08-18 and
+  2026-08-19 entries already documented (a logging-handler `TypeError` that
+  only reproduces when the full suite runs together, not with the file run
+  alone) — checked directly by `git stash`-ing this change and re-running
+  the full suite on the unmodified tree: **identical 4 failures, 337
+  passed** (337 vs. 336 is exactly the 2 tests this change removed; 0
+  failures caused by this change).
+
+**Not done / left as-is**: the question of whether napari's own multiscale
+rendering could benefit from a purpose-built tile cache in front of it is a
+real, separate feature question — this entry answers "is the current dead
+code worth keeping around on spec", not "should this app ever have a tile
+cache". If that's wanted, it should start from how napari actually reads
+tiles, not from resurrecting this module.
+
 ### 2026-08-19 — Performance monitor tracking calls had no caller anywhere in the app
 
 **Item claimed.** Backlog: "`PerformanceMonitor.track_thumbnail_load`/
@@ -301,6 +398,17 @@ convention.
   measure (thumbnail loads, tile loads, cache hits/misses, memory samples),
   so it's its own pass rather than a fold-in. Worth deciding whether the
   dialog is wanted at all before wiring a dozen call sites to feed it.
+- ~~**`get_tile_cache()` has no caller anywhere in the app outside
+  `utils/tile_cache.py` and the stats dialog itself.**~~ Done by the
+  2026-08-19 (2) run — see the Completed entry. Decided the question this
+  entry posed by removing the module: nothing ever called
+  `TiledImageLoader.get_tile`/`.get_region` (confirmed — real image
+  display goes through napari's `viewer.open()`), neither class had any
+  test coverage of its own (this entry's "exercised only by its own tests"
+  didn't hold up), and the "Tile Cache" dialog tab this entry called
+  "not actually broken" was reporting an honest-but-permanent zero, which
+  reads to a user as broken either way.
+  (original entry follows)
 - **`get_tile_cache()` has no caller anywhere in the app outside
   `utils/tile_cache.py` and the stats dialog itself.** Found by the
   2026-08-19 run while wiring the item above: unlike thumbnails, slides and

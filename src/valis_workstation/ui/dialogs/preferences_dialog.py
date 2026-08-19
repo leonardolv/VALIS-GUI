@@ -98,13 +98,6 @@ class PreferencesDialog(QtWidgets.QDialog):
         self._max_thumb_cache_spin.setValue(500)
         layout.addRow("Max Thumbnail Cache:", self._max_thumb_cache_spin)
 
-        # Max tile cache size
-        self._max_tile_cache_spin = QtWidgets.QSpinBox()
-        self._max_tile_cache_spin.setRange(100, 10000)
-        self._max_tile_cache_spin.setSuffix(" MB")
-        self._max_tile_cache_spin.setValue(1024)
-        layout.addRow("Max Tile Cache:", self._max_tile_cache_spin)
-
         # Cache persistence
         self._persist_cache_check = QtWidgets.QCheckBox("Keep cache between sessions")
         self._persist_cache_check.setChecked(True)
@@ -135,12 +128,6 @@ class PreferencesDialog(QtWidgets.QDialog):
         self._parallel_workers_spin.setValue(4)
         layout.addRow("Parallel Thumbnail Workers:", self._parallel_workers_spin)
 
-        # Tile size
-        self._tile_size_combo = QtWidgets.QComboBox()
-        self._tile_size_combo.addItems(["256", "512", "1024", "2048"])
-        self._tile_size_combo.setCurrentText("512")
-        layout.addRow("Tile Size (pixels):", self._tile_size_combo)
-
         # Enable performance monitoring
         self._perf_monitoring_check = QtWidgets.QCheckBox(
             "Enable performance monitoring"
@@ -159,8 +146,7 @@ class PreferencesDialog(QtWidgets.QDialog):
 
         # Info label
         info_label = QtWidgets.QLabel(
-            "Higher worker counts speed up thumbnail generation but use more memory.\n"
-            "Larger tile sizes reduce the number of tiles but use more memory per tile."
+            "Higher worker counts speed up thumbnail generation but use more memory."
         )
         info_label.setWordWrap(True)
         info_label.setStyleSheet("color: gray; font-style: italic;")
@@ -229,9 +215,6 @@ class PreferencesDialog(QtWidgets.QDialog):
         max_thumb_cache = self._settings.value("cache/max_thumbnail_mb", 500, type=int)
         self._max_thumb_cache_spin.setValue(max_thumb_cache)
 
-        max_tile_cache = self._settings.value("cache/max_tile_mb", 1024, type=int)
-        self._max_tile_cache_spin.setValue(max_tile_cache)
-
         persist_cache = self._settings.value("cache/persist", True, type=bool)
         self._persist_cache_check.setChecked(persist_cache)
 
@@ -240,9 +223,6 @@ class PreferencesDialog(QtWidgets.QDialog):
             "performance/parallel_workers", 4, type=int
         )
         self._parallel_workers_spin.setValue(parallel_workers)
-
-        tile_size = self._settings.value("performance/tile_size", 512, type=int)
-        self._tile_size_combo.setCurrentText(str(tile_size))
 
         perf_monitoring = self._settings.value(
             "performance/monitoring_enabled", True, type=bool
@@ -279,15 +259,11 @@ class PreferencesDialog(QtWidgets.QDialog):
         self._settings.setValue(
             "cache/max_thumbnail_mb", self._max_thumb_cache_spin.value()
         )
-        self._settings.setValue("cache/max_tile_mb", self._max_tile_cache_spin.value())
         self._settings.setValue("cache/persist", self._persist_cache_check.isChecked())
 
         # Performance settings
         self._settings.setValue(
             "performance/parallel_workers", self._parallel_workers_spin.value()
-        )
-        self._settings.setValue(
-            "performance/tile_size", int(self._tile_size_combo.currentText())
         )
         self._settings.setValue(
             "performance/monitoring_enabled", self._perf_monitoring_check.isChecked()
@@ -339,11 +315,9 @@ class PreferencesDialog(QtWidgets.QDialog):
             # Restore defaults
             self._cache_dir_edit.setText("")
             self._max_thumb_cache_spin.setValue(500)
-            self._max_tile_cache_spin.setValue(1024)
             self._persist_cache_check.setChecked(True)
 
             self._parallel_workers_spin.setValue(4)
-            self._tile_size_combo.setCurrentText("512")
             self._perf_monitoring_check.setChecked(True)
             self._auto_refresh_spin.setValue(2)
 
