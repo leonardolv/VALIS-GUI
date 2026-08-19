@@ -70,7 +70,7 @@ out of scope for a fix this narrow; confirmed instead that `validate_slides`
 has exactly two callers in the whole tree (`main_window.py` and the two test
 files above), both exercised by the tests run.
 
-**PR.** TBD — will be recorded in a follow-up log entry once opened.
+**PR.** [#8](https://github.com/leonardolv/VALIS-GUI/pull/8).
 
 ### 2026-08-19 (2) — `get_tile_cache()` has no caller anywhere in the app outside its own module and the stats dialog
 
