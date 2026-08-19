@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -10,6 +11,7 @@ import numpy as np
 from PySide6 import QtCore, QtGui
 
 from valis_workstation.services.thumbnail_cache import get_thumbnail_cache
+from valis_workstation.utils.performance import get_performance_monitor
 
 if TYPE_CHECKING:
     pass
@@ -46,12 +48,17 @@ def generate_thumbnail(
         logger.warning(f"Slide file not found: {slide_path}")
         return None, {}
 
+    started_at = time.time()
+
     # Try to get from cache first
     if use_cache:
         cache = get_thumbnail_cache()
         cached_result = cache.get(slide_path)
         if cached_result is not None:
             logger.info(f"Using cached thumbnail for: {slide_path.name}")
+            get_performance_monitor().track_thumbnail_load(
+                time.time() - started_at, from_cache=True
+            )
             return cached_result
 
     logger.info(f"Generating thumbnail for: {slide_path.name}")
@@ -140,6 +147,9 @@ def generate_thumbnail(
                 cache = get_thumbnail_cache()
                 cache.put(slide_path, pixmap, metadata)
 
+            get_performance_monitor().track_thumbnail_load(
+                time.time() - started_at, from_cache=False
+            )
             return pixmap, metadata
 
     except ImportError:
