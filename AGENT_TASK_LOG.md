@@ -8,6 +8,70 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-08-19 (3) — `validate_slides`'s disk-space check no longer falls back to cwd
+
+**Item claimed and finished in one pass.** Not a Backlog carry-over — the
+Backlog was fully exhausted of open items at the start of this run (both
+remaining entries are struck-through "Done" records referencing prior
+Completed entries), so this run scanned the codebase directly instead.
+
+**Root cause.** `validate_slides` (`src/valis_workstation/utils/validation.py`)
+computed its free-disk-space check target as:
+
+```python
+disk_usage = shutil.disk_usage(
+    output_dir.parent if output_dir.exists() else Path.cwd()
+)
+```
+
+`output_dir` is built fresh on every registration run
+(`self._repo_root / "output" / config.project_name`, `main_window.py`) and is
+only actually created later in the *same function* (the "is output directory
+writable" check, further down, calls `output_dir.mkdir(parents=True,
+exist_ok=True)`). So on the ordinary first-run case for any new project
+name, `output_dir.exists()` is `False` at the point the space check runs, and
+it silently checked the process's current working directory instead —
+which has no necessary relation to where the multi-gigabyte registration
+output will actually land. `repo_root` (hence `output_dir`) derives from
+`Path(__file__).resolve()`, not from the process cwd, so the two can be on
+different filesystems (different launcher, different mount, symlinked/
+network output drive) — in exactly that case, the "insufficient/low disk
+space" errors and warnings become meaningless.
+
+**Solution.** Replaced the `exists()`-gated single-level fallback with a walk
+up `output_dir.resolve()` to its nearest existing ancestor:
+
+```python
+disk_check_path = output_dir.resolve()
+while not disk_check_path.exists():
+    disk_check_path = disk_check_path.parent
+disk_usage = shutil.disk_usage(disk_check_path)
+```
+
+`.resolve()` makes the path absolute first, so the walk is guaranteed to
+terminate at the filesystem root (which always exists) rather than looping
+forever on a relative path whose `.parent` chain can settle on `Path('.')`.
+This always checks a directory that is actually on `output_dir`'s own
+filesystem, whether or not `output_dir` itself has been created yet.
+
+**Validation.** New test
+`TestValidateSlides::test_disk_space_check_targets_output_dir_not_cwd`
+(`tests/test_validation.py`) monkeypatches `shutil.disk_usage` to record what
+path it was called with, points the process cwd somewhere unrelated via
+`monkeypatch.chdir`, and asserts the checked path is under `output_dir`'s own
+tree rather than equal to cwd. Confirmed **red on the pre-fix code** (reverted
+the production change, reran — the check landed on the unrelated cwd) and
+green after. `tests/test_validation.py` (9 tests) and
+`tests/test_all_features.py::TestValidation` (2 tests) pass. `ruff check` on
+both changed files: same 2 pre-existing findings before and after (0 new).
+Full app-wide suite not run in this pass — this repo's dependency set
+(napari, JPype/scyjava, VALIS itself) is heavy enough that installing it was
+out of scope for a fix this narrow; confirmed instead that `validate_slides`
+has exactly two callers in the whole tree (`main_window.py` and the two test
+files above), both exercised by the tests run.
+
+**PR.** TBD — will be recorded in a follow-up log entry once opened.
+
 ### 2026-08-19 (2) — `get_tile_cache()` has no caller anywhere in the app outside its own module and the stats dialog
 
 **Item claimed.** Backlog: "`get_tile_cache()` has no caller anywhere in the
