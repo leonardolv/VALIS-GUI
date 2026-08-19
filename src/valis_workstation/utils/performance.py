@@ -20,6 +20,28 @@ import psutil
 logger = logging.getLogger(__name__)
 
 
+def _monitoring_enabled() -> bool:
+    """Whether Preferences > "Enable performance monitoring" is on.
+
+    Re-read from ``QSettings`` on every call rather than cached, so toggling
+    the checkbox takes effect immediately without restarting the app — same
+    approach as the app's ``ui/show_tooltips`` filter. Imports Qt lazily and
+    fails open (monitoring enabled) if it is unavailable, since this module
+    otherwise has no Qt dependency and a missing/broken settings backend
+    should not be what silently disables metrics collection.
+    """
+    try:
+        from PySide6.QtCore import QSettings
+
+        return bool(
+            QSettings("VALIS", "Workstation").value(
+                "performance/monitoring_enabled", True, type=bool
+            )
+        )
+    except Exception:
+        return True
+
+
 @dataclass
 class PerformanceMetrics:
     """Container for performance metrics."""
@@ -133,6 +155,8 @@ class PerformanceMonitor:
         from_cache : bool
             Whether loaded from cache
         """
+        if not _monitoring_enabled():
+            return
         self.metrics.thumbnail_load_times.append(duration)
 
         if from_cache:
@@ -156,6 +180,8 @@ class PerformanceMonitor:
         from_cache : bool
             Whether loaded from cache
         """
+        if not _monitoring_enabled():
+            return
         self.metrics.tile_load_times.append(duration)
 
         if from_cache:
@@ -172,6 +198,8 @@ class PerformanceMonitor:
         duration : float
             Registration time in seconds
         """
+        if not _monitoring_enabled():
+            return
         self.metrics.registration_times.append(duration)
         logger.info(f"Registration completed in {duration:.1f}s")
 
@@ -186,6 +214,8 @@ class PerformanceMonitor:
         duration : float
             Total load time in seconds
         """
+        if not _monitoring_enabled() or count <= 0:
+            return
         self.metrics.slide_count += count
         self.metrics.total_slide_load_time += duration
 
@@ -208,11 +238,15 @@ class PerformanceMonitor:
             mem_info = self._memory_process.memory_info()
             current_mb = mem_info.rss / (1024 * 1024)
 
-            # Update metrics
-            self.metrics.memory_samples.append(current_mb)
+            # The instantaneous reading is returned either way — it is a live
+            # process stat, not an accumulated metric — but recording it into
+            # the tracked history (what "peak"/"average" are computed from)
+            # honors the same monitoring toggle every other tracker does.
+            if _monitoring_enabled():
+                self.metrics.memory_samples.append(current_mb)
 
-            if current_mb > self.metrics.peak_memory_mb:
-                self.metrics.peak_memory_mb = current_mb
+                if current_mb > self.metrics.peak_memory_mb:
+                    self.metrics.peak_memory_mb = current_mb
 
             return current_mb
 

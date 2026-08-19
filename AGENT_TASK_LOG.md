@@ -8,6 +8,118 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-08-19 — Performance monitor tracking calls had no caller anywhere in the app
+
+**Item claimed.** Backlog: "`PerformanceMonitor.track_thumbnail_load`/
+`track_tile_load`/etc. have no caller anywhere in the app." (filed by the
+2026-08-18 run, restated when the 2026-08-19 run's own Preferences-wiring
+pass declined to fold it in). No other agent had this repo claimed (In
+Progress was empty; the only commit since the last entry was #5 itself,
+already reflected here).
+
+**Investigation.** `PerformanceStatsDialog` reads `monitor.metrics.
+thumbnail_cache_hits`/`.thumbnail_load_times`/`.registration_times`/etc.
+every 2 seconds and displays them, but grepping every `track_*` method
+found zero callers anywhere outside `utils/performance.py` itself — so
+those fields were always empty/zero regardless of real activity. Traced
+each metric to what *should* be populating it:
+* Thumbnails — `generate_thumbnail` (`services/thumbnail_generator.py`)
+  has exactly one cache-hit return and one successful-generation return,
+  neither timed nor tracked.
+* Slides — `MainWindow._load_thumbnails_parallel` already computes
+  `started_at = time.time()` for the loading overlay's ETA calculation and
+  never used it for anything else.
+* Registration — `ValisWorker.run` (`workers/valis_worker.py`) calls
+  `run_valis_pipeline` and emits `finished`, with nothing timed in between.
+* Tiles — a different shape entirely: `get_tile_cache()` has **no caller
+  anywhere in the app** outside `utils/tile_cache.py` and the stats dialog
+  itself, so there is no real tile-loading call site to wire `track_tile_load`
+  into. The "Tile Cache" tab's own numbers already come from
+  `TileCache.get_stats()`'s internal hit/miss/eviction counters, not from
+  `PerformanceMonitor`, so that tab was not actually broken — filed back to
+  the Backlog as its own, deeper gap (the tile cache is currently dead code;
+  the app must be rendering multiscale tiles some other way, e.g. through
+  napari directly).
+* `performance/monitoring_enabled` — found moot by the 2026-08-18 run
+  ("nowhere to plug in"). Now that there are real trackers, it gates all of
+  them.
+
+**Solution.**
+* `_monitoring_enabled()` (`utils/performance.py`) reads
+  `performance/monitoring_enabled` from `QSettings` fresh on every call
+  (not cached — same approach as the 2026-08-19 tooltip filter, so toggling
+  the Preferences checkbox takes effect immediately) and fails open
+  (`True`) if Qt is unavailable, since this module otherwise has no Qt
+  dependency. `track_thumbnail_load`, `track_tile_load`, `track_registration`,
+  `track_slides_loaded`, and the recording half of `sample_memory` all check
+  it and no-op when off; `sample_memory` still returns the live
+  process-memory reading either way, since that is an instantaneous stat,
+  not an accumulated metric.
+* `generate_thumbnail` times itself from entry and calls
+  `track_thumbnail_load(duration, from_cache=...)` at both return points
+  that produce a usable result (cache hit, fresh generation) — not on a
+  failed read, matching what "average load time" should mean.
+* `_load_thumbnails_parallel` calls `track_slides_loaded(completed,
+  time.time() - started_at)` once the thread-pool loop finishes.
+* `ValisWorker.run` times the `run_valis_pipeline` call and calls
+  `track_registration(duration)` right before `self.finished.emit(result)`
+  — not on `cancelled`/`failed`, matching "registration completed" and the
+  existing log line's own wording.
+* `track_slides_loaded` also gained a `count <= 0` guard: its own logging
+  line divides by `count`, and the guard makes that safe even though the
+  one real caller never passes 0 (it is only called when `slides` was
+  non-empty).
+
+**Validation.**
+* New `tests/test_performance_monitoring_wiring.py` (15 tests): the
+  setting's own read/default/no-op behavior; each tracker records when
+  enabled and is a no-op when disabled (including the zero-count guard and
+  that `sample_memory`'s live reading still works while disabled); a real
+  cache-hit through `generate_thumbnail` is tracked and a missing file is
+  not; a successful `ValisWorker` run is tracked and a failed one is not
+  (drives the real worker over a `QThread`, mirroring `test_worker.py`'s
+  existing pattern); a real `MainWindow._load_thumbnails_parallel` call
+  over two slides is tracked with the right count.
+* Targeted: `test_performance_monitoring_wiring.py` +
+  `test_thumbnail_cache.py` + `test_worker.py` +
+  `test_preferences_wiring_followups.py` → **34 passed, 0 failed**.
+* Full suite: **337 passed, 4 failed** — the 4
+  (`test_pipeline.py::TestBuildRegistrarKwargs`) reproduce identically on
+  the unmodified tree in this same environment (confirmed by moving this
+  run's new test file aside and `git stash`ing the rest: 322 passed / 4
+  failed, same 4 test IDs), caused by `valis.feature_detectors` failing to
+  import `SimpleITK` even with `torch`/`kornia`/`libvips42` installed —
+  this environment is missing more of the full `valis-wsi` package's heavy
+  dependency chain than the 2026-08-19 run's environment was. Unrelated to
+  this change either way.
+* `ruff check src/`: **20 findings both before and after** this change (one
+  new finding introduced in the test file during development — an unused
+  `time` import — found and removed before this run; final state has zero
+  new findings). `ruff check tests/test_performance_monitoring_wiring.py`
+  on its own: clean.
+* `python3 -c "import ast; ..."` syntax check on all five touched/added
+  files; `PYTHONPATH=src python -c "import valis_workstation.main_window"`
+  imports cleanly.
+* **Incident, self-corrected within this run:** a verification command
+  (`mv tests/test_performance_monitoring_wiring.py /dev/null`, intended to
+  discard a throwaway check) matched `/dev/null` as a plain destination
+  path rather than an existing directory, so `mv` moved the test file's
+  *contents* onto `/dev/null` — replacing the character device with a
+  48-byte regular file and deleting the test file. Caught immediately via
+  `ls -la /dev/null`; fixed with `rm /dev/null && mknod -m 666 /dev/null c
+  1 3` (verified read/write afterward) and the test file was rewritten from
+  this session's own record of its contents. No source file was affected
+  (`git status` confirmed only the intended four modified + one untracked
+  file throughout); the recreated test file was re-run and re-validated
+  before this entry was written. Recorded here as a reminder that `mv
+  <file> /dev/null` is not a safe idiom for "discard this" in a shared
+  sandbox — `rm` is.
+
+**Docs.** `WORKSTATION_CHANGELOG.md` gains a 2026-08-19 entry (second one
+for this date) with the same write-up.
+
+**PR.** (opened this run, see repository pull requests).
+
 ### 2026-08-19 — The last two design-decision Preferences fields: tooltips and cache persistence
 
 **Item claimed.** Backlog: "`ui/show_tooltips` and `cache/persist` are the
@@ -171,6 +283,12 @@ convention.
   contents in `closeEvent`? Never write to disk in the first place, keeping
   an in-memory-only cache for the session? — before it's a small fix rather
   than a modeling question.
+- ~~**`PerformanceMonitor.track_thumbnail_load`/`track_tile_load`/etc. have no
+  caller anywhere in the app.**~~ Done by the 2026-08-19 run for thumbnails,
+  slides and registration — see the Completed entry. Tiles turned out to be
+  a different shape than the others (below), filed as its own item rather
+  than folded into this one's resolution.
+  (original entry follows)
 - **`PerformanceMonitor.track_thumbnail_load`/`track_tile_load`/etc. have no
   caller anywhere in the app.** Filed by the 2026-08-18 run, found while
   investigating why `performance/monitoring_enabled` had nowhere to plug in.
@@ -183,3 +301,17 @@ convention.
   measure (thumbnail loads, tile loads, cache hits/misses, memory samples),
   so it's its own pass rather than a fold-in. Worth deciding whether the
   dialog is wanted at all before wiring a dozen call sites to feed it.
+- **`get_tile_cache()` has no caller anywhere in the app outside
+  `utils/tile_cache.py` and the stats dialog itself.** Found by the
+  2026-08-19 run while wiring the item above: unlike thumbnails, slides and
+  registration, there is no real tile-loading call site to wire
+  `track_tile_load` into, because nothing ever fetches a tile *through*
+  `TileCache` — the app must be rendering multiscale WSI tiles some other
+  way (plausibly through napari's own layer/multiscale machinery directly).
+  The "Tile Cache" tab in `PerformanceStatsDialog` still shows real numbers
+  (it reads `TileCache.get_stats()`'s own internal hit/miss/eviction
+  counters, not `PerformanceMonitor`), so nothing user-visible is broken —
+  but the class itself, its LRU eviction, and its memory-budget config are
+  all currently dead code exercised only by its own tests. Worth deciding
+  whether `TileCache` is meant to be wired into real tile rendering (a
+  real, larger feature) or removed as speculative infrastructure.

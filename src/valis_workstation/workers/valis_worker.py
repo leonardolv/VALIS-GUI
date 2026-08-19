@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import logging
+import time
 from pathlib import Path
 
 from PySide6 import QtCore
 
 from valis_workstation.models.config import Config
 from valis_workstation.services.valis_pipeline import run_valis_pipeline
+from valis_workstation.utils.performance import get_performance_monitor
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +35,7 @@ class ValisWorker(QtCore.QObject):
     @QtCore.Slot()
     def run(self) -> None:
         self.started.emit()
+        started_at = time.time()
         try:
             result = run_valis_pipeline(
                 self._config,
@@ -51,4 +54,5 @@ class ValisWorker(QtCore.QObject):
             logger.exception("VALIS pipeline failed")
             self.failed.emit(str(exc))
             return
+        get_performance_monitor().track_registration(time.time() - started_at)
         self.finished.emit(result)

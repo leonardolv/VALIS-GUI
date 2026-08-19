@@ -1335,6 +1335,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 # Process events to keep UI responsive
                 QtWidgets.QApplication.processEvents()
 
+        from valis_workstation.utils.performance import get_performance_monitor
+
+        get_performance_monitor().track_slides_loaded(
+            completed, time.time() - started_at
+        )
+
         logger.info(f"Generated {completed}/{total_slides} thumbnails")
 
     def _add_to_recent_folders(self, folder_path: str) -> None:

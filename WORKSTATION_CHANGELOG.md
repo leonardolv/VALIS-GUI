@@ -1,5 +1,23 @@
 # VALIS Workstation Changelog
 
+## 2026-08-19 (2)
+
+### Fixed
+- `PerformanceMonitor.track_thumbnail_load`/`track_tile_load`/`track_registration`/`track_slides_loaded` had no caller anywhere in the app, so `PerformanceStatsDialog`'s numbers were always zero/empty regardless of real activity or the "Enable performance monitoring" checkbox (`performance/monitoring_enabled`, itself unread until now). Wired three real call sites:
+	- Thumbnails — `generate_thumbnail` (`src/valis_workstation/services/thumbnail_generator.py`) now times itself and tracks both a cache hit and a fresh generation.
+	- Slides — `MainWindow._load_thumbnails_parallel` (`src/valis_workstation/main_window.py`) tracks the whole folder load using the `started_at` timestamp it already computed for the loading overlay's ETA.
+	- Registration — `ValisWorker.run` (`src/valis_workstation/workers/valis_worker.py`) times the `run_valis_pipeline` call and tracks it right before emitting `finished`.
+
+	All four trackers (plus `sample_memory`'s recording half) now check `performance/monitoring_enabled` via a new `_monitoring_enabled()` helper (`src/valis_workstation/utils/performance.py`), read fresh from `QSettings` on every call so toggling the Preferences checkbox takes effect immediately.
+
+	Tiles are a separate, deeper gap and were **not** wired here: `get_tile_cache()` has no caller anywhere in the app outside `utils/tile_cache.py` and the stats dialog itself, so there is no real tile-loading call site to track — that dialog tab already shows correct numbers from `TileCache`'s own internal hit/miss counters. Filed to `AGENT_TASK_LOG.md`'s Backlog as its own item (whether `TileCache` should be wired into real rendering or removed as speculative infrastructure).
+
+### Testing
+- New `tests/test_performance_monitoring_wiring.py` (15 tests).
+- Targeted: `test_performance_monitoring_wiring.py` + `test_thumbnail_cache.py` + `test_worker.py` + `test_preferences_wiring_followups.py`: **34 passed, 0 failed**.
+- Full suite: **337 passed, 4 failed** — the 4 (`test_pipeline.py::TestBuildRegistrarKwargs`) reproduce identically on the unmodified tree in this environment (a `SimpleITK` import gap beyond what `torch`/`kornia`/`libvips42` cover), unrelated to this change.
+- `ruff check src/`: 20 findings both before and after.
+
 ## 2026-08-19
 
 ### Fixed
