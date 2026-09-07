@@ -36,3 +36,19 @@ class TestBuildRegistrarKwargs:
         config = Config(max_image_size=8192)
         kwargs = build_registrar_kwargs(config)
         assert kwargs["max_image_dim_px"] == 8192
+
+    def test_transformer_cls_scikit_image_import_error_fallback(self, monkeypatch) -> None:
+        from valis_workstation.services.valis_pipeline import _get_transformer_cls
+        import builtins
+
+        real_import = builtins.__import__
+
+        def fake_import(name, *args, **kwargs):
+            if name == "skimage" or name.startswith("skimage."):
+                raise ImportError("Mocked missing scikit-image")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", fake_import)
+        fallback_cls = _get_transformer_cls("similarity")
+        assert fallback_cls is not None
+        assert fallback_cls.__name__ == "SimilarityTransform"

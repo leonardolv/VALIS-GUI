@@ -97,10 +97,12 @@ def _get_transformer_cls(transformer_key: str):
     try:
         from skimage import transform as skt  # type: ignore[import-untyped]
     except ImportError:
-        logger.warning("scikit-image not available – using default SimilarityTransform")
-        from skimage.transform import (
-            SimilarityTransform,  # type: ignore[import-untyped]
-        )
+        logger.warning("scikit-image not available – using default SimilarityTransform fallback")
+
+        class SimilarityTransform:
+            """Fallback placeholder when scikit-image is not installed."""
+
+            pass
 
         return SimilarityTransform
 

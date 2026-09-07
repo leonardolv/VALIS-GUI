@@ -6,6 +6,18 @@
 
 ## Completed
 
+### Task: Fix scikit-image ImportError crash in _get_transformer_cls fallback
+- **Completed**: 2026-09-07
+- **Changes**:
+  - `src/valis_workstation/services/valis_pipeline.py`:
+    - Resolved circular `ModuleNotFoundError: No module named 'skimage'` where `_get_transformer_cls` caught `ImportError` from `skimage` and then erroneously attempted `from skimage.transform import SimilarityTransform`.
+    - Introduced a safe, standalone `SimilarityTransform` placeholder class fallback with logging when `scikit-image` is not installed or importable.
+  - `tests/test_pipeline.py`:
+    - Added `test_transformer_cls_scikit_image_import_error_fallback` verifying that `_get_transformer_cls` cleanly falls back to `SimilarityTransform` without raising when `skimage` imports fail.
+- **Verification**: Verified with `pytest tests/ -v` (327 passed, 0 failures across the complete test suite in 32.26s).
+- **Status**: Completed
+
+
 ### Task: Restore MainWindow constructor backward compatibility, worker signal fallback, and resilient dock signals
 - **Completed**: 2026-09-07
 - **Changes**:
