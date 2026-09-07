@@ -181,9 +181,14 @@ class TestSlidePreviewDock:
 # ---------- StatusDock ----------
 class TestStatusDock:
     @pytest.fixture()
-    def dock(self, qtbot):
+    def dock(self, qtbot, monkeypatch):
         from valis_workstation.ui.status_dock import StatusDock
 
+        monkeypatch.setattr(
+            QtWidgets.QMessageBox,
+            "question",
+            staticmethod(lambda *a, **kw: QtWidgets.QMessageBox.StandardButton.Yes),
+        )
         emitter = QtLogEmitter()
         d = StatusDock(emitter)
         qtbot.addWidget(d)

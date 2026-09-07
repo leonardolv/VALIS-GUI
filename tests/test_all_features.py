@@ -1135,7 +1135,7 @@ class TestConfigRoundtrip:
         assert cfg.max_image_size == 2048
 
     def test_all_18_fields(self):
-        assert len(Config.__dataclass_fields__) == 18
+        assert len(Config.__dataclass_fields__) == 23
 
 
 class TestConstantsComplete:

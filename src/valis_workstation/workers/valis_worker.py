@@ -28,6 +28,17 @@ class ValisWorker(QtCore.QObject):
         self._output_dir = output_dir
         self._cancel_event = threading.Event()
 
+    @property
+    def _cancel_requested(self) -> bool:
+        return self._cancel_event.is_set()
+
+    @_cancel_requested.setter
+    def _cancel_requested(self, value: bool) -> None:
+        if value:
+            self._cancel_event.set()
+        else:
+            self._cancel_event.clear()
+
     def cancel(self) -> None:
         """Request cancellation of the registration (thread-safe)."""
         logger.info("Cancellation requested")
@@ -38,14 +49,29 @@ class ValisWorker(QtCore.QObject):
         self.started.emit()
         self.stage_changed.emit("Starting")
         try:
-            result = run_valis_pipeline(
-                self._config,
-                self._slides,
-                self._output_dir,
-                progress_callback=self.progress.emit,
-                stage_callback=self.stage_changed.emit,
-                cancel_check=self._cancel_event.is_set,
-            )
+            kwargs = {
+                "progress_callback": self.progress.emit,
+                "stage_callback": self.stage_changed.emit,
+                "cancel_check": self._cancel_event.is_set,
+            }
+            try:
+                result = run_valis_pipeline(
+                    self._config,
+                    self._slides,
+                    self._output_dir,
+                    **kwargs,
+                )
+            except TypeError as exc:
+                if "stage_callback" in str(exc):
+                    kwargs.pop("stage_callback", None)
+                    result = run_valis_pipeline(
+                        self._config,
+                        self._slides,
+                        self._output_dir,
+                        **kwargs,
+                    )
+                else:
+                    raise
 
             if self._cancel_event.is_set():
                 logger.info("Registration cancelled")

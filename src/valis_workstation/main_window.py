@@ -74,12 +74,13 @@ class MainWindow(QtWidgets.QMainWindow):
         repo_root: Path,
         log_emitter: QtLogEmitter,
         simple_elastix_available: bool,
-        gpu_available: bool,
+        gpu_available: bool = False,
         parent: QtWidgets.QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self._repo_root = repo_root
         self._log_emitter = log_emitter
+        self._gpu_available = gpu_available
         self._worker_thread: QtCore.QThread | None = None
         self._worker: ValisWorker | None = None
         self._merge_thread: QtCore.QThread | None = None
@@ -102,7 +103,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self._project_dock = ProjectDock(self)
         self._properties_dock = PropertiesDock(
             simple_elastix_available,
-            gpu_available=gpu_available,
             parent=self,
         )
         self._status_dock = StatusDock(log_emitter, self)
@@ -111,8 +111,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # ── Build splitter-based layout ──────────────────────────────
         self._build_splitter_layout()
-        self._project_dock.count_changed.connect(self._update_left_tab_titles)
-        self._slide_preview_dock.count_changed.connect(self._update_left_tab_titles)
+        if hasattr(self._project_dock, "count_changed"):
+            self._project_dock.count_changed.connect(lambda *_: self._update_left_tab_titles())
+        if hasattr(self._slide_preview_dock, "count_changed"):
+            self._slide_preview_dock.count_changed.connect(lambda *_: self._update_left_tab_titles())
         self._update_left_tab_titles()
 
         self._build_actions()
@@ -424,10 +426,22 @@ class MainWindow(QtWidgets.QMainWindow):
         logger.debug("Status bar configured")
 
     def _update_left_tab_titles(self) -> None:
-        project_count = len(self._project_dock.slides())
-        preview_count = self._slide_preview_dock.slide_count()
-        self._left_tabs.setTabText(0, f"Project ({project_count})")
-        self._left_tabs.setTabText(1, f"Slide Preview ({preview_count})")
+        project_count = (
+            len(self._project_dock.slides())
+            if hasattr(self, "_project_dock") and hasattr(self._project_dock, "slides")
+            else 0
+        )
+        preview_count = (
+            self._slide_preview_dock.slide_count()
+            if hasattr(self, "_slide_preview_dock")
+            and hasattr(self._slide_preview_dock, "slide_count")
+            else 0
+        )
+        if hasattr(self, "_left_tabs") and self._left_tabs is not None:
+            if self._left_tabs.count() > 0:
+                self._left_tabs.setTabText(0, f"Project ({project_count})")
+            if self._left_tabs.count() > 1:
+                self._left_tabs.setTabText(1, f"Slide Preview ({preview_count})")
 
     def _open_last_output_folder(self) -> None:
         if not self._last_result:

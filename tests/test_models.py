@@ -73,9 +73,14 @@ class TestConfigCustom:
             "imgs_ordered",
             "micro_registration",
             "micro_max_image_size",
+            "crop_for_rigid_reg",
+            "use_color_features",
+            "non_rigid_method",
             "compression_level",
             "pyramid_levels",
             "tile_size",
             "image_quality",
+            "image_format",
+            "write_pyramid",
         }
         assert set(d.keys()) == expected_keys

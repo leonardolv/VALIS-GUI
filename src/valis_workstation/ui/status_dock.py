@@ -195,11 +195,17 @@ class StatusDock(QtWidgets.QDockWidget):
         self._clear_log_button.setEnabled(False)
         self._copy_log_button.setEnabled(False)
 
+    def _show_status_message(self, message: str, timeout: int = 3000) -> None:
+        win = self.window() if callable(getattr(self, "window", None)) else None
+        if win and hasattr(win, "statusBar") and callable(win.statusBar):
+            sb = win.statusBar()
+            if sb and hasattr(sb, "showMessage"):
+                sb.showMessage(message, timeout)
+
     def _copy_log(self) -> None:
         text = "\n".join(self._log_lines)
         QtWidgets.QApplication.clipboard().setText(text)
-        if hasattr(self, "window") and callable(self.window):
-            self.window().statusBar().showMessage("Log copied to clipboard", 3000)
+        self._show_status_message("Log copied to clipboard", 3000)
 
     def _save_log_as(self) -> None:
         settings = QtCore.QSettings("VALIS", "Workstation")
@@ -217,8 +223,7 @@ class StatusDock(QtWidgets.QDockWidget):
             settings.setValue("ui/last_log_save_dir", str(__import__('pathlib').Path(out_path).parent))
             with open(out_path, "w", encoding="utf-8") as handle:
                 handle.write("\n".join(self._log_lines))
-            if hasattr(self, "window") and callable(self.window):
-                self.window().statusBar().showMessage(f"Log saved to {out_path}", 4000)
+            self._show_status_message(f"Log saved to {out_path}", 4000)
         except Exception as exc:
             logger.exception("Failed to save log output: %s", exc)
 

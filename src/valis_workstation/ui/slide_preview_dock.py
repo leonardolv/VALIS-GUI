@@ -22,6 +22,7 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
     """
 
     slide_selected = QtCore.Signal(str)  # Emitted when a slide is clicked
+    count_changed = QtCore.Signal(int)
 
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__("Slide Preview", parent)
@@ -368,8 +369,13 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
             self._grid_layout.addWidget(widget, row, col)
         self._update_summary()
 
+    def slide_count(self) -> int:
+        """Return total number of loaded slide thumbnails."""
+        return len(self._thumbnails)
+
     def _update_summary(self) -> None:
         total = len(self._thumbnails)
+        self.count_changed.emit(total)
         visible = sum(
             1
             for widget in self._thumbnails.values()

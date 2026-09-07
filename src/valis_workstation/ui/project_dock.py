@@ -9,6 +9,8 @@ from valis_workstation.ui.icons import load_icon
 
 
 class ProjectDock(QtWidgets.QDockWidget):
+    count_changed = QtCore.Signal(int)
+
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__("Project", parent)
         self.setObjectName("ProjectDock")
@@ -155,6 +157,7 @@ class ProjectDock(QtWidgets.QDockWidget):
         self._update_action_states()
         self._clear_button.setEnabled(total > 0)
         self._empty_label.setVisible(total == 0)
+        self.count_changed.emit(total)
 
         if total == 0:
             self.setWindowTitle("Project")
