@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
-from PySide6.QtCore import QBuffer, QByteArray, QIODevice
+from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QSettings
 from PySide6.QtGui import QPixmap
 
 logger = logging.getLogger(__name__)
@@ -321,6 +321,10 @@ def get_thumbnail_cache() -> ThumbnailCache:
     global _global_cache
 
     if _global_cache is None:
-        _global_cache = ThumbnailCache()
+        settings = QSettings("VALIS", "Workstation")
+        configured_dir = settings.value("cache/directory", "", type=str)
+        cache_dir = Path(configured_dir) if configured_dir else None
+        max_size_mb = settings.value("cache/max_thumbnail_mb", 500, type=int)
+        _global_cache = ThumbnailCache(cache_dir=cache_dir, max_cache_size_mb=max_size_mb)
 
     return _global_cache

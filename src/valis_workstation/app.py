@@ -56,6 +56,28 @@ def _shutdown_jvm() -> None:
         logger.exception("Failed to shutdown JVM")
 
 
+class _ToolTipSuppressionFilter(QtCore.QObject):
+    """Blocks every tooltip while ``ui/show_tooltips`` is off.
+
+    The Preferences dialog's "Show tooltips" checkbox persisted this setting
+    and nothing ever read it back — no single call site owns "did a tooltip
+    fire", since tooltips come from dozens of individual widgets via Qt's own
+    hover machinery, not from app code. Installed application-wide, this is
+    the one place that can intercept them all: ``QEvent.Type.ToolTip`` is
+    delivered to the widget under the cursor before Qt paints the tooltip,
+    and returning ``True`` here consumes the event so it never does. The
+    setting is re-read on every tooltip rather than cached, so a change in
+    Preferences takes effect immediately without restarting the app.
+    """
+
+    def eventFilter(self, obj: QtCore.QObject, event: QtCore.QEvent) -> bool:
+        if event.type() == QtCore.QEvent.Type.ToolTip:
+            settings = QtCore.QSettings("VALIS", "Workstation")
+            if not settings.value("ui/show_tooltips", True, type=bool):
+                return True
+        return super().eventFilter(obj, event)
+
+
 def _install_excepthook(app: QtWidgets.QApplication) -> None:
     def _hook(exc_type, exc_value, traceback_obj):
         logger.exception(
@@ -87,6 +109,12 @@ def run_app(repo_root: Path) -> int:
     logging.getLogger().addHandler(qt_handler)
 
     _install_excepthook(app)
+
+    # Kept alive as an attribute, not just installed: PySide does not treat
+    # installEventFilter as taking ownership, so a filter with no surviving
+    # Python reference can be garbage-collected out from under the app.
+    app._tooltip_suppression_filter = _ToolTipSuppressionFilter(app)
+    app.installEventFilter(app._tooltip_suppression_filter)
 
     stylesheet = _load_stylesheet(repo_root)
     if stylesheet:

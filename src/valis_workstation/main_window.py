@@ -32,6 +32,7 @@ from valis_workstation.layout_constants import (
 from valis_workstation.models.config import Config
 from valis_workstation.settings_keys import SettingsKeys, SplitterKeys
 from valis_workstation.services.slide_scan import scan_slide_folder
+from valis_workstation.services.thumbnail_cache import get_thumbnail_cache
 from valis_workstation.ui import (
     main_window_actions,
     main_window_documents,
@@ -417,12 +418,15 @@ class MainWindow(QtWidgets.QMainWindow):
         """Setup status bar at the bottom of the window."""
         self._status_bar = self.statusBar()
         self._status_bar.showMessage("Ready")
-
         self._open_output_folder_link = QtWidgets.QPushButton("Open output folder")
         self._open_output_folder_link.setVisible(False)
         self._open_output_folder_link.setProperty("panelAction", True)
         self._open_output_folder_link.clicked.connect(self._open_last_output_folder)
         self._status_bar.addPermanentWidget(self._open_output_folder_link)
+
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        show_statusbar = settings.value("ui/show_statusbar", True, type=bool)
+        self._status_bar.setVisible(show_statusbar)
         logger.debug("Status bar configured")
 
     def _update_left_tab_titles(self) -> None:
@@ -620,6 +624,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """Handle window close event with proper resource cleanup."""
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        confirm_close = settings.value("ui/confirm_close", False, type=bool)
+        if confirm_close:
+            reply = QtWidgets.QMessageBox.question(
+                self,
+                "Confirm Close",
+                "Are you sure you want to close VALIS Workstation?",
+                QtWidgets.QMessageBox.StandardButton.Yes
+                | QtWidgets.QMessageBox.StandardButton.No,
+                QtWidgets.QMessageBox.StandardButton.No,
+            )
+            if reply != QtWidgets.QMessageBox.StandardButton.Yes:
+                event.ignore()
+                return
+
         logger.info("Closing main window - initiating cleanup")
 
         # Save window state and splitter layout
@@ -683,6 +702,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self._merge_worker = None
         self._merge_thread = None
         self._last_result = None
+
+        # "Keep cache between sessions" unchecked means exactly that: the
+        # on-disk thumbnail cache is wiped now so the next launch starts
+        # from a clean cache rather than silently reusing this session's
+        # thumbnails. Checked (the default) leaves the cache untouched.
+        if not settings.value("cache/persist", True, type=bool):
+            try:
+                get_thumbnail_cache().clear()
+                logger.info("cache/persist is off - cleared thumbnail cache on exit")
+            except Exception as e:
+                logger.exception(f"Failed to clear thumbnail cache on exit: {e}")
 
         logger.info("Cleanup complete, closing application")
         super().closeEvent(event)
@@ -1053,12 +1083,18 @@ class MainWindow(QtWidgets.QMainWindow):
         # Update status bar
         self._status_bar.showMessage(f"Generating thumbnails: 0/{total_slides}")
 
+        thumbnail_size = QtCore.QSettings("VALIS", "Workstation").value(
+            "ui/default_thumbnail_size", 512, type=int
+        )
+
         def generate_and_update(
             slide_path: Path,
         ) -> tuple[str, QtGui.QPixmap | None, dict]:
             """Generate thumbnail and return results."""
             try:
-                thumbnail, metadata = generate_thumbnail(slide_path, max_size=512)
+                thumbnail, metadata = generate_thumbnail(
+                    slide_path, max_size=thumbnail_size
+                )
                 return slide_path.stem, thumbnail, metadata
             except Exception as e:
                 logger.warning(
@@ -1067,8 +1103,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 return slide_path.stem, None, {"file_path": str(slide_path)}
 
         # Use ThreadPoolExecutor with limited workers to avoid overwhelming disk I/O
-        # 4 workers is a good balance for I/O bound operations
-        max_workers = min(4, total_slides)
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        configured_workers = settings.value(
+            "performance/parallel_workers", 4, type=int
+        )
+        max_workers = min(configured_workers, total_slides)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Submit all tasks
@@ -1098,6 +1137,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 # Process events to keep UI responsive
                 QtWidgets.QApplication.processEvents()
+
+        from valis_workstation.utils.performance import get_performance_monitor
+
+        get_performance_monitor().track_slides_loaded(
+            completed, time.time() - started_at
+        )
 
         logger.info("Generated %d/%d thumbnails", completed, total_slides)
 

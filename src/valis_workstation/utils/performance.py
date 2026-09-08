@@ -20,6 +20,28 @@ import psutil
 logger = logging.getLogger(__name__)
 
 
+def _monitoring_enabled() -> bool:
+    """Whether Preferences > "Enable performance monitoring" is on.
+
+    Re-read from ``QSettings`` on every call rather than cached, so toggling
+    the checkbox takes effect immediately without restarting the app — same
+    approach as the app's ``ui/show_tooltips`` filter. Imports Qt lazily and
+    fails open (monitoring enabled) if it is unavailable, since this module
+    otherwise has no Qt dependency and a missing/broken settings backend
+    should not be what silently disables metrics collection.
+    """
+    try:
+        from PySide6.QtCore import QSettings
+
+        return bool(
+            QSettings("VALIS", "Workstation").value(
+                "performance/monitoring_enabled", True, type=bool
+            )
+        )
+    except Exception:
+        return True
+
+
 @dataclass
 class PerformanceMetrics:
     """Container for performance metrics."""
@@ -28,11 +50,6 @@ class PerformanceMetrics:
     thumbnail_load_times: List[float] = field(default_factory=list)
     thumbnail_cache_hits: int = 0
     thumbnail_cache_misses: int = 0
-
-    # Tile cache metrics
-    tile_cache_hits: int = 0
-    tile_cache_misses: int = 0
-    tile_load_times: List[float] = field(default_factory=list)
 
     # Registration metrics
     registration_times: List[float] = field(default_factory=list)
@@ -61,19 +78,6 @@ class PerformanceMetrics:
                     self.thumbnail_cache_hits
                     / (self.thumbnail_cache_hits + self.thumbnail_cache_misses)
                     if (self.thumbnail_cache_hits + self.thumbnail_cache_misses) > 0
-                    else 0
-                ),
-            },
-            "tiles": {
-                "cache_hit_rate": (
-                    self.tile_cache_hits
-                    / (self.tile_cache_hits + self.tile_cache_misses)
-                    if (self.tile_cache_hits + self.tile_cache_misses) > 0
-                    else 0
-                ),
-                "avg_load_time_ms": (
-                    sum(self.tile_load_times) / len(self.tile_load_times) * 1000
-                    if self.tile_load_times
                     else 0
                 ),
             },
@@ -133,6 +137,8 @@ class PerformanceMonitor:
         from_cache : bool
             Whether loaded from cache
         """
+        if not _monitoring_enabled():
+            return
         self.metrics.thumbnail_load_times.append(duration)
 
         if from_cache:
@@ -145,24 +151,6 @@ class PerformanceMonitor:
             f"({'cache' if from_cache else 'generated'})"
         )
 
-    def track_tile_load(self, duration: float, from_cache: bool = False) -> None:
-        """
-        Track tile loading time.
-
-        Parameters
-        ----------
-        duration : float
-            Load time in seconds
-        from_cache : bool
-            Whether loaded from cache
-        """
-        self.metrics.tile_load_times.append(duration)
-
-        if from_cache:
-            self.metrics.tile_cache_hits += 1
-        else:
-            self.metrics.tile_cache_misses += 1
-
     def track_registration(self, duration: float) -> None:
         """
         Track registration time.
@@ -172,6 +160,8 @@ class PerformanceMonitor:
         duration : float
             Registration time in seconds
         """
+        if not _monitoring_enabled():
+            return
         self.metrics.registration_times.append(duration)
         logger.info(f"Registration completed in {duration:.1f}s")
 
@@ -186,6 +176,8 @@ class PerformanceMonitor:
         duration : float
             Total load time in seconds
         """
+        if not _monitoring_enabled() or count <= 0:
+            return
         self.metrics.slide_count += count
         self.metrics.total_slide_load_time += duration
 
@@ -208,11 +200,15 @@ class PerformanceMonitor:
             mem_info = self._memory_process.memory_info()
             current_mb = mem_info.rss / (1024 * 1024)
 
-            # Update metrics
-            self.metrics.memory_samples.append(current_mb)
+            # The instantaneous reading is returned either way — it is a live
+            # process stat, not an accumulated metric — but recording it into
+            # the tracked history (what "peak"/"average" are computed from)
+            # honors the same monitoring toggle every other tracker does.
+            if _monitoring_enabled():
+                self.metrics.memory_samples.append(current_mb)
 
-            if current_mb > self.metrics.peak_memory_mb:
-                self.metrics.peak_memory_mb = current_mb
+                if current_mb > self.metrics.peak_memory_mb:
+                    self.metrics.peak_memory_mb = current_mb
 
             return current_mb
 
@@ -252,14 +248,6 @@ class PerformanceMonitor:
             f"{thumb['avg_load_time_ms']:.1f}ms avg, "
             f"{thumb['cache_hit_rate'] * 100:.1f}% cache hit rate"
         )
-
-        # Tiles
-        tiles = summary["tiles"]
-        if tiles["cache_hit_rate"] > 0:
-            logger.info(
-                f"Tiles: {tiles['cache_hit_rate'] * 100:.1f}% cache hit rate, "
-                f"{tiles['avg_load_time_ms']:.1f}ms avg load time"
-            )
 
         # Registration
         reg = summary["registration"]
@@ -311,13 +299,6 @@ class PerformanceMonitor:
                 self.metrics.thumbnail_cache_hits + self.metrics.thumbnail_cache_misses
             )
             parts.append(f"Thumb Cache: {hit_rate * 100:.0f}%")
-
-        # Tile cache hit rate
-        if self.metrics.tile_cache_hits + self.metrics.tile_cache_misses > 0:
-            hit_rate = self.metrics.tile_cache_hits / (
-                self.metrics.tile_cache_hits + self.metrics.tile_cache_misses
-            )
-            parts.append(f"Tile Cache: {hit_rate * 100:.0f}%")
 
         return " | ".join(parts)
 

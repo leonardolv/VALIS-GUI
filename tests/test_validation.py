@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 import pytest
@@ -70,3 +71,41 @@ class TestValidateSlides:
         result = validate_slides([], out)
         # No missing files → valid
         assert result.is_valid
+
+    def test_disk_space_check_targets_output_dir_not_cwd(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The free-space check must probe output_dir's own filesystem, even
+        when output_dir does not exist yet -- not fall back to the process's
+        cwd, which can be an unrelated filesystem."""
+        import valis_workstation.utils.validation as validation_module
+
+        f = tmp_path / "slide.tif"
+        f.write_bytes(b"\x00" * 100)
+
+        # output_dir itself doesn't exist; its parent does.
+        out = tmp_path / "not_yet_created" / "output"
+
+        # Point cwd somewhere else entirely, so a wrong fallback would be
+        # observably different from the correct target.
+        elsewhere = tmp_path / "elsewhere"
+        elsewhere.mkdir()
+        monkeypatch.chdir(elsewhere)
+
+        seen_paths = []
+        real_disk_usage = shutil.disk_usage
+
+        def _spy_disk_usage(path):
+            seen_paths.append(Path(path))
+            return real_disk_usage(path)
+
+        monkeypatch.setattr(validation_module.shutil, "disk_usage", _spy_disk_usage)
+
+        validate_slides([f], out)
+
+        assert seen_paths, "disk_usage was never called"
+        checked = seen_paths[0]
+        assert checked != elsewhere.resolve()
+        # The checked path must be an ancestor of (or equal to) output_dir,
+        # i.e. somewhere under tmp_path -- not the unrelated cwd.
+        assert tmp_path.resolve() in (checked, *checked.parents)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import threading
+import time
 import traceback
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from PySide6 import QtCore
 
 from valis_workstation.models.config import Config
 from valis_workstation.services.valis_pipeline import run_valis_pipeline
+from valis_workstation.utils.performance import get_performance_monitor
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +50,7 @@ class ValisWorker(QtCore.QObject):
     def run(self) -> None:
         self.started.emit()
         self.stage_changed.emit("Starting")
+        started_at = time.time()
         try:
             kwargs = {
                 "progress_callback": self.progress.emit,
@@ -85,4 +88,5 @@ class ValisWorker(QtCore.QObject):
             self.failed.emit(str(exc), traceback.format_exc())
             return
         self.stage_changed.emit("Complete")
+        get_performance_monitor().track_registration(time.time() - started_at)
         self.finished.emit(result)
