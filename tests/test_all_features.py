@@ -867,6 +867,40 @@ class TestMainWindow:
         )
         win._show_save_options()  # Rejected → no-op
 
+    def test_show_save_options_applies_format_and_write_pyramid(self, win, monkeypatch):
+        """Regression: format/write_pyramid used to be read from the dialog
+        and then silently dropped, so every save used the hardcoded
+        OME-TIFF/pyramid-on Config defaults regardless of what was picked.
+        """
+        from valis_workstation.ui.dialogs.save_options_dialog import SaveOptionsDialog
+
+        monkeypatch.setattr(
+            QtWidgets.QDialog,
+            "exec",
+            lambda self: QtWidgets.QDialog.DialogCode.Accepted,
+        )
+        monkeypatch.setattr(
+            SaveOptionsDialog,
+            "get_options",
+            lambda self: {
+                "write_pyramid": False,
+                "pyramid_levels": 2,
+                "compression": 3,
+                "quality": 80,
+                "tile_size": 256,
+                "format": "PNG",
+            },
+        )
+
+        win._show_save_options()
+
+        dock = win._properties_dock
+        assert dock._format_combo.currentText() == "PNG"
+        assert dock._write_pyramid_check.isChecked() is False
+        cfg = dock.config()
+        assert cfg.image_format == "PNG"
+        assert cfg.write_pyramid is False
+
     # ── Performance stats ───────────────────────────────────
 
     def test_show_performance_stats(self, win, monkeypatch):
@@ -1235,6 +1269,37 @@ class TestPropertiesDockSync:
             assert any(cm.value.lower() in t for t in items), (
                 f"{cm.value} missing from crop mode combo"
             )
+
+    def test_all_image_formats_in_combobox(self, dock):
+        from valis_workstation.constants import ImageFormats
+
+        combo = dock._format_combo
+        items = [combo.itemText(i) for i in range(combo.count())]
+        for fmt in ImageFormats:
+            assert fmt.value in items, f"{fmt.value} missing from format combo"
+
+    def test_image_format_and_write_pyramid_round_trip(self, dock):
+        """Regression: config() used to hardcode image_format='OME-TIFF' and
+        write_pyramid=True regardless of any widget, because no widget for
+        either existed - every save silently ignored the user's choice.
+        """
+        dock._format_combo.setCurrentText("PNG")
+        dock._write_pyramid_check.setChecked(False)
+        cfg = dock.config()
+        assert cfg.image_format == "PNG"
+        assert cfg.write_pyramid is False
+
+        dock.set_config(Config(image_format="JPEG", write_pyramid=True))
+        assert dock._format_combo.currentText() == "JPEG"
+        assert dock._write_pyramid_check.isChecked() is True
+        assert dock.config().image_format == "JPEG"
+        assert dock.config().write_pyramid is True
+
+    def test_write_pyramid_toggle_enables_pyramid_levels(self, dock):
+        dock._write_pyramid_check.setChecked(False)
+        assert not dock._pyramid_levels_spin.isEnabled()
+        dock._write_pyramid_check.setChecked(True)
+        assert dock._pyramid_levels_spin.isEnabled()
 
 
 # ═══════════════════════════════════════════════════════════════════════

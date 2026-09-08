@@ -7,7 +7,7 @@ import re
 
 from PySide6 import QtCore, QtWidgets
 
-from valis_workstation.constants import CropModes, FeatureDetectors, NonRigidMethods, TransformerTypes
+from valis_workstation.constants import CropModes, FeatureDetectors, ImageFormats, NonRigidMethods, TransformerTypes
 from valis_workstation.layout_constants import GRID_SPACING
 from valis_workstation.models.config import Config
 from valis_workstation.ui.icons import load_icon
@@ -309,6 +309,23 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._output_profile.setToolTip("Apply output templates for common workflows")
         self._output_profile.currentTextChanged.connect(self.apply_output_profile)
 
+        self._format_combo = QtWidgets.QComboBox()
+        self._format_combo.addItems(ImageFormats.all())
+        self._format_combo.setCurrentText(ImageFormats.OME_TIFF)
+        self._format_combo.setToolTip(
+            "Output image format:\n"
+            "• OME-TIFF: Standard for microscopy, preserves metadata\n"
+            "• TIFF: General purpose, good compatibility\n"
+            "• JPEG: Lossy compression, smallest files\n"
+            "• PNG: Lossless, good for web/preview"
+        )
+
+        self._write_pyramid_check = QtWidgets.QCheckBox("Write image pyramid")
+        self._write_pyramid_check.setChecked(True)
+        self._write_pyramid_check.setToolTip(
+            "Enable multi-resolution pyramid output for faster viewer performance"
+        )
+
         self._compression_level_spin = QtWidgets.QSpinBox()
         self._compression_level_spin.setRange(0, 9)
         self._compression_level_spin.setValue(1)
@@ -326,6 +343,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
             "More levels = better viewer performance. 0 = let VALIS choose.\n"
             "Default: 4"
         )
+        self._write_pyramid_check.toggled.connect(self._pyramid_levels_spin.setEnabled)
 
         self._tile_size_spin = QtWidgets.QSpinBox()
         self._tile_size_spin.setRange(128, 4096)
@@ -349,6 +367,8 @@ class PropertiesDock(QtWidgets.QDockWidget):
         )
 
         out.addRow("Output profile", self._output_profile)
+        out.addRow("Format", self._format_combo)
+        out.addRow("", self._write_pyramid_check)
         out.addRow("Compression level", self._compression_level_spin)
         out.addRow("Pyramid levels", self._pyramid_levels_spin)
         out.addRow("Tile size", self._tile_size_spin)
@@ -584,8 +604,8 @@ class PropertiesDock(QtWidgets.QDockWidget):
             pyramid_levels=int(self._pyramid_levels_spin.value()),
             tile_size=int(self._tile_size_spin.value()),
             image_quality=int(self._image_quality_spin.value()),
-            image_format="OME-TIFF",
-            write_pyramid=True,
+            image_format=self._format_combo.currentText(),
+            write_pyramid=self._write_pyramid_check.isChecked(),
         )
 
     def set_config(self, cfg: Config) -> None:
@@ -629,6 +649,8 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._micro_registration.setChecked(cfg.micro_registration)
         self._micro_max_size.setValue(cfg.micro_max_image_size)
 
+        self._format_combo.setCurrentText(cfg.image_format)
+        self._write_pyramid_check.setChecked(cfg.write_pyramid)
         self._compression_level_spin.setValue(cfg.compression_level)
         self._pyramid_levels_spin.setValue(cfg.pyramid_levels)
         self._tile_size_spin.setValue(cfg.tile_size)

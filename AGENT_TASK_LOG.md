@@ -8,6 +8,58 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-09-08 UTC — Save Options' Format/Write-pyramid choices were silently discarded
+Branch `claude/fervent-johnson-im7ui8` · PR
+[#9](https://github.com/leonardolv/VALIS-GUI/pull/9) · Status: **done**
+
+**Claimed:** the Backlog was empty of actionable items (both prior entries
+were already resolved and decided), so this run did a fresh code audit
+instead of reading the log, per the task's own fallback instruction.
+
+**Root cause.** `Config` (`models/config.py`) documents "every field here has
+a matching widget in `PropertiesDock`" — true for every field except
+`image_format` and `write_pyramid`, which `PropertiesDock.config()`
+(`ui/properties_dock.py:587-588`, pre-fix) hardcoded to `"OME-TIFF"`/`True`
+because no widget for either existed anywhere in the dock. Meanwhile
+`SaveOptionsDialog` (`ui/dialogs/save_options_dialog.py`) has real Format and
+"Write image pyramid" controls, and `MainWindow._show_save_options`
+(`main_window.py`) read both out of `dialog.get_options()` and then dropped
+them on the floor — it copied `pyramid_levels`/`compression`/`tile_size`/
+`quality` into the dock's spinboxes but had nowhere to put the other two.
+Net effect: no matter what a user picked in the Save Options dialog, every
+registration run always saved OME-TIFF with pyramids on
+(`services/valis_pipeline.py:395,469` read `config.write_pyramid`/
+`config.image_format` straight from the always-hardcoded `Config`). The
+status bar's "Output settings updated" message was true for 4 of the 6
+options shown in the dialog that had just closed.
+
+**Fix.** Added `_format_combo` (a `QComboBox` over `ImageFormats.all()`) and
+`_write_pyramid_check` (a `QCheckBox`, wired to enable/disable
+`_pyramid_levels_spin` exactly like `SaveOptionsDialog`'s own copy already
+does) to `PropertiesDock`'s Output Settings group. `config()`/`set_config()`
+now read/write both instead of hardcoding, and `_show_save_options` applies
+`options["format"]`/`options["write_pyramid"]` to the new widgets alongside
+the four it already copied.
+
+**Validation.** 4 new tests (`tests/test_all_features.py`:
+`TestMainWindow.test_show_save_options_applies_format_and_write_pyramid`,
+`TestPropertiesDockSync.test_all_image_formats_in_combobox`/
+`test_image_format_and_write_pyramid_round_trip`/
+`test_write_pyramid_toggle_enables_pyramid_levels`) — **all 4 fail
+`AttributeError` on the pre-fix tree** (verified by `git stash`-ing just the
+two source files and re-running). Full suite: **355 passed** (was 351), 0
+regressions — run with `QT_QPA_PLATFORM=offscreen pytest tests/ -q` against a
+lightweight venv (PySide6/pytest-qt/psutil/matplotlib/pandas/numpy; the
+repo's full `uv sync` lockfile pulls in the entire VALIS scientific stack
+including several GB of CUDA wheels, which this sandbox's network/disk
+couldn't accommodate in reasonable time — the GUI test files under test
+don't need any of it, confirmed by the run being green). `ruff check` on
+both touched source files: 16 findings before and after (0 new; all
+pre-existing blind-exception/style findings elsewhere in `properties_dock.py`
+this change didn't touch).
+
+**PR.** [#9](https://github.com/leonardolv/VALIS-GUI/pull/9).
+
 ### 2026-08-19 (3) — `validate_slides`'s disk-space check no longer falls back to cwd
 
 **Item claimed and finished in one pass.** Not a Backlog carry-over — the
@@ -487,3 +539,24 @@ convention.
   all currently dead code exercised only by its own tests. Worth deciding
   whether `TileCache` is meant to be wired into real tile rendering (a
   real, larger feature) or removed as speculative infrastructure.
+- **`MergeSlidesDialog`'s "Normalize intensities" checkbox does nothing.**
+  Found by the 2026-09-08 audit that also found the Save Options item above
+  (backup candidate #1). `ui/dialogs/merge_slides_dialog.py`'s `_normalize`
+  checkbox is included in `get_merge_config()`'s returned dict
+  (`"normalize": self._normalize.isChecked()`), but a repo-wide grep for
+  `normalize` in `services/merge_slides.py` finds it only in a docstring —
+  `merge_registered_slides` never reads `merge_config["normalize"]`. Smaller
+  blast radius than the Save Options bug (only the optional multi-channel
+  merge feature is affected). Needs a decision before it's a small fix:
+  implement per-channel intensity normalization before
+  `registrar.warp_and_merge_slides`, or remove the checkbox as
+  not-yet-implemented.
+- **`ui/high_contrast`/`ui/reduced_motion` settings keys are fully dead.**
+  Also found by the 2026-09-08 audit (backup candidate #2). `settings_keys.py`
+  defines both, but a repo-wide grep finds zero readers/writers and no
+  corresponding checkbox anywhere, including `PreferencesDialog` — unlike the
+  Preferences items resolved by earlier runs in this log (2026-08-18/19),
+  these two have no UI entry point at all yet, so no user can reach them
+  today. Lower priority than the two items above: scaffolding for an
+  accessibility feature that was never wired up, not a defect a user can
+  stumble into.

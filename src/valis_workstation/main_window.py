@@ -1356,6 +1356,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 dock._tile_size_spin.setValue(int(options["tile_size"]))
             if "quality" in options:
                 dock._image_quality_spin.setValue(int(options["quality"]))
+            if "format" in options:
+                dock._format_combo.setCurrentText(str(options["format"]))
+            if "write_pyramid" in options:
+                dock._write_pyramid_check.setChecked(bool(options["write_pyramid"]))
 
             # Ensure the Output Settings group is visible
             dock._output_group.setChecked(True)
