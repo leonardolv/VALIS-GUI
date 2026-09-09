@@ -1,5 +1,20 @@
 # VALIS Workstation Changelog
 
+## 2026-09-09
+
+### Fixed
+- `MergeSlidesDialog`'s "Normalize intensities" checkbox (checked by default, tooltip: "Normalize intensity ranges across channels. Recommended for better visualization.") had no effect on the saved output. `get_merge_config()` included `"normalize": self._normalize.isChecked()` in the dict it returned, but `services/merge_slides.py::merge_registered_slides` never read that key — it built `merge_kwargs` and called `registrar.warp_and_merge_slides(**merge_kwargs)` unconditionally, which has no `normalize` parameter of its own. Every merged multi-channel image was saved with each channel's raw, unstretched intensity range regardless of the checkbox.
+
+	Fixed by branching on `merge_config["normalize"]` in `merge_registered_slides`:
+	- **Off** (unchanged path): `registrar.warp_and_merge_slides(**merge_kwargs)` is called with `dst_f` set, exactly as before — VALIS builds, warps and saves the image in one call.
+	- **On** (new path): `warp_and_merge_slides` is called with `dst_f=None` so it returns the built-but-unsaved `pyvips.Image` instead of writing it to disk. The new `_normalize_channels()` helper linearly stretches each band independently (its own observed min -> 0, its own observed max -> the pixel format's ceiling — 255 for `uchar`, 65535 for `ushort`; any other format, or an already-flat band, is left untouched rather than guessed at or divided by zero). The stretched image is then saved directly via `valis.slide_io.save_ome_tiff` (lazily imported, matching this codebase's existing `importlib.import_module("valis.registration")` pattern in `services/valis_pipeline.py`, since the full VALIS/pyvips stack isn't always installed), using the same tile size/compression/quality/pyramid options the non-normalize path would have used, falling back to `slide_io.get_tile_wh` off the registrar's reference slide when no explicit tile size was configured.
+
+### Testing
+- New `tests/test_merge_slides_service.py` (9 tests): unit tests for `_normalize_channels` against a lightweight fake mimicking the subset of the `pyvips.Image` API this module uses (band indexing, `min`/`max`, arithmetic, `cast`, `bandjoin` — real `pyvips`/VALIS aren't installed in this sandbox), plus integration tests for `merge_registered_slides` covering both branches (normalize on/off, explicit vs. computed tile size, mid-merge cancellation after the image is built but before it's saved, and progress-callback completion) — all mocking `registrar.warp_and_merge_slides` and `sys.modules["valis.slide_io"]`.
+- All 9 tests **fail to collect (`ImportError`) on the pre-fix tree** (verified via `git stash` of just `services/merge_slides.py`).
+- Full suite: `QT_QPA_PLATFORM=offscreen pytest tests/ -q` — **364 passed** (was 355), 0 regressions, in a lightweight environment (PySide6/pytest-qt/pandas/matplotlib/numpy/psutil; the full `uv sync` VALIS scientific stack, including `torch`/`pyvips`, was not installed — none of the touched code or its tests require it, by design).
+- `ruff check src/valis_workstation/services/merge_slides.py tests/test_merge_slides_service.py`: all checks passed, 0 findings.
+
 ## 2026-08-19 (3)
 
 ### Removed

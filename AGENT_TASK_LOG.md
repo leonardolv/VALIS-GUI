@@ -8,6 +8,81 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-09-09 UTC — `MergeSlidesDialog`'s "Normalize intensities" checkbox does nothing
+Branch `claude/fervent-johnson-qcsak4` · PR
+[#10](https://github.com/leonardolv/VALIS-GUI/pull/10) · Status: **done**
+
+**Claimed** from the Backlog (the only two open items were this one and
+`ui/high_contrast`/`ui/reduced_motion`, which has no UI entry point at all
+yet — this one is user-reachable today, so higher priority per the skill's
+triage hierarchy).
+
+**Root cause.** `MergeSlidesDialog.get_merge_config()`
+(`ui/dialogs/merge_slides_dialog.py`) has always included
+`"normalize": self._normalize.isChecked()` (checked by default) in the dict
+it returns, but `services/merge_slides.py::merge_registered_slides` never
+read that key anywhere — it built `merge_kwargs` and called
+`registrar.warp_and_merge_slides(**merge_kwargs)` unconditionally.
+`Valis.warp_and_merge_slides` (`valis/registration.py`) has no `normalize`
+parameter of its own either, confirmed by reading its real signature. Net
+effect: every multi-channel merge saved each channel's raw, unstretched
+intensity range regardless of the checkbox — a `git log -S"normalize"` on
+`merge_slides.py` shows the key was never referenced there in the file's
+history.
+
+**Fix.** `merge_registered_slides` now branches on
+`merge_config.get("normalize")`:
+- **Off** — unchanged: `registrar.warp_and_merge_slides(**merge_kwargs)`
+  with `dst_f` set, VALIS builds/warps/saves in one call, exactly as before.
+- **On** — `warp_and_merge_slides` is called with `dst_f=None` so it
+  returns the built-but-unsaved `pyvips.Image` (plus channel names and
+  OME-XML) instead of writing it. New `_normalize_channels()` linearly
+  stretches each band independently (its own min -> 0, its own max -> the
+  pixel format's ceiling: 255 for `uchar`, 65535 for `ushort`; an
+  unsupported format or an already-flat band is left untouched rather than
+  guessed at or divided by zero). The stretched image is saved directly via
+  `valis.slide_io.save_ome_tiff` — lazily imported via
+  `importlib.import_module`, matching the existing
+  `services/valis_pipeline.py` pattern for a stack that isn't always
+  installed — reusing the same tile size/compression/quality/pyramid
+  options the non-normalize path would have used (falling back to
+  `slide_io.get_tile_wh` off the registrar's reference slide when no
+  explicit tile size was configured).
+
+**Why this shape, not "remove the checkbox":** the checkbox's own tooltip
+("Normalize intensity ranges across channels. Recommended for better
+visualization.") describes exactly a per-channel min/max contrast stretch,
+which is real, well-defined, standard behavior for multiplexed-imaging
+tools (CyCIF/CODEX) — implementing it was the smaller-risk option that
+still delivers the feature the dialog already promises, versus silently
+downgrading a shipped, checked-by-default control.
+
+**Validation.**
+* New `tests/test_merge_slides_service.py` (9 tests) — unit tests for
+  `_normalize_channels` against a lightweight fake mimicking the subset of
+  the `pyvips.Image` API this module uses (band indexing, `min`/`max`,
+  arithmetic, `cast`, `bandjoin`; real `pyvips`/VALIS aren't installed in
+  this sandbox), plus integration tests for `merge_registered_slides`
+  covering both branches, explicit-vs-computed tile size, mid-merge
+  cancellation after the image is built but before it's saved, and
+  progress-callback completion — mocking `registrar.warp_and_merge_slides`
+  and `sys.modules["valis.slide_io"]`.
+* All 9 tests **fail to collect (`ImportError`) on the pre-fix tree**
+  (verified via `git stash` of just `services/merge_slides.py`, then
+  restored).
+* Full suite: `QT_QPA_PLATFORM=offscreen python3 -m pytest tests/ -q` ->
+  **364 passed** (was 355), 0 failures/errors — this run's sandbox already
+  had PySide6 installed; pandas/matplotlib/numpy/psutil/pytest-qt were
+  additionally installed (lightweight, same as prior runs' venvs) — the
+  full `uv sync` VALIS scientific stack (torch/pyvips/kornia/...) was not
+  needed and not installed, by design (the touched code lazily imports
+  `valis.slide_io` only on the normalize path, and tests mock it out).
+* `ruff check src/valis_workstation/services/merge_slides.py
+  tests/test_merge_slides_service.py`: all checks passed, 0 findings.
+* `WORKSTATION_CHANGELOG.md` gains a matching 2026-09-09 entry.
+
+**PR.** [#10](https://github.com/leonardolv/VALIS-GUI/pull/10).
+
 ### 2026-09-08 UTC — Save Options' Format/Write-pyramid choices were silently discarded
 Branch `claude/fervent-johnson-im7ui8` · PR
 [#9](https://github.com/leonardolv/VALIS-GUI/pull/9) · Status: **done**
@@ -539,6 +614,11 @@ convention.
   all currently dead code exercised only by its own tests. Worth deciding
   whether `TileCache` is meant to be wired into real tile rendering (a
   real, larger feature) or removed as speculative infrastructure.
+~~**`MergeSlidesDialog`'s "Normalize intensities" checkbox does nothing.**~~
+  Done by the 2026-09-09 run — see the Completed entry. Implemented
+  per-channel min/max intensity normalization on the merged image before it
+  is saved, rather than removing the checkbox.
+  (original entry follows)
 - **`MergeSlidesDialog`'s "Normalize intensities" checkbox does nothing.**
   Found by the 2026-09-08 audit that also found the Save Options item above
   (backup candidate #1). `ui/dialogs/merge_slides_dialog.py`'s `_normalize`

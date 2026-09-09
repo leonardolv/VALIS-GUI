@@ -11,6 +11,72 @@ from valis_workstation.utils.exceptions import UserVisibleError
 
 logger = logging.getLogger(__name__)
 
+# Matches valis.registration.DEFAULT_COMPRESSION's underlying value
+# (pyvips.enums.ForeignTiffCompression.DEFLATE). Kept as a plain string here
+# so this module never needs to import pyvips just to read a constant.
+_DEFAULT_COMPRESSION = "deflate"
+
+# Pixel formats this module knows the full-range ceiling for. Anything else
+# (float, double, complex, ...) is left untouched by `_normalize_channels`
+# rather than guessed at.
+_FORMAT_MAX_VALUE = {
+    "uchar": 255,
+    "ushort": 65535,
+}
+
+
+def _normalize_channels(merged_img):
+    """Linearly stretch each channel/band to the full range of its pixel format.
+
+    Each band is stretched independently so its own observed minimum maps to
+    0 and its own observed maximum maps to the format's maximum value -
+    equivalent to per-channel min/max contrast stretching. This is what the
+    "Normalize intensities" checkbox in ``MergeSlidesDialog`` has always
+    claimed to do ("Recommended for better visualization"); the flag was
+    previously read into ``merge_config["normalize"]`` and then never
+    consulted anywhere in this module.
+
+    Parameters
+    ----------
+    merged_img : pyvips.Image
+        The merged, multi-band image returned by
+        ``Valis.warp_and_merge_slides`` *before* it has been saved to disk.
+
+    Returns
+    -------
+    pyvips.Image
+        A new image with the same number of bands, each independently
+        contrast-stretched. If ``merged_img``'s pixel format isn't one this
+        function knows the ceiling for, or a band is already flat (constant
+        value, so there is nothing to stretch), that band is returned
+        unchanged rather than risking a division by zero or guessing at a
+        format's range.
+    """
+    max_value = _FORMAT_MAX_VALUE.get(merged_img.format)
+    if max_value is None:
+        logger.warning(
+            "Skipping channel normalization: unsupported pixel format %r "
+            "(only %s are supported)",
+            merged_img.format,
+            sorted(_FORMAT_MAX_VALUE),
+        )
+        return merged_img
+
+    stretched_bands = []
+    for band_idx in range(merged_img.bands):
+        band = merged_img[band_idx]
+        band_min = band.min()
+        band_max = band.max()
+        if band_max <= band_min:
+            stretched_bands.append(band)
+            continue
+        scale = max_value / (band_max - band_min)
+        stretched_bands.append(((band - band_min) * scale).cast(merged_img.format))
+
+    if len(stretched_bands) == 1:
+        return stretched_bands[0]
+    return stretched_bands[0].bandjoin(stretched_bands[1:])
+
 
 def merge_registered_slides(
     registrar,
@@ -133,13 +199,54 @@ def merge_registered_slides(
     if progress_callback:
         progress_callback(30)
 
+    normalize = bool(merge_config.get("normalize"))
+
     try:
         if cancel_check and cancel_check():
             raise UserVisibleError("Merge cancelled by user")
 
         # Call VALIS warp_and_merge_slides
         logger.info("Starting slide merge operation")
-        merged_img = registrar.warp_and_merge_slides(**merge_kwargs)
+
+        if normalize:
+            # Normalizing rewrites pixel values before the image is saved,
+            # so ask VALIS to build (and return) the merged image instead of
+            # having it write to disk directly.
+            unsaved_kwargs = dict(merge_kwargs)
+            unsaved_kwargs["dst_f"] = None
+            merged_img, _all_channel_names, ome_xml = registrar.warp_and_merge_slides(
+                **unsaved_kwargs
+            )
+
+            if cancel_check and cancel_check():
+                raise UserVisibleError("Merge cancelled by user")
+
+            if progress_callback:
+                progress_callback(60)
+
+            merged_img = _normalize_channels(merged_img)
+
+            slide_io = importlib.import_module("valis.slide_io")
+            tile_wh = merge_kwargs.get("tile_wh")
+            if tile_wh is None:
+                ref_slide = registrar.get_ref_slide()
+                tile_wh = slide_io.get_tile_wh(
+                    reader=ref_slide.reader,
+                    level=0,
+                    out_shape_wh=(merged_img.width, merged_img.height),
+                )
+
+            slide_io.save_ome_tiff(
+                merged_img,
+                dst_f=str(output_file),
+                ome_xml=ome_xml,
+                tile_wh=tile_wh,
+                compression=merge_kwargs.get("compression", _DEFAULT_COMPRESSION),
+                Q=merge_kwargs.get("Q", 100),
+                pyramid=merge_kwargs.get("pyramid", True),
+            )
+        else:
+            registrar.warp_and_merge_slides(**merge_kwargs)
 
         if progress_callback:
             progress_callback(90)
