@@ -6,7 +6,120 @@ work this file; always append, never overwrite another agent's entries.
 
 _(nothing claimed)_
 
+
 ## Completed
+
+### 2026-09-15 UTC — `ui/high_contrast`/`ui/reduced_motion` settings keys were fully dead
+Branch `claude/loving-feynman-4kgevh` · PR [TBD] · Status: **done**
+
+**Claimed** from the Backlog entry filed by the 2026-09-08 audit
+("scaffolding for an accessibility feature that was never wired up").
+Unlike every other Preferences field this repo has fixed before
+(`ui/show_tooltips`, `cache/persist`, the performance trackers — see the
+2026-08-18/19 entries below), these two had **no UI entry point at all**:
+`settings_keys.py` declared both, but a repo-wide grep found zero
+readers/writers and no corresponding checkbox anywhere, including
+`PreferencesDialog`. Wired up as a small real accessibility feature rather
+than deleted, matching this repo's established preference for "wire it"
+over "delete it" whenever the underlying feature is real user value.
+
+**Root cause.** Pure scaffolding — the keys were declared and never
+followed up with a checkbox or a reader, confirmed by grep before starting
+rather than assumed.
+
+**Solution.**
+* `utils/accessibility.py` (new) is the one place that reads both settings
+  back and applies their effect — mirroring `app._ToolTipSuppressionFilter`
+  and `performance._monitoring_enabled`'s "re-read fresh on every call, no
+  caching" shape, so a Preferences change takes effect immediately without
+  restarting the app:
+  * `high_contrast_enabled()` / `should_reduce_motion()` read the two
+    QSettings keys, default `False`.
+  * `reduced_motion_duration_ms(normal_ms)` returns `normal_ms` normally,
+    or a near-zero `REDUCED_MOTION_DURATION_MS` (1ms — positive rather than
+    literal 0, so `QPropertyAnimation.finished` still fires asynchronously)
+    when reduced motion is on.
+  * `compose_stylesheet(base_css)` appends
+    `styles/high_contrast_overrides.qss` (new — a real higher-contrast QSS
+    variant: near-black/near-white text and backgrounds instead of the base
+    theme's mid-grey palette, plus a 3px bright-yellow focus outline
+    applied consistently across every focusable widget class, versus the
+    base theme's 1px pale-blue per-class borders) after `base_css` when
+    `ui/high_contrast` is on — appended, not substituted, since Qt
+    stylesheets resolve same-specificity ties in favour of whichever rule
+    was parsed last.
+  * `apply_theme(base_css, app=None)` sets the composed stylesheet on the
+    running `QApplication`.
+* `app.py`'s `_load_stylesheet` now delegates to
+  `accessibility.base_stylesheet` (one implementation of the repo_root path
+  resolution instead of two) and `run_app` calls `apply_theme(...)` at
+  startup instead of `app.setStyleSheet(stylesheet)` directly.
+* `MainWindow._on_preferences_changed` calls `apply_theme(base_stylesheet(self._repo_root))`
+  before its existing "some settings require a restart" message box, so
+  toggling High Contrast is visible immediately without one — the other
+  settings genuinely do need a restart today, so that message box stays for
+  those, this just makes the one setting that doesn't need it actually not
+  need it.
+* `PreferencesDialog`'s User Interface tab gained two checkboxes ("High
+  contrast mode", "Reduce motion"), following the exact same
+  checkbox/tooltip/`_load_settings`/`_save_and_accept`/`_restore_defaults`
+  pattern every other boolean field in that dialog already uses (e.g.
+  `_show_tooltips_check`). Both default unchecked.
+* `ui/splash_screen.py`'s two real `QPropertyAnimation` fade-outs
+  (`SplashScreen.finish`, `LoadingOverlay.dismiss` — the only
+  `QPropertyAnimation`/`QVariantAnimation` transitions anywhere in the app,
+  confirmed by grep) now call `setDuration(reduced_motion_duration_ms(350))`
+  / `(200)` instead of a bare literal. The continuously-looping spinner
+  (`QTimeLine`-driven) was deliberately left alone — it's the loading
+  indicator itself, not a transition, and stopping it would remove the only
+  sign a long operation is still running.
+
+**Why not repo_root-relative for the override file too:** the base theme
+is only ever loaded relative to `repo_root` (an existing quirk of
+`app._load_stylesheet`, assuming a `<repo_root>/src/valis_workstation/...`
+source-tree layout), but `main_window.py` needs to re-load it on every
+Preferences change and can't import from `app.py` to do so (`app.py`
+imports `main_window` at module scope, so the reverse import would be
+circular). The override QSS is instead resolved package-relatively
+(`Path(__file__).resolve().parent.parent / "styles"`), which needs no
+`repo_root` at all and works whether run from a checkout or an installed
+wheel.
+
+**Validation.**
+* New `tests/test_accessibility_settings.py` (30 tests) — the settings
+  readers' defaults/on/off behaviour; `reduced_motion_duration_ms`'s
+  positive-duration guarantee; `compose_stylesheet` appending real overrides
+  when on, leaving `base_css` untouched when off, and falling back
+  gracefully if the overrides file is missing; `apply_theme` setting the
+  composed stylesheet on a real `QApplication` and no-oping without one;
+  the two Preferences checkboxes existing, defaulting unchecked, loading a
+  previously-saved on/off state, and the full round trip (toggle -> save ->
+  fresh dialog instance shows the persisted state); `MainWindow._on_preferences_changed`
+  calling `apply_theme(base_stylesheet(repo_root))`; `app._load_stylesheet`
+  still matching `accessibility.base_stylesheet` byte-for-byte; both splash
+  screen fades using the normal duration when off and the near-zero one
+  when on. **27 of 30 fail on the pre-fix tree** (confirmed via
+  `git stash` of the four modified source files plus temporarily moving the
+  three new files aside, then restoring both).
+* Full suite: `QT_QPA_PLATFORM=offscreen python3 -m pytest tests/ -q` ->
+  **394 passed** (was 364), 0 regressions.
+* Targeted Preferences/app/splash batch (`test_accessibility_settings.py` +
+  `test_app.py` + `test_splash_screen.py` + `test_preferences_wiring_followups.py`
+  + `test_all_features.py` + `test_performance_monitoring_wiring.py`):
+  **219 passed**.
+* `ruff check` on the four modified files: identical finding counts
+  before/after (app.py 0/0, main_window.py 12/12, preferences_dialog.py
+  1/1, splash_screen.py 4/4 — all pre-existing, unrelated to this change,
+  confirmed via the same stash comparison). The two new source/test files
+  are clean (0 findings after fixing two straightforward `UP037`/`I001`
+  hits found during development).
+* This sandbox was missing `pandas`/`matplotlib` (needed transitively by
+  `main_window.py` via `analysis_plot.py`/`error_metrics.py`) — installed
+  alongside the already-present PySide6/pytest-qt/numpy/psutil, same
+  lightweight-venv approach prior entries in this log describe; the full
+  VALIS scientific stack (torch/pyvips/kornia/napari/...) was not needed.
+
+**PR.** [link pending].
 
 ### 2026-09-09 UTC — `MergeSlidesDialog`'s "Normalize intensities" checkbox does nothing
 Branch `claude/fervent-johnson-qcsak4` · PR
@@ -631,6 +744,12 @@ convention.
   implement per-channel intensity normalization before
   `registrar.warp_and_merge_slides`, or remove the checkbox as
   not-yet-implemented.
+~~**`ui/high_contrast`/`ui/reduced_motion` settings keys are fully dead.**~~
+  Done by the 2026-09-15 run — see the Completed entry. Wired both into
+  Preferences (two new checkboxes) plus real behaviour (a genuine
+  high-contrast QSS variant, and shortened/skipped `QPropertyAnimation`
+  fades) rather than deleting them.
+  (original entry follows)
 - **`ui/high_contrast`/`ui/reduced_motion` settings keys are fully dead.**
   Also found by the 2026-09-08 audit (backup candidate #2). `settings_keys.py`
   defines both, but a repo-wide grep finds zero readers/writers and no

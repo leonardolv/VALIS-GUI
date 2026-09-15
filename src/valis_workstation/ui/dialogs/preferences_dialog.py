@@ -191,6 +191,25 @@ class PreferencesDialog(QtWidgets.QDialog):
 
         add_form_spacer(layout)
 
+        # Accessibility
+        self._high_contrast_check = QtWidgets.QCheckBox("High contrast mode")
+        self._high_contrast_check.setChecked(False)
+        self._high_contrast_check.setToolTip(
+            "Use a higher-contrast colour theme with thicker focus outlines."
+            " Applies immediately, no restart needed."
+        )
+        layout.addRow("", self._high_contrast_check)
+
+        self._reduced_motion_check = QtWidgets.QCheckBox("Reduce motion")
+        self._reduced_motion_check.setChecked(False)
+        self._reduced_motion_check.setToolTip(
+            "Skip or shorten UI fade/slide transitions (e.g. the splash"
+            " screen and loading overlay fade-outs)."
+        )
+        layout.addRow("", self._reduced_motion_check)
+
+        add_form_spacer(layout)
+
         return widget
 
     def _browse_cache_dir(self):
@@ -254,6 +273,12 @@ class PreferencesDialog(QtWidgets.QDialog):
         )
         self._default_thumb_size_spin.setValue(default_thumb_size)
 
+        high_contrast = self._settings.value("ui/high_contrast", False, type=bool)
+        self._high_contrast_check.setChecked(high_contrast)
+
+        reduced_motion = self._settings.value("ui/reduced_motion", False, type=bool)
+        self._reduced_motion_check.setChecked(reduced_motion)
+
     def _save_and_accept(self):
         """Save settings and close dialog."""
         # Cache settings
@@ -289,6 +314,12 @@ class PreferencesDialog(QtWidgets.QDialog):
         )
         self._settings.setValue(
             "ui/default_thumbnail_size", self._default_thumb_size_spin.value()
+        )
+        self._settings.setValue(
+            "ui/high_contrast", self._high_contrast_check.isChecked()
+        )
+        self._settings.setValue(
+            "ui/reduced_motion", self._reduced_motion_check.isChecked()
         )
 
         # Sync settings to disk
@@ -328,5 +359,7 @@ class PreferencesDialog(QtWidgets.QDialog):
             self._confirm_close_check.setChecked(False)
             self._recent_files_spin.setValue(10)
             self._default_thumb_size_spin.setValue(512)
+            self._high_contrast_check.setChecked(False)
+            self._reduced_motion_check.setChecked(False)
 
             logger.info("Preferences reset to defaults")

@@ -11,6 +11,7 @@ from PySide6 import QtCore, QtWidgets
 from valis_workstation.main_window import MainWindow
 from valis_workstation.ui.dialogs.first_run_wizard import FirstRunWizard
 from valis_workstation.ui.splash_screen import SplashScreen
+from valis_workstation.utils.accessibility import apply_theme, base_stylesheet
 from valis_workstation.utils.logging_config import setup_logging
 from valis_workstation.utils.qt_logging import QtLogEmitter, QtSignalHandler
 
@@ -18,10 +19,13 @@ logger = logging.getLogger(__name__)
 
 
 def _load_stylesheet(repo_root: Path) -> str:
-    qss_path = repo_root / "src" / "valis_workstation" / "styles" / "adobe_dark.qss"
-    if qss_path.exists():
-        return qss_path.read_text(encoding="utf-8")
-    return ""
+    """The base dark theme's CSS text. Delegates to
+    ``accessibility.base_stylesheet`` (which also composes in the
+    high-contrast overrides for ``apply_theme`` below) so there is one
+    implementation of the path resolution; kept as a separate name here
+    since it's exercised directly by ``tests/test_app.py``.
+    """
+    return base_stylesheet(repo_root)
 
 
 def _simple_elastix_available() -> bool:
@@ -116,9 +120,7 @@ def run_app(repo_root: Path) -> int:
     app._tooltip_suppression_filter = _ToolTipSuppressionFilter(app)
     app.installEventFilter(app._tooltip_suppression_filter)
 
-    stylesheet = _load_stylesheet(repo_root)
-    if stylesheet:
-        app.setStyleSheet(stylesheet)
+    apply_theme(_load_stylesheet(repo_root), app)
 
     # ── Show splash screen while heavy subsystems load ───────────
     splash = SplashScreen()

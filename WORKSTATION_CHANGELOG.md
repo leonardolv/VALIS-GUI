@@ -1,5 +1,20 @@
 # VALIS Workstation Changelog
 
+## 2026-09-15
+
+### Added
+- `ui/high_contrast`/`ui/reduced_motion` settings keys, declared in `settings_keys.py` but fully dead (no reader/writer, no checkbox anywhere — a 2026-09-08 audit finding), are now a real accessibility feature.
+	- `PreferencesDialog`'s User Interface tab gained two checkboxes: "High contrast mode" and "Reduce motion" (`src/valis_workstation/ui/dialogs/preferences_dialog.py`), following the same checkbox/load/save/restore-defaults pattern every other boolean field in that dialog already uses. Both default unchecked.
+	- New `src/valis_workstation/utils/accessibility.py` is the one place that reads both settings back and applies their effect, re-read fresh on every call (no caching) so a Preferences change takes effect immediately — the same approach `app._ToolTipSuppressionFilter`/`performance._monitoring_enabled` already use.
+	- High contrast: new `src/valis_workstation/styles/high_contrast_overrides.qss` (near-black/near-white text and backgrounds, a consistent 3px bright-yellow focus outline on every focusable widget class) is appended after the base theme when the setting is on. Applied at startup (`app.run_app`) and re-applied immediately from `MainWindow._on_preferences_changed` when it changes — no restart required.
+	- Reduced motion: the two real `QPropertyAnimation` fade-outs in the app (`SplashScreen.finish`, `LoadingOverlay.dismiss`, `src/valis_workstation/ui/splash_screen.py`) now use `accessibility.reduced_motion_duration_ms(...)` instead of a bare literal duration, shortening 350ms/200ms fades to a near-instant 1ms when the setting is on.
+
+### Testing
+- New `tests/test_accessibility_settings.py` (30 tests) covering the settings readers, `compose_stylesheet`/`apply_theme`, both Preferences checkboxes' full save/reopen round trip, `MainWindow._on_preferences_changed`'s reapply call, and both splash-screen fade durations under the setting on/off.
+- **27 of 30 fail on the pre-fix tree** (confirmed via `git stash` of the modified source files).
+- Full suite: `QT_QPA_PLATFORM=offscreen python3 -m pytest tests/ -q` — **394 passed** (was 364), 0 regressions.
+- `ruff check` on the four modified files: identical finding counts before/after (0 new); the two new files are clean.
+
 ## 2026-09-09
 
 ### Fixed

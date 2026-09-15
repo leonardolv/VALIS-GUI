@@ -1,0 +1,196 @@
+/* ============================================================
+   VALIS Workstation - High Contrast Overrides
+   ============================================================
+   Appended after adobe_dark.qss (never used standalone) when
+   Preferences > User Interface > "High contrast mode" is on -- see
+   utils/accessibility.py::compose_stylesheet. Two goals only, kept
+   proportionate to an accessibility toggle rather than a second full
+   theme: (1) push text/background contrast toward the WCAG-friendly
+   extremes (near-black / near-white) instead of the base theme's
+   mid-grey-on-dark-grey palette, and (2) make keyboard focus
+   unmistakable with a thick, bright, consistent outline on every
+   focusable control, since the base theme's 1px pale-blue focus
+   border is easy to miss at a glance. Qt stylesheets resolve a tie
+   between two rules of equal specificity in favour of whichever was
+   parsed last, so every selector below only needs to name what
+   changes, not restate the base theme's untouched properties. */
+
+/* ---- Global -------------------------------------------------- */
+QWidget {
+    background-color: #000000;
+    color: #ffffff;
+    selection-background-color: #ffdd00;
+    selection-color: #000000;
+}
+
+QMainWindow {
+    background-color: #000000;
+}
+
+QMainWindow::separator {
+    background: #ffffff;
+}
+
+QMainWindow::separator:hover {
+    background: #ffdd00;
+}
+
+/* ---- Menu Bar / Menus ----------------------------------------- */
+QMenuBar {
+    background-color: #000000;
+    border-bottom: 2px solid #ffffff;
+    color: #ffffff;
+}
+
+QMenuBar::item:selected {
+    background-color: #ffdd00;
+    color: #000000;
+}
+
+QMenu {
+    background-color: #0a0a0a;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+}
+
+QMenu::item:selected {
+    background-color: #ffdd00;
+    color: #000000;
+}
+
+QMenu::separator {
+    background: #ffffff;
+}
+
+/* ---- Push / Tool Buttons --------------------------------------- */
+QPushButton, QToolButton {
+    background-color: #1a1a1a;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+QPushButton:hover, QToolButton:hover {
+    background-color: #333333;
+    border-color: #ffdd00;
+}
+
+QPushButton:pressed, QToolButton:pressed {
+    background-color: #ffdd00;
+    border-color: #ffdd00;
+    color: #000000;
+}
+
+QPushButton:disabled, QToolButton:disabled {
+    background-color: #0a0a0a;
+    color: #a0a0a0;
+    border-color: #4d4d4d;
+}
+
+QPushButton:default {
+    background-color: #ffdd00;
+    border-color: #ffdd00;
+    color: #000000;
+}
+
+QPushButton:default:hover {
+    background-color: #ffe74d;
+}
+
+/* ---- Input Fields ------------------------------------------- */
+QLineEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit,
+QComboBox, QTextEdit, QPlainTextEdit {
+    background-color: #0a0a0a;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+}
+
+QLineEdit:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled {
+    color: #a0a0a0;
+    border-color: #4d4d4d;
+}
+
+/* ---- Check Boxes ---------------------------------------------- */
+QCheckBox {
+    color: #ffffff;
+}
+
+QCheckBox::indicator {
+    border: 2px solid #ffffff;
+    background-color: #0a0a0a;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #ffdd00;
+    border-color: #ffdd00;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #ffdd00;
+}
+
+QCheckBox::indicator:disabled {
+    border-color: #4d4d4d;
+}
+
+/* ---- Group Boxes ------------------------------------------------ */
+QGroupBox {
+    border: 2px solid #ffffff;
+    color: #ffffff;
+}
+
+QGroupBox::title {
+    background-color: #000000;
+}
+
+/* ---- Lists / Trees / Tables ------------------------------------- */
+QListView, QTreeView, QListWidget, QTreeWidget,
+QTableWidget, QTableView {
+    background-color: #0a0a0a;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+}
+
+/* ---- Tabs -------------------------------------------------------- */
+QTabWidget::pane {
+    border: 2px solid #ffffff;
+}
+
+QTabBar::tab {
+    background-color: #1a1a1a;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+}
+
+QTabBar::tab:selected {
+    background-color: #ffdd00;
+    color: #000000;
+}
+
+/* ---- Status Bar -------------------------------------------------- */
+QStatusBar {
+    background-color: #000000;
+    color: #ffffff;
+    border-top: 2px solid #ffffff;
+}
+
+/* ---- Dialog Buttons ------------------------------------------------ */
+QDialogButtonBox > QPushButton {
+    min-width: 84px;
+}
+
+/* ---- Focus: thick, bright, and the same colour everywhere ---------
+   The base theme spells this out per-widget-class with a 1px pale-blue
+   border; high contrast needs one loud, consistent signal instead, so
+   every focusable class gets the identical treatment here rather than
+   each carrying its own shade. */
+QPushButton:focus, QToolButton:focus,
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus,
+QDateEdit:focus, QTimeEdit:focus, QComboBox:focus,
+QTextEdit:focus, QPlainTextEdit:focus,
+QCheckBox::indicator:focus,
+QListView:focus, QTreeView:focus, QListWidget:focus, QTreeWidget:focus,
+QTableWidget:focus, QTableView:focus,
+QTabBar::tab:focus {
+    border: 3px solid #ffdd00;
+}

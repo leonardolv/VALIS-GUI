@@ -11,6 +11,7 @@ from __future__ import annotations
 from PySide6 import QtCore, QtGui, QtWidgets
 
 import valis_workstation as _pkg
+from valis_workstation.utils.accessibility import reduced_motion_duration_ms
 
 # ── Colour palette (matches adobe_dark.qss) ─────────────────────
 _BG = QtGui.QColor("#1e1e1e")
@@ -180,7 +181,7 @@ class SplashScreen(QtWidgets.QWidget):
         self._fade: QtCore.QPropertyAnimation = QtCore.QPropertyAnimation(
             self, b"windowOpacity"
         )
-        self._fade.setDuration(350)
+        self._fade.setDuration(reduced_motion_duration_ms(350))
         self._fade.setStartValue(1.0)
         self._fade.setEndValue(0.0)
         self._fade.finished.connect(self.close)
@@ -319,7 +320,7 @@ class LoadingOverlay(QtWidgets.QWidget):
         self._fade: QtCore.QPropertyAnimation = QtCore.QPropertyAnimation(
             self, b"windowOpacity"
         )
-        self._fade.setDuration(200)
+        self._fade.setDuration(reduced_motion_duration_ms(200))
         self._fade.setStartValue(1.0)
         self._fade.setEndValue(0.0)
         self._fade.finished.connect(self._cleanup)
