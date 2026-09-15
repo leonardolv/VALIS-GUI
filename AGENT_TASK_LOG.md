@@ -10,7 +10,8 @@ _(nothing claimed)_
 ## Completed
 
 ### 2026-09-15 UTC — `ui/high_contrast`/`ui/reduced_motion` settings keys were fully dead
-Branch `claude/loving-feynman-4kgevh` · PR [TBD] · Status: **done**
+Branch `claude/loving-feynman-4kgevh` · PR
+[#11](https://github.com/leonardolv/VALIS-GUI/pull/11) · Status: **done**
 
 **Claimed** from the Backlog entry filed by the 2026-09-08 audit
 ("scaffolding for an accessibility feature that was never wired up").
@@ -119,7 +120,7 @@ wheel.
   lightweight-venv approach prior entries in this log describe; the full
   VALIS scientific stack (torch/pyvips/kornia/napari/...) was not needed.
 
-**PR.** [link pending].
+**PR.** [#11](https://github.com/leonardolv/VALIS-GUI/pull/11).
 
 ### 2026-09-09 UTC — `MergeSlidesDialog`'s "Normalize intensities" checkbox does nothing
 Branch `claude/fervent-johnson-qcsak4` · PR
