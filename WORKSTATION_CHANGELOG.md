@@ -1,5 +1,17 @@
 # VALIS Workstation Changelog
 
+## 2026-09-16
+
+### Added
+- `ui/high_contrast` and `ui/reduced_motion` (`settings_keys.py`) had no UI entry point and no reader anywhere in the app — scaffolding for an accessibility feature that was never wired up. Both are now real, live Preferences → User Interface controls:
+	- **High contrast mode** — a new `src/valis_workstation/styles/high_contrast_overlay.qss` (pure black/white, bright-yellow-accent WCAG-style palette) is appended on top of the base `adobe_dark.qss` theme by `app.build_stylesheet`/`app.apply_theme` whenever the setting is on. Applied immediately from `MainWindow._on_preferences_changed` — no restart required, the same precedent `ui/show_tooltips`'s live event filter already set.
+	- **Reduce motion** — `BlinkViewerDialog`'s "Blink" comparison mode auto-toggles two image layers' visibility on a 600ms timer, a real strobing/flashing effect. When the setting is on, the dialog disables the "Blink" combo item (grayed out, not removed — re-enabling the preference finds it where it was), forces the mode to "Side-by-side" if it was selected, disables the "Start Blink" button, and — defense in depth — `_toggle_blink` itself refuses to start the timer even if something programmatically re-checks the button. Side-by-side and Swipe (both static) are unaffected.
+
+### Testing
+- New `tests/test_accessibility_preferences.py` (18 tests): `app.build_stylesheet`/`apply_theme` overlay composition (enabled/disabled/unset/missing-overlay-file), `BlinkViewerDialog`'s reduced-motion gating (combo item disabled, mode forced off Blink, button disabled, timer refuses to start even when force-checked, static modes unaffected, full regression check that Blink still works when the setting is off/unset), `PreferencesDialog` round-trip and Restore Defaults for both new checkboxes, and that saving Preferences reapplies the theme live through a real `MainWindow` instance.
+- Full suite: `QT_QPA_PLATFORM=offscreen pytest tests/ -q` — **382 passed** (was 364), 0 regressions, same lightweight environment as the 2026-09-09 entry (PySide6/pytest-qt/pandas/matplotlib/numpy/psutil; full VALIS/`torch`/`pyvips` stack not installed — not required by the touched code).
+- `ruff check` on all four touched source files: 13 pre-existing findings, unchanged (verified via `git stash` against the pre-fix tree) — 0 new findings; the new test file is itself ruff-clean.
+
 ## 2026-09-09
 
 ### Fixed

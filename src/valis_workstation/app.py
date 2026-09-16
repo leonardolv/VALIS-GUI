@@ -24,6 +24,50 @@ def _load_stylesheet(repo_root: Path) -> str:
     return ""
 
 
+def _load_high_contrast_overlay(repo_root: Path) -> str:
+    qss_path = (
+        repo_root
+        / "src"
+        / "valis_workstation"
+        / "styles"
+        / "high_contrast_overlay.qss"
+    )
+    if qss_path.exists():
+        return qss_path.read_text(encoding="utf-8")
+    return ""
+
+
+def build_stylesheet(
+    repo_root: Path, settings: QtCore.QSettings | None = None
+) -> str:
+    """Compose the effective application stylesheet.
+
+    Always the base dark theme; when ``ui/high_contrast`` is enabled the
+    high-contrast overlay is appended on top. Qt stylesheets cascade in
+    declaration order for equal-specificity selectors, so appending (rather
+    than replacing) is what lets the overlay only state what changes.
+    """
+    if settings is None:
+        settings = QtCore.QSettings("VALIS", "Workstation")
+    base = _load_stylesheet(repo_root)
+    if settings.value("ui/high_contrast", False, type=bool):
+        overlay = _load_high_contrast_overlay(repo_root)
+        if overlay:
+            return f"{base}\n{overlay}"
+    return base
+
+
+def apply_theme(app: QtWidgets.QApplication, repo_root: Path) -> None:
+    """(Re)apply the effective stylesheet to the running application.
+
+    Called once at startup and again from Preferences whenever
+    ``ui/high_contrast`` changes, so the switch is immediate - the same
+    no-restart-required precedent ``_ToolTipSuppressionFilter`` set for
+    ``ui/show_tooltips``.
+    """
+    app.setStyleSheet(build_stylesheet(repo_root))
+
+
 def _simple_elastix_available() -> bool:
     if importlib.util.find_spec("SimpleITK") is None:
         return False
@@ -116,9 +160,7 @@ def run_app(repo_root: Path) -> int:
     app._tooltip_suppression_filter = _ToolTipSuppressionFilter(app)
     app.installEventFilter(app._tooltip_suppression_filter)
 
-    stylesheet = _load_stylesheet(repo_root)
-    if stylesheet:
-        app.setStyleSheet(stylesheet)
+    apply_theme(app, repo_root)
 
     # ── Show splash screen while heavy subsystems load ───────────
     splash = SplashScreen()

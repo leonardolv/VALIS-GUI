@@ -176,6 +176,24 @@ class PreferencesDialog(QtWidgets.QDialog):
         self._confirm_close_check.setChecked(False)
         layout.addRow("", self._confirm_close_check)
 
+        # High contrast theme
+        self._high_contrast_check = QtWidgets.QCheckBox("High contrast mode")
+        self._high_contrast_check.setChecked(False)
+        self._high_contrast_check.setToolTip(
+            "Increases contrast (black/white/yellow) across the whole "
+            "application for accessibility. Applies immediately."
+        )
+        layout.addRow("", self._high_contrast_check)
+
+        # Reduced motion
+        self._reduced_motion_check = QtWidgets.QCheckBox("Reduce motion")
+        self._reduced_motion_check.setChecked(False)
+        self._reduced_motion_check.setToolTip(
+            "Disables the Blink Viewer's automatic flashing comparison mode. "
+            "Manual comparison (Side-by-side, Swipe) is unaffected."
+        )
+        layout.addRow("", self._reduced_motion_check)
+
         # Recent files count
         self._recent_files_spin = QtWidgets.QSpinBox()
         self._recent_files_spin.setRange(5, 20)
@@ -246,6 +264,12 @@ class PreferencesDialog(QtWidgets.QDialog):
         confirm_close = self._settings.value("ui/confirm_close", False, type=bool)
         self._confirm_close_check.setChecked(confirm_close)
 
+        high_contrast = self._settings.value("ui/high_contrast", False, type=bool)
+        self._high_contrast_check.setChecked(high_contrast)
+
+        reduced_motion = self._settings.value("ui/reduced_motion", False, type=bool)
+        self._reduced_motion_check.setChecked(reduced_motion)
+
         recent_files = self._settings.value("ui/recent_files_count", 10, type=int)
         self._recent_files_spin.setValue(recent_files)
 
@@ -283,6 +307,12 @@ class PreferencesDialog(QtWidgets.QDialog):
         )
         self._settings.setValue(
             "ui/confirm_close", self._confirm_close_check.isChecked()
+        )
+        self._settings.setValue(
+            "ui/high_contrast", self._high_contrast_check.isChecked()
+        )
+        self._settings.setValue(
+            "ui/reduced_motion", self._reduced_motion_check.isChecked()
         )
         self._settings.setValue(
             "ui/recent_files_count", self._recent_files_spin.value()
@@ -326,6 +356,8 @@ class PreferencesDialog(QtWidgets.QDialog):
             self._show_tooltips_check.setChecked(True)
             self._show_statusbar_check.setChecked(True)
             self._confirm_close_check.setChecked(False)
+            self._high_contrast_check.setChecked(False)
+            self._reduced_motion_check.setChecked(False)
             self._recent_files_spin.setValue(10)
             self._default_thumb_size_spin.setValue(512)
 

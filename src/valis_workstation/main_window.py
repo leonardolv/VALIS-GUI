@@ -1643,6 +1643,12 @@ class MainWindow(QtWidgets.QMainWindow):
         """Handle preferences changes."""
         logger.info("Preferences changed - some settings require application restart")
 
+        from valis_workstation.app import apply_theme
+
+        app = QtWidgets.QApplication.instance()
+        if app is not None:
+            apply_theme(app, self._repo_root)
+
         QtWidgets.QMessageBox.information(
             self,
             "Preferences Saved",

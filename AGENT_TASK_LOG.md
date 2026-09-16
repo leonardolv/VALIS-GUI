@@ -8,6 +8,26 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-09-16 UTC — `ui/high_contrast`/`ui/reduced_motion` settings keys are fully dead
+Branch `claude/loving-feynman-qjb06m` · PR: pending · Status: **done**
+
+**Claimed** from the Backlog — the only open item other than `PerformanceMonitor.track_tile_load`, which the 2026-08-19 (2) entry already deferred as "worth deciding whether `TileCache` is meant to be wired into real tile rendering... or removed", a bigger architectural call than a few-hours pass should make unilaterally. This item's own note ("lower priority... no UI entry point at all yet") was correct about priority but the fix was still small and concrete once scoped.
+
+**Root cause.** `settings_keys.py` defined `UI_HIGH_CONTRAST`/`UI_REDUCED_MOTION` with zero readers, writers, or checkboxes anywhere in the app — pure scaffolding for an accessibility pass that was never finished.
+
+**Solution.**
+- **High contrast** — new `src/valis_workstation/styles/high_contrast_overlay.qss`, a pure black/white/bright-yellow high-contrast palette covering every selector class the base `adobe_dark.qss` uses (buttons, inputs, tabs, lists/tables, docks, scrollbars, tooltips). `app.build_stylesheet(repo_root, settings)` composes the base theme plus this overlay (appended, so Qt's stylesheet cascade lets the overlay only state what changes) when the setting is on; `app.apply_theme(app, repo_root)` applies it and is called both at startup (replacing the old inline `_load_stylesheet`/`setStyleSheet` pair in `run_app`) and from `MainWindow._on_preferences_changed`, so toggling the checkbox takes effect immediately — no restart, matching the precedent `ui/show_tooltips`'s live event filter already set in the 2026-08-19 run.
+- **Reduced motion** — `BlinkViewerDialog`'s "Blink" mode auto-toggles two napari layers' visibility on a 600ms `QTimer`, a real strobing effect (found by reading `WORKSTATION_CHANGELOG.md`'s own notes flagging Blink Viewer's modes as under-implemented, then reading the dialog directly). When `ui/reduced_motion` is on, the dialog now disables the "Blink" item in the mode combo (grayed out via `QStandardItem.setEnabled(False)`, not removed), forces the mode to "Side-by-side" if it was selected at construction, and disables the "Start Blink" button — plus, as defense in depth, `_toggle_blink` itself refuses to start the timer even if something calls `setChecked(True)` programmatically past the disabled widget. Side-by-side and Swipe (both static) are unaffected either way.
+- Both settings get real checkboxes in `PreferencesDialog`'s User Interface tab (load/save/Restore Defaults wired identically to the existing dozen fields).
+
+**Validation.**
+- New `tests/test_accessibility_preferences.py` (18 tests): stylesheet composition (enabled/disabled/unset/missing-overlay-file, cascade ordering), `BlinkViewerDialog` gating (combo item disabled, mode forced off Blink, button disabled, **timer genuinely refuses to start under a forced `setChecked(True)`** — this caught a real gap: disabling the button alone doesn't stop a programmatic check from still emitting `toggled` and starting the timer, which is exactly what `_toggle_blink`'s new guard fixes — plus a full regression check that Blink still works unchanged when the setting is off/unset), `PreferencesDialog` round-trip/Restore Defaults for both fields, and a real-`MainWindow` test proving `_on_preferences_changed` reapplies the high-contrast overlay live (both directions: on and back off).
+- Environment: PySide6 + pytest-qt + pandas/matplotlib/numpy/psutil installed into a lightweight venv (no system PySide6/Qt platform plugin present, so `libegl1`/`libxcb-cursor0`/etc. were also installed); the full `uv sync` VALIS/torch/pyvips stack was not needed since none of the touched code imports it.
+- Full suite: `QT_QPA_PLATFORM=offscreen pytest tests/ -q` — **382 passed** (was 364), 0 regressions.
+- `ruff check` on all four touched source files: 13 pre-existing findings, confirmed unchanged via `git stash` against the pre-fix tree (0 new); the new test file is itself ruff-clean.
+
+**Docs.** `WORKSTATION_CHANGELOG.md` gains a 2026-09-16 entry with the same write-up.
+
 ### 2026-09-09 UTC — `MergeSlidesDialog`'s "Normalize intensities" checkbox does nothing
 Branch `claude/fervent-johnson-qcsak4` · PR
 [#10](https://github.com/leonardolv/VALIS-GUI/pull/10) · Status: **done**
@@ -631,6 +651,12 @@ convention.
   implement per-channel intensity normalization before
   `registrar.warp_and_merge_slides`, or remove the checkbox as
   not-yet-implemented.
+~~**`ui/high_contrast`/`ui/reduced_motion` settings keys are fully dead.**~~
+  Done by the 2026-09-16 run — see the Completed entry. Gave both a real
+  Preferences checkbox: high contrast swaps in a new high-contrast QSS
+  overlay applied live, reduced motion disables the Blink Viewer's
+  auto-toggle "Blink" comparison mode (a real strobing/flashing effect).
+  (original entry follows)
 - **`ui/high_contrast`/`ui/reduced_motion` settings keys are fully dead.**
   Also found by the 2026-09-08 audit (backup candidate #2). `settings_keys.py`
   defines both, but a repo-wide grep finds zero readers/writers and no

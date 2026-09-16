@@ -19,6 +19,9 @@ class BlinkViewerDialog(QtWidgets.QDialog):
         self._slide_paths = slide_paths
         self._layer_a = None
         self._layer_b = None
+        self._reduced_motion = QtCore.QSettings("VALIS", "Workstation").value(
+            "ui/reduced_motion", False, type=bool
+        )
         self._timer = QtCore.QTimer(self)
         self._timer.setInterval(600)
         self._timer.timeout.connect(self._toggle_layers)
@@ -49,6 +52,9 @@ class BlinkViewerDialog(QtWidgets.QDialog):
         self._blink_toggle.setCheckable(True)
         self._blink_toggle.toggled.connect(self._toggle_blink)
 
+        if self._reduced_motion:
+            self._disable_blink_mode_for_reduced_motion()
+
         self._slide_a.currentIndexChanged.connect(self._reload_layers)
         self._slide_b.currentIndexChanged.connect(self._reload_layers)
 
@@ -66,6 +72,29 @@ class BlinkViewerDialog(QtWidgets.QDialog):
         layout.addWidget(button_box)
 
         self._reload_layers()
+
+    def _disable_blink_mode_for_reduced_motion(self) -> None:
+        """Blink mode auto-toggles layer visibility on a timer - exactly
+        the strobing motion ``ui/reduced_motion`` exists to suppress. The
+        item is disabled rather than removed, so re-enabling the
+        preference later still finds the option where it was;
+        Side-by-side and Swipe (both static) remain fully available."""
+        blink_index = self._mode.findText("Blink")
+        if blink_index != -1:
+            blink_item = self._mode.model().item(blink_index)
+            if blink_item is not None:
+                blink_item.setEnabled(False)
+            if self._mode.currentIndex() == blink_index:
+                self._mode.setCurrentText("Side-by-side")
+        self._mode.setToolTip(
+            "Blink is disabled while Reduce Motion is enabled in "
+            "Preferences. Side-by-side: static overlay · Swipe: "
+            "horizontal split"
+        )
+        self._blink_toggle.setEnabled(False)
+        self._blink_toggle.setToolTip(
+            "Disabled while Reduce Motion is enabled in Preferences"
+        )
 
     def _reload_layers(self) -> None:
         if self._layer_a is not None:
@@ -127,6 +156,14 @@ class BlinkViewerDialog(QtWidgets.QDialog):
             self._set_layer_visibility(True)
 
     def _toggle_blink(self, enabled: bool) -> None:
+        if enabled and self._reduced_motion:
+            # Defense in depth: the button being disabled stops normal
+            # mouse/keyboard interaction, but `setChecked` can still be
+            # called programmatically - the strobing timer must never
+            # start while Reduce Motion is on, regardless of how the
+            # toggle was flipped.
+            self._blink_toggle.setChecked(False)
+            return
         if enabled:
             self._blink_toggle.setText("Stop Blink")
             self._timer.start()
