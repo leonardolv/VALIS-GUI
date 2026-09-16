@@ -33,6 +33,7 @@ from valis_workstation.models.config import Config
 from valis_workstation.settings_keys import SettingsKeys, SplitterKeys
 from valis_workstation.services.slide_scan import scan_slide_folder
 from valis_workstation.services.thumbnail_cache import get_thumbnail_cache
+from valis_workstation.utils.accessibility import apply_theme, base_stylesheet
 from valis_workstation.ui import (
     main_window_actions,
     main_window_documents,
@@ -1642,6 +1643,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def _on_preferences_changed(self) -> None:
         """Handle preferences changes."""
         logger.info("Preferences changed - some settings require application restart")
+
+        # "High contrast mode" is one of the few Preferences fields that
+        # doesn't need a restart: re-apply the stylesheet right away, the
+        # same way ui/show_tooltips and performance/monitoring_enabled
+        # already take effect on their very next use rather than at
+        # relaunch. A no-op (byte-identical stylesheet) when the setting
+        # didn't change, so this is safe to call unconditionally.
+        apply_theme(base_stylesheet(self._repo_root))
 
         QtWidgets.QMessageBox.information(
             self,
