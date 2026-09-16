@@ -9,6 +9,47 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-09-16 UTC — Duplicate-claim collision on the `ui/high_contrast`/`ui/reduced_motion` item (process note, no code change)
+Branch `claude/loving-feynman-qjb06m` · PR: see below · Status: **done**
+
+**What happened.** This run read `AGENT_TASK_LOG.md` on `main` at start,
+saw "nothing claimed" In Progress and only one open Backlog item
+(`PerformanceMonitor.track_tile_load`, already deferred as a bigger
+architectural call), and independently built the exact same fix the
+2026-09-15 run above had already completed on its own branch
+(`claude/loving-feynman-4kgevh`, PR #11) — full checkboxes, live-applied
+high-contrast QSS overlay, and a `BlinkViewerDialog` reduced-motion gate.
+That run's own log update (the entry directly above this one) lived only
+on its PR branch and had not yet been merged to `main`, so it was
+invisible to this run's initial check — the collision-detection protocol
+("check for another agent's in-progress work") only reads what's on the
+branch you start from, and an unmerged completed PR on a *different*
+branch is a real, unhandled gap in that protocol worth flagging for
+whoever next revises it.
+
+The collision surfaced only once this run pushed its own branch and
+queried open PRs before creating a new one — PR #11 was sitting open
+(still in draft) alongside this run's new PR #12, both targeting the
+identical Backlog entry.
+
+**Resolution, not a re-fix.** Compared both implementations: #11 is a
+superset (it additionally wires `ui/reduced_motion` into the two real
+`QPropertyAnimation` fades in `ui/splash_screen.py`, and factors the logic
+into a dedicated, cleanly-documented `utils/accessibility.py` module,
+versus this run's narrower `app.py`/`blink_viewer.py`-only version).
+Checked out #11's branch into a worktree and independently ran its full
+test suite (**394 passed**) and `ruff check` on its new/touched files
+(0 findings) before trusting it. Marked #11 ready for review and merged it
+(squash) rather than merging this run's own PR #12, which was closed as a
+duplicate with a comment pointing at #11 and the validation performed.
+This run's own branch/commit are otherwise unused.
+
+**Takeaway for future runs:** before opening a PR, check
+`gh pr list`/`list_pull_requests` for the target repo — not just the log
+file — since a completed-but-unmerged PR from a concurrent or very recent
+run is real in-progress work the log alone won't show if that run's log
+update hasn't landed on `main` yet.
+
 ### 2026-09-15 UTC — `ui/high_contrast`/`ui/reduced_motion` settings keys were fully dead
 Branch `claude/loving-feynman-4kgevh` · PR
 [#11](https://github.com/leonardolv/VALIS-GUI/pull/11) · Status: **done**
