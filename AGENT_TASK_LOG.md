@@ -4,7 +4,27 @@ work this file; always append, never overwrite another agent's entries.
 
 ## In Progress
 
-_(nothing claimed)_
+### 2026-09-16 (3) UTC — `MergeSlidesDialog`'s "Include" checkbox / Select All/None are discarded by the merge service
+Branch `claude/eager-brown-06xj0c` · Status: **in progress**
+
+Claimed after a fresh code audit (Backlog fully struck through, no open
+items; checked `list_pull_requests` for the branch first — none open).
+Found: `services/merge_slides.py::merge_registered_slides` computes
+`selected_slides` (the slide names still checked in the dialog's
+"Include" column) but never uses it — `merge_kwargs` never sets
+`src_f_list`, so `Valis.warp_and_merge_slides` falls back to its own
+default of *every* registered slide, and any slide left out of
+`channel_name_dict` (because it was unchecked) has no entry for
+`warp_and_merge_slides` to look up when it reaches that slide via its own
+`get_sorted_img_f_list()` default — a bare `KeyError` from inside VALIS,
+not just an ignored checkbox.
+
+<!-- RESUME: fix implemented in services/merge_slides.py (pass an explicit
+src_f_list built from selected_slides' registrar.slide_dict[name].src_f);
+new tests added in tests/test_merge_slides_service.py
+(TestMergeRegisteredSlidesSlideSelection). Next: run full suite + ruff,
+confirm tests fail pre-fix via git stash, update WORKSTATION_CHANGELOG.md,
+move this entry to Completed, commit, push, open PR, merge. -->
 
 
 ## Completed
