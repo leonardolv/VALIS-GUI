@@ -4,30 +4,88 @@ work this file; always append, never overwrite another agent's entries.
 
 ## In Progress
 
-### 2026-09-16 (3) UTC — `MergeSlidesDialog`'s "Include" checkbox / Select All/None are discarded by the merge service
-Branch `claude/eager-brown-06xj0c` · Status: **in progress**
-
-Claimed after a fresh code audit (Backlog fully struck through, no open
-items; checked `list_pull_requests` for the branch first — none open).
-Found: `services/merge_slides.py::merge_registered_slides` computes
-`selected_slides` (the slide names still checked in the dialog's
-"Include" column) but never uses it — `merge_kwargs` never sets
-`src_f_list`, so `Valis.warp_and_merge_slides` falls back to its own
-default of *every* registered slide, and any slide left out of
-`channel_name_dict` (because it was unchecked) has no entry for
-`warp_and_merge_slides` to look up when it reaches that slide via its own
-`get_sorted_img_f_list()` default — a bare `KeyError` from inside VALIS,
-not just an ignored checkbox.
-
-<!-- RESUME: fix implemented in services/merge_slides.py (pass an explicit
-src_f_list built from selected_slides' registrar.slide_dict[name].src_f);
-new tests added in tests/test_merge_slides_service.py
-(TestMergeRegisteredSlidesSlideSelection). Next: run full suite + ruff,
-confirm tests fail pre-fix via git stash, update WORKSTATION_CHANGELOG.md,
-move this entry to Completed, commit, push, open PR, merge. -->
+_(nothing claimed)_
 
 
 ## Completed
+
+### 2026-09-16 (3) UTC — `MergeSlidesDialog`'s "Include" checkbox / Select All/None are discarded by the merge service
+Branch `claude/eager-brown-06xj0c` · PR
+[#15](https://github.com/leonardolv/VALIS-GUI/pull/15) · Status: **done, merged**
+
+**Claimed** after a fresh code audit — the Backlog was fully exhausted
+(every entry struck through, referencing a real Completed entry), and
+`list_pull_requests` for this branch came back empty (learned from the
+2026-09-16 (1) collision entry above: check open PRs, not just the log).
+
+**Root cause.** `merge_registered_slides` (`services/merge_slides.py`)
+builds `channel_name_dict` and `selected_slides` from only the rows still
+checked in `MergeSlidesDialog`'s "Include" column (also driven by its
+"Select All"/"Select None" buttons) — but `selected_slides` was then never
+read again anywhere in the file (confirmed by grep before touching
+anything). `merge_kwargs` never set `src_f_list`, so
+`Valis.warp_and_merge_slides` (`valis/registration.py`) fell back to its
+own default, `self.get_sorted_img_f_list()` — *every* slide registered in
+the `Valis` object, regardless of what the dialog's checkboxes said. This
+is worse than a silently-ignored control: `warp_and_merge_slides` looks up
+`channel_name_dict_by_name[slide_obj.name]` unconditionally for every
+slide in `src_f_list`, and an unchecked slide has no entry there (it was
+never added to `channel_name_dict`) — so unchecking even one slide and
+running a real merge would raise a bare `KeyError` from inside VALIS
+rather than just merging the "wrong" (i.e. every) slide. Same "real
+control, silently discarded" shape as the Save Options format/pyramid bug
+(#9), the Normalize checkbox (#10), and the per-channel Color picker
+(#14) already fixed in this log — found by re-reading this exact
+function while re-verifying #14's fix, not by a new audit angle.
+
+**Solution.** Resolve each selected slide's real source path via
+`registrar.slide_dict[name].src_f` (the same attribute `_export_roi_crop`
+in `main_window.py` already reads off registrar slide objects) right
+after `selected_slides` is built, and pass the result as an explicit
+`merge_kwargs["src_f_list"]` — forwarded on both the normal (`dst_f` set)
+and normalize (`dst_f=None`, built-then-saved-separately) paths, since the
+normalize path's `unsaved_kwargs = dict(merge_kwargs)` copies it forward
+automatically. A checked slide name no longer present in
+`registrar.slide_dict` (defensive — shouldn't happen in practice, since
+the names originate from the same registrar) now raises a clear
+`UserVisibleError` naming the missing slide, instead of a bare `KeyError`
+surfacing from inside VALIS's own merge code. Deliberately passes
+`src_f_list` explicitly even when every slide is checked, rather than
+only when a subset is selected — relying on VALIS's own default for the
+"nothing deselected" case would leave the exact same bug latent for the
+next slide anyone actually unchecks.
+
+**Validation.**
+* New `tests/test_merge_slides_service.py::TestMergeRegisteredSlidesSlideSelection`
+  (4 tests): only checked slides reach `src_f_list` in the right order,
+  and the excluded slide has no entry in `channel_name_dict`; the
+  all-checked case still asserts an explicit `src_f_list` (so a future
+  regression reintroducing reliance on VALIS's default fails loudly); a
+  checked slide missing from the registrar raises `UserVisibleError`
+  without ever calling `registrar.warp_and_merge_slides`; the normalize
+  path's separate unsaved-build call also receives `src_f_list`.
+* All 4 **fail on the pre-fix tree** (`git stash` of just
+  `services/merge_slides.py`, rerun, then restored) — `KeyError:
+  'src_f_list'` for three of them and `DID NOT RAISE UserVisibleError`
+  for the fourth, matching the two described defects exactly.
+* Full suite: `QT_API=pyside6 QT_QPA_PLATFORM=offscreen pytest tests/ -q`
+  → **406 passed** (was 402 pre-fix, confirmed on the same stashed tree),
+  0 regressions.
+* `ruff check src/valis_workstation/services/merge_slides.py
+  tests/test_merge_slides_service.py`: 1 finding before and after
+  (pre-existing `BLE001` on an unrelated line, confirmed via the same
+  stash comparison — 0 new).
+* Environment: reused this repo's established lightweight-venv approach
+  (`/home/user/.venvs/valis-gui`: PySide6, pytest, pytest-qt, numpy,
+  psutil, pandas, matplotlib, ruff — built fresh this run, plus
+  `apt-get install libegl1 libgl1 libglx-mesa0` for PySide6's `QtGui`
+  import under `QT_QPA_PLATFORM=offscreen`); the full VALIS scientific
+  stack (torch/pyvips/kornia/...) was not needed, since the touched code
+  path is exercised via a mocked `registrar` and the tests never import
+  real `pyvips`/`valis.slide_io`.
+* `WORKSTATION_CHANGELOG.md` gains a matching `2026-09-16 (2)` entry.
+
+**PR.** [#15](https://github.com/leonardolv/VALIS-GUI/pull/15).
 
 ### 2026-09-16 (2) UTC — `MergeSlidesDialog`'s per-channel "Color" picker is discarded
 Branch `claude/blissful-clarke-01nad7` · PR

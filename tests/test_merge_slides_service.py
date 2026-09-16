@@ -457,3 +457,144 @@ class TestMergeRegisteredSlidesColormap:
         called_kwargs = registrar.warp_and_merge_slides.call_args.kwargs
         assert called_kwargs["dst_f"] is None
         assert called_kwargs["colormap"] == {"DAPI": (0, 0, 255), "GFP": (0, 255, 0)}
+
+
+class TestMergeRegisteredSlidesSlideSelection:
+    """Before this fix, `selected_slides` (the slide names still checked in
+    MergeSlidesDialog's "Include" column, also driven by its "Select
+    All"/"Select None" buttons) was computed and then never used -
+    `merge_kwargs` never set `src_f_list`, so
+    `Valis.warp_and_merge_slides` fell back to its own default of *every*
+    slide in the registrar, regardless of what the user unchecked. Worse,
+    since `channel_name_dict` (which IS built from only the checked rows)
+    has no entry for an unchecked slide, a real merge with any slide
+    unchecked would have raised a bare `KeyError` from inside VALIS the
+    moment it reached that slide.
+    """
+
+    @staticmethod
+    def _registrar_with_slides(**src_f_by_name: str) -> MagicMock:
+        registrar = MagicMock()
+        registrar.slide_dict = {
+            name: types.SimpleNamespace(src_f=src_f)
+            for name, src_f in src_f_by_name.items()
+        }
+        registrar.warp_and_merge_slides.return_value = (
+            FakeVipsImage([1, 2, 3]),
+            ["DAPI", "CY5"],
+            "<OME/>",
+        )
+        return registrar
+
+    def test_only_checked_slides_reach_src_f_list(self, tmp_path):
+        registrar = self._registrar_with_slides(
+            **{
+                "slide_a.tiff": "/data/slide_a.tiff",
+                "slide_b.tiff": "/data/slide_b.tiff",
+                "slide_c.tiff": "/data/slide_c.tiff",
+            }
+        )
+        merge_config = {
+            "channels": [
+                {"slide_name": "slide_a.tiff", "channel_name": "DAPI", "color": "Auto"},
+                # slide_b.tiff deliberately absent - its "Include" checkbox
+                # was unchecked in the dialog.
+                {"slide_name": "slide_c.tiff", "channel_name": "CY5", "color": "Auto"},
+            ],
+            "duplicate_handling": "average",
+            "output_name": "merged_image",
+            "normalize": False,
+        }
+
+        merge_registered_slides(
+            registrar=registrar, merge_config=merge_config, output_path=tmp_path
+        )
+
+        called_kwargs = registrar.warp_and_merge_slides.call_args.kwargs
+        assert called_kwargs["src_f_list"] == [
+            "/data/slide_a.tiff",
+            "/data/slide_c.tiff",
+        ]
+        # The excluded slide must not appear in the channel mapping either.
+        assert "slide_b.tiff" not in called_kwargs["channel_name_dict"]
+
+    def test_all_slides_checked_still_passes_an_explicit_src_f_list(self, tmp_path):
+        """Even the "nothing was deselected" case must pass `src_f_list`
+        explicitly - relying on VALIS's own default is exactly the bug,
+        and would silently reintroduce it the moment any user unchecks a
+        row in a future run."""
+        registrar = self._registrar_with_slides(
+            **{
+                "slide_a.tiff": "/data/slide_a.tiff",
+                "slide_b.tiff": "/data/slide_b.tiff",
+            }
+        )
+
+        merge_registered_slides(
+            registrar=registrar,
+            merge_config=_base_merge_config(normalize=False),
+            output_path=tmp_path,
+        )
+
+        called_kwargs = registrar.warp_and_merge_slides.call_args.kwargs
+        assert called_kwargs["src_f_list"] == [
+            "/data/slide_a.tiff",
+            "/data/slide_b.tiff",
+        ]
+
+    def test_a_slide_missing_from_the_registrar_raises_instead_of_crashing_valis(
+        self, tmp_path
+    ):
+        """A defensive guard: if a checked slide somehow isn't in the
+        registrar any more, fail with a clear `UserVisibleError` before
+        ever calling into VALIS, rather than a bare `KeyError` surfacing
+        from inside `warp_and_merge_slides`."""
+        registrar = self._registrar_with_slides(**{"slide_a.tiff": "/data/slide_a.tiff"})
+
+        with pytest.raises(UserVisibleError):
+            merge_registered_slides(
+                registrar=registrar,
+                merge_config=_base_merge_config(normalize=False),
+                output_path=tmp_path,
+            )
+
+        registrar.warp_and_merge_slides.assert_not_called()
+
+    def test_src_f_list_also_reaches_the_normalize_build_call(
+        self, tmp_path, monkeypatch
+    ):
+        registrar = self._registrar_with_slides(
+            **{
+                "slide_a.tiff": "/data/slide_a.tiff",
+                "slide_b.tiff": "/data/slide_b.tiff",
+            }
+        )
+        merged_img = FakeVipsImage([[0, 100], [10, 60]], fmt="uchar")
+        registrar.warp_and_merge_slides.return_value = (
+            merged_img,
+            ["DAPI", "GFP"],
+            "<OME/>",
+        )
+        ref_slide = MagicMock()
+        ref_slide.reader = MagicMock()
+        registrar.get_ref_slide.return_value = ref_slide
+
+        fake_slide_io = types.SimpleNamespace(
+            get_tile_wh=MagicMock(return_value=512),
+            save_ome_tiff=MagicMock(),
+        )
+        monkeypatch.setitem(sys.modules, "valis.slide_io", fake_slide_io)
+        monkeypatch.setitem(sys.modules, "valis", types.SimpleNamespace())
+
+        merge_registered_slides(
+            registrar=registrar,
+            merge_config=_base_merge_config(normalize=True),
+            output_path=tmp_path,
+        )
+
+        called_kwargs = registrar.warp_and_merge_slides.call_args.kwargs
+        assert called_kwargs["dst_f"] is None
+        assert called_kwargs["src_f_list"] == [
+            "/data/slide_a.tiff",
+            "/data/slide_b.tiff",
+        ]
