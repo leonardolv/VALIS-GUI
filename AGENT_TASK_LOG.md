@@ -9,6 +9,105 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-09-16 (2) UTC — `MergeSlidesDialog`'s per-channel "Color" picker is discarded
+Branch `claude/blissful-clarke-01nad7` · PR
+[#14](https://github.com/leonardolv/VALIS-GUI/pull/14) · Status: **done**
+
+**Claimed** after re-reading the Backlog and confirming it is genuinely
+fully resolved (every entry struck through, referencing a real Completed
+entry) — no unclaimed item existed, so this run did a fresh audit rather
+than a Backlog carry-over, per the task's fallback instruction. Also
+checked `gh`/`list_pull_requests` for open PRs first (learned from the
+2026-09-16 (1) collision entry above) — none open.
+
+**Root cause.** `MergeSlidesDialog` (`ui/dialogs/merge_slides_dialog.py`)
+gives every channel row a "Color" combo box (Auto/Red/Green/Blue/Cyan/
+Magenta/Yellow/Gray/White) and includes the chosen value in
+`get_merge_config()["channels"][i]["color"]`. `merge_registered_slides`
+(`services/merge_slides.py`) reads `slide_name`/`channel_name` off each
+entry to build `channel_name_dict` but never reads `"color"` anywhere —
+confirmed by grep (`color` appeared only in the function's own docstring
+before this fix). `Valis.warp_and_merge_slides` (`valis/registration.py`)
+has a real `colormap` parameter documented as "List of RGB colors (0-255)
+to use for channel colors," defaulting to `slide_io.CMAP_AUTO`
+("auto-assign") — never passed. Net effect: every merged multi-channel
+image got VALIS's own automatically-assigned channel colors regardless of
+what a user picked, the same "real control, silently discarded" shape as
+the Save Options format/pyramid bug (#9) and the Normalize checkbox bug
+(#10) already fixed in this log.
+
+**Solution.** New `_resolve_channel_colormap(channels)` in
+`services/merge_slides.py`:
+- Maps the 8 named colors to RGB triples (a plain module-level dict,
+  `_NAMED_CHANNEL_COLORS` — "Auto" is deliberately not a key).
+- Returns `None` when every channel is still "Auto" — `merge_kwargs`
+  then omits the `colormap` key entirely, leaving VALIS's own
+  `CMAP_AUTO` default untouched rather than passing an
+  equivalent-but-different override (and, more importantly, not forcing
+  every existing all-Auto test/config down a new code path).
+- Otherwise builds a **complete** `{channel_name: (r, g, b)}` dict
+  covering every configured channel, not just the explicitly-colored
+  ones — read `valis/slide_io.py::check_colormap`'s dict branch directly
+  before writing this: a dict-style colormap missing even one expected
+  channel name is rejected wholesale (falls back to no colors at all,
+  silently, via a `print_warning`), so a partial dict would have
+  silently dropped the colors the user *did* pick the moment any other
+  channel was left on "Auto." Channels left "Auto" within an
+  otherwise-explicit set are filled in via VALIS's own automatic
+  assignment (`valis.slide_io.get_colormap`, lazily imported — matches
+  the existing normalize path's `importlib.import_module` pattern, since
+  `slide_io` transitively imports `torch`/`kornia`/`jpype` and this
+  module is otherwise import-light), falling back to white with a
+  logged warning if that import fails, so a missing/broken VALIS install
+  degrades gracefully instead of losing the user's explicit choices too.
+- `merge_registered_slides` sets `merge_kwargs["colormap"]` only when
+  the resolved value isn't `None`, and — checked directly, since it
+  matters — the normalize path's separate `dst_f=None` build call
+  inherits it via `dict(merge_kwargs)` before that key is stripped, so
+  the colors reach the OME-XML VALIS returns (`create_ome_xml` embeds
+  `colormap` regardless of whether `dst_f` is set) even on the
+  normalize-then-save-via-`slide_io` path where VALIS itself never
+  writes the file.
+
+**Why not "remove the checkbox" instead:** established precedent in this
+log (#9, #10) is to implement a real, well-specified control rather than
+delete it when the underlying library already supports it — `colormap`
+here is a first-class, documented `Valis.warp_and_merge_slides` parameter,
+not a made-up behavior.
+
+**Validation.**
+* New tests in `tests/test_merge_slides_service.py` (8 tests):
+  `_resolve_channel_colormap` unit tests (all-Auto → `None`; all-explicit
+  builds the dict **without** importing `valis.slide_io` at all — asserted
+  by deleting it from `sys.modules` first and confirming no `ImportError`;
+  mixed Auto+explicit calls a mocked `slide_io.get_colormap` for only the
+  Auto names and merges the result with the explicit ones; the white
+  fallback + logged warning when `slide_io` can't be imported; an unknown
+  color string treated as "Auto" rather than raising) plus
+  `merge_registered_slides` integration tests (all-Auto omits the
+  `colormap` kwarg entirely; explicit colors reach
+  `registrar.warp_and_merge_slides` on both the plain-save path and the
+  normalize path's separate unsaved-build call).
+* All 8 **fail to collect** (`ImportError: cannot import name
+  '_resolve_channel_colormap'`) on the pre-fix tree — confirmed via
+  `git stash` of just `services/merge_slides.py`, rerun, then restored.
+* Full suite: `QT_QPA_PLATFORM=offscreen pytest tests/ -q` →
+  **402 passed** (was 394 pre-fix, confirmed on the same stashed tree), 0
+  regressions.
+* `ruff check src/valis_workstation/services/merge_slides.py
+  tests/test_merge_slides_service.py`: all checks passed, 0 findings
+  (both before writing the new code and after).
+* Environment: this sandbox had no existing VALIS-GUI venv, so a fresh
+  lightweight one was built at `/home/user/.venvs/valis-gui`
+  (PySide6, pytest, pytest-qt, numpy, psutil, pandas, matplotlib) — same
+  minimal-dependency approach documented by every prior entry in this log;
+  the full `uv sync` VALIS scientific stack (torch/pyvips/kornia/...) was
+  not needed, since the touched code lazily imports `valis.slide_io` and
+  the tests mock it out.
+* `WORKSTATION_CHANGELOG.md` gains a matching 2026-09-16 entry.
+
+**PR.** [#14](https://github.com/leonardolv/VALIS-GUI/pull/14).
+
 ### 2026-09-16 UTC — Duplicate-claim collision on the `ui/high_contrast`/`ui/reduced_motion` item (process note, no code change)
 Branch `claude/loving-feynman-qjb06m` · PR: see below · Status: **done**
 
