@@ -1,14 +1,18 @@
 """Tests for ``services/merge_slides.py``, in particular the "Normalize
-intensities" option that ``MergeSlidesDialog`` exposes.
+intensities" option and the per-channel "Color" picker that
+``MergeSlidesDialog`` exposes.
 
-Before this fix, ``MergeSlidesDialog.get_merge_config()["normalize"]`` was
-read into ``merge_config`` and then never consulted anywhere in
+Before the normalize fix, ``MergeSlidesDialog.get_merge_config()["normalize"]``
+was read into ``merge_config`` and then never consulted anywhere in
 ``merge_registered_slides`` - the checkbox had no effect regardless of its
-state. These tests exercise the real service function end to end using a
-lightweight fake that mimics the subset of the ``pyvips.Image`` API this
-module relies on (band indexing, ``min``/``max``, arithmetic, ``cast``,
-``bandjoin``), since ``pyvips``/VALIS's full scientific stack isn't
-installed in this environment.
+state. Before the color fix, each channel's ``"color"`` field (from the
+dialog's per-row combo box) was collected the same way and likewise never
+read - every merge used VALIS's own automatic per-channel colors regardless
+of what a user picked. These tests exercise the real service function end
+to end using a lightweight fake that mimics the subset of the
+``pyvips.Image`` API this module relies on (band indexing, ``min``/``max``,
+arithmetic, ``cast``, ``bandjoin``), since ``pyvips``/VALIS's full
+scientific stack isn't installed in this environment.
 """
 
 from __future__ import annotations
@@ -21,6 +25,7 @@ import pytest
 
 from valis_workstation.services.merge_slides import (
     _normalize_channels,
+    _resolve_channel_colormap,
     merge_registered_slides,
 )
 from valis_workstation.utils.exceptions import UserVisibleError
@@ -288,3 +293,167 @@ class TestMergeRegisteredSlidesNormalizeFlag:
                 progress_callback=progress_values.append,
             )
             assert progress_values[-1] == 100
+
+# ---------------------------------------------------------------------------
+# _resolve_channel_colormap
+# ---------------------------------------------------------------------------
+
+
+class TestResolveChannelColormap:
+    def test_all_auto_returns_none(self):
+        channels = [
+            {"slide_name": "a.tiff", "channel_name": "DAPI", "color": "Auto"},
+            {"slide_name": "b.tiff", "channel_name": "GFP", "color": "Auto"},
+        ]
+        assert _resolve_channel_colormap(channels) is None
+
+    def test_all_explicit_builds_a_full_dict_without_importing_slide_io(
+        self, monkeypatch
+    ):
+        # No valis/valis.slide_io in sys.modules at all - if this needed to
+        # import it (it shouldn't, since nothing is left on "Auto"), it
+        # would raise ImportError and fail the test.
+        monkeypatch.delitem(sys.modules, "valis.slide_io", raising=False)
+        monkeypatch.delitem(sys.modules, "valis", raising=False)
+
+        channels = [
+            {"slide_name": "a.tiff", "channel_name": "DAPI", "color": "Blue"},
+            {"slide_name": "b.tiff", "channel_name": "GFP", "color": "Green"},
+        ]
+        result = _resolve_channel_colormap(channels)
+        assert result == {"DAPI": (0, 0, 255), "GFP": (0, 255, 0)}
+
+    def test_mixed_auto_and_explicit_fills_auto_slots_via_slide_io(
+        self, monkeypatch
+    ):
+        fake_slide_io = types.SimpleNamespace(
+            get_colormap=MagicMock(return_value={"GFP": (7, 8, 9)})
+        )
+        monkeypatch.setitem(sys.modules, "valis.slide_io", fake_slide_io)
+        monkeypatch.setitem(sys.modules, "valis", types.SimpleNamespace())
+
+        channels = [
+            {"slide_name": "a.tiff", "channel_name": "DAPI", "color": "Red"},
+            {"slide_name": "b.tiff", "channel_name": "GFP", "color": "Auto"},
+        ]
+        result = _resolve_channel_colormap(channels)
+
+        # The explicit choice wins for DAPI; the "Auto" slot (GFP) is filled
+        # in via VALIS's own auto-assignment rather than left out entirely
+        # (which would make Valis.warp_and_merge_slides's dict-colormap
+        # validation reject the whole thing for a missing channel name).
+        fake_slide_io.get_colormap.assert_called_once_with(["GFP"], is_rgb=False)
+        assert result == {"DAPI": (255, 0, 0), "GFP": (7, 8, 9)}
+
+    def test_mixed_falls_back_to_white_when_slide_io_is_unavailable(
+        self, monkeypatch, caplog
+    ):
+        monkeypatch.delitem(sys.modules, "valis.slide_io", raising=False)
+        monkeypatch.delitem(sys.modules, "valis", raising=False)
+
+        channels = [
+            {"slide_name": "a.tiff", "channel_name": "DAPI", "color": "Red"},
+            {"slide_name": "b.tiff", "channel_name": "GFP", "color": "Auto"},
+        ]
+        result = _resolve_channel_colormap(channels)
+
+        assert result == {"DAPI": (255, 0, 0), "GFP": (255, 255, 255)}
+        assert "Could not auto-assign colors" in caplog.text
+
+    def test_unknown_color_value_is_treated_as_auto(self):
+        # Defensive: an unrecognized string (e.g. a stale config from a
+        # future dialog version) should behave like "Auto", not raise.
+        channels = [
+            {"slide_name": "a.tiff", "channel_name": "DAPI", "color": "Not A Color"},
+        ]
+        assert _resolve_channel_colormap(channels) is None
+
+
+# ---------------------------------------------------------------------------
+# merge_registered_slides + colormap
+# ---------------------------------------------------------------------------
+
+
+def _merge_config_with_colors(colors: list[str], normalize: bool = False) -> dict:
+    names = ["DAPI", "GFP", "RFP"]
+    return {
+        "channels": [
+            {
+                "slide_name": f"slide_{i}.tiff",
+                "channel_name": names[i],
+                "color": colors[i],
+            }
+            for i in range(len(colors))
+        ],
+        "duplicate_handling": "average",
+        "output_name": "merged_image",
+        "normalize": normalize,
+    }
+
+
+class TestMergeRegisteredSlidesColormap:
+    def test_all_auto_does_not_pass_a_colormap_kwarg(self, tmp_path):
+        """Preserves VALIS's own default (auto-assigned) exactly - no
+        equivalent-but-different override when nothing was actually chosen."""
+        registrar = MagicMock()
+        registrar.warp_and_merge_slides.return_value = (
+            FakeVipsImage([1, 2, 3]),
+            ["DAPI", "GFP"],
+            "<OME/>",
+        )
+        merge_registered_slides(
+            registrar=registrar,
+            merge_config=_merge_config_with_colors(["Auto", "Auto"]),
+            output_path=tmp_path,
+        )
+        called_kwargs = registrar.warp_and_merge_slides.call_args.kwargs
+        assert "colormap" not in called_kwargs
+
+    def test_explicit_colors_reach_warp_and_merge_slides(self, tmp_path):
+        registrar = MagicMock()
+        registrar.warp_and_merge_slides.return_value = (
+            FakeVipsImage([1, 2, 3]),
+            ["DAPI", "GFP"],
+            "<OME/>",
+        )
+        merge_registered_slides(
+            registrar=registrar,
+            merge_config=_merge_config_with_colors(["Blue", "Green"]),
+            output_path=tmp_path,
+        )
+        called_kwargs = registrar.warp_and_merge_slides.call_args.kwargs
+        assert called_kwargs["colormap"] == {"DAPI": (0, 0, 255), "GFP": (0, 255, 0)}
+
+    def test_explicit_colors_also_reach_the_normalize_build_call(
+        self, tmp_path, monkeypatch
+    ):
+        """The normalize path builds the image via a separate,
+        `dst_f=None` call - the colormap must still be forwarded there,
+        since that's what actually gets embedded into the returned OME-XML."""
+        registrar = MagicMock()
+        merged_img = FakeVipsImage([[0, 100], [10, 60]], fmt="uchar")
+        registrar.warp_and_merge_slides.return_value = (
+            merged_img,
+            ["DAPI", "GFP"],
+            "<OME/>",
+        )
+        ref_slide = MagicMock()
+        ref_slide.reader = MagicMock()
+        registrar.get_ref_slide.return_value = ref_slide
+
+        fake_slide_io = types.SimpleNamespace(
+            get_tile_wh=MagicMock(return_value=512),
+            save_ome_tiff=MagicMock(),
+        )
+        monkeypatch.setitem(sys.modules, "valis.slide_io", fake_slide_io)
+        monkeypatch.setitem(sys.modules, "valis", types.SimpleNamespace())
+
+        merge_registered_slides(
+            registrar=registrar,
+            merge_config=_merge_config_with_colors(["Blue", "Green"], normalize=True),
+            output_path=tmp_path,
+        )
+
+        called_kwargs = registrar.warp_and_merge_slides.call_args.kwargs
+        assert called_kwargs["dst_f"] is None
+        assert called_kwargs["colormap"] == {"DAPI": (0, 0, 255), "GFP": (0, 255, 0)}

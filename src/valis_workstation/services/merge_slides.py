@@ -24,6 +24,78 @@ _FORMAT_MAX_VALUE = {
     "ushort": 65535,
 }
 
+# Matches the named options in `MergeSlidesDialog`'s per-channel "Color"
+# combo box ("Auto" is deliberately absent - it means "let VALIS pick", not
+# a color of its own). RGB, 0-255, matching `Valis.warp_and_merge_slides`'s
+# own `colormap` parameter convention.
+_NAMED_CHANNEL_COLORS: dict[str, tuple[int, int, int]] = {
+    "Red": (255, 0, 0),
+    "Green": (0, 255, 0),
+    "Blue": (0, 0, 255),
+    "Cyan": (0, 255, 255),
+    "Magenta": (255, 0, 255),
+    "Yellow": (255, 255, 0),
+    "Gray": (128, 128, 128),
+    "White": (255, 255, 255),
+}
+
+
+def _resolve_channel_colormap(
+    channels: list[dict],
+) -> dict[str, tuple[int, int, int]] | None:
+    """Build the ``colormap`` dict ``Valis.warp_and_merge_slides`` expects
+    from the per-channel "Color" choices ``MergeSlidesDialog`` collects.
+
+    Each entry in ``channels`` is one row of the dialog's table -
+    ``{"slide_name": ..., "channel_name": ..., "color": ...}``. Before this,
+    ``color`` was collected into ``merge_config`` and never read anywhere in
+    this module: every merge used VALIS's own automatic per-channel colors
+    regardless of what a user picked in the dialog.
+
+    Returns
+    -------
+    dict[str, tuple[int, int, int]] | None
+        ``None`` when every channel is left on "Auto" - the caller should
+        then leave ``Valis.warp_and_merge_slides``'s own ``colormap``
+        default (``slide_io.CMAP_AUTO``) untouched rather than pass an
+        equivalent-but-different value. Otherwise, a complete dict covering
+        *every* configured channel name (not just the ones with an explicit
+        color) - ``Valis.warp_and_merge_slides`` rejects a dict-style
+        colormap outright, silently falling back to no colors at all, if
+        any channel name it expects is missing from the dict. Channels left
+        on "Auto" within an otherwise-explicit set are filled in via VALIS's
+        own automatic color assignment (``valis.slide_io.get_colormap``),
+        or white if that module can't be imported, so a user who colors
+        some channels and leaves others on "Auto" still gets the colors
+        they picked instead of losing all of them.
+    """
+    explicit = {
+        ch["channel_name"]: _NAMED_CHANNEL_COLORS[ch["color"]]
+        for ch in channels
+        if ch.get("color") in _NAMED_CHANNEL_COLORS
+    }
+    if not explicit:
+        return None
+
+    channel_names = [ch["channel_name"] for ch in channels]
+    auto_names = [name for name in channel_names if name not in explicit]
+
+    colormap: dict[str, tuple[int, int, int]] = {}
+    if auto_names:
+        try:
+            slide_io = importlib.import_module("valis.slide_io")
+            colormap.update(slide_io.get_colormap(auto_names, is_rgb=False))
+        except Exception:
+            logger.warning(
+                "Could not auto-assign colors for channels left on 'Auto' "
+                "(%s); defaulting them to white.",
+                auto_names,
+            )
+            colormap.update({name: (255, 255, 255) for name in auto_names})
+
+    colormap.update(explicit)
+    return colormap
+
 
 def _normalize_channels(merged_img):
     """Linearly stretch each channel/band to the full range of its pixel format.
@@ -94,7 +166,9 @@ def merge_registered_slides(
         VALIS registrar object with registered slides
     merge_config : dict
         Configuration from MergeSlidesDialog:
-        - channels: list of dict with slide_name, channel_name, color
+        - channels: list of dict with slide_name, channel_name, color (a
+          named color, e.g. "Red", or "Auto" to let VALIS pick - see
+          `_resolve_channel_colormap`)
         - duplicate_handling: "average", "maximum", "minimum", "first", "last"
         - output_name: str
         - normalize: bool
@@ -164,6 +238,14 @@ def merge_registered_slides(
         "channel_name_dict": channel_name_dict,
         "non_rigid": True,  # Use non-rigid warping if available
     }
+
+    # Per-channel colors chosen in MergeSlidesDialog. Leave VALIS's own
+    # `colormap` default (auto-assigned) untouched when every channel is
+    # still on "Auto" - only override it when the user actually picked
+    # something.
+    colormap = _resolve_channel_colormap(merge_config["channels"])
+    if colormap is not None:
+        merge_kwargs["colormap"] = colormap
 
     # Handle duplicate channels based on user selection
     duplicate_handling = merge_config.get("duplicate_handling", "average").lower()

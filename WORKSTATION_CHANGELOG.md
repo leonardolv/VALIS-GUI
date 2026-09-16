@@ -1,5 +1,21 @@
 # VALIS Workstation Changelog
 
+## 2026-09-16
+
+### Fixed
+- `MergeSlidesDialog`'s per-channel "Color" picker (Auto/Red/Green/Blue/Cyan/Magenta/Yellow/Gray/White, one combo box per channel row) had no effect on the saved output. `get_merge_config()` has always included each channel's chosen `"color"` in the dict it returned, but `services/merge_slides.py::merge_registered_slides` never read it — `Valis.warp_and_merge_slides` has a real `colormap` parameter for exactly this and it was never passed. Every merge used VALIS's own automatic per-channel colors regardless of what a user picked in the dialog, the same shape of bug already fixed for Save Options' format/pyramid choices (2026-09-08) and the "Normalize intensities" checkbox (2026-09-09).
+
+	Fixed with a new `_resolve_channel_colormap()` helper in `services/merge_slides.py`:
+	- Returns `None` (leave VALIS's own `colormap=slide_io.CMAP_AUTO` default untouched) when every channel is still on "Auto" — no equivalent-but-different override when the user didn't actually choose anything.
+	- Otherwise builds a complete `{channel_name: (r, g, b)}` dict covering *every* configured channel — `Valis.warp_and_merge_slides` silently discards a dict-style colormap entirely if any expected channel name is missing from it, so a channel left on "Auto" within an otherwise-explicit set is filled in via VALIS's own automatic assignment (`valis.slide_io.get_colormap`, lazily imported like the existing normalize path already does), or white if that module can't be imported — never dropped.
+	- `merge_registered_slides` passes the resolved dict as `merge_kwargs["colormap"]` only when non-`None`; it's forwarded on both the normal (`dst_f` set) and the normalize (`dst_f=None`, image built then saved separately) paths, since the colors are what gets embedded into the returned OME-XML either way.
+
+### Testing
+- New tests in `tests/test_merge_slides_service.py` (8 tests): unit tests for `_resolve_channel_colormap` (all-Auto, all-explicit without importing `slide_io`, mixed Auto+explicit via a fake `slide_io.get_colormap`, and the white fallback when `slide_io` can't be imported), plus integration tests for `merge_registered_slides` confirming an all-Auto config omits the `colormap` kwarg entirely and an explicit config reaches `registrar.warp_and_merge_slides` on both the normal and normalize paths.
+- All 8 fail to collect (`ImportError: cannot import name '_resolve_channel_colormap'`) on the pre-fix tree (verified via `git stash` of just `services/merge_slides.py`).
+- Full suite: `QT_QPA_PLATFORM=offscreen pytest tests/ -q` — **402 passed** (was 394), 0 regressions.
+- `ruff check src/valis_workstation/services/merge_slides.py tests/test_merge_slides_service.py`: all checks passed, 0 findings.
+
 ## 2026-09-15
 
 ### Added
