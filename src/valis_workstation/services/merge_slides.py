@@ -168,7 +168,11 @@ def merge_registered_slides(
         Configuration from MergeSlidesDialog:
         - channels: list of dict with slide_name, channel_name, color (a
           named color, e.g. "Red", or "Auto" to let VALIS pick - see
-          `_resolve_channel_colormap`)
+          `_resolve_channel_colormap`). Only rows still checked in the
+          dialog's "Include" column are present here, and the merge is
+          restricted to exactly those slides (via an explicit
+          `src_f_list`) - VALIS's own `warp_and_merge_slides` default is
+          every slide in the registrar.
         - duplicate_handling: "average", "maximum", "minimum", "first", "last"
         - output_name: str
         - normalize: bool
@@ -216,6 +220,25 @@ def merge_registered_slides(
 
     logger.info(f"Channel mapping: {channel_name_dict}")
 
+    # Restrict the merge to only the slides still checked in the "Include"
+    # column of MergeSlidesDialog's table (also driven by its "Select
+    # All"/"Select None" buttons). `Valis.warp_and_merge_slides` defaults
+    # `src_f_list` to `registrar.get_sorted_img_f_list()` - EVERY slide in
+    # the registrar - whenever it isn't passed explicitly, so leaving this
+    # unset silently merged every registered slide regardless of what the
+    # user unchecked. Worse than a no-op: any slide left out of
+    # `channel_name_dict` above (because its row was unchecked) has no
+    # entry for `warp_and_merge_slides` to look up, so it raised a bare
+    # `KeyError` the moment a real merge tried to process it - deselecting
+    # even one slide could crash the merge outright rather than merely
+    # ignoring the choice.
+    try:
+        src_f_list = [registrar.slide_dict[name].src_f for name in selected_slides]
+    except KeyError as exc:
+        raise UserVisibleError(
+            f"Selected slide {exc} was not found among the registered slides."
+        ) from exc
+
     if progress_callback:
         progress_callback(20)
 
@@ -236,6 +259,7 @@ def merge_registered_slides(
     merge_kwargs = {
         "dst_f": str(output_file),
         "channel_name_dict": channel_name_dict,
+        "src_f_list": src_f_list,
         "non_rigid": True,  # Use non-rigid warping if available
     }
 

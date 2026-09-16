@@ -16,6 +16,19 @@
 - Full suite: `QT_QPA_PLATFORM=offscreen pytest tests/ -q` — **402 passed** (was 394), 0 regressions.
 - `ruff check src/valis_workstation/services/merge_slides.py tests/test_merge_slides_service.py`: all checks passed, 0 findings.
 
+## 2026-09-16 (2)
+
+### Fixed
+- `MergeSlidesDialog`'s per-row "Include" checkbox and its "Select All"/"Select None" buttons had no effect on which slides were actually merged. `merge_registered_slides` (`services/merge_slides.py`) has always computed `selected_slides` (the slide names still checked in the dialog's table) but never used it — `merge_kwargs` never set `src_f_list`, so `Valis.warp_and_merge_slides` fell back to its own default of *every* slide in the registrar (`registrar.get_sorted_img_f_list()`) regardless of what was unchecked. Worse than a silently-ignored control: since `channel_name_dict` (built from only the checked rows) has no entry for an unchecked slide, and `warp_and_merge_slides` looks that entry up unconditionally for every slide it processes, unchecking even one slide would raise a bare `KeyError` from inside VALIS the moment a real merge reached it.
+
+	Fixed by resolving each selected slide's source path via `registrar.slide_dict[name].src_f` and passing the result as an explicit `merge_kwargs["src_f_list"]` — on both the normal (`dst_f` set) and normalize (`dst_f=None`) paths, since it's a shallow copy of the same `merge_kwargs` dict either way. A selected name no longer present in the registrar raises a clear `UserVisibleError` before ever calling into VALIS, instead of a bare `KeyError` surfacing from inside it.
+
+### Testing
+- New `tests/test_merge_slides_service.py::TestMergeRegisteredSlidesSlideSelection` (4 tests): only checked slides reach `src_f_list` (and the excluded slide is absent from `channel_name_dict`); the all-checked case still passes an explicit `src_f_list` rather than relying on VALIS's default (so a future regression can't silently reintroduce the bug); a checked slide missing from the registrar raises `UserVisibleError` without calling `warp_and_merge_slides`; the normalize path's separate unsaved-build call also receives `src_f_list`.
+- All 4 fail on the pre-fix tree (verified via `git stash` of just `services/merge_slides.py`, then restored) — 3 with `KeyError: 'src_f_list'`/`DID NOT RAISE`, matching the described defects exactly.
+- Full suite: `QT_QPA_PLATFORM=offscreen pytest tests/ -q` — **406 passed** (was 402), 0 regressions.
+- `ruff check src/valis_workstation/services/merge_slides.py tests/test_merge_slides_service.py`: 1 finding before and after (pre-existing `BLE001` on an unrelated line, confirmed via the same stash comparison), 0 new.
+
 ## 2026-09-15
 
 ### Added
