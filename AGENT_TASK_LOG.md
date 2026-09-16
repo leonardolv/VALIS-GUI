@@ -11,7 +11,11 @@ _(nothing claimed)_
 
 ### 2026-09-16 (2) UTC — `MergeSlidesDialog`'s per-channel "Color" picker is discarded
 Branch `claude/blissful-clarke-01nad7` · PR
-[#14](https://github.com/leonardolv/VALIS-GUI/pull/14) · Status: **done**
+[#14](https://github.com/leonardolv/VALIS-GUI/pull/14) · Status: **done, merged**
+(this repo's GitHub Actions runs never actually fire — confirmed via the
+Actions API showing 0 workflow runs ever, including on already-merged PR
+#11 — so merged on local validation per this file's own established
+precedent, not on a green CI check.)
 
 **Claimed** after re-reading the Backlog and confirming it is genuinely
 fully resolved (every entry struck through, referencing a real Completed
