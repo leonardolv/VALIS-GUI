@@ -9,6 +9,115 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-09-18 UTC — `MergeSlidesDialog`'s "Overlap handling: Last" option is identical to "First"
+Branch `claude/eager-brown-hwyngk` · PR
+[#16](https://github.com/leonardolv/VALIS-GUI/pull/16) · Status: **done**
+
+**Claimed** after confirming the Backlog is fully exhausted (every entry
+struck through, referencing a real Completed entry — re-verified by
+skimming for a bullet not immediately preceded by a `~~...~~ Done` line;
+found none) and confirming there was no open PR to collide with
+(`list_pull_requests` came back empty). Also found the working directory's
+`claude/eager-brown-hwyngk` branch was stale (created before this run,
+pointing at an out-of-date `origin/main`) — `git fetch --prune` showed the
+remote copy had actually been deleted (a leftover from whatever previously
+created it), so the branch was rebuilt fresh from the real, current
+`origin/main` (`6f252bd`) before starting, per this log's own
+"check open PRs, not just branch state" lesson (2026-09-16 collision entry).
+
+**Root cause.** Found via a fresh, evidence-based re-read of
+`services/merge_slides.py` — the file this log's last three entries already
+fixed three sibling "a real dialog control is silently discarded by the
+merge service" bugs in (Include checkbox / #15, Color picker / #14,
+Normalize checkbox / #10). Re-reading the whole function end to end (rather
+than assuming those three fixes closed out the file) surfaced a fourth,
+differently-shaped defect in the same `duplicate_handling` branch
+(pre-fix, `services/merge_slides.py:287-290`):
+
+```python
+elif duplicate_handling == "last":
+    # Reverse the channel list to get last
+    logger.warning("'last' handling will use reverse order")
+    merge_kwargs["drop_duplicates"] = True
+```
+
+This sets the exact same `merge_kwargs["drop_duplicates"] = True` as the
+`"first"` branch two lines above it, and nothing anywhere ever reverses
+`src_f_list` or reorders anything. `Valis.warp_and_merge_slides`
+(`valis/registration.py:5298-5320`) always keeps whichever occurrence of a
+duplicate channel name comes FIRST in `src_f_list` order when
+`drop_duplicates=True` — there is no native "keep the last one" mode, and
+this flag alone can't express one. So selecting `"Last"` in the dialog's
+"Overlap handling" combo produced the exact same merge as `"First"` in
+every observable way (same `src_f_list`, same `drop_duplicates`, same
+output), directly contradicting the code's own log message. Confirmed no
+existing test exercised `"last"` or `"first"` at all before this
+(`tests/test_merge_slides_service.py` only ever used `"average"`).
+
+**Solution.** New `_keep_last_occurrence(selected_slides, channel_name_dict)`
+helper resolves the duplicate itself, at the Python level, before VALIS is
+ever called: for each channel name shared by more than one selected slide,
+it keeps only the slide occurring LAST (by position) and drops the earlier
+duplicate(s), leaving the relative order of everything else untouched —
+the mirror image of what VALIS's own `drop_duplicates=True` already does
+for `"first"`. `merge_registered_slides` now reads `duplicate_handling`
+earlier (moved up from just before `merge_kwargs` construction to right
+after `channel_name_dict`/`selected_slides` are built), applies this filter
+to both when `duplicate_handling == "last"` — *before* `src_f_list` is
+computed from `selected_slides` — and, since duplicates are already fully
+resolved by that point, passes `drop_duplicates=False` for `"last"` (there
+is nothing left for VALIS itself to drop). `"first"`/`"average"`/
+`"maximum"`/`"minimum"` are byte-for-byte unchanged.
+
+**Not fixed, noted for a future run:** while investigating this, also
+found `"average"` doesn't actually average duplicate channels — it sets
+`drop_duplicates=False`, which just keeps every duplicate-named channel as
+a *separate* band (no pixel combination at all), contradicting its own
+tooltip ("Average: Average overlapping values") and dialog comment ("Keep
+duplicates and average"). Unlike `"last"`, fixing this properly would need
+real pyvips band-level arithmetic (average/max/min across duplicate bands)
+that VALIS's `warp_and_merge_slides` has no native support for at all —
+a materially bigger change than this pass's scope, and harder to validate
+without real `pyvips` installed in this sandbox. Left as-is; a future run
+could implement true per-duplicate-name band averaging analogous to how
+`_normalize_channels` already does band-level pyvips arithmetic for the
+"Normalize intensities" option.
+
+**Validation.**
+* New `tests/test_merge_slides_service.py::TestKeepLastOccurrence` (4
+  tests) — the helper directly: no duplicates is a no-op; a simple
+  two-slide duplicate keeps the later one; a non-adjacent duplicate
+  preserves the relative order of the surviving slides; a three-way
+  duplicate keeps only the last.
+* New `::TestMergeRegisteredSlidesLastDuplicateHandling` (3 tests) —
+  end-to-end through `merge_registered_slides` with a mocked registrar:
+  `"last"` drops the earlier duplicate and passes `drop_duplicates=False`;
+  `"first"` still keeps the earlier one with `drop_duplicates=True`
+  (unchanged); and — the regression this fix closes — `"first"` and
+  `"last"` now produce genuinely different `src_f_list`s for the identical
+  input (before the fix, they were identical).
+* All 7 new tests **fail to collect** (`ImportError: cannot import name
+  '_keep_last_occurrence'`) on the pre-fix tree (`git stash` of just
+  `services/merge_slides.py`, rerun, then restored).
+* Full suite: `QT_API=pyside6 QT_QPA_PLATFORM=offscreen pytest tests/ -q`
+  → **413 passed** (was 406 pre-fix, confirmed on the same stashed tree),
+  0 regressions.
+* `ruff check src/valis_workstation/services/merge_slides.py
+  tests/test_merge_slides_service.py`: 1 finding before and after
+  (pre-existing `BLE001` on an unrelated line, confirmed via the same
+  stash comparison — 0 new). The new test file on its own: clean.
+* `PYTHONPATH=src python -c "import valis_workstation.services.merge_slides"`
+  imports cleanly.
+* Environment: fresh lightweight venv at `/home/user/.venvs/valis-gui`
+  (PySide6, pytest, pytest-qt, numpy, psutil, pandas, matplotlib, ruff),
+  same minimal-dependency approach as every prior entry in this log — the
+  full VALIS scientific stack (torch/pyvips/kornia/...) was not needed
+  since the touched code path is exercised via a mocked `registrar` and
+  the tests mock out `valis.slide_io` rather than importing it for real.
+* `WORKSTATION_CHANGELOG.md` gains a matching `2026-09-18` entry.
+
+**PR.** [#16](https://github.com/leonardolv/VALIS-GUI/pull/16).
+
 ### 2026-09-16 (3) UTC — `MergeSlidesDialog`'s "Include" checkbox / Select All/None are discarded by the merge service
 Branch `claude/eager-brown-06xj0c` · PR
 [#15](https://github.com/leonardolv/VALIS-GUI/pull/15) · Status: **done, merged**
@@ -982,3 +1091,43 @@ convention.
   today. Lower priority than the two items above: scaffolding for an
   accessibility feature that was never wired up, not a defect a user can
   stumble into.
+~~**`MergeSlidesDialog`'s "Overlap handling: Last" option is identical to
+  "First".**~~ Done by the 2026-09-18 run — see the Completed entry.
+  Implemented a real "keep the last-occurring duplicate slide" resolution
+  (`_keep_last_occurrence()`) rather than leaving it aliased to "First".
+  (original entry follows)
+- **`MergeSlidesDialog`'s "Overlap handling: Last" option is identical to
+  "First".** Found by the 2026-09-18 audit while re-reading
+  `services/merge_slides.py` (the file whose `duplicate_handling`,
+  `normalize`, `color` and `src_f_list` gaps this log's prior three entries
+  already fixed one at a time). `merge_registered_slides`'s
+  `duplicate_handling == "last"` branch sets the same
+  `merge_kwargs["drop_duplicates"] = True` as `"first"`, and logs
+  `"'last' handling will use reverse order"` without anything ever
+  reversing or filtering `src_f_list` — VALIS's own `drop_duplicates=True`
+  always keeps whichever occurrence comes first in slide order, so "Last"
+  was byte-for-byte identical to "First" in every observable way. No
+  existing test exercised either value.
+  Also found in the same investigation, but deliberately NOT fixed this
+  pass (bigger scope, needs real pyvips band arithmetic without pyvips
+  installed in this sandbox to validate against): "Average" doesn't
+  actually average duplicate channels — it keeps every duplicate-named
+  channel as a separate band with no pixel combination at all, contradicting
+  its own tooltip/comment. A future run could implement true per-duplicate
+  band averaging analogous to how `_normalize_channels` already does
+  band-level pyvips arithmetic for "Normalize intensities".
+- **`SettingsKeys.CACHE_MAX_TILE_MB`/`PERF_TILE_SIZE` are orphaned enum
+  members left over from the tile-cache removal.** Found by the 2026-09-18
+  audit (`settings_keys.py:25,29`). The 2026-08-19 (2) Completed entry
+  deleted `utils/tile_cache.py`, the Preferences "Max Tile Cache" spinbox
+  and the "Tile Size (pixels)" combo (their only readers/writers), but the
+  two `SettingsKeys` enum members themselves (`"cache/max_tile_mb"`,
+  `"performance/tile_size"`) were never removed — confirmed via
+  `grep -rn` across `src/`/`tests/` finding zero remaining references to
+  either the enum members or their literal string key values anywhere
+  outside `settings_keys.py` itself. Harmless (nothing reads or writes
+  them, so they don't mislead a user the way a discarded UI control does),
+  but genuine dead code. Trivial to fix (delete two enum lines) whenever
+  someone next touches that file — not claimed this run since a real,
+  user-reachable bug (the "Last" duplicate-handling item above) was
+  available and a better use of the same pass.

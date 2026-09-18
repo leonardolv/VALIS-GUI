@@ -97,6 +97,52 @@ def _resolve_channel_colormap(
     return colormap
 
 
+def _keep_last_occurrence(
+    selected_slides: list[str], channel_name_dict: dict[str, list[str]]
+) -> list[str]:
+    """Resolve duplicate channel *names* for "Last" duplicate handling.
+
+    ``channel_name_dict[slide_name]`` is always a single-item list here (one
+    row per slide in ``MergeSlidesDialog``'s table), so a "duplicate" means
+    two different slides given the identical channel name - e.g. two rounds
+    of staining both labeled "DAPI". VALIS's own ``drop_duplicates=True``
+    (``Valis.warp_and_merge_slides``) always keeps whichever occurrence
+    comes FIRST in slide order; there is no native "keep the last one" mode,
+    which is what made "Last" byte-for-byte identical to "First" before this
+    - see ``merge_registered_slides``'s docstring.
+
+    This keeps, for each channel name shared by more than one slide, only
+    the slide occurring LAST in ``selected_slides``'s order, dropping the
+    earlier duplicate(s) entirely - the mirror image of what VALIS's
+    ``drop_duplicates=True`` already does for "First". Slides that are kept
+    stay in their original relative order (a channel name appearing once is
+    always kept, regardless of position).
+
+    Parameters
+    ----------
+    selected_slides : list[str]
+        Slide names in the order ``MergeSlidesDialog``'s table listed them.
+    channel_name_dict : dict[str, list[str]]
+        ``{slide_name: [channel_name]}``, as built by
+        ``merge_registered_slides``.
+
+    Returns
+    -------
+    list[str]
+        The subset of ``selected_slides`` to keep, in their original order.
+    """
+    last_index_for_name: dict[str, int] = {}
+    for idx, slide_name in enumerate(selected_slides):
+        channel_name = channel_name_dict[slide_name][0]
+        last_index_for_name[channel_name] = idx
+
+    return [
+        slide_name
+        for idx, slide_name in enumerate(selected_slides)
+        if last_index_for_name[channel_name_dict[slide_name][0]] == idx
+    ]
+
+
 def _normalize_channels(merged_img):
     """Linearly stretch each channel/band to the full range of its pixel format.
 
@@ -174,6 +220,16 @@ def merge_registered_slides(
           `src_f_list`) - VALIS's own `warp_and_merge_slides` default is
           every slide in the registrar.
         - duplicate_handling: "average", "maximum", "minimum", "first", "last"
+          - a duplicate is two different slides given the same channel name.
+            "First"/"Last" keep whichever slide's channel occurs first/last
+            in `channels`'s order and drop the other(s); "Maximum"/"Minimum"
+            aren't supported by VALIS and fall back to "first" with a
+            logged warning; "Average" keeps every duplicate as a separate
+            band rather than actually averaging them (VALIS has no such
+            mode either). "Last" used to be silently identical to "First"
+            (it set the same VALIS flag and never actually reordered
+            anything, despite its own log message claiming otherwise) -
+            see `_keep_last_occurrence`.
         - output_name: str
         - normalize: bool
     output_path : Path
@@ -219,6 +275,17 @@ def merge_registered_slides(
         channel_name_dict[slide_name].append(channel_name)
 
     logger.info(f"Channel mapping: {channel_name_dict}")
+
+    # Resolve "Last" duplicate handling BEFORE `src_f_list` is built below -
+    # VALIS's own `drop_duplicates` flag (set further down) always keeps
+    # whichever occurrence comes first in slide order, so "Last" has to be
+    # resolved ourselves by dropping the earlier duplicate slide(s) here.
+    # See `_keep_last_occurrence`'s docstring.
+    duplicate_handling = merge_config.get("duplicate_handling", "average").lower()
+    if duplicate_handling == "last":
+        selected_slides = _keep_last_occurrence(selected_slides, channel_name_dict)
+        channel_name_dict = {name: channel_name_dict[name] for name in selected_slides}
+        logger.info(f"Channel mapping after 'last' dedup: {channel_name_dict}")
 
     # Restrict the merge to only the slides still checked in the "Include"
     # column of MergeSlidesDialog's table (also driven by its "Select
@@ -271,9 +338,9 @@ def merge_registered_slides(
     if colormap is not None:
         merge_kwargs["colormap"] = colormap
 
-    # Handle duplicate channels based on user selection
-    duplicate_handling = merge_config.get("duplicate_handling", "average").lower()
-
+    # Handle duplicate channels based on user selection. `duplicate_handling`
+    # was already read above (needed before `src_f_list` was built for the
+    # "last" case); this just maps it to VALIS's own `drop_duplicates` flag.
     if duplicate_handling == "average":
         merge_kwargs["drop_duplicates"] = False  # Keep duplicates and average
     elif duplicate_handling in ["maximum", "minimum"]:
@@ -285,9 +352,11 @@ def merge_registered_slides(
     elif duplicate_handling == "first":
         merge_kwargs["drop_duplicates"] = True
     elif duplicate_handling == "last":
-        # Reverse the channel list to get last
-        logger.warning("'last' handling will use reverse order")
-        merge_kwargs["drop_duplicates"] = True
+        # Duplicates were already resolved above by `_keep_last_occurrence`
+        # (only the last-occurring slide for each channel name survived
+        # into `selected_slides`/`channel_name_dict`/`src_f_list`), so no
+        # duplicate channel names remain for VALIS itself to drop.
+        merge_kwargs["drop_duplicates"] = False
 
     # Add save options if provided
     if save_config:

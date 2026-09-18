@@ -24,6 +24,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from valis_workstation.services.merge_slides import (
+    _keep_last_occurrence,
     _normalize_channels,
     _resolve_channel_colormap,
     merge_registered_slides,
@@ -598,3 +599,140 @@ class TestMergeRegisteredSlidesSlideSelection:
             "/data/slide_a.tiff",
             "/data/slide_b.tiff",
         ]
+
+
+class TestKeepLastOccurrence:
+    """Unit tests for `_keep_last_occurrence`, the helper that resolves
+    "Last" duplicate handling by dropping the earlier slide(s) sharing a
+    duplicate channel name."""
+
+    def test_no_duplicates_returns_the_list_unchanged(self):
+        selected = ["a.tiff", "b.tiff", "c.tiff"]
+        channel_name_dict = {
+            "a.tiff": ["DAPI"],
+            "b.tiff": ["GFP"],
+            "c.tiff": ["CY5"],
+        }
+        assert _keep_last_occurrence(selected, channel_name_dict) == selected
+
+    def test_two_slides_sharing_a_name_keeps_only_the_later_one(self):
+        selected = ["a.tiff", "b.tiff"]
+        channel_name_dict = {"a.tiff": ["DAPI"], "b.tiff": ["DAPI"]}
+        assert _keep_last_occurrence(selected, channel_name_dict) == ["b.tiff"]
+
+    def test_non_adjacent_duplicate_preserves_relative_order_of_survivors(self):
+        # "DAPI" appears on a.tiff and c.tiff - only c.tiff (the later one)
+        # should survive; b.tiff (a unique name) is untouched and keeps its
+        # original position relative to the survivors.
+        selected = ["a.tiff", "b.tiff", "c.tiff"]
+        channel_name_dict = {
+            "a.tiff": ["DAPI"],
+            "b.tiff": ["GFP"],
+            "c.tiff": ["DAPI"],
+        }
+        assert _keep_last_occurrence(selected, channel_name_dict) == [
+            "b.tiff",
+            "c.tiff",
+        ]
+
+    def test_three_way_duplicate_keeps_only_the_last(self):
+        selected = ["a.tiff", "b.tiff", "c.tiff"]
+        channel_name_dict = {
+            "a.tiff": ["DAPI"],
+            "b.tiff": ["DAPI"],
+            "c.tiff": ["DAPI"],
+        }
+        assert _keep_last_occurrence(selected, channel_name_dict) == ["c.tiff"]
+
+
+class TestMergeRegisteredSlidesLastDuplicateHandling:
+    """Before this fix, "Last" duplicate handling was byte-for-byte
+    identical to "First": both set `drop_duplicates=True` on VALIS's side
+    and nothing ever reordered or filtered anything despite the code's own
+    log message claiming "'last' handling will use reverse order". Selecting
+    "Last" in the dialog therefore always produced the exact same merge as
+    "First", regardless of which slide the user actually expected to win for
+    a duplicate channel name.
+    """
+
+    @staticmethod
+    def _registrar_with_slides(**src_f_by_name: str) -> MagicMock:
+        registrar = MagicMock()
+        registrar.slide_dict = {
+            name: types.SimpleNamespace(src_f=src_f)
+            for name, src_f in src_f_by_name.items()
+        }
+        registrar.warp_and_merge_slides.return_value = (
+            FakeVipsImage([1, 2, 3]),
+            ["DAPI"],
+            "<OME/>",
+        )
+        return registrar
+
+    @staticmethod
+    def _duplicate_dapi_config(duplicate_handling: str) -> dict:
+        return {
+            "channels": [
+                {"slide_name": "round1.tiff", "channel_name": "DAPI", "color": "Auto"},
+                {"slide_name": "round2.tiff", "channel_name": "GFP", "color": "Auto"},
+                {"slide_name": "round3.tiff", "channel_name": "DAPI", "color": "Auto"},
+            ],
+            "duplicate_handling": duplicate_handling,
+            "output_name": "merged_image",
+            "normalize": False,
+        }
+
+    def _run(self, tmp_path, duplicate_handling: str) -> dict:
+        registrar = self._registrar_with_slides(
+            **{
+                "round1.tiff": "/data/round1.tiff",
+                "round2.tiff": "/data/round2.tiff",
+                "round3.tiff": "/data/round3.tiff",
+            }
+        )
+        merge_registered_slides(
+            registrar=registrar,
+            merge_config=self._duplicate_dapi_config(duplicate_handling),
+            output_path=tmp_path,
+        )
+        return registrar.warp_and_merge_slides.call_args.kwargs
+
+    def test_last_keeps_the_later_duplicate_slide_not_the_earlier_one(
+        self, tmp_path
+    ):
+        called_kwargs = self._run(tmp_path, "last")
+
+        # round1.tiff (the earlier "DAPI") must be dropped; round3.tiff (the
+        # later one) and the uniquely-named round2.tiff must survive, in
+        # their original relative order.
+        assert called_kwargs["src_f_list"] == [
+            "/data/round2.tiff",
+            "/data/round3.tiff",
+        ]
+        assert "round1.tiff" not in called_kwargs["channel_name_dict"]
+        assert called_kwargs["channel_name_dict"]["round3.tiff"] == ["DAPI"]
+        # Duplicates were already resolved by dropping round1.tiff above, so
+        # there's nothing left for VALIS's own flag to drop.
+        assert called_kwargs["drop_duplicates"] is False
+
+    def test_first_keeps_the_earlier_duplicate_slide_not_the_later_one(
+        self, tmp_path
+    ):
+        called_kwargs = self._run(tmp_path, "first")
+
+        assert called_kwargs["src_f_list"] == [
+            "/data/round1.tiff",
+            "/data/round2.tiff",
+            "/data/round3.tiff",
+        ]
+        assert "round1.tiff" in called_kwargs["channel_name_dict"]
+        assert called_kwargs["drop_duplicates"] is True
+
+    def test_first_and_last_now_produce_different_results(self, tmp_path):
+        """The regression this fix closes: before it, "first" and "last"
+        passed the identical `src_f_list`/`drop_duplicates` to VALIS for the
+        same input - selecting "Last" had no observable effect at all."""
+        first_kwargs = self._run(tmp_path, "first")
+        last_kwargs = self._run(tmp_path, "last")
+
+        assert first_kwargs["src_f_list"] != last_kwargs["src_f_list"]

@@ -1,5 +1,18 @@
 # VALIS Workstation Changelog
 
+## 2026-09-18
+
+### Fixed
+- `MergeSlidesDialog`'s "Overlap handling: Last" option (how to resolve two different slides sharing the same channel name, e.g. two staining rounds both labeled "DAPI") was byte-for-byte identical to "First". `merge_registered_slides` (`services/merge_slides.py`) mapped both to the same `Valis.warp_and_merge_slides(drop_duplicates=True)` call — which always keeps whichever occurrence comes first in slide order — despite the code's own log message claiming `"'last' handling will use reverse order"`. Nothing ever reordered or filtered anything for "Last"; selecting it always produced the exact same merge as "First", regardless of which slide's channel the user actually expected to win.
+
+	Fixed with a new `_keep_last_occurrence()` helper: for "Last", it filters `selected_slides`/`channel_name_dict` *before* `src_f_list` is built, keeping only the last-occurring slide for each duplicate channel name (dropping the earlier duplicate(s) entirely) while leaving non-duplicate slides in their original relative order — the mirror image of what VALIS's own `drop_duplicates=True` already does for "First". Since duplicates are now resolved before VALIS ever sees the list, `drop_duplicates=False` is passed for "Last" (there's nothing left for VALIS itself to drop).
+
+### Testing
+- New `tests/test_merge_slides_service.py::TestKeepLastOccurrence` (4 tests) and `::TestMergeRegisteredSlidesLastDuplicateHandling` (3 tests): unit tests for the helper (no duplicates, a simple pair, a non-adjacent duplicate, a three-way duplicate) plus integration tests confirming "Last" keeps the later duplicate slide, "First" still keeps the earlier one, and the two now produce different `src_f_list`s for the same input (the regression this fix closes — before it, they were identical).
+- All 7 fail to collect (`ImportError: cannot import name '_keep_last_occurrence'`) on the pre-fix tree (verified via `git stash` of just `services/merge_slides.py`, then restored).
+- Full suite: `QT_API=pyside6 QT_QPA_PLATFORM=offscreen pytest tests/ -q` — **413 passed** (was 406), 0 regressions.
+- `ruff check src/valis_workstation/services/merge_slides.py tests/test_merge_slides_service.py`: 1 finding before and after (pre-existing `BLE001` on an unrelated line, confirmed via the same stash comparison), 0 new.
+
 ## 2026-09-16
 
 ### Fixed
