@@ -11,7 +11,7 @@ _(nothing claimed)_
 
 ### 2026-09-18 UTC — `MergeSlidesDialog`'s "Overlap handling: Last" option is identical to "First"
 Branch `claude/eager-brown-hwyngk` · PR
-[#16](https://github.com/leonardolv/VALIS-GUI/pull/16) · Status: **done**
+[#16](https://github.com/leonardolv/VALIS-GUI/pull/16) · Status: **done, merged**
 
 **Claimed** after confirming the Backlog is fully exhausted (every entry
 struck through, referencing a real Completed entry — re-verified by
@@ -116,7 +116,11 @@ could implement true per-duplicate-name band averaging analogous to how
   the tests mock out `valis.slide_io` rather than importing it for real.
 * `WORKSTATION_CHANGELOG.md` gains a matching `2026-09-18` entry.
 
-**PR.** [#16](https://github.com/leonardolv/VALIS-GUI/pull/16).
+**PR.** [#16](https://github.com/leonardolv/VALIS-GUI/pull/16) — merged
+(squash, `8b43c08`). This repo's GitHub Actions runs never actually fire
+(confirmed via the Actions API — 0 workflow runs total), so merged on
+local validation per this file's established precedent, not a green CI
+check.
 
 ### 2026-09-16 (3) UTC — `MergeSlidesDialog`'s "Include" checkbox / Select All/None are discarded by the merge service
 Branch `claude/eager-brown-06xj0c` · PR
