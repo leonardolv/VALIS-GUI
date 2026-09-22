@@ -6,8 +6,90 @@ work this file; always append, never overwrite another agent's entries.
 
 _(nothing claimed)_
 
-
 ## Completed
+
+### 2026-09-22 UTC (third run) — `BlinkViewerDialog`'s auto-blink `QTimer` outlives the dialog when closed via the "Close" button/Escape
+
+Branch `claude/eloquent-fermat-v4wwey` · PR: pending · Status: **done**
+
+**Claimed** after reading the full log top to bottom (Backlog fully struck
+through — last open item, the orphaned `SettingsKeys` enum members, was
+resolved by the prior 2026-09-22 run) and re-triaging the codebase myself
+since no Backlog items remained. Surveyed all dialogs under
+`src/valis_workstation/ui/dialogs/` for the "control looks wired up but
+isn't" shape this log's prior entries kept finding, and separately for
+Qt lifecycle bugs (this repo's own `dark.qss`/reentrancy-style guidance in
+sibling repos' `CLAUDE.md` calls out exactly this class of issue).
+
+**Root cause.** `BlinkViewerDialog._timer` (`src/valis_workstation/ui/
+dialogs/blink_viewer.py`) is a 600ms `QTimer` that auto-toggles two napari
+layers' visibility while "Blink" mode is running, parented to the dialog
+(itself parented to `MainWindow`). It was only ever stopped from
+`closeEvent`. Empirically confirmed (`QT_QPA_PLATFORM=offscreen` REPL
+probe, see below) that `QDialog.reject()`/`.accept()` — what the dialog's
+*only* user-facing dismiss control (`QDialogButtonBox.StandardButton
+.Close`, whose `rejected` signal is wired to `self.reject`) and the Escape
+key both call — do **not** invoke `closeEvent` at all; only a real
+`close()`/window-X-button does. So a user who starts Blink mode and then
+clicks "Close" (the expected, and only, way to dismiss this dialog via its
+own UI) leaves `_timer` running forever: the dialog merely `hide()`s, its
+C++ object is kept alive by its `MainWindow` parent for the rest of the
+app session, and the timer keeps firing every 600ms toggling napari layer
+visibility in the background indefinitely — for as long as the app stays
+open, and compounding with every Blink session a user starts and normally
+dismisses. The existing test `TestBlinkViewerDialog::test_close_stops_timer`
+calls `dialog.close()` directly, which is exactly the one path that
+*already* worked, so it never exercised the button-box/Escape path and the
+bug shipped unnoticed.
+
+Probe (`QT_QPA_PLATFORM=offscreen python3`, a bare `QDialog` subclass):
+`reject()`/`accept()` both leave `isVisible() == False` without printing
+from an overridden `closeEvent`, while `close()` does print from it —
+confirming `close()` is the only path that reaches `closeEvent`. A second
+probe confirmed `reject()`/`accept()` both emit the `finished(int)` signal
+(results `0`/`1`), which `close()` — surprisingly — does *not* emit on its
+own (its default `closeEvent` sets the result internally without firing
+`finished`), so `closeEvent` and `finished` cover two non-overlapping sets
+of dismissal paths and neither alone is sufficient.
+
+**Solution.** Added `self.finished.connect(self._stop_blink_timer)` in
+`__init__`, alongside the existing `closeEvent` override (now itself
+delegating to the same new `_stop_blink_timer` helper rather than calling
+`self._timer.stop()` inline) — together the two cover every way this
+dialog can be dismissed (`accept()`, `reject()`, Escape, `close()`, the
+window-X-button). `_stop_blink_timer` unchecks `_blink_toggle` (which
+reuses `_toggle_blink`'s existing text/layer-visibility reset via its
+`toggled` signal) rather than duplicating that reset logic, and is a
+no-op if Blink was never started.
+
+**Validation.**
+* New `tests/test_all_features.py::TestBlinkViewerDialog` tests:
+  `test_reject_stops_timer`/`test_accept_stops_timer` drive the dialog via
+  `reject()`/`accept()` — the actual "Close" button / Escape path — rather
+  than `close()`; `test_reject_resets_toggle_and_never_started` pins that
+  dismissing without ever starting Blink stays a no-op.
+* The two reproducing tests **fail on the pre-fix tree**
+  (`git stash push -- src/valis_workstation/ui/dialogs/blink_viewer.py`,
+  rerun, then `git stash pop`): `_timer.isActive()` is still `True` after
+  `reject()`/`accept()`. Pass after the fix.
+* Full suite: `QT_API=pyside6 QT_QPA_PLATFORM=offscreen pytest tests/ -q`
+  → **432 passed** (was 429), 0 regressions.
+* `ruff check src/valis_workstation/ui/dialogs/blink_viewer.py
+  tests/test_all_features.py` → 0 findings in the touched code (confirmed
+  by exact line number that the file's 7 pre-existing findings are all on
+  unrelated, unmoved lines). `ruff check src/` (whole tree, same binary
+  both sides): **123 findings before and after, 0 new.**
+* Environment: reused this log's established minimal-venv approach —
+  fresh venv at `/home/user/.venvs/valis-gui` (PySide6, pytest, pytest-qt,
+  numpy, psutil, pandas, matplotlib, ruff), plus `apt-get install -y
+  libegl1 libvips42` for headless `QtWidgets`/`libvips`-dependent imports.
+
+**Docs.** `WORKSTATION_CHANGELOG.md` gains a matching entry under today's
+existing `2026-09-22` section.
+
+**PR.** Pushed to `claude/eloquent-fermat-v4wwey`; not opened (per this
+run's own instructions, PR creation is handled by the orchestrating
+session).
 
 ### 2026-09-22 UTC (second run) — `MergeSlidesDialog`'s "Average" duplicate handling now actually averages
 
