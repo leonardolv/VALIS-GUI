@@ -88,6 +88,31 @@ class TestBlinkViewerDialog:
         dialog.close()
         assert not dialog._timer.isActive()
 
+    def test_reject_stops_timer(self, dialog):
+        # Simulates the dialog's actual "Close" standard button, whose
+        # QDialogButtonBox.rejected signal is wired to self.reject() — NOT
+        # to close(). QDialog.reject() does not invoke closeEvent, so a
+        # fix relying solely on that override would leave this timer
+        # running forever (the dialog stays alive, merely hidden, parented
+        # to its owner) every time a user dismisses it the normal way.
+        dialog._blink_toggle.setChecked(True)
+        assert dialog._timer.isActive()
+        dialog.reject()
+        assert not dialog._timer.isActive()
+
+    def test_accept_stops_timer(self, dialog):
+        # Escape and any programmatic accept() share the same gap as
+        # reject() above (finished fires for both; closeEvent for neither).
+        dialog._blink_toggle.setChecked(True)
+        dialog.accept()
+        assert not dialog._timer.isActive()
+
+    def test_reject_resets_toggle_and_never_started(self, dialog):
+        # Dismissing without ever starting Blink must stay a no-op.
+        dialog.reject()
+        assert not dialog._timer.isActive()
+        assert not dialog._blink_toggle.isChecked()
+
     def test_button_text_toggle(self, dialog):
         dialog._blink_toggle.setChecked(True)
         assert "Stop" in dialog._blink_toggle.text()
