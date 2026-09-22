@@ -9,6 +9,64 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-09-22 UTC (second run) — `MergeSlidesDialog`'s "Average" duplicate handling now actually averages
+
+Branch `claude/eager-brown-hkxbvs` · PR: pending · Status: **in progress**
+
+**Claimed** after reading the full log (Backlog fully struck through again -
+the prior run's `CACHE_MAX_TILE_MB`/`PERF_TILE_SIZE` item was the last open
+entry), confirming `list_pull_requests` (open) returns empty for this repo,
+and re-verifying the two open draft PRs seen belong to a *different* repo
+(BioSlide-Gemini), not this one. Went back to the top of the recurring
+task's own instructions per "if no claims are found, plan more
+improvements" and did fresh triage: PR #16's own body had already named
+the next candidate and deliberately left it unfixed ("'Average' doesn't
+actually average duplicate channels ... A future run could implement true
+per-duplicate band averaging analogous to how `_normalize_channels` already
+does band-level pyvips arithmetic") - confirmed still true by reading
+`services/merge_slides.py` directly before starting.
+
+**Root cause.** `merge_registered_slides` maps "Average" duplicate handling
+to `Valis.warp_and_merge_slides(drop_duplicates=False)` and stops there -
+VALIS has no averaging mode of its own, so `drop_duplicates=False` just
+means "don't drop anything", and every duplicate-named channel (e.g. two
+slides both labeled "DAPI") is saved as its own separate band. The dialog's
+own tooltip ("Average: Average overlapping values") was simply untrue.
+
+**Solution.** `_average_duplicate_bands(merged_img, all_channel_names)`
+(`services/merge_slides.py`) groups band indices by channel name and
+replaces every group of more than one with their pixelwise mean, in
+first-occurrence order - the same one-band-per-name shape "First"/"Last"
+already produce. `merge_registered_slides` now takes the same
+unsaved-build-then-save-ourselves path "Average" needs as "Normalize
+intensities" already does, but only when `channel_name_dict` actually
+contains a repeated name (checked up front, cheaply, before ever calling
+VALIS) - a merge with no duplicates is untouched and still goes straight to
+VALIS's own direct-to-disk save. When averaging drops bands, VALIS's own
+returned `ome_xml` (built for the pre-averaged band count) would disagree
+with what is about to be saved, so a new `_rebuild_ome_xml_for_channels()`
+reproduces VALIS's own OME-XML construction (`registration.py`) for the
+reduced channel list instead. Averaging runs before normalizing when both
+are selected, since normalizing two duplicates independently and then
+averaging them would distort relative intensity in a way the user did not
+ask for.
+
+**Validation.** New `tests/test_merge_slides_service.py::
+TestAverageDuplicateBands` (5 tests, unit) and
+`::TestMergeRegisteredSlidesAverageDuplicateHandling` (4 tests, end to end:
+averaging + OME-XML rebuild, the no-duplicates fast path is preserved,
+averaging-before-normalizing order, cancellation after build still short-
+circuits). All 9 fail to *collect* on the pre-fix tree
+(`ImportError: cannot import name '_average_duplicate_bands'`, confirmed via
+`git stash` of just `services/merge_slides.py`, then restored). Full suite
+in a fresh venv (PySide6, pytest, pytest-qt, numpy, psutil, pandas,
+matplotlib, plus `libegl1` for offscreen Qt): `QT_API=pyside6
+QT_QPA_PLATFORM=offscreen pytest tests/ -q` → **429 passed** (was 420), 0
+regressions. `ruff check src/valis_workstation/services/merge_slides.py
+tests/test_merge_slides_service.py` → 0 findings; `ruff check src/` (whole
+tree, same binary both sides): 16 findings before and after, 0 new.
+`WORKSTATION_CHANGELOG.md` updated in the same pass.
+
 ### 2026-09-22 UTC — `SettingsKeys.CACHE_MAX_TILE_MB`/`PERF_TILE_SIZE` were orphaned enum members
 Branch `claude/eager-brown-xzjgca` · PR
 [#17](https://github.com/leonardolv/VALIS-GUI/pull/17) · Status: **done, merged**

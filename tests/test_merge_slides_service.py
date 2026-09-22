@@ -24,6 +24,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from valis_workstation.services.merge_slides import (
+    _average_duplicate_bands,
     _keep_last_occurrence,
     _normalize_channels,
     _resolve_channel_colormap,
@@ -75,6 +76,24 @@ class FakeVipsImage:
             height=self.height,
         )
 
+    def __add__(self, other):
+        return FakeVipsImage(
+            [
+                [a + b for a, b in zip(self._band_values[0], other._band_values[0])]
+            ],
+            fmt=self.format,
+            width=self.width,
+            height=self.height,
+        )
+
+    def __truediv__(self, scalar):
+        return FakeVipsImage(
+            [[v / scalar for v in self._band_values[0]]],
+            fmt=self.format,
+            width=self.width,
+            height=self.height,
+        )
+
     def cast(self, fmt):
         self.format = fmt
         return self
@@ -86,6 +105,13 @@ class FakeVipsImage:
         for other in others:
             combined.extend(other._band_values)
         return FakeVipsImage(combined, fmt=self.format, width=self.width, height=self.height)
+
+    def copy(self, **_kwargs):
+        # Real pyvips.Image.copy(interpretation=...) returns a distinct
+        # image with the given interpretation tag; this fake doesn't model
+        # interpretation at all, so returning self is enough for tests that
+        # only care about band values/count/format.
+        return self
 
 
 # ---------------------------------------------------------------------------
@@ -120,6 +146,64 @@ class TestNormalizeChannels:
         result = _normalize_channels(img)
         assert result is img
         assert "unsupported pixel format" in caplog.text
+
+
+# ---------------------------------------------------------------------------
+# _average_duplicate_bands
+# ---------------------------------------------------------------------------
+
+
+class TestAverageDuplicateBands:
+    def test_no_duplicates_returns_the_same_objects_unchanged(self):
+        img = FakeVipsImage([[1, 2], [3, 4]], fmt="uchar")
+        names = ["DAPI", "GFP"]
+        result_img, result_names = _average_duplicate_bands(img, names)
+        assert result_img is img
+        assert result_names is names
+
+    def test_two_duplicate_bands_are_averaged_not_just_kept(self):
+        # Band 0 and band 2 are both "DAPI" ([10, 20] and [30, 40]); band 1
+        # is the uniquely-named "GFP". Averaging must fold 3 bands into 2,
+        # with the DAPI band holding the pixelwise mean of the two originals.
+        img = FakeVipsImage([[10, 20], [1, 1], [30, 40]], fmt="uchar")
+        names = ["DAPI", "GFP", "DAPI"]
+
+        result_img, result_names = _average_duplicate_bands(img, names)
+
+        assert result_names == ["DAPI", "GFP"]
+        assert result_img.bands == 2
+        assert result_img._band_values[0] == pytest.approx([20, 30])
+        assert result_img._band_values[1] == [1, 1]
+        assert result_img.format == "uchar"
+
+    def test_three_way_duplicate_averages_all_three(self):
+        img = FakeVipsImage([[0, 0], [30, 60], [60, 120]], fmt="uchar")
+        names = ["DAPI", "DAPI", "DAPI"]
+
+        result_img, result_names = _average_duplicate_bands(img, names)
+
+        assert result_names == ["DAPI"]
+        assert result_img.bands == 1
+        assert result_img._band_values[0] == pytest.approx([30, 60])
+
+    def test_result_order_follows_first_occurrence_of_each_name(self):
+        img = FakeVipsImage([[1, 1], [2, 2], [3, 3]], fmt="uchar")
+        names = ["GFP", "DAPI", "GFP"]
+
+        _result_img, result_names = _average_duplicate_bands(img, names)
+
+        assert result_names == ["GFP", "DAPI"]
+
+    def test_single_resulting_band_survives_the_interpretation_copy(self):
+        # `_average_duplicate_bands` always ends with a
+        # `.copy(interpretation=...)` call, mirroring
+        # `Valis.warp_and_merge_slides`'s own single-band-vs-multiband
+        # handling - confirm that doesn't drop or corrupt the pixel data.
+        img = FakeVipsImage([[10, 20], [30, 40]], fmt="uchar")
+        result_img, result_names = _average_duplicate_bands(img, ["DAPI", "DAPI"])
+        assert result_names == ["DAPI"]
+        assert result_img.bands == 1
+        assert result_img._band_values[0] == pytest.approx([20, 30])
 
 
 # ---------------------------------------------------------------------------
@@ -736,3 +820,229 @@ class TestMergeRegisteredSlidesLastDuplicateHandling:
         last_kwargs = self._run(tmp_path, "last")
 
         assert first_kwargs["src_f_list"] != last_kwargs["src_f_list"]
+
+
+class TestMergeRegisteredSlidesAverageDuplicateHandling:
+    """Before this fix, "Average" duplicate handling set
+    `drop_duplicates=False` and stopped there - VALIS has no averaging
+    mode of its own, so every duplicate-named channel simply survived as
+    its own separate band in the saved file, contradicting the dialog's
+    own tooltip ("Average: Average overlapping values"). These exercise
+    the fix end to end: `merge_registered_slides` must now build the
+    image, average same-named bands together via `_average_duplicate_bands`,
+    and save the reduced result under matching OME-XML metadata.
+    """
+
+    @staticmethod
+    def _registrar_with_slides(**src_f_by_name: str) -> MagicMock:
+        registrar = MagicMock()
+        registrar.slide_dict = {
+            name: types.SimpleNamespace(src_f=src_f)
+            for name, src_f in src_f_by_name.items()
+        }
+        return registrar
+
+    @staticmethod
+    def _duplicate_dapi_config(normalize: bool = False) -> dict:
+        return {
+            "channels": [
+                {"slide_name": "round1.tiff", "channel_name": "DAPI", "color": "Auto"},
+                {"slide_name": "round2.tiff", "channel_name": "GFP", "color": "Auto"},
+                {"slide_name": "round3.tiff", "channel_name": "DAPI", "color": "Auto"},
+            ],
+            "duplicate_handling": "average",
+            "output_name": "merged_image",
+            "normalize": normalize,
+        }
+
+    def _fake_slide_io(self, ome_xml_text="<OME averaged/>"):
+        return types.SimpleNamespace(
+            get_tile_wh=MagicMock(return_value=512),
+            save_ome_tiff=MagicMock(),
+            vips2bf_dtype=MagicMock(return_value="uint8"),
+            get_shape_xyzct=MagicMock(return_value=(4, 4, 1, 2, 1)),
+            check_colormap=MagicMock(return_value=None),
+            create_ome_xml=MagicMock(
+                return_value=types.SimpleNamespace(to_xml=lambda: ome_xml_text)
+            ),
+        )
+
+    def test_duplicate_dapi_bands_are_averaged_before_saving(
+        self, tmp_path, monkeypatch
+    ):
+        registrar = self._registrar_with_slides(
+            **{
+                "round1.tiff": "/data/round1.tiff",
+                "round2.tiff": "/data/round2.tiff",
+                "round3.tiff": "/data/round3.tiff",
+            }
+        )
+        ref_slide = MagicMock()
+        ref_slide.reader = MagicMock()
+        registrar.get_ref_slide.return_value = ref_slide
+
+        # Bands, in `channel_name_dict` order: DAPI (round1)=[10,20],
+        # GFP (round2)=[1,1], DAPI (round3)=[30,40]. `drop_duplicates=False`
+        # means VALIS hands all three back untouched - averaging is this
+        # module's job.
+        merged_img = FakeVipsImage([[10, 20], [1, 1], [30, 40]], fmt="uchar")
+        registrar.warp_and_merge_slides.return_value = (
+            merged_img,
+            ["DAPI", "GFP", "DAPI"],
+            "<OME unaveraged/>",
+        )
+
+        fake_slide_io = self._fake_slide_io()
+        monkeypatch.setitem(sys.modules, "valis.slide_io", fake_slide_io)
+        monkeypatch.setitem(sys.modules, "valis", types.SimpleNamespace())
+
+        result = merge_registered_slides(
+            registrar=registrar,
+            merge_config=self._duplicate_dapi_config(),
+            output_path=tmp_path,
+        )
+
+        assert result == tmp_path / "merged_image.ome.tiff"
+
+        # VALIS was asked to keep every duplicate band (this module does
+        # the averaging itself), and to build rather than save directly.
+        called_kwargs = registrar.warp_and_merge_slides.call_args.kwargs
+        assert called_kwargs["drop_duplicates"] is False
+        assert called_kwargs["dst_f"] is None
+
+        fake_slide_io.save_ome_tiff.assert_called_once()
+        save_args, save_kwargs = fake_slide_io.save_ome_tiff.call_args
+        saved_img = save_args[0]
+
+        # Reduced to 2 bands - the two DAPI bands collapsed into their mean.
+        assert saved_img.bands == 2
+        assert saved_img._band_values[0] == pytest.approx([20, 30])  # DAPI mean
+        assert saved_img._band_values[1] == [1, 1]  # GFP untouched
+
+        # The OME-XML was rebuilt for the reduced (2-band) channel set,
+        # not VALIS's own 3-band original.
+        assert save_kwargs["ome_xml"] == "<OME averaged/>"
+        fake_slide_io.create_ome_xml.assert_called_once()
+        assert fake_slide_io.create_ome_xml.call_args.kwargs["channel_names"] == [
+            "DAPI",
+            "GFP",
+        ]
+
+    def test_no_duplicate_channel_names_stays_on_the_direct_save_path(
+        self, tmp_path
+    ):
+        """The common case (no channel name repeats) must not pay for the
+        unsaved-build-then-save-ourselves path at all - `warp_and_merge_slides`
+        should be asked to save directly, exactly as it always could for
+        "Average" before this fix."""
+        registrar = self._registrar_with_slides(
+            **{"slide_a.tiff": "/data/slide_a.tiff", "slide_b.tiff": "/data/slide_b.tiff"}
+        )
+        registrar.warp_and_merge_slides.return_value = (
+            FakeVipsImage([1, 2, 3]),
+            ["DAPI", "GFP"],
+            "<OME/>",
+        )
+
+        merge_config = {
+            "channels": [
+                {"slide_name": "slide_a.tiff", "channel_name": "DAPI", "color": "Auto"},
+                {"slide_name": "slide_b.tiff", "channel_name": "GFP", "color": "Auto"},
+            ],
+            "duplicate_handling": "average",
+            "output_name": "merged_image",
+            "normalize": False,
+        }
+
+        merge_registered_slides(
+            registrar=registrar, merge_config=merge_config, output_path=tmp_path
+        )
+
+        called_kwargs = registrar.warp_and_merge_slides.call_args.kwargs
+        assert called_kwargs["dst_f"] == str(tmp_path / "merged_image.ome.tiff")
+        # The unsaved-build-only helpers were never reached.
+        registrar.get_ref_slide.assert_not_called()
+
+    def test_averaging_and_normalizing_together_averages_first(
+        self, tmp_path, monkeypatch
+    ):
+        """Averaging must run before normalizing, not after: normalizing two
+        independently-stretched duplicate bands and then averaging them
+        would distort relative intensity in a way the user did not ask
+        for. Averaging the raw duplicates first and stretching the single
+        combined result is the only order that matches "merge these into
+        one channel, then make it use the full range"."""
+        registrar = self._registrar_with_slides(
+            **{
+                "round1.tiff": "/data/round1.tiff",
+                "round2.tiff": "/data/round2.tiff",
+                "round3.tiff": "/data/round3.tiff",
+            }
+        )
+        ref_slide = MagicMock()
+        ref_slide.reader = MagicMock()
+        registrar.get_ref_slide.return_value = ref_slide
+
+        # DAPI bands average to [20, 40, 60] (min 20, max 60); normalizing
+        # that afterwards stretches it to [0, 127.5, 255]. Normalizing each
+        # duplicate independently first, then averaging, would not produce
+        # this result.
+        merged_img = FakeVipsImage(
+            [[10, 20, 30], [5, 5, 5], [30, 60, 90]], fmt="uchar"
+        )
+        registrar.warp_and_merge_slides.return_value = (
+            merged_img,
+            ["DAPI", "GFP", "DAPI"],
+            "<OME unaveraged/>",
+        )
+
+        fake_slide_io = self._fake_slide_io()
+        monkeypatch.setitem(sys.modules, "valis.slide_io", fake_slide_io)
+        monkeypatch.setitem(sys.modules, "valis", types.SimpleNamespace())
+
+        merge_registered_slides(
+            registrar=registrar,
+            merge_config=self._duplicate_dapi_config(normalize=True),
+            output_path=tmp_path,
+        )
+
+        save_args, _save_kwargs = fake_slide_io.save_ome_tiff.call_args
+        saved_img = save_args[0]
+        assert saved_img.bands == 2
+        assert saved_img._band_values[0] == pytest.approx([0, 127.5, 255])
+
+    def test_cancelled_after_build_raises_before_averaging_or_saving(
+        self, tmp_path, monkeypatch
+    ):
+        registrar = self._registrar_with_slides(
+            **{
+                "round1.tiff": "/data/round1.tiff",
+                "round2.tiff": "/data/round2.tiff",
+                "round3.tiff": "/data/round3.tiff",
+            }
+        )
+        registrar.warp_and_merge_slides.return_value = (
+            FakeVipsImage([[10, 20], [1, 1], [30, 40]], fmt="uchar"),
+            ["DAPI", "GFP", "DAPI"],
+            "<OME unaveraged/>",
+        )
+        fake_slide_io = self._fake_slide_io()
+        monkeypatch.setitem(sys.modules, "valis.slide_io", fake_slide_io)
+        monkeypatch.setitem(sys.modules, "valis", types.SimpleNamespace())
+
+        calls = {"n": 0}
+
+        def cancel_check():
+            calls["n"] += 1
+            return calls["n"] > 1
+
+        with pytest.raises(UserVisibleError, match="cancelled"):
+            merge_registered_slides(
+                registrar=registrar,
+                merge_config=self._duplicate_dapi_config(),
+                output_path=tmp_path,
+                cancel_check=cancel_check,
+            )
+
+        fake_slide_io.save_ome_tiff.assert_not_called()
+        fake_slide_io.create_ome_xml.assert_not_called()
