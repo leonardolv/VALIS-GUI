@@ -22,11 +22,9 @@ class SettingsKeys(StrEnum):
 
     CACHE_DIRECTORY = "cache/directory"
     CACHE_MAX_THUMBNAIL_MB = "cache/max_thumbnail_mb"
-    CACHE_MAX_TILE_MB = "cache/max_tile_mb"
     CACHE_PERSIST = "cache/persist"
 
     PERF_PARALLEL_WORKERS = "performance/parallel_workers"
-    PERF_TILE_SIZE = "performance/tile_size"
     PERF_MONITORING_ENABLED = "performance/monitoring_enabled"
     PERF_AUTO_REFRESH_SECONDS = "performance/auto_refresh_seconds"
 
