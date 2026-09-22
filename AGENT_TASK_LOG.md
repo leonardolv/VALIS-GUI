@@ -11,7 +11,8 @@ _(nothing claimed)_
 
 ### 2026-09-22 UTC (second run) — `MergeSlidesDialog`'s "Average" duplicate handling now actually averages
 
-Branch `claude/eager-brown-hkxbvs` · PR: pending · Status: **in progress**
+Branch `claude/eager-brown-hkxbvs` · PR
+[#18](https://github.com/leonardolv/VALIS-GUI/pull/18) · Status: **done, merged**
 
 **Claimed** after reading the full log (Backlog fully struck through again -
 the prior run's `CACHE_MAX_TILE_MB`/`PERF_TILE_SIZE` item was the last open
