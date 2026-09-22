@@ -9,6 +9,79 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-09-22 UTC — `SettingsKeys.CACHE_MAX_TILE_MB`/`PERF_TILE_SIZE` were orphaned enum members
+Branch `claude/eager-brown-xzjgca` · PR: see below · Status: **done**
+
+**Claimed** after reading the full log, confirming no active In-Progress
+claim, confirming `list_pull_requests` (open) returns empty for this repo,
+and re-verifying the task prompt's own suggested checks against the actual
+code rather than trusting the log summary — `PerformanceMonitor.
+track_thumbnail_load`/`track_slides_loaded`/`track_registration` all have
+real callers today (`thumbnail_generator.py`, `main_window.py`,
+`valis_worker.py`), and `utils/tile_cache.py` no longer exists — so both
+prompt-supplied candidates were already resolved by the 2026-08-19 runs;
+not re-opening them. Independently re-derived the Backlog from scratch (a
+literal-string-value grep of every `SettingsKeys`/`SplitterKeys` member
+against `src/`+`tests/`, not just an enum-reference grep, which would
+undercount several genuinely-live members only ever referenced via the
+enum object itself, e.g. `SettingsKeys.LEFT_TAB_INDEX`) and confirmed
+`CACHE_MAX_TILE_MB` ("cache/max_tile_mb") and `PERF_TILE_SIZE`
+("performance/tile_size") were the only two members with zero references
+anywhere outside `settings_keys.py` itself — matching the existing Backlog
+entry exactly.
+
+**Root cause.** The 2026-08-19 (2) run deleted `utils/tile_cache.py` and
+its only two UI entry points (the Preferences "Max Tile Cache" spinbox and
+"Tile Size (pixels)" combo), but left the two `SettingsKeys` enum members
+themselves (`CACHE_MAX_TILE_MB` = `"cache/max_tile_mb"`, `PERF_TILE_SIZE`
+= `"performance/tile_size"`) in place. Confirmed via a full literal-string
+grep of `src/` and `tests/`: zero remaining references to either key
+anywhere outside the enum's own definition. Harmless — nothing ever read
+or wrote either `QSettings` key — but genuine dead code.
+
+**Solution.** Deleted both enum lines from `SettingsKeys`
+(`settings_keys.py`). Added `tests/test_settings_keys.py`, which both pins
+the removal directly and adds a general regression guard: every remaining
+`SettingsKeys`/`SplitterKeys` member must be referenced somewhere in
+`src/` outside `settings_keys.py` itself, checked via *both* shapes a real
+call site uses in this codebase (a bare string literal, the common case,
+or a direct `SettingsKeys.NAME` reference, e.g. the tab-index/recent-
+folder-config keys) — so a future member added and never wired up is
+caught automatically rather than needing another manual audit like the one
+that found this.
+
+**Validation.**
+* New `tests/test_settings_keys.py` (7 tests) — pins both names no longer
+  resolving on `SettingsKeys`, their literal key strings no longer
+  appearing anywhere in `src/`, and the general "every member is used"
+  sweep across both enums.
+* 4 of the 7 **fail on the pre-fix tree** (`git stash` of just
+  `settings_keys.py`, rerun, then restored) — including the general sweep,
+  which independently re-flagged exactly `['CACHE_MAX_TILE_MB',
+  'PERF_TILE_SIZE']` with no foreknowledge of which names were being
+  removed baked into that particular assertion.
+* Full suite: `QT_API=pyside6 QT_QPA_PLATFORM=offscreen pytest tests/ -q`
+  → **420 passed** (was 413 pre-fix, confirmed on the same stashed tree),
+  0 regressions.
+* `ruff check src/valis_workstation/settings_keys.py
+  tests/test_settings_keys.py`: 0 findings. `ruff check src/` (whole
+  tree, same ruff binary/version for both sides): **123 findings before
+  and after** (confirmed via the same stash comparison — 0 new; this
+  session's ruff 0.16.8 reports a different total than the 0.15.8 binary
+  pre-installed in the sandbox, which is a version/default-ruleset
+  difference unrelated to this change, not a regression — compared
+  like-for-like with one binary).
+* `PYTHONPATH=src python -c "import valis_workstation.settings_keys"`
+  imports cleanly and enumerates the expected remaining members.
+* `WORKSTATION_CHANGELOG.md` gains a matching `2026-09-22` entry.
+* Environment: fresh lightweight venv at `/home/user/.venvs/valis-gui`
+  (PySide6, pytest, pytest-qt, numpy, psutil, pandas, matplotlib, ruff),
+  plus `apt-get install libegl1` for PySide6's `QtWidgets` import under
+  `QT_QPA_PLATFORM=offscreen` — same minimal-dependency approach as every
+  prior entry in this log; the full VALIS scientific stack was not needed.
+
+**PR.** (opened this run, see repository pull requests).
+
 ### 2026-09-18 UTC — `MergeSlidesDialog`'s "Overlap handling: Last" option is identical to "First"
 Branch `claude/eager-brown-hwyngk` · PR
 [#16](https://github.com/leonardolv/VALIS-GUI/pull/16) · Status: **done, merged**
@@ -1120,6 +1193,13 @@ convention.
   its own tooltip/comment. A future run could implement true per-duplicate
   band averaging analogous to how `_normalize_channels` already does
   band-level pyvips arithmetic for "Normalize intensities".
+~~**`SettingsKeys.CACHE_MAX_TILE_MB`/`PERF_TILE_SIZE` are orphaned enum
+  members left over from the tile-cache removal.**~~ Done by the
+  2026-09-22 run — see the Completed entry. Deleted both enum lines, and
+  added a general "every remaining settings-key member is referenced
+  somewhere in `src/`" regression sweep so the same rot doesn't recur
+  silently.
+  (original entry follows)
 - **`SettingsKeys.CACHE_MAX_TILE_MB`/`PERF_TILE_SIZE` are orphaned enum
   members left over from the tile-cache removal.** Found by the 2026-09-18
   audit (`settings_keys.py:25,29`). The 2026-08-19 (2) Completed entry

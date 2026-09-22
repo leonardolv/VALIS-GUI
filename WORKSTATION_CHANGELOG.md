@@ -1,5 +1,16 @@
 # VALIS Workstation Changelog
 
+## 2026-09-22
+
+### Fixed
+- `SettingsKeys.CACHE_MAX_TILE_MB`/`PERF_TILE_SIZE` were orphaned `QSettings` enum members left over from the 2026-08-19 removal of `utils/tile_cache.py` (which deleted the Preferences "Max Tile Cache" spinbox and "Tile Size (pixels)" combo — their only readers/writers — but not the two enum members themselves). Harmless (nothing read or wrote either key), but genuine dead code. Removed both.
+
+### Testing
+- New `tests/test_settings_keys.py` (7 tests): pins the two names no longer resolving on `SettingsKeys` and their literal key strings no longer appearing anywhere in `src/`, plus a general regression guard asserting every remaining `SettingsKeys`/`SplitterKeys` member (by literal string value or direct enum reference) is used somewhere outside `settings_keys.py` — so a future dead member added the same way is caught automatically rather than needing another manual audit.
+- 4 of the 7 fail on the pre-fix tree (`git stash` of just `settings_keys.py`, rerun, then restored) — including the general sweep, which independently flagged exactly the two known-dead names.
+- Full suite: `QT_API=pyside6 QT_QPA_PLATFORM=offscreen pytest tests/ -q` — **420 passed** (was 413), 0 regressions.
+- `ruff check src/valis_workstation/settings_keys.py tests/test_settings_keys.py`: 0 findings. `ruff check src/`: 123 findings before and after (same ruff binary/version used for both sides of the comparison), 0 new.
+
 ## 2026-09-18
 
 ### Fixed
