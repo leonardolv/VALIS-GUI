@@ -10,7 +10,8 @@ _(nothing claimed)_
 ## Completed
 
 ### 2026-09-22 UTC — `SettingsKeys.CACHE_MAX_TILE_MB`/`PERF_TILE_SIZE` were orphaned enum members
-Branch `claude/eager-brown-xzjgca` · PR: see below · Status: **done**
+Branch `claude/eager-brown-xzjgca` · PR
+[#17](https://github.com/leonardolv/VALIS-GUI/pull/17) · Status: **done, merged**
 
 **Claimed** after reading the full log, confirming no active In-Progress
 claim, confirming `list_pull_requests` (open) returns empty for this repo,
@@ -80,7 +81,11 @@ that found this.
   `QT_QPA_PLATFORM=offscreen` — same minimal-dependency approach as every
   prior entry in this log; the full VALIS scientific stack was not needed.
 
-**PR.** (opened this run, see repository pull requests).
+**PR.** [#17](https://github.com/leonardolv/VALIS-GUI/pull/17) — merged
+(squash, `3d2e13b`). This repo's GitHub Actions runs never actually fire
+(confirmed via the Actions API — 0 workflow runs total, repo-wide and on
+this branch), so merged on local validation per this file's established
+precedent, not a green CI check.
 
 ### 2026-09-18 UTC — `MergeSlidesDialog`'s "Overlap handling: Last" option is identical to "First"
 Branch `claude/eager-brown-hwyngk` · PR
