@@ -143,6 +143,113 @@ def _keep_last_occurrence(
     ]
 
 
+def _average_duplicate_bands(
+    merged_img, all_channel_names: list[str]
+) -> tuple[object, list[str]]:
+    """Collapse bands that share a channel name into a single, averaged band.
+
+    ``Valis.warp_and_merge_slides(drop_duplicates=False)`` - what
+    ``merge_registered_slides`` asks for under "Average" duplicate handling
+    - keeps every duplicate-named channel as its own separate band; VALIS
+    has no averaging mode of its own. This is the piece that was missing:
+    for each channel name that appears more than once, replace its bands
+    with their pixelwise mean, producing exactly one band per unique name,
+    in first-occurrence order - the same one-band-per-name shape "First"/
+    "Last" duplicate handling already produce, so an "Average" merge is
+    comparable (same band count/order) to the other four options.
+
+    Parameters
+    ----------
+    merged_img : pyvips.Image
+        The merged image returned by ``Valis.warp_and_merge_slides`` with
+        ``drop_duplicates=False`` - one band per ``(slide, channel)`` entry,
+        including duplicates.
+    all_channel_names : list[str]
+        The channel name for each band in ``merged_img``, same order,
+        same length - VALIS's own second return value.
+
+    Returns
+    -------
+    tuple[pyvips.Image, list[str]]
+        The band-reduced image and its deduplicated channel names, in
+        matching order. When no channel name repeats, ``merged_img`` and
+        ``all_channel_names`` are returned unchanged (same object, not a
+        copy) - a no-op merge should not pay for one.
+    """
+    order: list[str] = []
+    indices_by_name: dict[str, list[int]] = {}
+    for idx, name in enumerate(all_channel_names):
+        if name not in indices_by_name:
+            indices_by_name[name] = []
+            order.append(name)
+        indices_by_name[name].append(idx)
+
+    if all(len(idxs) == 1 for idxs in indices_by_name.values()):
+        return merged_img, all_channel_names
+
+    averaged_bands = []
+    for name in order:
+        idxs = indices_by_name[name]
+        if len(idxs) == 1:
+            averaged_bands.append(merged_img[idxs[0]])
+            continue
+        bands = [merged_img[idx] for idx in idxs]
+        total = bands[0]
+        for band in bands[1:]:
+            total = total + band
+        averaged_bands.append((total / len(bands)).cast(merged_img.format))
+
+    if len(averaged_bands) == 1:
+        result = averaged_bands[0]
+    else:
+        result = averaged_bands[0].bandjoin(averaged_bands[1:])
+
+    # Mirrors `Valis.warp_and_merge_slides`'s own interpretation handling
+    # (registration.py, right after it finishes band-joining) - a
+    # single-band image is "b-w", not "multiband".
+    result = result.copy(interpretation="b-w" if result.bands == 1 else "multiband")
+
+    return result, order
+
+
+def _rebuild_ome_xml_for_channels(
+    registrar, merged_img, channel_names: list[str], colormap, level: int = 0
+) -> str:
+    """Rebuild the OME-XML metadata for a band count ``warp_and_merge_slides``
+    did not itself produce.
+
+    Averaging duplicate bands (`_average_duplicate_bands`) can shrink the
+    band count below what VALIS's own returned ``ome_xml`` describes (it
+    was built for the pre-averaged image, with one entry per duplicate).
+    Saving the averaged pixels under metadata that still lists the
+    dropped duplicate channels would desynchronize the file's channel
+    count from its own header. This reproduces VALIS's own OME-XML
+    construction (`Valis.warp_and_merge_slides`, `registration.py`) for
+    the reduced channel list instead of trying to edit the original XML.
+    """
+    slide_io = importlib.import_module("valis.slide_io")
+    ref_slide = registrar.get_ref_slide()
+    px_phys_size = ref_slide.reader.scale_physical_size(level)
+    bf_dtype = slide_io.vips2bf_dtype(merged_img.format)
+    out_xyczt = slide_io.get_shape_xyzct(
+        (merged_img.width, merged_img.height), merged_img.bands
+    )
+    cmap_dict = (
+        slide_io.check_colormap(colormap, channel_names)
+        if colormap is not None
+        else None
+    )
+    ome_xml_obj = slide_io.create_ome_xml(
+        out_xyczt,
+        bf_dtype,
+        is_rgb=False,
+        pixel_physical_size_xyu=px_phys_size,
+        channel_names=channel_names,
+        colormap=cmap_dict,
+    )
+    return ome_xml_obj.to_xml()
+
+
 def _normalize_channels(merged_img):
     """Linearly stretch each channel/band to the full range of its pixel format.
 
@@ -224,9 +331,11 @@ def merge_registered_slides(
             "First"/"Last" keep whichever slide's channel occurs first/last
             in `channels`'s order and drop the other(s); "Maximum"/"Minimum"
             aren't supported by VALIS and fall back to "first" with a
-            logged warning; "Average" keeps every duplicate as a separate
-            band rather than actually averaging them (VALIS has no such
-            mode either). "Last" used to be silently identical to "First"
+            logged warning; "Average" builds the image with every
+            duplicate band still present (VALIS has no averaging mode of
+            its own) and then collapses same-named bands into their
+            pixelwise mean itself - see `_average_duplicate_bands`.
+            "Last" used to be silently identical to "First"
             (it set the same VALIS flag and never actually reordered
             anything, despite its own log message claiming otherwise) -
             see `_keep_last_occurrence`.
@@ -376,6 +485,19 @@ def merge_registered_slides(
 
     normalize = bool(merge_config.get("normalize"))
 
+    # Whether there is anything for "Average" duplicate handling to actually
+    # average - computed from `channel_name_dict` itself (a duplicate is two
+    # different slides sharing one channel name) rather than by always
+    # taking the slower unsaved-build-then-save-ourselves path "just in
+    # case". Unaffected by the "last" dedup above, since that only mutates
+    # `channel_name_dict` when `duplicate_handling == "last"`.
+    flattened_channel_names = [
+        name for names in channel_name_dict.values() for name in names
+    ]
+    has_duplicate_channel_names = len(set(flattened_channel_names)) != len(
+        flattened_channel_names
+    )
+
     try:
         if cancel_check and cancel_check():
             raise UserVisibleError("Merge cancelled by user")
@@ -383,13 +505,21 @@ def merge_registered_slides(
         # Call VALIS warp_and_merge_slides
         logger.info("Starting slide merge operation")
 
-        if normalize:
-            # Normalizing rewrites pixel values before the image is saved,
-            # so ask VALIS to build (and return) the merged image instead of
-            # having it write to disk directly.
+        # "Average" needs the same unsaved-build-then-save-ourselves path as
+        # normalize: collapsing duplicate bands into their mean is pixel
+        # work this module has to do, and VALIS's own direct-to-disk save
+        # (the `else` branch below) never hands the pixels back for that.
+        needs_unsaved_build = normalize or (
+            duplicate_handling == "average" and has_duplicate_channel_names
+        )
+
+        if needs_unsaved_build:
+            # Ask VALIS to build (and return) the merged image instead of
+            # having it write to disk directly, so this module can rewrite
+            # pixels (averaging and/or normalizing) before the real save.
             unsaved_kwargs = dict(merge_kwargs)
             unsaved_kwargs["dst_f"] = None
-            merged_img, _all_channel_names, ome_xml = registrar.warp_and_merge_slides(
+            merged_img, all_channel_names, ome_xml = registrar.warp_and_merge_slides(
                 **unsaved_kwargs
             )
 
@@ -399,7 +529,22 @@ def merge_registered_slides(
             if progress_callback:
                 progress_callback(60)
 
-            merged_img = _normalize_channels(merged_img)
+            if duplicate_handling == "average":
+                original_names = all_channel_names
+                merged_img, all_channel_names = _average_duplicate_bands(
+                    merged_img, all_channel_names
+                )
+                if all_channel_names != original_names:
+                    # Averaging actually dropped duplicate bands - VALIS's
+                    # own `ome_xml` still describes the pre-averaged band
+                    # count/names, which would now disagree with what is
+                    # about to be saved.
+                    ome_xml = _rebuild_ome_xml_for_channels(
+                        registrar, merged_img, all_channel_names, colormap
+                    )
+
+            if normalize:
+                merged_img = _normalize_channels(merged_img)
 
             slide_io = importlib.import_module("valis.slide_io")
             tile_wh = merge_kwargs.get("tile_wh")
