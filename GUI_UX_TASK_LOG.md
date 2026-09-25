@@ -6,6 +6,21 @@
 
 ## Completed
 
+### Task: Implement Batch Export Presets, Initial State Population, Reset to Defaults, and Accessibility in SaveOptionsDialog
+- **Completed**: 2026-09-26
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/save_options_dialog.py`:
+    - Added batch export presets (`Default (Balanced OME-TIFF)`, `Diagnostic High-Quality`, `Web / Fast Preview`, `Archival Lossless`, `Custom`) via `self._preset_combo`, allowing fast scenario-based configuration of formats, pyramid levels, compression, quality, and tile sizes.
+    - Added `initial_options: dict | None = None` support to `SaveOptionsDialog.__init__` and `apply_options()` to seamlessly pre-populate the dialog from active Properties dock output settings.
+    - Added "Reset to Defaults" button (`QtWidgets.QDialogButtonBox.StandardButton.Reset`) restoring recommended workstation defaults in a single click.
+    - Added full screen reader accessible names and descriptive tooltips across all dialog controls (`_preset_combo`, `_write_pyramid`, `_pyramid_levels`, `_compression`, `_quality`, `_tile_size`, `_format`, `_info_label`, `reset_defaults_btn`).
+  - `src/valis_workstation/main_window.py`:
+    - Updated `_show_save_options()` to pass current output parameters from `_properties_dock` into `SaveOptionsDialog(self, initial_options=current_options)`.
+  - `tests/test_save_options_dialog.py`:
+    - Added comprehensive unit tests validating initial options mapping, preset switching, custom modifications, accessibility names, and reset to defaults.
+- **Verification**: Verified headlessly with `pytest tests/test_save_options_dialog.py tests/test_all_features.py -k "SaveOptions" -v` (9 passed, 0 failures).
+- **Status**: Completed
+
 ### Task: Enhance ROI Export Dialog with JSON Import/Export, Reset to Defaults, and Non-blocking Feedback
 - **Completed**: 2026-09-25
 - **Changes**:
@@ -54,5 +69,5 @@
 - **Status**: Completed
 
 ## Backlog
-- Add thumbnail caching for large whole-slide image formats.
-- Implement batch export options for registered slide sets.
+- ~~Add thumbnail caching for large whole-slide image formats.~~ (Completed in `ThumbnailCache` and `thumbnail_generator.py`)
+- ~~Implement batch export options for registered slide sets.~~ (Completed via `SaveOptionsDialog` batch export presets)
