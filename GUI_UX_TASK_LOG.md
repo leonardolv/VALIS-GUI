@@ -6,6 +6,19 @@
 
 ## Completed
 
+### Task: Enhance ROI Export Dialog with JSON Import/Export, Reset to Defaults, and Non-blocking Feedback
+- **Completed**: 2026-09-25
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/roi_export_dialog.py`:
+    - Replaced blocking `QMessageBox.information` modal on clipboard copy with inline visual status banner (`_feedback_label`), eliminating workflow disruption.
+    - Added "Paste from JSON" action (`self.paste_json_btn`) to parse and populate `x`, `y`, `width`, `height`, and `format` directly from clipboard JSON with real-time feedback.
+    - Added "Reset to Defaults" button (`QtWidgets.QDialogButtonBox.StandardButton.Reset`) restoring coordinates and export settings to standard defaults.
+    - Added accessible names and tooltips across all form inputs and action buttons (`X Coordinate Pixels`, `Y Coordinate Pixels`, `Width Pixels`, `Height Pixels`, `Export Image Format`, `Reopen in Viewer`, `Copy Coordinates as JSON`, `Paste Coordinates from JSON`, `Reset to Defaults`).
+  - `tests/test_roi_export_dialog.py`:
+    - Created comprehensive unit tests validating defaults, accessible names, copy to JSON, paste from JSON, invalid JSON handling, and reset to defaults.
+- **Verification**: Verified headlessly with `pytest tests/test_roi_export_dialog.py -v` (5 passed in 0.58s).
+- **Status**: Completed
+
 ### Task: Fix scikit-image ImportError crash in _get_transformer_cls fallback
 - **Completed**: 2026-09-07
 - **Changes**:
