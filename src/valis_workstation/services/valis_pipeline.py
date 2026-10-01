@@ -15,6 +15,7 @@ from valis_workstation.constants import (
     FeatureDetectors,
     ImageFormats,
     TransformerTypes,
+    compression_level_to_method,
 )
 from valis_workstation.models.config import Config
 from valis_workstation.utils.exceptions import UserVisibleError
@@ -233,6 +234,33 @@ def build_registrar_kwargs(config: Config) -> dict:
     return kwargs
 
 
+def build_save_kwargs(config: Config) -> dict:
+    """Build the ``compression``/``tile_wh``/``Q``/``pyramid`` keyword
+    arguments passed to ``Valis.warp_and_save_slides``.
+
+    Extracted (mirroring ``build_registrar_kwargs`` above) so the mapping
+    can be unit-tested without importing the heavy ``valis`` package.
+    Critically, ``config.compression_level`` (a 0-9 int, matching the Save
+    Options/Properties dock spinbox) is translated via
+    ``compression_level_to_method`` before being used as the ``compression``
+    kwarg - VALIS forwards that value straight through to
+    ``pyvips.Image.tiffsave``, which requires a method *name* string
+    (``"lzw"``, ``"deflate"``, ...), not a numeric level. Passing the raw
+    int crashed every real save with
+    ``AttributeError: 'int' object has no attribute 'lower'``.
+    """
+    save_kwargs: dict = {"pyramid": config.write_pyramid}
+    if config.compression_level is not None:
+        save_kwargs["compression"] = compression_level_to_method(
+            config.compression_level
+        )
+    if config.tile_size is not None:
+        save_kwargs["tile_wh"] = config.tile_size
+    if config.image_quality is not None and config.image_quality > 0:
+        save_kwargs["Q"] = config.image_quality
+    return save_kwargs
+
+
 def _valis_available() -> bool:
     return importlib.util.find_spec("valis") is not None
 
@@ -392,13 +420,7 @@ def run_valis_pipeline(
             logger.warning("Could not check disk space: %s", exc)
 
         # ── Save warped slides ─────────────────────────────────────
-        save_kwargs: dict = {"pyramid": config.write_pyramid}
-        if config.compression_level is not None:
-            save_kwargs["compression"] = config.compression_level
-        if config.tile_size is not None:
-            save_kwargs["tile_wh"] = config.tile_size
-        if config.image_quality is not None and config.image_quality > 0:
-            save_kwargs["Q"] = config.image_quality
+        save_kwargs = build_save_kwargs(config)
 
         registered_dir = output_dir / "registered"
         if stage_callback:

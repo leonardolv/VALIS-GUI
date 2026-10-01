@@ -1046,3 +1046,32 @@ class TestMergeRegisteredSlidesAverageDuplicateHandling:
 
         fake_slide_io.save_ome_tiff.assert_not_called()
         fake_slide_io.create_ome_xml.assert_not_called()
+
+
+class TestMergeCompressionIsAMethodName:
+    """`save_config["compression_level"]` is the GUI's 0-9 int; VALIS needs a
+    method-name string (it calls `.lower()` on it), so the raw int used to
+    crash every real merge with AttributeError."""
+
+    def test_compression_level_is_translated_to_a_string(self, tmp_path) -> None:
+        registrar = MagicMock()
+        registrar.slide_dict = {
+            "a.tiff": types.SimpleNamespace(src_f="/data/a.tiff"),
+            "b.tiff": types.SimpleNamespace(src_f="/data/b.tiff"),
+        }
+        merge_registered_slides(
+            registrar=registrar,
+            merge_config={
+                "channels": [
+                    {"slide_name": "a.tiff", "channel_name": "A", "color": "Auto"},
+                    {"slide_name": "b.tiff", "channel_name": "B", "color": "Auto"},
+                ],
+                "duplicate_handling": "first",
+                "output_name": "m",
+                "normalize": False,
+            },
+            output_path=tmp_path,
+            save_config={"compression_level": 6, "pyramid_levels": 4},
+        )
+        kwargs = registrar.warp_and_merge_slides.call_args.kwargs
+        assert kwargs["compression"] == "deflate"
