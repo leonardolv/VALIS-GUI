@@ -22,6 +22,14 @@ class BlinkViewerDialog(QtWidgets.QDialog):
         self._timer = QtCore.QTimer(self)
         self._timer.setInterval(600)
         self._timer.timeout.connect(self._toggle_layers)
+        # QDialog.reject()/accept() — what the "Close" standard button and
+        # the Escape key both call — do NOT invoke closeEvent (only a real
+        # close()/window-X-button does), so stopping the timer solely from
+        # closeEvent leaves it running forever once this dialog (parented
+        # to MainWindow) is merely hidden rather than destroyed. `finished`
+        # fires for accept()/reject() and covers that gap; closeEvent below
+        # still covers the native-close path finished doesn't reach.
+        self.finished.connect(self._stop_blink_timer)
 
         layout = QtWidgets.QVBoxLayout(self)
         form = QtWidgets.QFormLayout()
@@ -147,6 +155,21 @@ class BlinkViewerDialog(QtWidgets.QDialog):
         self._layer_a.visible = show_a
         self._layer_b.visible = not show_a
 
-    def closeEvent(self, event) -> None:
+    def _stop_blink_timer(self, *_args) -> None:
+        """Stop the auto-blink timer, however this dialog is dismissed.
+
+        Connected to both `finished` (accept()/reject()/Escape — the
+        "Close" button's path) and called from `closeEvent` (the native
+        close()/window-X-button path), since neither alone covers every
+        way this dialog can be dismissed. Unchecking the toggle (rather
+        than calling `self._timer.stop()` directly) reuses `_toggle_blink`
+        for the text/visibility reset, and is a no-op if blink was never
+        started.
+        """
+        if self._blink_toggle.isChecked():
+            self._blink_toggle.setChecked(False)
         self._timer.stop()
+
+    def closeEvent(self, event) -> None:
+        self._stop_blink_timer()
         super().closeEvent(event)
