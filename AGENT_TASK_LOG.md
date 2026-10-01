@@ -11,7 +11,7 @@ _(nothing claimed)_
 
 ### 2026-09-23 UTC — Registration/merge saves crash: `compression_level` (int) passed as VALIS's `compression` (str)
 
-Branch `claude/eloquent-fermat-7ad206` · PR: PR_URL_PLACEHOLDER · Status: **done**
+Branch `claude/eloquent-fermat-7ad206` · PR: [#20](https://github.com/leonardolv/VALIS-GUI/pull/20) (merged, squash `0188d9c`; no CI runs exist in this repo, merged on local validation) · Status: **done**
 
 **Claimed** after reading the full log (Backlog fully struck through — every
 entry references a real Completed entry) and confirming no open PR exists
