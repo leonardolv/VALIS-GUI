@@ -15,7 +15,6 @@ from valis_workstation.constants import ImageFormats
 from valis_workstation.layout_constants import (
     CANVAS_MIN_H,
     CANVAS_MIN_W,
-    GRID_SPACING,
     LEFT_SIDEBAR_INIT,
     LEFT_SIDEBAR_MAX,
     LEFT_SIDEBAR_MIN,
@@ -1342,7 +1341,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _show_save_options(self) -> None:
         """Show save-options dialog and copy results into the Properties dock."""
-        dialog = SaveOptionsDialog(self)
+        dock = self._properties_dock
+        current_options = {
+            "pyramid_levels": dock._pyramid_levels_spin.value() if hasattr(dock, "_pyramid_levels_spin") else 4,
+            "compression": dock._compression_level_spin.value() if hasattr(dock, "_compression_level_spin") else 1,
+            "tile_size": dock._tile_size_spin.value() if hasattr(dock, "_tile_size_spin") else 512,
+            "quality": dock._image_quality_spin.value() if hasattr(dock, "_image_quality_spin") else 95,
+            "format": dock._format_combo.currentText() if hasattr(dock, "_format_combo") else "OME-TIFF",
+            "write_pyramid": dock._write_pyramid_check.isChecked() if hasattr(dock, "_write_pyramid_check") else True,
+        }
+        dialog = SaveOptionsDialog(self, initial_options=current_options)
         if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
             options = dialog.get_options()
             logger.info("Save options configured: %s", options)
@@ -1471,7 +1479,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             def on_merge_success(result_path):
                 logger.info("Merge completed: %s", result_path)
-                self._status_bar.showMessage(f"Slides merged successfully", 5000)
+                self._status_bar.showMessage("Slides merged successfully", 5000)
                 QtWidgets.QMessageBox.information(
                     self,
                     "Merge Complete",

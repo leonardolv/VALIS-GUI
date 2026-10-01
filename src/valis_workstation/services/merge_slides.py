@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 from typing import Callable
 
+from valis_workstation.constants import compression_level_to_method
 from valis_workstation.utils.exceptions import UserVisibleError
 
 logger = logging.getLogger(__name__)
@@ -472,7 +473,15 @@ def merge_registered_slides(
         if save_config.get("pyramid_levels", 0) > 0:
             merge_kwargs["pyramid"] = True
         if save_config.get("compression_level") is not None:
-            merge_kwargs["compression"] = save_config["compression_level"]
+            # `compression_level` is the GUI's 0-9 spinbox value, not a
+            # compression *method name* - VALIS forwards this straight
+            # through to `pyvips.Image.tiffsave`, which calls `.lower()`
+            # on it, so passing the raw int crashed every merge that
+            # reached the save step with `AttributeError: 'int' object
+            # has no attribute 'lower'`.
+            merge_kwargs["compression"] = compression_level_to_method(
+                save_config["compression_level"]
+            )
         if save_config.get("tile_size"):
             merge_kwargs["tile_wh"] = save_config["tile_size"]
         if save_config.get("image_quality"):
