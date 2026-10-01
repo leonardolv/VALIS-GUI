@@ -205,6 +205,51 @@ class ImageFormats(StrEnum):
         return [member.value for member in cls]
 
 
+# The TIFF compression *method* names ``pyvips.Image.tiffsave`` (and
+# therefore ``valis.slide_io.save_ome_tiff``, which forwards its
+# ``compression`` argument straight through and calls ``.lower()`` on it)
+# actually accepts. See
+# https://libvips.github.io/pyvips/enums.html#pyvips.enums.ForeignTiffCompression
+_COMPRESSION_LEVEL_METHODS: tuple[str, ...] = (
+    "none",  # 0 - "No compression (fastest, largest)"
+    "lzw",  # 1 - "Fast compression (good balance)"
+    "lzw",  # 2
+    "lzw",  # 3
+    "lzw",  # 4
+    "deflate",  # 5 - matches VALIS's own DEFAULT_COMPRESSION
+    "deflate",  # 6
+    "deflate",  # 7
+    "deflate",  # 8
+    "deflate",  # 9 - "Maximum compression (slowest, smallest)"
+)
+
+
+def compression_level_to_method(level: int) -> str:
+    """Map the GUI's 0-9 "compression level" spinbox value to a TIFF
+    compression *method name* that VALIS/pyvips will actually accept.
+
+    ``Config.compression_level`` and the Save Options/Properties dock
+    spinboxes model a single 0-9 slider, following their own tooltip's
+    zlib-style "0 = none ... 9 = maximum" framing. But
+    ``Valis.warp_and_save_slides``/``warp_and_merge_slides`` forward
+    whatever they're given for ``compression`` straight through to
+    ``slide_io.save_ome_tiff``, which immediately calls
+    ``compression.lower()`` on it before handing it to
+    ``pyvips.Image.tiffsave`` - there is no numeric "level" parameter
+    anywhere on this path, only a fixed set of method names (``"none"``,
+    ``"lzw"``, ``"deflate"``, ``"jpeg"``, ...). Passing the raw int
+    straight through (as both ``services/valis_pipeline.py`` and
+    ``services/merge_slides.py`` used to) crashes every real save with
+    ``AttributeError: 'int' object has no attribute 'lower'`` - this
+    function exists to be called before either kwargs dict reaches VALIS.
+
+    Values outside ``0-9`` are clamped rather than raising, matching
+    ``Config.__post_init__``'s own clamping of the same field.
+    """
+    index = max(0, min(len(_COMPRESSION_LEVEL_METHODS) - 1, int(level)))
+    return _COMPRESSION_LEVEL_METHODS[index]
+
+
 # Shared supported extensions for slide discovery/validation.
 SUPPORTED_EXTENSIONS: frozenset[str] = frozenset(
     {

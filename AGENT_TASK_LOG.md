@@ -9,6 +9,40 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-09-23 UTC — Registration/merge saves crash: `compression_level` (int) passed as VALIS's `compression` (str)
+
+Branch `claude/eloquent-fermat-7ad206` · PR: PR_URL_PLACEHOLDER · Status: **done**
+
+**Claimed** after reading the full log (Backlog fully struck through — every
+entry references a real Completed entry) and confirming no open PR exists
+for this repo/branch. Since the known backlog was exhausted, did a fresh
+audit rather than trusting old log text, per this run's own instructions.
+Found by tracing `Config.compression_level`'s int value all the way down
+into the vendored `valis/` package (`services/valis_pipeline.py` and
+`services/merge_slides.py` both pass it straight through as VALIS's
+`compression` kwarg) and reading `valis/slide_io.py::save_ome_tiff`, which
+unconditionally calls `compression.lower()` before handing it to
+`pyvips.Image.tiffsave` — `pyvips`'s TIFF writer only accepts method-name
+strings (`"none"`, `"lzw"`, `"deflate"`, `"jpeg"`, ...), never a numeric
+level, per `pyvips.enums.ForeignTiffCompression`. 
+**Root cause.** `services/valis_pipeline.py` (`save_kwargs["compression"]`)
+and `services/merge_slides.py` forwarded `Config.compression_level` (0-9 int)
+as VALIS's `compression`; `save_ome_tiff` calls `.lower()` on it, so every
+real registration/merge save raised `AttributeError`.
+
+**Solution.** New `constants.compression_level_to_method` (0 -> none, 1-4 ->
+lzw, 5-9 -> deflate, clamped); new testable `build_save_kwargs(config)` in
+`valis_pipeline.py`; merge path uses the same helper.
+
+**Validation.** New tests in `test_constants.py`, `test_pipeline.py`,
+`test_merge_slides_service.py` (fail on pre-fix tree). Full suite: 441 passed.
+
+**Not fixed, noted for a future run:** `Config.pyramid_levels` and
+`image_format` never reach VALIS (it has only a `pyramid` bool and always
+writes `.ome.tiff`), so those controls are inert.
+
+
+
 ### 2026-09-22 UTC (second run) — `MergeSlidesDialog`'s "Average" duplicate handling now actually averages
 
 Branch `claude/eager-brown-hkxbvs` · PR: pending · Status: **in progress**
