@@ -1,5 +1,4 @@
-from __future__ import annotations
-
+import logging
 import sys
 from pathlib import Path
 
@@ -9,6 +8,18 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
+
+
+@pytest.fixture(autouse=True)
+def _restore_valis_logging_propagation():
+    """Ensure valis_workstation logger propagates to root during tests so caplog functions reliably."""
+    valis_logger = logging.getLogger("valis_workstation")
+    prev_propagate = valis_logger.propagate
+    valis_logger.propagate = True
+    try:
+        yield
+    finally:
+        valis_logger.propagate = prev_propagate
 
 
 @pytest.fixture(autouse=True)

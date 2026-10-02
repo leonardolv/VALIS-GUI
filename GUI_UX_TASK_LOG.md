@@ -6,8 +6,15 @@
 
 ## Completed
 
-### Task: Implement Batch Export Presets, Initial State Population, Reset to Defaults, and Accessibility in SaveOptionsDialog
-- **Completed**: 2026-09-26
+### Task: Remediate Pipeline Dictionary Log Formatting and Test Logger Propagation
+- **Completed**: 2026-10-02
+- **Changes**:
+  - `src/valis_workstation/services/valis_pipeline.py`:
+    - Converted `kwargs` and `vars(config)` dictionary arguments in `logger.info` calls to `str(...)` to avoid Python logging `TypeError: not all arguments converted during string formatting` when logging dictionaries with `%s`.
+  - `tests/conftest.py`:
+    - Added `_restore_valis_logging_propagation` fixture ensuring `valis_workstation` logger propagates to root during testing so `caplog` captures service logs reliably across the entire test suite.
+- **Verification**: Verified headlessly with `pytest tests/ -q` (439 passed, 0 failures in 24.79s).
+- **Status**: Completed
 - **Changes**:
   - `src/valis_workstation/ui/dialogs/save_options_dialog.py`:
     - Added batch export presets (`Default (Balanced OME-TIFF)`, `Diagnostic High-Quality`, `Web / Fast Preview`, `Archival Lossless`, `Custom`) via `self._preset_combo`, allowing fast scenario-based configuration of formats, pyramid levels, compression, quality, and tile sizes.

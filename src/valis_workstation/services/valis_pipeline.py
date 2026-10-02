@@ -230,7 +230,7 @@ def build_registrar_kwargs(config: Config) -> dict:
                 "micro_rigid_registrar not importable – skipping micro-registration"
             )
 
-    logger.info("Registrar kwargs: %s", kwargs)
+    logger.info("Registrar kwargs: %s", str(kwargs))
     return kwargs
 
 
@@ -333,7 +333,7 @@ def run_valis_pipeline(
 
     _start_time = time.monotonic()
     logger.info("Starting VALIS pipeline with %d slides", len(slides))
-    logger.info("Config: %s", vars(config))
+    logger.info("Config: %s", str(vars(config)))
     if stage_callback:
         stage_callback("Preparing pipeline")
     if progress_callback:
