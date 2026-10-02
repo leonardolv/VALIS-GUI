@@ -6,6 +6,18 @@
 
 ## Completed
 
+### Task: Add Diagnostics Dialog Clipboard Copy, Safe Lifetime Handling, and Accessibility Affordances
+- **Completed**: 2026-10-02
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/diagnostics_dialog.py`:
+    - Added "Copy to Clipboard" button (`self._copy_btn`) with inline visual `✓ Copied!` confirmation.
+    - Attached context object `self` and `RuntimeError` exception protection to timer callback to prevent Qt object lifecycle errors when dialog is closed before timeout.
+    - Added accessible names, descriptive tooltips, and `PointingHandCursor` across all controls (`_text`, `_refresh_btn`, `_copy_btn`, `_close_btn`).
+  - `tests/test_diagnostics_dialog.py`:
+    - Added unit tests validating accessibility metadata, tooltips, clipboard copy, and refresh functionality.
+- **Verification**: Verified headlessly with `pytest tests/test_diagnostics_dialog.py -v` (3 passed in 0.51s) and `pytest tests/test_layout_splitters.py -v` (53 passed).
+- **Status**: Completed
+
 ### Task: Remediate Pipeline Dictionary Log Formatting and Test Logger Propagation
 - **Completed**: 2026-10-02
 - **Changes**:
