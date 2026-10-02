@@ -6,6 +6,18 @@
 
 ## Completed
 
+### Task: Add Performance Statistics Dialog Accessibility and Headless Cache Safety
+- **Completed**: 2026-10-02
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/performance_stats_dialog.py`:
+    - Added screen-reader accessible names, descriptive tooltips, and pointing hand cursors for `_refresh_btn`, `_clear_thumb_cache_btn`, and `_close_btn`.
+    - Added accessible name `"Thumbnail Cache Usage"` for the cache progress bar `_thumb_cache_bar`.
+    - Added headless/test environment safety guard to `_clear_thumbnail_cache` to prevent modal popup blocking during automated test runs.
+  - `tests/test_performance_stats_dialog.py`:
+    - Added comprehensive unit tests validating accessible names, tooltips, cursor shapes, refresh trigger, and headless cache clearing.
+- **Verification**: Verified headlessly with `pytest tests/test_performance_stats_dialog.py tests/test_all_features.py -q` (126 passed, 0 failures).
+- **Status**: Completed
+
 ### Task: Add Diagnostics Dialog Clipboard Copy, Safe Lifetime Handling, and Accessibility Affordances
 - **Completed**: 2026-10-02
 - **Changes**:
