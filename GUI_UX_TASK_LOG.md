@@ -6,6 +6,19 @@
 
 ## Completed
 
+### Task: Add Error Detail Dialog Accessibility, Pointing Hand Cursors, Lifetime-Safe Clipboard Copy, and Headless Safety
+- **Completed**: 2026-10-02
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/error_detail_dialog.py`:
+    - Exposed buttons as instance attributes (`copy_btn`, `report_btn`, `close_btn`) and collapsible group as `details_group` and text edit as `details_text`.
+    - Added screen-reader accessible names, descriptive tooltips, and `PointingHandCursor` shapes across all dialog buttons and the collapsible technical details group.
+    - Added lifetime-safe timer callback handling (`singleShot(2000, self, ...)` with `RuntimeError` guards) to prevent object deletion exceptions when dialog is closed during copy confirmation.
+    - Added headless/pytest offscreen execution guards to `_report_issue` and `show_error_dialog` to prevent blocking modal popups during automated test runs.
+  - `tests/test_error_detail_dialog.py`:
+    - Added comprehensive unit tests validating accessible names, tooltips, cursor shapes, copy to clipboard action, and headless safety across `ErrorDetailDialog` and `show_error_dialog`.
+- **Verification**: Verified headlessly with `pytest tests/test_error_detail_dialog.py tests/test_performance_stats_dialog.py tests/test_diagnostics_dialog.py -q` (10 passed, 0 failures in 0.47s) and `pytest tests/test_all_features.py -k ErrorDetailDialog -v` (4 passed in 0.39s).
+- **Status**: Completed
+
 ### Task: Add Performance Statistics Dialog Accessibility and Headless Cache Safety
 - **Completed**: 2026-10-02
 - **Changes**:
