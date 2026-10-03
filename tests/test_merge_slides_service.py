@@ -94,6 +94,20 @@ class FakeVipsImage:
             height=self.height,
         )
 
+    def _pair(self, other, fn):
+        return FakeVipsImage(
+            [[fn(a, b) for a, b in zip(self._band_values[0], other._band_values[0])]],
+            fmt=self.format,
+            width=self.width,
+            height=self.height,
+        )
+
+    def maxpair(self, other):
+        return self._pair(other, max)
+
+    def minpair(self, other):
+        return self._pair(other, min)
+
     def cast(self, fmt):
         self.format = fmt
         return self
@@ -204,6 +218,67 @@ class TestAverageDuplicateBands:
         assert result_names == ["DAPI"]
         assert result_img.bands == 1
         assert result_img._band_values[0] == pytest.approx([20, 30])
+
+
+class TestMaxMinDuplicateBands:
+    def test_maximum_takes_the_brightest_pixel(self):
+        img = FakeVipsImage([[10, 50], [1, 1], [30, 40]], fmt="uchar")
+        out, names = _average_duplicate_bands(
+            img, ["DAPI", "GFP", "DAPI"], mode="maximum"
+        )
+        assert names == ["DAPI", "GFP"]
+        assert out._band_values[0] == [30, 50]
+        assert out._band_values[1] == [1, 1]
+
+    def test_minimum_takes_the_dimmest_pixel(self):
+        img = FakeVipsImage([[10, 50], [30, 40], [20, 45]], fmt="uchar")
+        out, names = _average_duplicate_bands(img, ["A", "A", "A"], mode="minimum")
+        assert names == ["A"]
+        assert out._band_values[0] == [10, 40]
+
+    def test_merge_uses_max_and_keeps_duplicates_for_reduction(
+        self, tmp_path, monkeypatch
+    ):
+        registrar = MagicMock()
+        registrar.slide_dict = {
+            n: types.SimpleNamespace(src_f=f"/d/{n}")
+            for n in ("a.tiff", "b.tiff")
+        }
+        registrar.get_ref_slide.return_value = MagicMock()
+        registrar.warp_and_merge_slides.return_value = (
+            FakeVipsImage([[1, 9], [5, 2]], fmt="uchar"),
+            ["DAPI", "DAPI"],
+            "<OME/>",
+        )
+        fake_io = types.SimpleNamespace(
+            get_tile_wh=MagicMock(return_value=512),
+            save_ome_tiff=MagicMock(),
+            vips2bf_dtype=MagicMock(return_value="uint8"),
+            get_shape_xyzct=MagicMock(return_value=(4, 4, 1, 1, 1)),
+            check_colormap=MagicMock(return_value=None),
+            create_ome_xml=MagicMock(
+                return_value=types.SimpleNamespace(to_xml=lambda: "<OME m/>")
+            ),
+        )
+        monkeypatch.setitem(sys.modules, "valis.slide_io", fake_io)
+        monkeypatch.setitem(sys.modules, "valis", types.SimpleNamespace())
+        merge_registered_slides(
+            registrar=registrar,
+            merge_config={
+                "channels": [
+                    {"slide_name": "a.tiff", "channel_name": "DAPI", "color": "Auto"},
+                    {"slide_name": "b.tiff", "channel_name": "DAPI", "color": "Auto"},
+                ],
+                "duplicate_handling": "maximum",
+                "output_name": "m",
+                "normalize": False,
+            },
+            output_path=tmp_path,
+        )
+        assert registrar.warp_and_merge_slides.call_args.kwargs["drop_duplicates"] is False
+        saved = fake_io.save_ome_tiff.call_args.args[0]
+        assert saved.bands == 1
+        assert saved._band_values[0] == [5, 9]
 
 
 # ---------------------------------------------------------------------------
