@@ -1251,6 +1251,18 @@ convention.
 
 **PR.** #4 — https://github.com/leonardolv/VALIS-GUI/pull/4
 
+### 2026-10-03 00:10 UTC — Merge Slides: "Maximum"/"Minimum" duplicate handling silently behave as "First"
+
+Root cause: `merge_registered_slides` mapped "Maximum"/"Minimum" duplicate
+handling to `drop_duplicates=True` with a "not supported" warning, so both
+were identical to "First" despite the dialog tooltip ("Take brightest value").
+Solution: `_average_duplicate_bands` gained `mode` ("average"/"maximum"/
+"minimum", pyvips `maxpair`/`minpair`); max/min now keep all bands
+(`drop_duplicates=False`) and take the unsaved-build-then-reduce-then-save
+path used by "Average". Validation: 41 passed in tests/test_merge_slides_service.py
+(3 new; FakeVipsImage gained maxpair/minpair). Not run against real pyvips
+(not installed). PR: see branch claude/peaceful-mayer-b5br79.
+
 ## Backlog
 
 - ~~**`ui/show_tooltips` and `cache/persist` are the two remaining

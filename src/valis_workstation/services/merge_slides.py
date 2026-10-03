@@ -145,9 +145,14 @@ def _keep_last_occurrence(
 
 
 def _average_duplicate_bands(
-    merged_img, all_channel_names: list[str]
+    merged_img, all_channel_names: list[str], mode: str = "average"
 ) -> tuple[object, list[str]]:
-    """Collapse bands that share a channel name into a single, averaged band.
+    """Collapse bands that share a channel name into a single reduced band.
+
+    ``mode`` selects the pixelwise reduction: ``"average"`` (default, mean),
+    ``"maximum"`` or ``"minimum"`` (``pyvips`` ``maxpair``/``minpair``). The
+    description below is written for the average case; the other two differ
+    only in the reduction.
 
     ``Valis.warp_and_merge_slides(drop_duplicates=False)`` - what
     ``merge_registered_slides`` asks for under "Average" duplicate handling
@@ -197,8 +202,16 @@ def _average_duplicate_bands(
         bands = [merged_img[idx] for idx in idxs]
         total = bands[0]
         for band in bands[1:]:
-            total = total + band
-        averaged_bands.append((total / len(bands)).cast(merged_img.format))
+            if mode == "maximum":
+                total = total.maxpair(band)
+            elif mode == "minimum":
+                total = total.minpair(band)
+            else:
+                total = total + band
+        if mode in ("maximum", "minimum"):
+            averaged_bands.append(total.cast(merged_img.format))
+        else:
+            averaged_bands.append((total / len(bands)).cast(merged_img.format))
 
     if len(averaged_bands) == 1:
         result = averaged_bands[0]
@@ -454,11 +467,9 @@ def merge_registered_slides(
     if duplicate_handling == "average":
         merge_kwargs["drop_duplicates"] = False  # Keep duplicates and average
     elif duplicate_handling in ["maximum", "minimum"]:
-        # VALIS doesn't directly support max/min, so we drop duplicates and note it
-        logger.warning(
-            f"{duplicate_handling} handling not directly supported by VALIS, using first occurrence"
-        )
-        merge_kwargs["drop_duplicates"] = True
+        # VALIS has no max/min mode; keep every band and reduce them
+        # ourselves via `_average_duplicate_bands(mode=...)` below.
+        merge_kwargs["drop_duplicates"] = False
     elif duplicate_handling == "first":
         merge_kwargs["drop_duplicates"] = True
     elif duplicate_handling == "last":
@@ -518,8 +529,13 @@ def merge_registered_slides(
         # normalize: collapsing duplicate bands into their mean is pixel
         # work this module has to do, and VALIS's own direct-to-disk save
         # (the `else` branch below) never hands the pixels back for that.
+        reduces_duplicates = duplicate_handling in (
+            "average",
+            "maximum",
+            "minimum",
+        )
         needs_unsaved_build = normalize or (
-            duplicate_handling == "average" and has_duplicate_channel_names
+            reduces_duplicates and has_duplicate_channel_names
         )
 
         if needs_unsaved_build:
@@ -538,10 +554,10 @@ def merge_registered_slides(
             if progress_callback:
                 progress_callback(60)
 
-            if duplicate_handling == "average":
+            if reduces_duplicates:
                 original_names = all_channel_names
                 merged_img, all_channel_names = _average_duplicate_bands(
-                    merged_img, all_channel_names
+                    merged_img, all_channel_names, mode=duplicate_handling
                 )
                 if all_channel_names != original_names:
                     # Averaging actually dropped duplicate bands - VALIS's
