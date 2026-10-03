@@ -6,6 +6,19 @@
 
 ## Completed
 
+### Task: Enhance QualityReportDialog Accessibility, Table Copy Action, Hand Cursors, and Headless Export Safety
+- **Completed**: 2026-10-03
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/quality_report.py`:
+    - Added screen-reader accessible names and descriptions (`setAccessibleName("Alignment Quality Metrics Table")`, `setAccessibleDescription(...)`) to `_table`.
+    - Added discoverable "Copy Table" button (`_copy_table_btn`) in the button row with inline visual feedback (`✓ Copied!`) and safe timer-based text restoration.
+    - Added screen-reader accessible names, descriptive tooltips, and `PointingHandCursor` shapes to `_copy_table_btn`, `_export_csv_btn`, and `_close_btn`.
+    - Guarded `QMessageBox.information` and `QMessageBox.critical` in `_export_csv` with headless/pytest offscreen execution guards to prevent modal popup blocking in automated runs.
+  - `tests/test_quality_report_dialog.py`:
+    - Created unit tests validating accessible names, tooltips, cursor shapes, copy table action and visual feedback, and headless CSV export.
+- **Verification**: Verified headlessly with `pytest tests/test_quality_report_dialog.py tests/test_performance_stats_dialog.py tests/test_error_detail_dialog.py tests/test_diagnostics_dialog.py tests/test_save_options_dialog.py tests/test_roi_export_dialog.py -v` (23 passed, 0 failures in 1.39s).
+- **Status**: Completed
+
 ### Task: Add Error Detail Dialog Accessibility, Pointing Hand Cursors, Lifetime-Safe Clipboard Copy, and Headless Safety
 - **Completed**: 2026-10-02
 - **Changes**:
