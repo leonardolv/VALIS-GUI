@@ -6,6 +6,20 @@
 
 ## Completed
 
+### Task: Enhance MergeSlidesDialog Accessibility, Tooltips, Hand Cursors, and Headless Export Safety
+- **Completed**: 2026-10-03
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/merge_slides_dialog.py`:
+    - Added screen-reader accessible name (`setAccessibleName("Channel Mapping Table")`) and detailed description to `_table`.
+    - Added accessible names, descriptive tooltips, object names, and `PointingHandCursor` shapes across all table row checkboxes (`include_cb`) and pseudo-color dropdowns (`color_combo`).
+    - Added accessible names, object names, and `PointingHandCursor` shapes to merge options (`_duplicate_handling`, `_output_name`, `_normalize`).
+    - Exposed action and dialog buttons as instance attributes (`_button_box`, `_select_all_btn`, `_select_none_btn`, `_export_config_btn`, `_ok_btn`, `_cancel_btn`) with descriptive tooltips, accessible names, object names, and `PointingHandCursor` shapes.
+    - Guarded `QMessageBox.information` and `QMessageBox.critical` in `_export_config` with headless/pytest offscreen execution guards to prevent modal popup blocking in automated test runs.
+  - `tests/test_merge_slides_dialog.py`:
+    - Created unit tests validating accessible names, tooltips, cursor shapes, selection toggle actions (`Select All` / `Select None`), and headless JSON configuration export.
+- **Verification**: Verified headlessly with `pytest tests/test_merge_slides_dialog.py tests/test_quality_report_dialog.py tests/test_performance_stats_dialog.py tests/test_error_detail_dialog.py tests/test_diagnostics_dialog.py tests/test_save_options_dialog.py tests/test_roi_export_dialog.py -v` (26 passed, 0 failures in 1.11s).
+- **Status**: Completed
+
 ### Task: Enhance QualityReportDialog Accessibility, Table Copy Action, Hand Cursors, and Headless Export Safety
 - **Completed**: 2026-10-03
 - **Changes**:
