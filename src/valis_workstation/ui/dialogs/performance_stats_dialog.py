@@ -42,6 +42,9 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
             "performance/auto_refresh_seconds", 2, type=int
         )
         self._update_timer.start(refresh_seconds * 1000)
+        # accept()/reject() (Close button, Escape) never call closeEvent, so
+        # stop the timer on `finished` too.
+        self.finished.connect(lambda *_: self._update_timer.stop())
 
     def _setup_ui(self):
         """Setup the user interface."""

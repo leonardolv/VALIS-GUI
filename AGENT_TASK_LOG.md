@@ -8,6 +8,23 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-04 UTC — `PerformanceStatsDialog`/`QuickTutorialDialog` timers outlive the dialog on Close/Escape
+
+Branch `claude/peaceful-mayer-wu7n3i` · PR: see branch PR · Status: **done**
+
+Same bug class as the BlinkViewer fix: timers stopped only in `closeEvent` (or never), but accept()/reject() skip closeEvent.
+
+**Root cause.** `PerformanceStatsDialog._update_timer` was stopped only in
+`closeEvent`; `QuickTutorialDialog._poll_timer` was never stopped. Close
+button/Escape call accept()/reject(), which skip closeEvent, so both timers
+kept firing on a hidden (parented, hence alive) dialog.
+
+**Fix.** Connect `finished` to a timer stop in both dialogs.
+
+**Validation.** New tests (`tests/test_performance_stats_dialog.py`,
+`tests/test_quick_tutorial_dialog_timer.py`): 6 pass; 3 of them fail without
+the fix. Headless (offscreen).
+
 ### 2026-09-22 UTC (third run) — `BlinkViewerDialog`'s auto-blink `QTimer` outlives the dialog when closed via the "Close" button/Escape
 
 Branch `claude/eloquent-fermat-v4wwey` · PR: pending · Status: **done**

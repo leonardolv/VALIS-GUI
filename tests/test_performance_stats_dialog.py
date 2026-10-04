@@ -49,3 +49,13 @@ def test_performance_stats_dialog_clear_cache_headless(qtbot):
     # Click clear thumbnail cache in headless mode without blocking
     dialog._clear_thumb_cache_btn.click()
     assert dialog._thumb_total_label.text() is not None
+
+
+def test_refresh_timer_stops_on_accept_and_reject(qtbot):
+    """Close button/Escape use accept()/reject(), which skip closeEvent."""
+    for finish in ("accept", "reject"):
+        dialog = PerformanceStatsDialog()
+        qtbot.addWidget(dialog)
+        assert dialog._update_timer.isActive()
+        getattr(dialog, finish)()
+        assert not dialog._update_timer.isActive()

@@ -382,6 +382,8 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         self._poll_timer = QtCore.QTimer(self)
         self._poll_timer.timeout.connect(self._check_auto_advance)
         self._poll_timer.start(1000)
+        # Close button/Escape use accept()/reject(), which skip closeEvent.
+        self.finished.connect(lambda *_: self._poll_timer.stop())
 
         # Initial context detection
         self._detect_initial_context()
