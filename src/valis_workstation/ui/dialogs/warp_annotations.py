@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from PySide6 import QtCore, QtWidgets
@@ -15,37 +16,61 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Warp Annotations")
-        self.resize(480, 220)
+        self.resize(500, 240)
+        self.setModal(True)
         self._registrar = registrar
         self._output_dir = Path(output_dir)
-        self._use_non_rigid = registrar.non_rigid_registrar_cls is not None
+        self._use_non_rigid = getattr(registrar, "non_rigid_registrar_cls", None) is not None
 
         layout = QtWidgets.QVBoxLayout(self)
         form = QtWidgets.QFormLayout()
 
         self._annotation_path = QtWidgets.QLineEdit()
+        self._annotation_path.setObjectName("annotation_path")
+        self._annotation_path.setAccessibleName("Annotation file path")
+        self._annotation_path.setPlaceholderText("Path to source .geojson annotation file...")
         self._annotation_path.setToolTip("GeoJSON file containing regions of interest from the source slide")
-        browse_btn = QtWidgets.QPushButton("Browse")
-        browse_btn.clicked.connect(self._browse_annotation)
+
+        self._browse_annotation_btn = QtWidgets.QPushButton("Browse")
+        self._browse_annotation_btn.setObjectName("browse_annotation_btn")
+        self._browse_annotation_btn.setAccessibleName("Browse annotation file")
+        self._browse_annotation_btn.setToolTip("Browse filesystem for source GeoJSON annotation file")
+        self._browse_annotation_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self._browse_annotation_btn.clicked.connect(self._browse_annotation)
+
         path_layout = QtWidgets.QHBoxLayout()
         path_layout.addWidget(self._annotation_path)
-        path_layout.addWidget(browse_btn)
+        path_layout.addWidget(self._browse_annotation_btn)
 
         self._source_slide = QtWidgets.QComboBox()
+        self._source_slide.setObjectName("source_slide")
+        self._source_slide.setAccessibleName("Source slide selection")
         self._source_slide.setToolTip("The slide the annotations were drawn on")
-        for slide_path in registrar.get_sorted_img_f_list():
-            slide_obj = registrar.get_slide(slide_path)
-            self._source_slide.addItem(slide_obj.name, slide_path)
+        self._source_slide.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+
+        if hasattr(registrar, "get_sorted_img_f_list"):
+            for slide_path in registrar.get_sorted_img_f_list():
+                slide_obj = registrar.get_slide(slide_path)
+                self._source_slide.addItem(slide_obj.name, slide_path)
 
         self._output_dir_edit = QtWidgets.QLineEdit(
             str(self._output_dir / "warped_annotations")
         )
+        self._output_dir_edit.setObjectName("output_dir_edit")
+        self._output_dir_edit.setAccessibleName("Warped annotations output directory")
+        self._output_dir_edit.setPlaceholderText("Directory where warped GeoJSON files will be saved...")
         self._output_dir_edit.setToolTip("Directory where warped GeoJSON files will be saved (one per target slide)")
-        out_btn = QtWidgets.QPushButton("Browse")
-        out_btn.clicked.connect(self._browse_output)
+
+        self._browse_output_btn = QtWidgets.QPushButton("Browse")
+        self._browse_output_btn.setObjectName("browse_output_btn")
+        self._browse_output_btn.setAccessibleName("Browse output directory")
+        self._browse_output_btn.setToolTip("Browse filesystem for output folder")
+        self._browse_output_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self._browse_output_btn.clicked.connect(self._browse_output)
+
         out_layout = QtWidgets.QHBoxLayout()
         out_layout.addWidget(self._output_dir_edit)
-        out_layout.addWidget(out_btn)
+        out_layout.addWidget(self._browse_output_btn)
 
         form.addRow("Annotation file", path_layout)
         form.addRow("Source slide", self._source_slide)
@@ -54,15 +79,31 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
         layout.addLayout(form)
 
         self._status = QtWidgets.QLabel()
+        self._status.setObjectName("status_label")
+        self._status.setAccessibleName("Warp status message")
         layout.addWidget(self._status)
 
-        button_box = QtWidgets.QDialogButtonBox(
+        self._button_box = QtWidgets.QDialogButtonBox(
             QtWidgets.QDialogButtonBox.StandardButton.Ok
             | QtWidgets.QDialogButtonBox.StandardButton.Cancel
         )
-        button_box.accepted.connect(self._run_warp)
-        button_box.rejected.connect(self.reject)
-        layout.addWidget(button_box)
+        self._ok_btn = self._button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        if self._ok_btn:
+            self._ok_btn.setObjectName("ok_btn")
+            self._ok_btn.setAccessibleName("Warp annotations")
+            self._ok_btn.setToolTip("Transform and save warped annotations to target slides")
+            self._ok_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+
+        self._cancel_btn = self._button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+        if self._cancel_btn:
+            self._cancel_btn.setObjectName("cancel_btn")
+            self._cancel_btn.setAccessibleName("Cancel")
+            self._cancel_btn.setToolTip("Close dialog without saving warped annotations")
+            self._cancel_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+
+        self._button_box.accepted.connect(self._run_warp)
+        self._button_box.rejected.connect(self.reject)
+        layout.addWidget(self._button_box)
 
     def _browse_annotation(self) -> None:
         settings = QtCore.QSettings("VALIS", "Workstation")
@@ -87,17 +128,28 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
             self._output_dir_edit.setText(folder)
 
     def _run_warp(self) -> None:
-        annotation_path = Path(self._annotation_path.text()).expanduser()
-        if not annotation_path.exists():
-            QtWidgets.QMessageBox.warning(self, "Warp", "Annotation file not found.")
+        raw_path = self._annotation_path.text().strip()
+        annotation_path = Path(raw_path).expanduser() if raw_path else Path("")
+        if not raw_path or not annotation_path.exists():
+            self._status.setText("Annotation file not found.")
+            if os.environ.get("QT_QPA_PLATFORM") != "offscreen" and not os.environ.get("PYTEST_CURRENT_TEST"):
+                QtWidgets.QMessageBox.warning(self, "Warp", "Annotation file not found.")
             return
 
         output_dir = Path(self._output_dir_edit.text()).expanduser()
-        output_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            output_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            self._status.setText(f"Failed to create output directory: {e}")
+            if os.environ.get("QT_QPA_PLATFORM") != "offscreen" and not os.environ.get("PYTEST_CURRENT_TEST"):
+                QtWidgets.QMessageBox.warning(self, "Warp", f"Failed to create output directory: {e}")
+            return
 
         source_slide_path = self._source_slide.currentData()
         if not source_slide_path:
-            QtWidgets.QMessageBox.warning(self, "Warp", "Select a source slide.")
+            self._status.setText("Select a source slide.")
+            if os.environ.get("QT_QPA_PLATFORM") != "offscreen" and not os.environ.get("PYTEST_CURRENT_TEST"):
+                QtWidgets.QMessageBox.warning(self, "Warp", "Select a source slide.")
             return
 
         source_slide = self._registrar.get_slide(source_slide_path)

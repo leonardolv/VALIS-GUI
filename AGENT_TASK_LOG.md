@@ -8,6 +8,15 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-06 UTC - WarpAnnotationsDialog accessibility, tooltips, hand cursors, and headless safety
+Status: **done**
+
+**Root cause.** `WarpAnnotationsDialog` lacked screen-reader accessible names, object names, and tooltips on its file/directory paths and browse buttons, lacked interactive pointing hand cursors, and invoked unguarded `QtWidgets.QMessageBox.warning` modals that could block automated headless test execution.
+
+**Solution.** Added screen-reader accessible names, descriptive tooltips, placeholder text, and pointing hand cursors across controls and action buttons (`_browse_annotation_btn`, `_browse_output_btn`, `_source_slide`, `_ok_btn`, `_cancel_btn`). Guarded warning modals against headless/pytest environments (`QT_QPA_PLATFORM != "offscreen"` and not `PYTEST_CURRENT_TEST`).
+
+**Validation.** Created new test suite `tests/test_warp_annotations_dialog.py` (4 tests). Ran dialog and UI regression suite: 56 passed headlessly with 0 errors in 4.66s.
+
 ### 2026-10-04 UTC — `PerformanceStatsDialog`/`QuickTutorialDialog` timers outlive the dialog on Close/Escape
 
 Branch `claude/peaceful-mayer-wu7n3i` · PR: see branch PR · Status: **done**

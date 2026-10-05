@@ -6,6 +6,19 @@
 
 ## Completed
 
+### Task: Enhance WarpAnnotationsDialog Accessibility, Tooltips, Hand Cursors, and Headless Safety
+- **Completed**: 2026-10-06
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/warp_annotations.py`:
+    - Added screen-reader accessible names, object names, and descriptive placeholder text to `_annotation_path` and `_output_dir_edit`.
+    - Added screen-reader accessible names, descriptive tooltips, and pointing hand cursors (`PointingHandCursor`) across `_browse_annotation_btn`, `_browse_output_btn`, and `_source_slide`.
+    - Exposed dialog buttons (`_button_box`, `_ok_btn`, `_cancel_btn`) with pointing hand cursors, accessible names, object names, and tooltips.
+    - Guarded `QtWidgets.QMessageBox.warning` calls with headless and offscreen execution checks (`QT_QPA_PLATFORM != "offscreen"` and not `PYTEST_CURRENT_TEST`) to prevent blocking modal popups during automated tests.
+  - `tests/test_warp_annotations_dialog.py`:
+    - Created unit tests validating accessible names, tooltips, cursor shapes, browse callbacks, validation handling, and headless GeoJSON warping output.
+- **Verification**: Verified headlessly with `pytest tests/test_warp_annotations_dialog.py tests/test_merge_slides_dialog.py tests/test_quality_report_dialog.py tests/test_performance_stats_dialog.py tests/test_error_detail_dialog.py tests/test_diagnostics_dialog.py tests/test_save_options_dialog.py tests/test_roi_export_dialog.py tests/test_gui_components.py -v` (56 passed, 0 failures in 4.66s).
+- **Status**: Completed
+
 ### Task: Enhance MergeSlidesDialog Accessibility, Tooltips, Hand Cursors, and Headless Export Safety
 - **Completed**: 2026-10-03
 - **Changes**:
