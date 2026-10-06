@@ -8,6 +8,25 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-06 UTC (second run) - PreferencesDialog accessibility, hand cursors, headless-safe Restore Defaults
+Branch `claude/funny-bardeen-yv2tmq` - PR: see branch PR - Status: **done**
+
+Backlog was fully struck through (the suggested Normalize / Overlap items were
+already fixed), so this run self-triaged the dialogs for the recurring gap.
+
+**Root cause.** `PreferencesDialog` had no object names, accessible names,
+tooltips or pointing-hand cursors on its 14 controls and button box, and
+Restore Defaults called `QMessageBox.question` unguarded, which blocks any
+headless run that reaches it.
+
+**Solution.** `_apply_accessibility()` names/describes every control (keeping
+existing tooltips) and sets hand cursors on checkboxes/buttons; button-box
+buttons get object names, cursors and a Restore Defaults tooltip. Restore
+Defaults skips the modal under offscreen/pytest and proceeds.
+
+**Validation.** New `tests/test_preferences_dialog_accessibility.py` (3 tests);
+with related suites 46 passed offscreen.
+
 ### 2026-10-06 UTC - WarpAnnotationsDialog accessibility, tooltips, hand cursors, and headless safety
 Status: **done**
 
