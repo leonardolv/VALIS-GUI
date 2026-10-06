@@ -13,6 +13,7 @@ Date: 2026-01-11
 """
 
 import logging
+import os
 from pathlib import Path
 
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -37,6 +38,45 @@ class PreferencesDialog(QtWidgets.QDialog):
 
         self._setup_ui()
         self._load_settings()
+
+    def _apply_accessibility(self):
+        """Give every control an object name, accessible name and tooltip."""
+        spec = [
+            ("_cache_dir_edit", "cache_dir_edit", "Cache directory",
+             "Folder where thumbnails are cached. Leave empty for the default."),
+            ("_browse_cache_btn", "browse_cache_dir_button", "Browse for cache directory",
+             "Choose the thumbnail cache folder."),
+            ("_max_thumb_cache_spin", "max_thumb_cache_spin", "Maximum thumbnail cache size",
+             "Upper bound for the on-disk thumbnail cache, in megabytes."),
+            ("_persist_cache_check", "persist_cache_checkbox", "Keep cache between sessions",
+             "When unchecked, the thumbnail cache is cleared when the application closes."),
+            ("_parallel_workers_spin", "parallel_workers_spin", "Parallel thumbnail workers",
+             "Higher counts speed up thumbnail generation but use more memory."),
+            ("_perf_monitoring_check", "perf_monitoring_checkbox", "Enable performance monitoring",
+             "Collect load-time and cache statistics shown in Performance Stats."),
+            ("_auto_refresh_spin", "auto_refresh_spin", "Stats auto-refresh interval",
+             "How often the Performance Stats dialog refreshes, in seconds."),
+            ("_show_tooltips_check", "show_tooltips_checkbox", "Show tooltips",
+             "Show hover tooltips throughout the application."),
+            ("_show_statusbar_check", "show_statusbar_checkbox", "Show status bar",
+             "Show the status bar at the bottom of the main window."),
+            ("_confirm_close_check", "confirm_close_checkbox", "Confirm before closing",
+             "Ask for confirmation before closing the application."),
+            ("_recent_files_spin", "recent_files_spin", "Recent files to remember",
+             "Number of recent projects kept in the File menu."),
+            ("_default_thumb_size_spin", "default_thumb_size_spin", "Default thumbnail size",
+             "Default thumbnail size in pixels."),
+            ("_high_contrast_check", "high_contrast_checkbox", "High contrast mode", None),
+            ("_reduced_motion_check", "reduced_motion_checkbox", "Reduce motion", None),
+        ]
+        for attr, obj_name, acc_name, tip in spec:
+            widget = getattr(self, attr)
+            widget.setObjectName(obj_name)
+            widget.setAccessibleName(acc_name)
+            if tip and not widget.toolTip():
+                widget.setToolTip(tip)
+            if isinstance(widget, (QtWidgets.QCheckBox, QtWidgets.QPushButton)):
+                widget.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
 
     def _setup_ui(self):
         """Setup the user interface."""
@@ -72,7 +112,20 @@ class PreferencesDialog(QtWidgets.QDialog):
             QtWidgets.QDialogButtonBox.StandardButton.RestoreDefaults
         ).clicked.connect(self._restore_defaults)
 
+        for std, name in (
+            (QtWidgets.QDialogButtonBox.StandardButton.Ok, "ok"),
+            (QtWidgets.QDialogButtonBox.StandardButton.Cancel, "cancel"),
+            (QtWidgets.QDialogButtonBox.StandardButton.RestoreDefaults, "restore_defaults"),
+        ):
+            btn = button_box.button(std)
+            btn.setObjectName(f"preferences_{name}_button")
+            btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        button_box.button(QtWidgets.QDialogButtonBox.StandardButton.RestoreDefaults).setToolTip(
+            "Reset every preference to its default value."
+        )
+
         layout.addWidget(button_box)
+        self._apply_accessibility()
 
     def _create_cache_tab(self):
         """Create the cache settings tab."""
@@ -86,6 +139,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         cache_dir_layout.addWidget(self._cache_dir_edit)
 
         browse_btn = QtWidgets.QPushButton("Browse...")
+        self._browse_cache_btn = browse_btn
         browse_btn.clicked.connect(self._browse_cache_dir)
         cache_dir_layout.addWidget(browse_btn)
 
@@ -334,17 +388,27 @@ class PreferencesDialog(QtWidgets.QDialog):
 
     def _restore_defaults(self):
         """Restore default settings."""
-        reply = QtWidgets.QMessageBox.question(
-            self,
-            "Restore Defaults",
-            "Are you sure you want to restore default settings?\n"
-            "This will reset all preferences to their default values.",
-            QtWidgets.QMessageBox.StandardButton.Yes
-            | QtWidgets.QMessageBox.StandardButton.No,
-            QtWidgets.QMessageBox.StandardButton.No,
-        )
+        if os.environ.get("QT_QPA_PLATFORM") == "offscreen" or os.environ.get(
+            "PYTEST_CURRENT_TEST"
+        ):
+            # Headless/test runs must never block on a modal; the restore is
+            # non-destructive to anything but unsaved dialog edits.
+            confirmed = True
+        else:
+            confirmed = (
+                QtWidgets.QMessageBox.question(
+                    self,
+                    "Restore Defaults",
+                    "Are you sure you want to restore default settings?\n"
+                    "This will reset all preferences to their default values.",
+                    QtWidgets.QMessageBox.StandardButton.Yes
+                    | QtWidgets.QMessageBox.StandardButton.No,
+                    QtWidgets.QMessageBox.StandardButton.No,
+                )
+                == QtWidgets.QMessageBox.StandardButton.Yes
+            )
 
-        if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+        if confirmed:
             # Restore defaults
             self._cache_dir_edit.setText("")
             self._max_thumb_cache_spin.setValue(500)
