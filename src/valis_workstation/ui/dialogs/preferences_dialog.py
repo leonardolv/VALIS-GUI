@@ -73,6 +73,59 @@ class PreferencesDialog(QtWidgets.QDialog):
         ).clicked.connect(self._restore_defaults)
 
         layout.addWidget(button_box)
+        self._button_box = button_box
+        self._apply_accessibility()
+
+    def _apply_accessibility(self):
+        """Add accessible names, tooltips and hand cursors to the controls."""
+        Std = QtWidgets.QDialogButtonBox.StandardButton
+        specs = [
+            (self._cache_dir_edit, "Cache directory",
+             "Folder where thumbnails are cached. Leave empty to use ~/.valis_cache."),
+            (self._browse_cache_btn, "Browse for cache directory",
+             "Choose the cache folder in a file browser."),
+            (self._max_thumb_cache_spin, "Maximum thumbnail cache size",
+             "Upper limit for the on-disk thumbnail cache, in megabytes."),
+            (self._persist_cache_check, "Keep cache between sessions",
+             "Keep cached thumbnails on disk when the application closes."),
+            (self._parallel_workers_spin, "Parallel thumbnail workers",
+             "Number of thumbnails generated at once. More is faster but uses more memory."),
+            (self._perf_monitoring_check, "Enable performance monitoring",
+             "Record load times and cache statistics for the Performance Stats dialog."),
+            (self._auto_refresh_spin, "Statistics auto-refresh interval",
+             "How often the Performance Stats dialog refreshes, in seconds."),
+            (self._show_tooltips_check, "Show tooltips",
+             "Show hover help text throughout the application."),
+            (self._show_statusbar_check, "Show status bar",
+             "Show the status bar at the bottom of the main window."),
+            (self._confirm_close_check, "Confirm before closing",
+             "Ask for confirmation before the main window closes."),
+            (self._recent_files_spin, "Recent files to remember",
+             "How many recently opened items are listed in the File menu."),
+            (self._default_thumb_size_spin, "Default thumbnail size",
+             "Default thumbnail edge length in pixels."),
+            (self._high_contrast_check, "High contrast mode", None),
+            (self._reduced_motion_check, "Reduce motion", None),
+        ]
+        for widget, name, tip in specs:
+            widget.setAccessibleName(name)
+            if tip and not widget.toolTip():
+                widget.setToolTip(tip)
+        interactive = (
+            self._browse_cache_btn, self._persist_cache_check,
+            self._perf_monitoring_check, self._show_tooltips_check,
+            self._show_statusbar_check, self._confirm_close_check,
+            self._high_contrast_check, self._reduced_motion_check,
+        )
+        for widget in interactive:
+            widget.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        for std in (Std.Ok, Std.Cancel, Std.RestoreDefaults):
+            btn = self._button_box.button(std)
+            if btn is not None:
+                btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self._button_box.button(Std.RestoreDefaults).setToolTip(
+            "Reset every preference to its default value (asks for confirmation)."
+        )
 
     def _create_cache_tab(self):
         """Create the cache settings tab."""
@@ -87,6 +140,7 @@ class PreferencesDialog(QtWidgets.QDialog):
 
         browse_btn = QtWidgets.QPushButton("Browse...")
         browse_btn.clicked.connect(self._browse_cache_dir)
+        self._browse_cache_btn = browse_btn
         cache_dir_layout.addWidget(browse_btn)
 
         layout.addRow("Cache Directory:", cache_dir_layout)

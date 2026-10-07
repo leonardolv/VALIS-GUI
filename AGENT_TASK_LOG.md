@@ -8,6 +8,15 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-07 UTC - PreferencesDialog accessibility, tooltips and hand cursors
+Status: **done** (draft PR; merge left to the user)
+
+**Root cause.** `PreferencesDialog` had tooltips on only two controls and no accessible names or pointing-hand cursors, unlike the sibling dialogs.
+
+**Solution.** `_apply_accessibility()` sets accessible names, tooltips (never overriding existing ones) and hand cursors on every control and the OK/Cancel/Restore Defaults buttons.
+
+**Validation.** New `tests/test_preferences_dialog_accessibility.py`: 16 passed headless (offscreen).
+
 ### 2026-10-06 UTC - WarpAnnotationsDialog accessibility, tooltips, hand cursors, and headless safety
 Status: **done**
 
