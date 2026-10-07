@@ -10,6 +10,7 @@ from valis_workstation.ui.icons import load_icon
 
 class ProjectDock(QtWidgets.QDockWidget):
     count_changed = QtCore.Signal(int)
+    open_folder_requested = QtCore.Signal()
 
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__("Project", parent)
@@ -24,13 +25,25 @@ class ProjectDock(QtWidgets.QDockWidget):
         self._filter_edit.textChanged.connect(self._apply_filter)
 
         self._empty_label = QtWidgets.QLabel(
-            "Open a folder to load slides\n(File → Open Slide Folder)"
+            "No slides yet.\n\n"
+            "Open a folder that contains your slide images "
+            "(at least 2 are needed), or drag a folder into the window.\n\n"
+            "Supported: TIFF, OME-TIFF, SVS, NDPI, VSI, CZI, SCN, PNG, JPEG."
         )
+        self._empty_label.setWordWrap(True)
         self._empty_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self._empty_label.setStyleSheet(
             "color: #999; font-style: italic; padding: 20px;"
         )
         self._empty_label.setVisible(False)
+
+        self._open_folder_button = QtWidgets.QPushButton("Open Slide Folder…")
+        self._open_folder_button.setProperty("panelAction", True)
+        self._open_folder_button.setToolTip("Choose a folder of slide images (Ctrl+O)")
+        self._open_folder_button.setAccessibleName("Open slide folder")
+        self._open_folder_button.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self._open_folder_button.clicked.connect(self.open_folder_requested.emit)
+        self._open_folder_button.setVisible(False)
 
         self._list = QtWidgets.QListWidget()
         self._list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
@@ -77,6 +90,7 @@ class ProjectDock(QtWidgets.QDockWidget):
         layout.addWidget(self._slides_header)
         layout.addWidget(self._filter_edit)
         layout.addWidget(self._empty_label)
+        layout.addWidget(self._open_folder_button)
         layout.addWidget(self._list)
 
         actions_row = QtWidgets.QHBoxLayout()
@@ -157,6 +171,7 @@ class ProjectDock(QtWidgets.QDockWidget):
         self._update_action_states()
         self._clear_button.setEnabled(total > 0)
         self._empty_label.setVisible(total == 0)
+        self._open_folder_button.setVisible(total == 0)
         self.count_changed.emit(total)
 
         if total == 0:

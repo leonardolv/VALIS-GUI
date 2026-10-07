@@ -53,12 +53,13 @@ python run_valis_workstation.py
 
 In the **Properties** panel (right):
 - **Project name:** Give it a name
-- **Registration type:** Check both boxes for best results
+- **Align slides (rigid)** and **Fix tissue warping (non-rigid)**: keep both ticked for best results
+- Hover any setting for a plain-language explanation
 - Leave other settings at defaults
 
 ### Step 3: Run Registration
 
-1. Click **File → Run Registration**
+1. Click **File → Run Registration** (greyed out until at least 2 slides are loaded; hover it to see why)
 2. Wait 5-30 minutes (progress bar shows status)
 3. When done, registered slides appear in the viewer
 
@@ -104,7 +105,7 @@ Files are in OME-TIFF format, readable by:
 |---------|----------|
 | "Napari not available" | `pip install --upgrade napari[all]` |
 | "SimpleElastix not found" | Use rigid-only registration (still works!) |
-| Out of memory | Reduce "Max image size" to 1024 |
+| Out of memory | Reduce "Working resolution" to 1024 |
 | Slow performance | Uncheck "Non-rigid registration" |
 | App won't start | Check Python version: `python --version` (need 3.9+) |
 

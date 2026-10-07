@@ -431,6 +431,7 @@ def build_actions(window: MainWindow) -> None:
         merge_action,
     ]
     window._registration_run_actions = [run_action, resume_action]
+    window._run_registration_action = run_action
     window._cancel_registration_action = cancel_action
 
     window._toggle_left_action = toggle_left_action

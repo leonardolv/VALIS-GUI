@@ -584,16 +584,20 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 <div class="step"><span class="step-num">1</span><div class="step-body"><strong>Launch the application</strong>
 <pre><code>python run_valis_workstation.py</code></pre></div></div>
 
-<div class="step"><span class="step-num">2</span><div class="step-body"><strong>Open a slide folder</strong> — <strong>File → Open Slide Folder</strong> (<span class="kbd">Ctrl+O</span>) or drag a folder onto the window.</div></div>
+<div class="tip"><strong>First launch:</strong> the centre of the window shows a <strong>Welcome</strong> page with the four workflow steps (<em>1. Load → 2. Configure → 3. Register → 4. Review</em>) and an <strong>Open Slide Folder…</strong> button. The strip above the canvas highlights your current step and tells you what to do next. <strong>Run Registration</strong> stays greyed out until at least 2 slides are loaded; hover it to see why. If the optional napari viewer is not installed, the Welcome page stays in the centre (with a small note) and registration still works.</div>
+
+<div class="step"><span class="step-num">2</span><div class="step-body"><strong>Open a slide folder</strong> — click <strong>Open Slide Folder…</strong> on the Welcome page or in the Project panel, use <strong>File → Open Slide Folder</strong> (<span class="kbd">Ctrl+O</span>), or drag a folder onto the window. You need at least 2 slides.</div></div>
 
 <div class="step"><span class="step-num">3</span><div class="step-body"><strong>Review your slides</strong> — Thumbnails appear in the <strong>Slide Preview</strong> panel. Hover over each for metadata.</div></div>
 
 <div class="step"><span class="step-num">4</span><div class="step-body"><strong>Check settings</strong> — The <strong>Properties</strong> panel on the right shows all options. For beginners, the defaults are excellent:
 <ul>
   <li>Feature Detector: <strong>VGG</strong> (works on all tissue types)</li>
-  <li>Rigid + Non-rigid: <strong>both enabled</strong></li>
-  <li>Max image size: <strong>2048 px</strong></li>
-</ul></div></div>
+  <li><strong>Align slides (rigid)</strong>: <strong>on</strong> — first rotates, shifts and scales each slide so the tissue lines up roughly</li>
+  <li><strong>Fix tissue warping (non-rigid)</strong>: <strong>on</strong> (needs SimpleElastix) — then bends each slide locally to correct tissue deformed during sectioning</li>
+  <li><strong>Working resolution</strong>: <strong>2048 px</strong> — size of the reduced copy used for aligning; higher is more precise but slower</li>
+</ul>
+Hover any setting for a plain-language explanation. <strong>Advanced Settings (optional)</strong> is collapsed on purpose; you rarely need it.</div></div>
 
 <div class="step"><span class="step-num">5</span><div class="step-body"><strong>Run registration</strong> — Press <span class="kbd">Ctrl+R</span>. Review the confirmation dialog, then click <strong>Start Registration</strong>.</div></div>
 
@@ -935,7 +939,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 <p><strong>VGG</strong> is the best default for most cases. For fluorescence images, try <strong>DISK</strong> or <strong>SuperPoint</strong>. For maximum speed, use <strong>ORB</strong> or <strong>BRISK</strong>.</p>
 
 <h4 style="margin-top:14px">Q: Registration is very slow — how to speed it up?</h4>
-<p>Reduce <strong>Max image size</strong> (try 1024). Disable <strong>Non-rigid registration</strong> for initial tests. Use a classical detector (VGG, BRISK, ORB) instead of neural.</p>
+<p>Reduce <strong>Working resolution</strong> (try 1024). Turn off <strong>Fix tissue warping (non-rigid)</strong> for initial tests. Use a classical detector (VGG, BRISK, ORB) instead of neural.</p>
 
 <h4 style="margin-top:14px">Q: Can I cancel a running registration?</h4>
 <p>Yes. Click <strong>Cancel</strong> in the Status dock. Partial output may remain.</p>
@@ -1209,7 +1213,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 <div class="card">
 <h4>Speed optimization</h4>
 <ul>
-  <li>Reduce <strong>Max image size</strong> to 1024 for quick tests</li>
+  <li>Reduce <strong>Working resolution</strong> to 1024 for quick tests</li>
   <li>Disable non-rigid registration for initial alignment inspection</li>
   <li>Use <strong>ORB</strong> or <strong>BRISK</strong> detector (fastest classical)</li>
   <li>Enable <strong>Slides pre-ordered</strong> if you know the physical order — skips the sorting step entirely</li>
@@ -1218,7 +1222,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 
 <h4 style="margin-top:14px">Quality optimization</h4>
 <ul>
-  <li>Increase <strong>Max image size</strong> to 4096 or higher</li>
+  <li>Increase <strong>Working resolution</strong> to 4096 or higher</li>
   <li>Use <strong>DISK</strong> or <strong>SuperPoint</strong> with GPU enabled</li>
   <li>Enable <strong>Micro-registration</strong> for sub-pixel accuracy</li>
   <li>Enable <strong>Tissue masks</strong> to focus matching on tissue regions only</li>
@@ -1288,9 +1292,9 @@ pip install -r requirements.txt && pip install -e .</code></pre>
   <tr><th>Scenario</th><th>Primary objective</th><th>Recommended stack</th><th>High-value toggles</th></tr>
   <tr><td>Brightfield serial sections</td><td>Stable baseline alignment</td><td>Detector: <strong>VGG</strong> · Transform: <strong>Similarity</strong> · Non-rigid: <strong>ON</strong></td><td>Masks OFF first pass, then ON only if background noise is high</td></tr>
   <tr><td>Challenging fluorescence</td><td>Landmark robustness</td><td>Detector: <strong>DISK</strong> or <strong>SuperPoint</strong> · Non-rigid: <strong>ON</strong></td><td>GPU ON, Denoise ON, increase max image size incrementally</td></tr>
-  <tr><td>Need fastest smoke test</td><td>Detect bad inputs quickly</td><td>Detector: <strong>ORB</strong> or <strong>BRISK</strong> · Non-rigid: <strong>OFF</strong></td><td>Max image size 1024, lower pyramid levels</td></tr>
+  <tr><td>Need fastest smoke test</td><td>Detect bad inputs quickly</td><td>Detector: <strong>ORB</strong> or <strong>BRISK</strong> · Non-rigid: <strong>OFF</strong></td><td>Working resolution 1024, lower pyramid levels</td></tr>
   <tr><td>Shear or mounting distortion</td><td>Recover global geometry</td><td>Transform: <strong>Affine</strong> + Non-rigid ON</td><td>Inspect outliers in Quality Report before full rerun</td></tr>
-  <tr><td>High precision publication output</td><td>Minimize local residual error</td><td>Detector: <strong>DISK/SuperPoint</strong> + Micro-registration</td><td>Max image size 4096+, monitor memory/performance stats</td></tr>
+  <tr><td>High precision publication output</td><td>Minimize local residual error</td><td>Detector: <strong>DISK/SuperPoint</strong> + Micro-registration</td><td>Working resolution 4096+, monitor memory/performance stats</td></tr>
   <tr><td>Annotation transfer priority</td><td>Preserve ROI geometry across slides</td><td>Similarity/Affine + Non-rigid ON</td><td>Validate warped annotations on 2-3 sentinel slides first</td></tr>
 </table>
 <div class="note"><strong>Decision rule:</strong> if runtime increases but rTRE does not improve, revert the last change and test a different detector before changing multiple knobs.</div>
@@ -1544,7 +1548,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 <h2>Troubleshooting</h2>
 <hr>
 <div class="card">
-<h4>"Napari not available"</h4>
+<h4>"Image viewer (napari) is not installed" note on the Welcome page</h4>
 <pre><code>pip install napari[all]
 # or: conda install napari -c conda-forge</code></pre>
 
@@ -1557,7 +1561,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
 
 <h4 style="margin-top:16px">Out of memory</h4>
 <ul>
-  <li>Reduce Max image size and Pyramid levels</li>
+  <li>Reduce Working resolution and Pyramid levels</li>
   <li>Lower tile cache in Preferences</li>
   <li>Monitor via Help → Performance Statistics → Memory tab</li>
 </ul>
