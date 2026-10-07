@@ -683,7 +683,7 @@ footer {
       </article>
       <article class="callout">
         <h3>Best entry setting</h3>
-        <p>Start with <code>VGG</code>, <code>Rigid + Non-rigid ON</code>, <code>Max image size = 2048</code>, then tune only if needed.</p>
+        <p>Start with <code>VGG</code>, <code>Align slides (rigid) ON</code>, <code>Fix tissue warping (non-rigid) ON</code>, <code>Working resolution = 2048</code>, then tune only if needed.</p>
       </article>
     </section>
 
@@ -829,7 +829,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
           <span class="step">1</span>
           <div>
             <div class="label">Open slide folder</div>
-            <p>Use <strong>File -> Open Slide Folder</strong>, select <code>examples/example_datasets/ihc</code>.</p>
+            <p>On first launch, click <strong>Open Slide Folder…</strong> on the Welcome page (or use <strong>File -> Open Slide Folder</strong>, <span class="kbd">Ctrl+O</span>), and select <code>examples/example_datasets/ihc</code>. The strip above the canvas (<em>1. Load -> 2. Configure -> 3. Register -> 4. Review</em>) shows where you are and what to do next.</p>
             <div class="outcome">You should see slides listed in Project and thumbnails in Slide Preview.</div>
           </div>
         </li>
@@ -837,7 +837,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
           <span class="step">2</span>
           <div>
             <div class="label">Confirm baseline settings</div>
-            <p>Project name: <code>IHC_Tutorial</code>. Keep defaults: VGG, Similarity, Rigid + Non-rigid enabled, Max image size 2048.</p>
+            <p>Project name: <code>IHC_Tutorial</code>. Keep defaults: VGG, Similarity, <em>Align slides (rigid)</em> and <em>Fix tissue warping (non-rigid)</em> enabled, <em>Working resolution</em> 2048. Hover any setting for a plain-language explanation. Note that <strong>Run Registration</strong> is greyed out until 2 or more slides are loaded.</p>
             <div class="outcome">This setup is stable and representative for first run validation.</div>
           </div>
         </li>
@@ -999,12 +999,12 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
         </tr>
         <tr>
           <td>Fast smoke test</td>
-          <td><code>Max image size 1024</code>, non-rigid OFF</td>
+          <td><code>Working resolution 1024</code>, non-rigid OFF</td>
           <td>Quick feedback on data quality and slide order.</td>
         </tr>
         <tr>
           <td>Balanced production</td>
-          <td><code>Max image size 2048-4096</code>, non-rigid ON, VGG</td>
+          <td><code>Working resolution 2048-4096</code>, non-rigid ON, VGG</td>
           <td>Reliable quality without excessive runtime.</td>
         </tr>
         <tr>

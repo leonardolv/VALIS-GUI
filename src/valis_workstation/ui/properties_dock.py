@@ -41,16 +41,16 @@ class PropertiesDock(QtWidgets.QDockWidget):
         layout.addWidget(self._banner)
 
         # ── Presets ──────────────────────────────────────────────────
-        presets_header = QtWidgets.QLabel("Presets")
+        presets_header = QtWidgets.QLabel("Presets (saved settings)")
         presets_header.setProperty("role", "sidebar-header")
         layout.addWidget(presets_header)
 
-        preset_row = QtWidgets.QHBoxLayout()
-        preset_row.setSpacing(GRID_SPACING)
-        preset_row.addWidget(QtWidgets.QLabel("Preset"))
         self._preset_combo = QtWidgets.QComboBox()
         self._preset_combo.setToolTip("Load a saved registration preset")
-        preset_row.addWidget(self._preset_combo, 1)
+        layout.addWidget(self._preset_combo)
+
+        preset_row = QtWidgets.QHBoxLayout()
+        preset_row.setSpacing(GRID_SPACING)
 
         self._save_preset_btn = QtWidgets.QPushButton("Save")
         self._save_preset_btn.setIcon(
@@ -84,6 +84,14 @@ class PropertiesDock(QtWidgets.QDockWidget):
         registration_header = QtWidgets.QLabel("Registration")
         registration_header.setProperty("role", "sidebar-header")
         layout.addWidget(registration_header)
+        intro = QtWidgets.QLabel(
+            "The defaults work for most slide sets. Hover any setting for a "
+            "plain-language explanation."
+        )
+        intro.setWordWrap(True)
+        intro.setProperty("role", "sidebar-subtle")
+        intro.setObjectName("SettingsIntro")
+        layout.addWidget(intro)
 
         form = QtWidgets.QFormLayout()
         form.setHorizontalSpacing(GRID_SPACING)
@@ -102,14 +110,15 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._rigid = QtWidgets.QCheckBox()
         self._rigid.setChecked(True)
         self._rigid.setToolTip(
-            "Perform rigid (affine) registration to align slides.\n"
-            "Recommended for all workflows."
+            "Rigid registration: first rotate, shift and scale each slide so the\n"
+            "tissue lines up roughly. Recommended for all workflows."
         )
 
         self._non_rigid = QtWidgets.QCheckBox()
         self._non_rigid.setChecked(True)
         self._non_rigid.setToolTip(
-            "Perform non-rigid (elastic) registration to correct tissue deformation.\n"
+            "Non-rigid registration: after the rough alignment, stretch and bend\n"
+            "each slide locally to fix tissue that was deformed during sectioning.\n"
             "More accurate but slower than rigid only."
         )
 
@@ -118,7 +127,9 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._max_size.setValue(2048)
         self._max_size.setSuffix(" px")
         self._max_size.setToolTip(
-            "Max pixel dimension for registration image.\n"
+            "Working resolution: the longest side, in pixels, of the reduced copy\n"
+            "of each slide that is used for aligning (the full-size slide is\n"
+            "still what gets saved).\n"
             "Higher = better quality but slower and more memory.\n"
             "Default: 2048 (adjust 1024–4096 based on hardware)"
         )
@@ -139,17 +150,17 @@ class PropertiesDock(QtWidgets.QDockWidget):
             logger.info("GPU not available – checkbox disabled")
 
         form.addRow("Project name", self._project_name)
-        form.addRow("Rigid registration", self._rigid)
-        form.addRow("Non-rigid registration", self._non_rigid)
-        form.addRow("Max image size", self._max_size)
+        form.addRow("Align slides (rigid)", self._rigid)
+        form.addRow("Fix tissue warping (non-rigid)", self._non_rigid)
+        form.addRow("Working resolution", self._max_size)
         form.addRow("Use GPU", self._use_gpu)
         layout.addLayout(form)
 
         # ── Advanced settings (collapsible) ─────────────────────────
-        self._advanced_group = QtWidgets.QGroupBox("Advanced Settings")
+        self._advanced_group = QtWidgets.QGroupBox("Advanced Settings (optional)")
         self._advanced_group.setCheckable(True)
         self._advanced_group.setChecked(False)
-        self._advanced_group.setToolTip("Show / hide advanced registration options")
+        self._advanced_group.setToolTip("Optional. Tick to show expert options; the defaults work for most slide sets.")
 
         adv = QtWidgets.QFormLayout()
         adv.setHorizontalSpacing(GRID_SPACING)
@@ -278,13 +289,13 @@ class PropertiesDock(QtWidgets.QDockWidget):
         adv.addRow("Use color features (RGB)", self._use_color_features)
         adv.addRow("Reference slide", self._reference_slide)
         adv.addRow("Crop mode", self._crop_mode)
-        adv.addRow("Crop before rigid reg.", self._crop_for_rigid)
+        adv.addRow("Pre-crop tissue", self._crop_for_rigid)
         adv.addRow("Use tissue masks", self._use_masks)
         adv.addRow("Denoise images", self._denoise)
-        adv.addRow("Slides pre-ordered", self._imgs_ordered)
+        adv.addRow("Slides already in order", self._imgs_ordered)
         adv.addRow("Non-rigid method", self._non_rigid_method)
-        adv.addRow("Micro-registration", self._micro_registration)
-        adv.addRow("Micro max size", self._micro_max_size)
+        adv.addRow("Fine-detail pass (micro-reg.)", self._micro_registration)
+        adv.addRow("Fine-detail resolution", self._micro_max_size)
 
         self._advanced_group.setLayout(adv)
         layout.addWidget(self._advanced_group)

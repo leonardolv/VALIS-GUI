@@ -144,7 +144,7 @@ _STEPS: list[_TutorialStep] = [
             "<p>Sometimes slides don't align perfectly.</p>"
             "<ul>"
             "<li>Try changing the <b>Feature detector</b> in the Advanced settings (e.g., from VGG to BRISK).</li>"
-            "<li>If it's too slow, reduce the <b>Max image size</b> to 1024.</li>"
+            "<li>If it's too slow, reduce the <b>Working resolution</b> to 1024.</li>"
             "<li>If a slide is upside down, VALIS usually fixes it automatically!</li>"
             "</ul>"
         ),

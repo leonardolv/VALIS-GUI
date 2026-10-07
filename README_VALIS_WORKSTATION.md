@@ -246,9 +246,9 @@ Test coverage includes:
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | Project name | "New Project" | Output directory name |
-| Rigid registration | ✓ | Enable rigid alignment |
-| Non-rigid registration | ✓ | Enable non-rigid alignment (requires SimpleElastix) |
-| Max image size | 2048 | Maximum dimension for processing (pixels) |
+| Align slides (rigid) | ✓ | Rigid registration: rough alignment by rotation, shift and scale |
+| Fix tissue warping (non-rigid) | ✓ | Non-rigid registration: local stretch/bend correction (requires SimpleElastix) |
+| Working resolution | 2048 | Longest side (pixels) of the reduced copy used for aligning |
 | Match threshold | 0.35 | Feature matching threshold (0.0-1.0) |
 | Use GPU | ☐ | Enable GPU acceleration |
 

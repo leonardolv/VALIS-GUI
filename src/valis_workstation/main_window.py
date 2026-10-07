@@ -51,6 +51,7 @@ from valis_workstation.ui.project_dock import ProjectDock
 from valis_workstation.ui.properties_dock import PropertiesDock
 from valis_workstation.ui.slide_preview_dock import SlidePreviewDock
 from valis_workstation.ui.splash_screen import LoadingOverlay
+from valis_workstation.ui.welcome_panel import WelcomePanel
 from valis_workstation.ui.splitter_utils import (
     GripSplitter,
     clear_splitter_state,
@@ -114,11 +115,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self._build_splitter_layout()
         if hasattr(self._project_dock, "count_changed"):
             self._project_dock.count_changed.connect(lambda *_: self._update_left_tab_titles())
+            self._project_dock.count_changed.connect(lambda *_: self._update_run_availability())
+            self._project_dock.count_changed.connect(self._update_welcome_status)
+            self._project_dock.open_folder_requested.connect(self._open_slide_folder)
         if hasattr(self._slide_preview_dock, "count_changed"):
             self._slide_preview_dock.count_changed.connect(lambda *_: self._update_left_tab_titles())
         self._update_left_tab_titles()
 
         self._build_actions()
+        self._update_run_availability()
         self._setup_keyboard_shortcuts()
         self._setup_status_bar()
         self._restore_window_state()
@@ -296,21 +301,38 @@ class MainWindow(QtWidgets.QMainWindow):
         scroll.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         return scroll
 
+    _WORKFLOW_TIPS = {
+        "Load": "Step 1: open a folder with your slide images (File > Open Slide Folder).",
+        "Configure": "Step 2: review the settings in the Properties panel (defaults suit most slide sets).",
+        "Register": "Step 3: registration is running; progress is shown at the bottom.",
+        "Review": "Step 4: inspect the result with Blink, Quality Report and the other Tools.",
+    }
+    _WORKFLOW_HINTS = {
+        "Load": "Next: open a folder of slides (Ctrl+O) or drag one into the window. You need at least 2.",
+        "Configure": "Next: check the settings on the right, then press Run Registration (Ctrl+R).",
+        "Register": "Registration is running. You can follow progress below or cancel with Esc.",
+        "Review": "Done. Use Tools > Blink Viewer or Quality Report to check the alignment.",
+    }
+
     def _build_workflow_strip(self) -> QtWidgets.QWidget:
         strip = QtWidgets.QFrame()
         strip.setObjectName("WorkflowStrip")
         strip.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
-        layout = QtWidgets.QHBoxLayout(strip)
-        layout.setContentsMargins(8, 6, 8, 6)
+        outer = QtWidgets.QVBoxLayout(strip)
+        outer.setContentsMargins(8, 6, 8, 6)
+        outer.setSpacing(2)
+        layout = QtWidgets.QHBoxLayout()
         layout.setSpacing(8)
+        outer.addLayout(layout)
 
         self._workflow_steps = ["Load", "Configure", "Register", "Review"]
         self._workflow_labels: dict[str, QtWidgets.QLabel] = {}
 
         for idx, name in enumerate(self._workflow_steps):
-            label = QtWidgets.QLabel(name)
+            label = QtWidgets.QLabel(f"{idx + 1}. {name}")
             label.setProperty("workflowStep", True)
             label.setProperty("active", False)
+            label.setToolTip(self._WORKFLOW_TIPS[name])
             self._workflow_labels[name] = label
             layout.addWidget(label)
             if idx < len(self._workflow_steps) - 1:
@@ -319,6 +341,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 layout.addWidget(arrow)
 
         layout.addStretch(1)
+
+        self._workflow_hint = QtWidgets.QLabel("")
+        self._workflow_hint.setObjectName("WorkflowHint")
+        self._workflow_hint.setProperty("role", "sidebar-subtle")
+        self._workflow_hint.setWordWrap(True)
+        outer.addWidget(self._workflow_hint)
         return strip
 
     def _set_workflow_step(self, step: str) -> None:
@@ -329,6 +357,9 @@ class MainWindow(QtWidgets.QMainWindow):
             label.style().unpolish(label)
             label.style().polish(label)
             label.update()
+        hint = getattr(self, "_workflow_hint", None)
+        if hint is not None:
+            hint.setText(self._WORKFLOW_HINTS.get(step, ""))
 
     def _create_drop_overlay(self) -> None:
         self._drop_overlay = QtWidgets.QLabel("Drop a slide folder here", self)
@@ -380,30 +411,23 @@ class MainWindow(QtWidgets.QMainWindow):
         return self._viewer.window._qt_window
 
     def _napari_unavailable_widget(self) -> QtWidgets.QWidget:
-        widget = QtWidgets.QWidget()
-        layout = QtWidgets.QVBoxLayout(widget)
+        """Centre page used when the napari viewer is not available.
 
-        title = QtWidgets.QLabel("<h2>Napari Viewer Not Available</h2>")
-        title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
-        message = QtWidgets.QLabel(
-            "<p>The Napari image viewer could not be initialized.</p>"
-            "<p>To install Napari, run:</p>"
-            "<p style='font-family: monospace; background: #3b3b3b; padding: 10px;'>"
-            "pip install napari[all]</p>"
-            "<p>Then restart the application.</p>"
-            "<p style='color: #888;'><i>You can still use other features like registration,</i></p>"
-            "<p style='color: #888;'><i>but visualization will be limited.</i></p>"
+        It doubles as the getting-started page: the optional-viewer notice is
+        only a footnote, so a first-time user sees what to do next rather than
+        an error-looking message.
+        """
+        panel = WelcomePanel(
+            viewer_note=(
+                "Image viewer (napari) is not installed, so registered images "
+                "cannot be previewed inside this window. Registration itself "
+                "still works. To enable previews: pip install napari[all], "
+                "then restart."
+            )
         )
-        message.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        message.setWordWrap(True)
-
-        layout.addStretch()
-        layout.addWidget(title)
-        layout.addWidget(message)
-        layout.addStretch()
-
-        return widget
+        panel.open_folder_requested.connect(self._open_slide_folder)
+        self._welcome_panel = panel
+        return panel
 
     def _build_actions(self) -> None:
         main_window_actions.build_actions(self)
@@ -862,9 +886,37 @@ class MainWindow(QtWidgets.QMainWindow):
         if results_toolbar is not None:
             results_toolbar.setVisible(has_result)
 
+    def _update_welcome_status(self, count: int = 0) -> None:
+        panel = getattr(self, "_welcome_panel", None)
+        if panel is not None:
+            panel.set_slide_count(count)
+
+    def _update_run_availability(self) -> None:
+        """Enable Run Registration only when it can succeed, and say why not."""
+        run_action = getattr(self, "_run_registration_action", None)
+        if run_action is None:
+            return
+        running = getattr(self, "_registration_running", False)
+        count = len(self._project_dock.slides())
+        ready = count >= 2
+        run_action.setEnabled(ready and not running)
+        if not ready:
+            reason = (
+                "Load a slide folder first (Ctrl+O): registration needs at least 2 slides."
+                if count == 0
+                else "Registration needs at least 2 slides; only 1 is loaded."
+            )
+            run_action.setToolTip(reason)
+            run_action.setStatusTip(reason)
+        else:
+            run_action.setToolTip("Start registration (Ctrl+R, F5)")
+            run_action.setStatusTip("Start registration (Ctrl+R, F5)")
+
     def _set_registration_running(self, running: bool) -> None:
+        self._registration_running = running
         for action in getattr(self, "_registration_run_actions", []):
             action.setEnabled(not running)
+        self._update_run_availability()
         cancel_action = getattr(self, "_cancel_registration_action", None)
         if cancel_action is not None:
             cancel_action.setEnabled(running)

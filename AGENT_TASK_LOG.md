@@ -8,6 +8,15 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-07 UTC - First-time-user intuitiveness pass
+Branch `claude/zen-clarke-41pb7g` (PR #24) · Status: **done**
+
+**Problems found (screenshots of the empty and loaded main window, first-run wizard).** (1) The first screen's centre said "Napari Viewer Not Available" with a pip command, i.e. an error instead of "what do I do". (2) The Load/Configure/Register/Review strip was passive, unnumbered and gave no next step. (3) Run Registration looked usable with no slides and only complained in a popup afterwards. (4) Settings used jargon (Rigid / Non-rigid, Max image size, Micro-registration) with no plain-language framing; preset buttons clipped the right panel. (5) Project panel empty state only pointed at a menu. (6) Wizard welcome gave no overview of the workflow or what the profiles mean.
+
+**Changes.** New `ui/welcome_panel.py` getting-started page (Open button, 4 steps, live slide-count status, napari notice demoted to a footnote); numbered workflow strip with tooltips and a "Next: ..." hint line; Run Registration disabled until 2+ slides with a reason tooltip/status tip (`_update_run_availability`); plain-language settings labels ("Align slides (rigid)", "Fix tissue warping (non-rigid)", "Working resolution", ...), intro text, expanded tooltips, "Advanced Settings (optional)", presets stacked to avoid clipping; Project dock empty state with Open Slide Folder button and supported formats; wizard explains workflow and profiles. Manual, Tutorial, QUICK_START, README_VALIS_WORKSTATION and quick tutorial dialog updated for the new wording.
+
+**Validation.** New `tests/test_first_time_user_guidance.py` (9 tests) plus GUI/layout/accessibility/dialog suites in small batches: 159 + 108 + 34 passed headless (offscreen). Before/after screenshots in the session scratchpad.
+
 ### 2026-10-07 UTC - PreferencesDialog accessibility, tooltips and hand cursors
 Status: **done** (draft PR; merge left to the user)
 
