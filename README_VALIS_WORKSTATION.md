@@ -52,7 +52,7 @@ python run_valis_workstation.py
 1. **Open slides:** File → Open Slide Folder
 2. **Configure:** Use Properties panel, presets, and output profiles (optional)
 3. **Register:** File → Run Registration and confirm preflight summary
-4. **Review:** Use Tools menu for comparison, reports, export bundle, etc.
+4. **Review:** When registration finishes, the Review bar above the canvas offers Blink compare, Quality Report, Analysis Plot, Warp Annotations, Export ROI Crop and Merge Slides (also in the Tools menu).
 
 **📖 [See Quick Start Guide](QUICK_START.md) for detailed walkthrough**
 
@@ -248,7 +248,7 @@ Test coverage includes:
 | Project name | "New Project" | Output directory name |
 | Align slides (rigid) | ✓ | Rigid registration: rough alignment by rotation, shift and scale |
 | Fix tissue warping (non-rigid) | ✓ | Non-rigid registration: local stretch/bend correction (requires SimpleElastix) |
-| Working resolution | 2048 | Longest side (pixels) of the reduced copy used for aligning |
+| Alignment quality | Balanced (2048 px) | Quick = 1024 px, Balanced = 2048 px, Precise = 4096 px; "Custom..." reveals an exact Working resolution (pixels) box |
 | Match threshold | 0.35 | Feature matching threshold (0.0-1.0) |
 | Use GPU | ☐ | Enable GPU acceleration |
 

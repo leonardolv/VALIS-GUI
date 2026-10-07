@@ -595,7 +595,7 @@ pip install -r requirements.txt && pip install -e .</code></pre>
   <li>Feature Detector: <strong>VGG</strong> (works on all tissue types)</li>
   <li><strong>Align slides (rigid)</strong>: <strong>on</strong> — first rotates, shifts and scales each slide so the tissue lines up roughly</li>
   <li><strong>Fix tissue warping (non-rigid)</strong>: <strong>on</strong> (needs SimpleElastix) — then bends each slide locally to correct tissue deformed during sectioning</li>
-  <li><strong>Working resolution</strong>: <strong>2048 px</strong> — size of the reduced copy used for aligning; higher is more precise but slower</li>
+  <li><strong>Alignment quality</strong>: <strong>Balanced (2048 px)</strong> — choose <em>Quick</em> (1024 px, fastest), <em>Balanced</em> (2048 px, recommended) or <em>Precise</em> (4096 px, slower, more memory). Pick <em>Custom...</em> to type an exact <strong>Working resolution</strong> in pixels.</li>
 </ul>
 Hover any setting for a plain-language explanation. <strong>Advanced Settings (optional)</strong> is collapsed on purpose; you rarely need it.</div></div>
 
@@ -605,7 +605,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 
 <div class="step"><span class="step-num">7</span><div class="step-body"><strong>Explore results</strong> — Registered slides load into the Napari viewer. Toggle visibility, opacity, and colormaps in the <strong>Layers</strong> panel.</div></div>
 
-<div class="step"><span class="step-num">8</span><div class="step-body"><strong>Check quality</strong> — Use <strong>Tools → Quality Report</strong> to see error metrics, or <strong>Tools → Blink</strong> for visual comparison.</div></div>
+<div class="step"><span class="step-num">8</span><div class="step-body"><strong>Check quality</strong> — Use the <strong>Review bar</strong> that appears above the canvas when registration finishes (or <strong>Tools → Quality Report</strong>) to see error metrics, or <strong>Tools → Blink</strong> for visual comparison.</div></div>
 
 <h4 style="margin-top:10px">What good registration should look like</h4>
 <div class="image-grid">
@@ -786,7 +786,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 </table>
 
 <h4 style="margin-top:14px">Tools Menu (Post-Registration)</h4>
-<p style="font-size:0.9em;color:#94a3b8;margin:0 0 8px">Tools menu actions are <strong>contextually enabled</strong> &mdash; post-registration tools are disabled until a registration run completes successfully.</p>
+<p style="font-size:0.9em;color:#94a3b8;margin:0 0 8px">When a run completes, a <strong>Review bar</strong> above the canvas lists the same tools as one-click buttons. Tools menu actions are <strong>contextually enabled</strong> &mdash; post-registration tools are disabled until a registration run completes successfully.</p>
 <table>
   <tr><th>Task</th><th>Where</th><th>How</th><th>Result</th></tr>
   <tr><td>Blink comparison</td><td>Tools -&gt; Blink</td><td>Select two registered slides, adjust blend, start/stop blink</td><td>Visual A/B alignment validation</td></tr>
@@ -939,7 +939,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <p><strong>VGG</strong> is the best default for most cases. For fluorescence images, try <strong>DISK</strong> or <strong>SuperPoint</strong>. For maximum speed, use <strong>ORB</strong> or <strong>BRISK</strong>.</p>
 
 <h4 style="margin-top:14px">Q: Registration is very slow — how to speed it up?</h4>
-<p>Reduce <strong>Working resolution</strong> (try 1024). Turn off <strong>Fix tissue warping (non-rigid)</strong> for initial tests. Use a classical detector (VGG, BRISK, ORB) instead of neural.</p>
+<p>Set <strong>Alignment quality</strong> to <em>Quick</em> (1024 px). Turn off <strong>Fix tissue warping (non-rigid)</strong> for initial tests. Use a classical detector (VGG, BRISK, ORB) instead of neural.</p>
 
 <h4 style="margin-top:14px">Q: Can I cancel a running registration?</h4>
 <p>Yes. Click <strong>Cancel</strong> in the Status dock. Partial output may remain.</p>
@@ -1213,7 +1213,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <div class="card">
 <h4>Speed optimization</h4>
 <ul>
-  <li>Reduce <strong>Working resolution</strong> to 1024 for quick tests</li>
+  <li>Set <strong>Alignment quality</strong> to <em>Quick</em> (1024 px) for quick tests</li>
   <li>Disable non-rigid registration for initial alignment inspection</li>
   <li>Use <strong>ORB</strong> or <strong>BRISK</strong> detector (fastest classical)</li>
   <li>Enable <strong>Slides pre-ordered</strong> if you know the physical order — skips the sorting step entirely</li>
@@ -1222,7 +1222,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 
 <h4 style="margin-top:14px">Quality optimization</h4>
 <ul>
-  <li>Increase <strong>Working resolution</strong> to 4096 or higher</li>
+  <li>Set <strong>Alignment quality</strong> to <em>Precise</em> (4096 px), or use <em>Custom...</em> for higher</li>
   <li>Use <strong>DISK</strong> or <strong>SuperPoint</strong> with GPU enabled</li>
   <li>Enable <strong>Micro-registration</strong> for sub-pixel accuracy</li>
   <li>Enable <strong>Tissue masks</strong> to focus matching on tissue regions only</li>

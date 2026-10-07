@@ -4,6 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from PySide6 import QtCore, QtGui, QtWidgets
+from valis_workstation.ui import modal_utils as modal
 
 if TYPE_CHECKING:
     from valis_workstation.main_window import MainWindow
@@ -20,7 +21,7 @@ def open_repo_document(
         QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(doc_path)))
         logger.info("Opened %s: %s", log_label, doc_path.name)
         return
-    QtWidgets.QMessageBox.information(
+    modal.information(
         window,
         title,
         f"{title} not found at {doc_path}",

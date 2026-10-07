@@ -8,6 +8,15 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-07 UTC - Usability round 2 (clipping, Review discoverability, dialogs, modal guard)
+Branch `claude/zen-clarke-41pb7g` · Status: **done** (draft PR; merge left to the user)
+
+**Problems found (screenshots at 1500x950 and 1100x700, clean settings).** (1) Side panels opened at their minimum width (default splitter sizes were computed before the window was shown), clipping the preset Delete button, combos and the Clear All button, with horizontal scrollbars. (2) Alternate rows of the slide list rendered white with light text (unreadable). (3) Log row: filter, auto-scroll and buttons stacked on 3 rows, squeezing the log to a sliver and overlapping. (4) Toolbar captions elided ("Open...lder") and disabled actions (Run with no slides, Cancel idle) looked enabled. (5) Active workflow step had no styling at all; welcome text overlapped at small heights. (6) Review tools were hidden in a toolbar/menu and finishing a run showed a blocking popup. (7) Raw pixel count for working resolution. (8) Slide Preview toolbar clipped; thumbnails vanished from the grid when the tab was not current. (9) Tutorial/wizard lacked tooltips/names and still used old rigid/non-rigid wording. (10) Many unguarded `QMessageBox` modals.
+
+**Changes.** New `ui/modal_utils.py` headless-safe info/warning/critical/question wrappers (stubs still honoured) used by main_window*, project/status/properties docks, app; wider sidebars + first-show default sizing; list alternate colour and disabled toolbar-button QSS; compact one-row log bar; short toolbar captions; highlighted/done workflow steps with accessible names; scrollable welcome page with a primary Run button once 2+ slides load; Review bar (`ui/flow_layout.py`) replacing the popup and the duplicate Results toolbar; Quick/Balanced/Precise "Alignment quality" with Custom pixel box; plain-language SimpleElastix notice; Slide Preview two-row toolbar and hidden-tab reflow fix; project list empty/no-match states; accessibility for tutorial and wizard.
+
+**Validation.** New `tests/test_usability_round2.py` (19 tests) plus all other suites in small batches headless (offscreen). Manual, Tutorial, QUICK_START and README updated.
+
 ### 2026-10-07 UTC - First-time-user intuitiveness pass
 Branch `claude/zen-clarke-41pb7g` (PR #24) · Status: **done**
 

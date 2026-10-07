@@ -67,6 +67,7 @@ In the **Properties** panel (right):
 
 - **Napari Viewer (center):** See your registered slides
 - **Layers panel (right tab):** Control visibility/opacity
+- **Review bar (above the canvas):** appears when registration finishes, with one-click Blink compare, Quality Report, Analysis Plot, Warp Annotations, Export ROI Crop and Merge Slides (the same commands are in the Tools menu)
 - **Tools → Blink:** Compare slides side-by-side
 
 ---
@@ -105,7 +106,7 @@ Files are in OME-TIFF format, readable by:
 |---------|----------|
 | "Napari not available" | `pip install --upgrade napari[all]` |
 | "SimpleElastix not found" | Use rigid-only registration (still works!) |
-| Out of memory | Reduce "Working resolution" to 1024 |
+| Out of memory | Set "Alignment quality" to Quick (1024 px) |
 | Slow performance | Uncheck "Non-rigid registration" |
 | App won't start | Check Python version: `python --version` (need 3.9+) |
 

@@ -11,12 +11,22 @@ from valis_workstation.constants import CropModes, FeatureDetectors, ImageFormat
 from valis_workstation.layout_constants import GRID_SPACING
 from valis_workstation.models.config import Config
 from valis_workstation.ui.icons import load_icon
+from valis_workstation.ui import modal_utils as modal
 
 logger = logging.getLogger(__name__)
 
 SIMPLE_ELASTIX_BANNER = (
-    "SimpleElastix not found. Only Rigid Registration is available. "
-    "Please install SimpleElastix for full functionality."
+    "Fixing tissue warping (non-rigid) is unavailable because the optional "
+    "SimpleElastix package is not installed. Aligning slides (rigid) still works."
+)
+
+# Plain-language working-resolution choices: label -> longest side in pixels.
+# ``None`` means "let me type a number".
+QUALITY_CHOICES: tuple[tuple[str, int | None, str], ...] = (
+    ("Quick (1024 px)", 1024, "Fastest. Good for a first look or a quick check."),
+    ("Balanced (2048 px)", 2048, "Recommended. A good trade-off between speed and accuracy."),
+    ("Precise (4096 px)", 4096, "Most accurate, but slower and needs more memory."),
+    ("Custom...", None, "Type the exact working resolution in pixels."),
 )
 
 
@@ -37,7 +47,8 @@ class PropertiesDock(QtWidgets.QDockWidget):
 
         self._banner = QtWidgets.QLabel()
         self._banner.setWordWrap(True)
-        self._banner.setStyleSheet("color: #ffcc66; font-weight: bold;")
+        self._banner.setStyleSheet("color: #ffcc66;")
+        self._banner.setAccessibleName("Optional feature notice")
         layout.addWidget(self._banner)
 
         # ── Presets ──────────────────────────────────────────────────
@@ -134,6 +145,22 @@ class PropertiesDock(QtWidgets.QDockWidget):
             "Default: 2048 (adjust 1024–4096 based on hardware)"
         )
 
+        self._quality_combo = QtWidgets.QComboBox()
+        self._quality_combo.setAccessibleName("Alignment quality")
+        for label, size, tip in QUALITY_CHOICES:
+            self._quality_combo.addItem(label, size)
+            self._quality_combo.setItemData(
+                self._quality_combo.count() - 1, tip, QtCore.Qt.ItemDataRole.ToolTipRole
+            )
+        self._quality_combo.setToolTip(
+            "How carefully slides are aligned.\n"
+            "Quick = fastest, Balanced = recommended, Precise = most accurate\n"
+            "but slower. Choose Custom... to type an exact pixel size."
+        )
+        self._quality_combo.setCurrentIndex(1)
+        self._quality_combo.currentIndexChanged.connect(self._on_quality_changed)
+        self._max_size.valueChanged.connect(self._sync_quality_combo)
+
         self._use_gpu = QtWidgets.QCheckBox()
         self._use_gpu.setToolTip(
             "Enable GPU acceleration for deep-learning feature detectors\n"
@@ -152,7 +179,10 @@ class PropertiesDock(QtWidgets.QDockWidget):
         form.addRow("Project name", self._project_name)
         form.addRow("Align slides (rigid)", self._rigid)
         form.addRow("Fix tissue warping (non-rigid)", self._non_rigid)
+        form.addRow("Alignment quality", self._quality_combo)
         form.addRow("Working resolution", self._max_size)
+        self._form = form
+        self._set_working_resolution_row_visible(False)
         form.addRow("Use GPU", self._use_gpu)
         layout.addLayout(form)
 
@@ -397,11 +427,44 @@ class PropertiesDock(QtWidgets.QDockWidget):
 
     # ── Helpers ─────────────────────────────────────────────────────
 
+    def _set_working_resolution_row_visible(self, visible: bool) -> None:
+        """Show the raw pixel box only when the user picked Custom..."""
+        form = getattr(self, "_form", None)
+        if form is not None and hasattr(form, "setRowVisible"):
+            form.setRowVisible(self._max_size, visible)
+
+    def _on_quality_changed(self, index: int) -> None:
+        size = self._quality_combo.itemData(index)
+        if size is None:
+            self._set_working_resolution_row_visible(True)
+            return
+        self._set_working_resolution_row_visible(False)
+        self._max_size.setValue(int(size))
+
+    def _sync_quality_combo(self, value: int) -> None:
+        """Keep the Quick/Balanced/Precise choice in step with the pixel value."""
+        match = next(
+            (i for i, (_, size, _) in enumerate(QUALITY_CHOICES) if size == value),
+            None,
+        )
+        custom = len(QUALITY_CHOICES) - 1
+        index = custom if match is None else match
+        if self._quality_combo.currentIndex() == custom and match is None:
+            return
+        self._quality_combo.blockSignals(True)
+        self._quality_combo.setCurrentIndex(index)
+        self._quality_combo.blockSignals(False)
+        self._set_working_resolution_row_visible(index == custom)
+
     def _apply_simple_elastix_state(self) -> None:
         if not self._simple_elastix_available:
             self._banner.setText(SIMPLE_ELASTIX_BANNER)
             self._non_rigid.setChecked(False)
             self._non_rigid.setEnabled(False)
+            self._non_rigid.setToolTip(
+                "Unavailable: this needs the optional SimpleElastix package, which is\n"
+                "not installed. Slides can still be aligned with rigid registration."
+            )
         else:
             self._banner.setText("")
 
@@ -468,7 +531,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
             return
         presets = self._get_presets()
         if name in presets:
-            reply = QtWidgets.QMessageBox.question(
+            reply = modal.question(
                 self,
                 "Delete Preset",
                 f"Are you sure you want to delete the preset '{name}'?",

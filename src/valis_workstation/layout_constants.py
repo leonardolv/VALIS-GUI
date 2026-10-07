@@ -9,22 +9,22 @@ change.
 from __future__ import annotations
 
 # ── Left sidebar (Project + Slide Preview tabs) ────────────────
-LEFT_SIDEBAR_MIN: int = 220
-LEFT_SIDEBAR_INIT: int = 280
-LEFT_SIDEBAR_MAX: int = 420
+LEFT_SIDEBAR_MIN: int = 250
+LEFT_SIDEBAR_INIT: int = 300
+LEFT_SIDEBAR_MAX: int = 440
 
 # ── Right sidebar (Properties + Layers tabs) ───────────────────
-RIGHT_SIDEBAR_MIN: int = 280
-RIGHT_SIDEBAR_INIT: int = 360
-RIGHT_SIDEBAR_MAX: int = 520
+RIGHT_SIDEBAR_MIN: int = 330
+RIGHT_SIDEBAR_INIT: int = 380
+RIGHT_SIDEBAR_MAX: int = 560
 
 # ── Central canvas (Napari viewer) ─────────────────────────────
 CANVAS_MIN_W: int = 400
 CANVAS_MIN_H: int = 300
 
 # ── Bottom status / timeline panel ─────────────────────────────
-TIMELINE_MIN_H: int = 140
-TIMELINE_INIT_H: int = 210
+TIMELINE_MIN_H: int = 150
+TIMELINE_INIT_H: int = 220
 TIMELINE_MAX_H: int = 420
 
 # ── Splitter handles ───────────────────────────────────────────

@@ -40,41 +40,42 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         self._slides_header.setProperty("role", "sidebar-header")
         layout.addWidget(self._slides_header)
 
-        # Toolbar
+        # Two compact rows (filter + sort, then size + view mode) instead of one
+        # long row, which clipped every control in a normal-width sidebar.
         toolbar = QtWidgets.QHBoxLayout()
         toolbar.setSpacing(GRID_SPACING)
+        toolbar2 = QtWidgets.QHBoxLayout()
+        toolbar2.setSpacing(GRID_SPACING)
 
-        toolbar.addWidget(QtWidgets.QLabel("Filter:"))
         self._filter_edit = QtWidgets.QLineEdit()
-        self._filter_edit.setPlaceholderText("slide name...")
+        self._filter_edit.setAccessibleName("Filter thumbnails by filename")
+        self._filter_edit.setPlaceholderText("Filter by filename...")
         self._filter_edit.setToolTip("Filter thumbnails by filename")
         self._filter_edit.setClearButtonEnabled(True)
         self._filter_edit.textChanged.connect(self._apply_filter_sort)
-        self._filter_edit.setMaximumWidth(220)
-        toolbar.addWidget(self._filter_edit)
+        toolbar.addWidget(self._filter_edit, 1)
 
         toolbar.addWidget(QtWidgets.QLabel("Sort:"))
         self._sort_combo = QtWidgets.QComboBox()
+        self._sort_combo.setAccessibleName("Sort order")
         self._sort_combo.addItems(["Name (A-Z)", "Name (Z-A)"])
         self._sort_combo.setToolTip("Sort order for thumbnails")
         self._sort_combo.currentTextChanged.connect(self._apply_filter_sort)
         toolbar.addWidget(self._sort_combo)
 
         # Thumbnail size slider
-        toolbar.addWidget(QtWidgets.QLabel("Size:"))
+        toolbar2.addWidget(QtWidgets.QLabel("Size:"))
         self._size_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self._size_slider.setAccessibleName("Thumbnail size")
         self._size_slider.setRange(64, 256)
         self._size_slider.setValue(128)
-        self._size_slider.setMaximumWidth(150)
         self._size_slider.setToolTip("Thumbnail size (64–256 px)")
         self._size_slider.valueChanged.connect(self._update_thumbnail_size)
-        toolbar.addWidget(self._size_slider)
+        toolbar2.addWidget(self._size_slider, 1)
 
         self._summary_label = QtWidgets.QLabel("0 slides")
         self._summary_label.setProperty("role", "sidebar-subtle")
-        toolbar.addWidget(self._summary_label)
-
-        toolbar.addStretch()
+        toolbar2.addWidget(self._summary_label)
 
         # View mode toggle
         self._grid_view = QtWidgets.QPushButton("Grid")
@@ -102,10 +103,11 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         view_group.addButton(self._list_view)
         view_group.buttonClicked.connect(self._toggle_view_mode)
 
-        toolbar.addWidget(self._grid_view)
-        toolbar.addWidget(self._list_view)
+        toolbar2.addWidget(self._grid_view)
+        toolbar2.addWidget(self._list_view)
 
         layout.addLayout(toolbar)
+        layout.addLayout(toolbar2)
 
         # Scroll area for thumbnails
         self._scroll = QtWidgets.QScrollArea()
@@ -331,7 +333,7 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
 
         # Re-add in new layout
         visible_names = [
-            name for name, widget in self._thumbnails.items() if widget.isVisible()
+            name for name, widget in self._thumbnails.items() if widget.property("filterVisible") is not False
         ]
         for i, name in enumerate(visible_names):
             widget = self._thumbnails[name]

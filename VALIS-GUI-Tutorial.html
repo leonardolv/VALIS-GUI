@@ -683,7 +683,7 @@ footer {
       </article>
       <article class="callout">
         <h3>Best entry setting</h3>
-        <p>Start with <code>VGG</code>, <code>Align slides (rigid) ON</code>, <code>Fix tissue warping (non-rigid) ON</code>, <code>Working resolution = 2048</code>, then tune only if needed.</p>
+        <p>Start with <code>VGG</code>, <code>Align slides (rigid) ON</code>, <code>Fix tissue warping (non-rigid) ON</code>, <code>Alignment quality = Balanced (2048 px)</code>, then tune only if needed.</p>
       </article>
     </section>
 
@@ -837,7 +837,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
           <span class="step">2</span>
           <div>
             <div class="label">Confirm baseline settings</div>
-            <p>Project name: <code>IHC_Tutorial</code>. Keep defaults: VGG, Similarity, <em>Align slides (rigid)</em> and <em>Fix tissue warping (non-rigid)</em> enabled, <em>Working resolution</em> 2048. Hover any setting for a plain-language explanation. Note that <strong>Run Registration</strong> is greyed out until 2 or more slides are loaded.</p>
+            <p>Project name: <code>IHC_Tutorial</code>. Keep defaults: VGG, Similarity, <em>Align slides (rigid)</em> and <em>Fix tissue warping (non-rigid)</em> enabled, <em>Alignment quality</em> Balanced (2048 px). Hover any setting for a plain-language explanation. Note that <strong>Run Registration</strong> is greyed out until 2 or more slides are loaded; once they are, the centre page also offers a big <strong>Run Registration</strong> button. When registration finishes, a <strong>Review</strong> bar appears above the canvas with Blink compare, Quality Report, Analysis Plot, Warp Annotations, Export ROI Crop and Merge Slides.</p>
             <div class="outcome">This setup is stable and representative for first run validation.</div>
           </div>
         </li>
@@ -999,12 +999,12 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
         </tr>
         <tr>
           <td>Fast smoke test</td>
-          <td><code>Working resolution 1024</code>, non-rigid OFF</td>
+          <td><code>Alignment quality: Quick (1024 px)</code>, non-rigid OFF</td>
           <td>Quick feedback on data quality and slide order.</td>
         </tr>
         <tr>
           <td>Balanced production</td>
-          <td><code>Working resolution 2048-4096</code>, non-rigid ON, VGG</td>
+          <td><code>Alignment quality: Balanced or Precise (2048-4096 px)</code>, non-rigid ON, VGG</td>
           <td>Reliable quality without excessive runtime.</td>
         </tr>
         <tr>
