@@ -108,6 +108,13 @@ QToolBar#QuickActionsToolbar QToolButton {
     color: #e5e5e5;
 }
 
+QToolBar#QuickActionsToolbar QToolButton:disabled {
+    /* The id rule above out-ranks the generic :disabled style, which made
+       unavailable actions (Run with no slides, Cancel when idle) look live. */
+    color: #6a6a6a;
+    border-color: #343434;
+}
+
 QToolButton {
     background: transparent;
     border: 1px solid #4a4a4a;
@@ -429,6 +436,12 @@ QListView, QTreeView, QListWidget, QTreeWidget {
     padding: 2px;
 }
 
+QListView, QTreeView, QListWidget, QTreeWidget {
+    /* Without this the "alternate" rows fall back to the system's light base
+       colour and light text on them becomes unreadable. */
+    alternate-background-color: #2e2e2e;
+}
+
 QListView:focus, QTreeView:focus, QListWidget:focus, QTreeWidget:focus {
     border: 1px solid #6aa8ff;
 }
@@ -743,4 +756,29 @@ QWidget#SlideCard[selected="true"] QLabel#SlideThumb {
 QLabel#SlideName {
     color: #e2e2e2;
     font-size: 11px;
+}
+
+/* ---- Workflow strip & review bar --------------------------- */
+QLabel[workflowStep="true"] {
+    color: #8c8c8c;
+    padding: 2px 7px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+}
+
+QLabel[workflowStep="true"][done="true"] {
+    color: #8fd19e;
+}
+
+QLabel[workflowStep="true"][active="true"] {
+    color: #ffffff;
+    font-weight: 600;
+    background-color: #2d5fa0;
+    border: 1px solid #5c9ff8;
+}
+
+QFrame#ReviewBar {
+    background-color: #20303f;
+    border-top: 1px solid #3d5f86;
+    border-bottom: 1px solid #3d5f86;
 }

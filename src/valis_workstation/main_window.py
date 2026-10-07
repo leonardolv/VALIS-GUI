@@ -38,6 +38,7 @@ from valis_workstation.ui import (
     main_window_documents,
     main_window_workflow,
 )
+from valis_workstation.ui.flow_layout import FlowLayout
 from valis_workstation.ui.dialogs.analysis_plot import AnalysisPlotDialog
 from valis_workstation.ui.dialogs.blink_viewer import BlinkViewerDialog
 from valis_workstation.ui.dialogs.diagnostics_dialog import DiagnosticsDialog
@@ -59,6 +60,7 @@ from valis_workstation.ui.splitter_utils import (
     persist_splitter_state,
     restore_splitter_state,
 )
+from valis_workstation.ui import modal_utils as modal
 from valis_workstation.ui.status_dock import StatusDock
 from valis_workstation.utils.qt_logging import QtLogEmitter
 from valis_workstation.workers.valis_worker import ValisWorker
@@ -124,6 +126,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._build_actions()
         self._update_run_availability()
+        self._first_show_layout_pending = True
         self._setup_keyboard_shortcuts()
         self._setup_status_bar()
         self._restore_window_state()
@@ -180,6 +183,8 @@ class MainWindow(QtWidgets.QMainWindow):
         canvas_layout.setSpacing(0)
         self._workflow_strip = self._build_workflow_strip()
         canvas_layout.addWidget(self._workflow_strip)
+        self._review_bar = self._build_review_bar()
+        canvas_layout.addWidget(self._review_bar)
         canvas_layout.addWidget(canvas_widget)
         canvas_panel.setMinimumSize(CANVAS_MIN_W, CANVAS_MIN_H)
         canvas_panel.setSizePolicy(
@@ -311,7 +316,7 @@ class MainWindow(QtWidgets.QMainWindow):
         "Load": "Next: open a folder of slides (Ctrl+O) or drag one into the window. You need at least 2.",
         "Configure": "Next: check the settings on the right, then press Run Registration (Ctrl+R).",
         "Register": "Registration is running. You can follow progress below or cancel with Esc.",
-        "Review": "Done. Use Tools > Blink Viewer or Quality Report to check the alignment.",
+        "Review": "Done. Check the alignment with the buttons below (Blink, Quality Report ...), then export or merge.",
     }
 
     def _build_workflow_strip(self) -> QtWidgets.QWidget:
@@ -322,7 +327,7 @@ class MainWindow(QtWidgets.QMainWindow):
         outer.setContentsMargins(8, 6, 8, 6)
         outer.setSpacing(2)
         layout = QtWidgets.QHBoxLayout()
-        layout.setSpacing(8)
+        layout.setSpacing(4)
         outer.addLayout(layout)
 
         self._workflow_steps = ["Load", "Configure", "Register", "Review"]
@@ -336,7 +341,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._workflow_labels[name] = label
             layout.addWidget(label)
             if idx < len(self._workflow_steps) - 1:
-                arrow = QtWidgets.QLabel("→")
+                arrow = QtWidgets.QLabel("›")
                 arrow.setProperty("role", "sidebar-subtle")
                 layout.addWidget(arrow)
 
@@ -346,14 +351,55 @@ class MainWindow(QtWidgets.QMainWindow):
         self._workflow_hint.setObjectName("WorkflowHint")
         self._workflow_hint.setProperty("role", "sidebar-subtle")
         self._workflow_hint.setWordWrap(True)
+        self._workflow_hint.setMinimumHeight(
+            2 * self._workflow_hint.fontMetrics().lineSpacing() + 4
+        )
         outer.addWidget(self._workflow_hint)
         return strip
+
+    def _build_review_bar(self) -> QtWidgets.QWidget:
+        """Row of result tools, shown only once a registration has finished.
+
+        The same commands live in the Tools menu, but a user who has just
+        watched a progress bar finish should not have to know that.
+        """
+        bar = QtWidgets.QFrame()
+        bar.setObjectName("ReviewBar")
+        bar.setAccessibleName("Review results")
+        layout = QtWidgets.QVBoxLayout(bar)
+        layout.setContentsMargins(8, 6, 8, 6)
+        layout.setSpacing(4)
+        self._review_title = QtWidgets.QLabel("Done. Review your result:")
+        self._review_title.setProperty("role", "sidebar-header")
+        layout.addWidget(self._review_title)
+        self._review_buttons_row = FlowLayout(spacing=6)
+        layout.addLayout(self._review_buttons_row)
+        self._review_buttons: list[tuple[QtWidgets.QPushButton, QtGui.QAction]] = []
+        bar.setVisible(False)
+        return bar
+
+    def _populate_review_bar(self, entries: list[tuple[str, QtGui.QAction]]) -> None:
+        """Add one button per (label, action); buttons mirror the action state."""
+        for label, action in entries:
+            button = QtWidgets.QPushButton(label)
+            button.setProperty("panelAction", True)
+            button.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+            button.setAccessibleName(label)
+            button.setToolTip(action.toolTip())
+            button.clicked.connect(action.trigger)
+            self._review_buttons_row.addWidget(button)
+            self._review_buttons.append((button, action))
 
     def _set_workflow_step(self, step: str) -> None:
         if not hasattr(self, "_workflow_labels"):
             return
-        for name, label in self._workflow_labels.items():
+        steps = list(self._workflow_labels)
+        active_idx = steps.index(step) if step in steps else -1
+        for idx, (name, label) in enumerate(self._workflow_labels.items()):
             label.setProperty("active", name == step)
+            label.setProperty("done", 0 <= idx < active_idx)
+            state = "current step" if name == step else ("done" if idx < active_idx else "not started")
+            label.setAccessibleName(f"Step {idx + 1}, {name}, {state}")
             label.style().unpolish(label)
             label.style().polish(label)
             label.update()
@@ -426,6 +472,7 @@ class MainWindow(QtWidgets.QMainWindow):
             )
         )
         panel.open_folder_requested.connect(self._open_slide_folder)
+        panel.run_requested.connect(self._start_registration)
         self._welcome_panel = panel
         return panel
 
@@ -522,10 +569,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _blink(self) -> None:
         if not self._napari_available or self._viewer is None:
-            QtWidgets.QMessageBox.warning(self, "Blink", "Napari not available.")
+            modal.warning(self, "Blink", "Napari not available.")
             return
         if not self._last_result or not self._last_result.get("registered_dir"):
-            QtWidgets.QMessageBox.warning(
+            modal.warning(
                 self, "Blink", "No registered slides available."
             )
             return
@@ -536,7 +583,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _show_analysis_plot(self) -> None:
         if not self._last_result or "summary_df" not in self._last_result:
-            QtWidgets.QMessageBox.warning(self, "Analysis", "No results available.")
+            modal.warning(self, "Analysis", "No results available.")
             return
         logger.info("Opening analysis plot dialog")
         summary_df = self._last_result["summary_df"]
@@ -545,7 +592,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _show_quality_report(self) -> None:
         if not self._last_result or "summary_df" not in self._last_result:
-            QtWidgets.QMessageBox.warning(
+            modal.warning(
                 self, "Quality Report", "No results available."
             )
             return
@@ -556,7 +603,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _warp_annotations(self) -> None:
         if not self._last_result or "registrar" not in self._last_result:
-            QtWidgets.QMessageBox.warning(
+            modal.warning(
                 self, "Warp", "No registration results available."
             )
             return
@@ -641,6 +688,26 @@ class MainWindow(QtWidgets.QMainWindow):
 
         _load_next()
 
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        super().showEvent(event)
+        if getattr(self, "_first_show_layout_pending", False):
+            self._first_show_layout_pending = False
+            QtCore.QTimer.singleShot(0, self._apply_first_show_splitter_sizes)
+
+    def _apply_first_show_splitter_sizes(self) -> None:
+        """Size the side panels for the real window, not the pre-show default.
+
+        The default sizes are computed while the window is still at Qt's small
+        initial size, which squeezes both sidebars to their minimum and
+        clipped the settings.  Saved layouts from a previous session are left
+        alone.
+        """
+        settings = QtCore.QSettings("VALIS", "Workstation")
+        if settings.value(_KEY_TOP_SPLITTER) is None:
+            self._top_splitter.setSizes(self._default_top_splitter_sizes())
+        if settings.value(_KEY_OUTER_SPLITTER) is None:
+            self._outer_splitter.setSizes(self._default_outer_splitter_sizes())
+
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super().resizeEvent(event)
         if hasattr(self, "_drop_overlay"):
@@ -651,7 +718,7 @@ class MainWindow(QtWidgets.QMainWindow):
         settings = QtCore.QSettings("VALIS", "Workstation")
         confirm_close = settings.value("ui/confirm_close", False, type=bool)
         if confirm_close:
-            reply = QtWidgets.QMessageBox.question(
+            reply = modal.question(
                 self,
                 "Confirm Close",
                 "Are you sure you want to close VALIS Workstation?",
@@ -882,9 +949,11 @@ class MainWindow(QtWidgets.QMainWindow):
         has_result = self._last_result is not None
         for action in getattr(self, "_result_actions", []):
             action.setEnabled(has_result)
-        results_toolbar = getattr(self, "_results_toolbar", None)
-        if results_toolbar is not None:
-            results_toolbar.setVisible(has_result)
+        review_bar = getattr(self, "_review_bar", None)
+        if review_bar is not None:
+            review_bar.setVisible(has_result)
+            for button, action in getattr(self, "_review_buttons", []):
+                button.setEnabled(action.isEnabled())
 
     def _update_welcome_status(self, count: int = 0) -> None:
         panel = getattr(self, "_welcome_panel", None)
@@ -900,6 +969,9 @@ class MainWindow(QtWidgets.QMainWindow):
         count = len(self._project_dock.slides())
         ready = count >= 2
         run_action.setEnabled(ready and not running)
+        welcome = getattr(self, "_welcome_panel", None)
+        if welcome is not None:
+            welcome._run_button.setEnabled(ready and not running)
         if not ready:
             reason = (
                 "Load a slide folder first (Ctrl+O): registration needs at least 2 slides."
@@ -1099,14 +1171,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 )
                 self._update_left_tab_titles()
             else:
-                QtWidgets.QMessageBox.warning(
+                modal.warning(
                     self,
                     "No Slides Found",
                     f"No supported slide images found in {folder.name}",
                 )
         except Exception as e:
             logger.exception("Failed to load slides from %s", folder)
-            QtWidgets.QMessageBox.critical(
+            modal.critical(
                 self, "Error", f"Failed to load slides from {folder.name}:\n{str(e)}"
             )
         finally:
@@ -1245,7 +1317,7 @@ class MainWindow(QtWidgets.QMainWindow):
         settings = QtCore.QSettings("VALIS", "Workstation")
         recent = settings.value(SettingsKeys.RECENT_FOLDERS, [])
         if not isinstance(recent, list) or not recent:
-            QtWidgets.QMessageBox.information(
+            modal.information(
                 self,
                 "Open Recent",
                 "No recent folders available.",
@@ -1253,7 +1325,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         path = Path(recent[0])
         if not path.exists():
-            QtWidgets.QMessageBox.warning(
+            modal.warning(
                 self,
                 "Open Recent",
                 f"Most recent folder no longer exists:\n{path}",
@@ -1340,7 +1412,7 @@ class MainWindow(QtWidgets.QMainWindow):
             )
         except Exception as e:
             logger.exception("Failed to save configuration")
-            QtWidgets.QMessageBox.critical(
+            modal.critical(
                 self, "Save Error", f"Failed to save configuration:\n{e}"
             )
 
@@ -1387,7 +1459,7 @@ class MainWindow(QtWidgets.QMainWindow):
             )
         except Exception as e:
             logger.exception("Failed to load configuration")
-            QtWidgets.QMessageBox.critical(
+            modal.critical(
                 self, "Load Error", f"Failed to load configuration:\n{e}"
             )
 
@@ -1430,7 +1502,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def _merge_slides(self) -> None:
         """Show merge slides dialog for creating multi-channel images."""
         if not self._last_result or "registrar" not in self._last_result:
-            QtWidgets.QMessageBox.warning(
+            modal.warning(
                 self,
                 "Merge Slides",
                 "No registered slides available. Please run registration first.",
@@ -1438,7 +1510,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         if self._merge_thread and self._merge_thread.isRunning():
-            QtWidgets.QMessageBox.information(
+            modal.information(
                 self,
                 "Merge Slides",
                 "A merge is already running. Please wait for it to finish.",
@@ -1450,7 +1522,7 @@ class MainWindow(QtWidgets.QMainWindow):
         slide_names = [slide.name for slide in registrar.slide_dict.values()]
 
         if len(slide_names) < 2:
-            QtWidgets.QMessageBox.warning(
+            modal.warning(
                 self, "Merge Slides", "Need at least 2 registered slides to merge."
             )
             return
@@ -1461,7 +1533,7 @@ class MainWindow(QtWidgets.QMainWindow):
             logger.info("Merge configuration: %s", merge_config)
 
             if not merge_config["channels"]:
-                QtWidgets.QMessageBox.warning(
+                modal.warning(
                     self, "Merge Slides", "No channels selected for merging."
                 )
                 return
@@ -1532,7 +1604,7 @@ class MainWindow(QtWidgets.QMainWindow):
             def on_merge_success(result_path):
                 logger.info("Merge completed: %s", result_path)
                 self._status_bar.showMessage("Slides merged successfully", 5000)
-                QtWidgets.QMessageBox.information(
+                modal.information(
                     self,
                     "Merge Complete",
                     f"Successfully merged {len(merge_config['channels'])} channels.\n\n"
@@ -1542,7 +1614,7 @@ class MainWindow(QtWidgets.QMainWindow):
             def on_merge_error(msg):
                 logger.error("Merge failed: %s", msg)
                 self._status_bar.showMessage("Merge failed", 5000)
-                QtWidgets.QMessageBox.critical(
+                modal.critical(
                     self, "Merge Failed", f"Failed to merge slides:\n{msg}"
                 )
 
@@ -1557,7 +1629,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def _export_roi_crop(self) -> None:
         """Show ROI export dialog and process the crop across all registered slides."""
         if not self._last_result or "registrar" not in self._last_result:
-            QtWidgets.QMessageBox.warning(
+            modal.warning(
                 self, "Export ROI", "No registered slides available."
             )
             return
@@ -1617,7 +1689,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     i += 1
                 progress.setValue(len(registrar.slide_dict))
 
-                QtWidgets.QMessageBox.information(
+                modal.information(
                     self,
                     "ROI Export",
                     f"Successfully exported {len(new_slide_files)} ROIs to:\n{out_path}",
@@ -1634,7 +1706,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             except Exception as e:
                 logger.exception("Failed to export ROI")
-                QtWidgets.QMessageBox.critical(self, "Export Failed", str(e))
+                modal.critical(self, "Export Failed", str(e))
 
             self._status_bar.showMessage("ROI Export finished", 5000)
 
@@ -1668,12 +1740,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 log_file = self._repo_root / "logs" / "valis_workstation.log"
                 if log_file.exists():
                     zf.write(log_file, arcname="valis_workstation.log")
-            QtWidgets.QMessageBox.information(
+            modal.information(
                 self, "Export", f"Session bundle exported to:\n{out_path}"
             )
         except Exception as exc:
             logger.exception("Failed to export session bundle")
-            QtWidgets.QMessageBox.critical(self, "Export Failed", str(exc))
+            modal.critical(self, "Export Failed", str(exc))
 
     def _show_diagnostics(self) -> None:
         dialog = DiagnosticsDialog(self._repo_root, self._last_result, self)
@@ -1712,7 +1784,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # didn't change, so this is safe to call unconditionally.
         apply_theme(base_stylesheet(self._repo_root))
 
-        QtWidgets.QMessageBox.information(
+        modal.information(
             self,
             "Preferences Saved",
             "Some preference changes require restarting the application to take effect.",

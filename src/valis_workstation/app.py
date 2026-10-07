@@ -14,6 +14,7 @@ from valis_workstation.ui.splash_screen import SplashScreen
 from valis_workstation.utils.accessibility import apply_theme, base_stylesheet
 from valis_workstation.utils.logging_config import setup_logging
 from valis_workstation.utils.qt_logging import QtLogEmitter, QtSignalHandler
+from valis_workstation.ui import modal_utils as modal
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +88,7 @@ def _install_excepthook(app: QtWidgets.QApplication) -> None:
         logger.exception(
             "Unhandled exception", exc_info=(exc_type, exc_value, traceback_obj)
         )
-        QtWidgets.QMessageBox.critical(
+        modal.critical(
             None,
             "VALIS Workstation",
             "An unexpected error occurred. Please check the logs for details.",
@@ -165,7 +166,7 @@ def run_app(repo_root: Path) -> int:
         return app.exec()
     except Exception:
         logger.exception("Application crashed")
-        QtWidgets.QMessageBox.critical(
+        modal.critical(
             None,
             "VALIS Workstation",
             "The application encountered an unexpected error. See logs for details.",

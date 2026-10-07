@@ -260,6 +260,19 @@ def build_actions(window: MainWindow) -> None:
     view_menu.addAction(fit_content_action)
 
     # Quick toolbar actions (pro workflow: most-used commands one click away)
+    # Short toolbar captions: the full names (with shortcuts) stay in the menus
+    # and tooltips, but long captions were being elided to "Open...lder".
+    for _act, _short in (
+        (open_action, "Open Folder"),
+        (run_action, "Run"),
+        (cancel_action, "Cancel"),
+        (open_recent_action, "Recent"),
+        (resume_action, "Resume"),
+        (reset_layout_action, "Reset Layout"),
+        (focus_mode_action, "Focus"),
+        (fit_content_action, "Fit"),
+    ):
+        _act.setIconText(_short)
     quick_toolbar.addAction(open_action)
     quick_toolbar.addAction(run_action)
     quick_toolbar.addAction(cancel_action)
@@ -403,24 +416,22 @@ def build_actions(window: MainWindow) -> None:
     export_bundle_action.triggered.connect(window._export_session_bundle)
     tools_menu.addAction(export_bundle_action)
 
-    # Results toolbar (visible once a registration completes)
-    results_toolbar = window.addToolBar("Results")
-    results_toolbar.setObjectName("ResultsToolbar")
-    results_toolbar.setMovable(False)
-    results_toolbar.setFloatable(False)
-    results_toolbar.setVisible(False)
-    results_toolbar.addAction(blink_action)
-    results_toolbar.addAction(plot_action)
-    results_toolbar.addAction(quality_action)
-    results_toolbar.addAction(warp_action)
-    results_toolbar.addAction(export_roi_action)
-    results_toolbar.addAction(merge_action)
-    window._results_toolbar = results_toolbar
-
+    # Results are reached through the Review bar above the canvas (see
+    # MainWindow._build_review_bar) and the Tools menu.
     quick_toolbar.addSeparator()
     quick_toolbar.addAction(blink_action)
 
     # Store result-dependent actions for contextual enable/disable
+    window._populate_review_bar(
+        [
+            ("Blink compare", blink_action),
+            ("Quality Report", quality_action),
+            ("Analysis Plot", plot_action),
+            ("Warp Annotations", warp_action),
+            ("Export ROI Crop", export_roi_action),
+            ("Merge Slides", merge_action),
+        ]
+    )
     window._result_actions: list[QtGui.QAction] = [
         blink_action,
         plot_action,

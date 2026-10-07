@@ -10,6 +10,7 @@ from valis_workstation.models.config import Config
 from valis_workstation.ui.dialogs.error_detail_dialog import show_error_dialog
 from valis_workstation.utils.validation import validate_slides, log_validation_result
 from valis_workstation.workers.valis_worker import ValisWorker
+from valis_workstation.ui import modal_utils as modal
 
 if TYPE_CHECKING:
     from valis_workstation.main_window import MainWindow
@@ -20,10 +21,10 @@ logger = logging.getLogger(__name__)
 def start_registration(window: MainWindow) -> None:
     slides = window._project_dock.slides()
     if not slides:
-        QtWidgets.QMessageBox.warning(window, "VALIS", "No slides to register.")
+        modal.warning(window, "VALIS", "No slides to register.")
         return
     if len(slides) < 2:
-        QtWidgets.QMessageBox.warning(
+        modal.warning(
             window, "VALIS", "At least 2 slides are required for registration."
         )
         return
@@ -39,7 +40,7 @@ def start_registration(window: MainWindow) -> None:
             "Cannot start registration due to the following errors:\n\n"
             + "\n".join(f"- {err}" for err in validation.errors)
         )
-        QtWidgets.QMessageBox.critical(window, "Validation Failed", error_msg)
+        modal.critical(window, "Validation Failed", error_msg)
         logger.error(
             "Pre-registration validation failed: %s", "; ".join(validation.errors)
         )
@@ -51,7 +52,7 @@ def start_registration(window: MainWindow) -> None:
         )
         warning_msg += "\n\nDo you want to proceed anyway?"
 
-        reply = QtWidgets.QMessageBox.question(
+        reply = modal.question(
             window,
             "Validation Warnings",
             warning_msg,
@@ -85,6 +86,9 @@ def start_registration_from_context(window: MainWindow, context: dict) -> None:
 
     window._status_bar.showMessage(f"Starting registration of {len(slides)} slides...")
     window._set_workflow_step("Register")
+    review_bar = getattr(window, "_review_bar", None)
+    if review_bar is not None:
+        review_bar.setVisible(False)
     window._set_registration_running(True)
     if hasattr(window, "_open_output_folder_link"):
         window._open_output_folder_link.setVisible(False)
@@ -116,12 +120,12 @@ def start_registration_from_context(window: MainWindow, context: dict) -> None:
 def resume_last_registration(window: MainWindow) -> None:
     """Resume/re-run the last registration context after cancel/failure."""
     if not window._last_run_context:
-        QtWidgets.QMessageBox.information(
+        modal.information(
             window, "Resume", "No previous registration context available."
         )
         return
     if window._worker_thread and window._worker_thread.isRunning():
-        QtWidgets.QMessageBox.information(
+        modal.information(
             window, "Resume", "Registration is already running."
         )
         return
@@ -141,7 +145,7 @@ def request_cancellation(window: MainWindow) -> None:
     if not window._worker:
         return
 
-    reply = QtWidgets.QMessageBox.question(
+    reply = modal.question(
         window,
         "Cancel Registration",
         "Are you sure you want to cancel the registration?\n"
@@ -165,7 +169,7 @@ def on_worker_cancelled(window: MainWindow) -> None:
     window._status_dock.set_stage("Cancelled")
     window._set_workflow_step("Configure")
     window._status_bar.showMessage("Registration cancelled", 5000)
-    QtWidgets.QMessageBox.information(
+    modal.information(
         window,
         "VALIS",
         "Registration was cancelled.\n"
@@ -271,10 +275,15 @@ def on_worker_finished(window: MainWindow, result: dict) -> None:
     window._update_tools_enabled()
     window._set_workflow_step("Review")
     window._load_registered_layers(result)
-    window._status_bar.showMessage("Registration completed successfully", 5000)
+    window._status_bar.showMessage(
+        "Registration complete. Use the Review buttons above the canvas to check the result.",
+        10000,
+    )
     if hasattr(window, "_open_output_folder_link"):
         window._open_output_folder_link.setVisible(True)
-    QtWidgets.QMessageBox.information(window, "VALIS", "Registration complete.")
+    # Non-modal on purpose: the Review bar above the canvas (shown by
+    # _update_tools_enabled) lists what to do next, so no popup has to be
+    # dismissed first.
 
 
 def on_worker_failed(window: MainWindow, message: str, technical_details: str = "") -> None:

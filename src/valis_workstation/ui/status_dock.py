@@ -9,6 +9,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from valis_workstation.layout_constants import GRID_SPACING
 from valis_workstation.ui.icons import load_icon
 from valis_workstation.utils.qt_logging import QtLogEmitter
+from valis_workstation.ui import modal_utils as modal
 
 logger = logging.getLogger(__name__)
 _ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
@@ -48,15 +49,13 @@ class StatusDock(QtWidgets.QDockWidget):
         self._log_header = QtWidgets.QLabel("Log Output")
         self._log_header.setProperty("role", "sidebar-header")
 
-        filter_row = QtWidgets.QHBoxLayout()
         self._filter_edit = QtWidgets.QLineEdit()
         self._filter_edit.setPlaceholderText("Filter log lines...")
         self._filter_edit.setClearButtonEnabled(True)
+        self._filter_edit.setAccessibleName("Filter log lines")
         self._filter_edit.setToolTip("Filter log lines by keyword (case-insensitive)")
         self._filter_edit.textChanged.connect(self._rebuild_log_view)
-        filter_row.addWidget(self._filter_edit)
 
-        log_controls = QtWidgets.QHBoxLayout()
         self._auto_scroll_check = QtWidgets.QCheckBox("Auto-scroll")
         self._auto_scroll_check.setChecked(True)
         self._auto_scroll_check.setToolTip(
@@ -85,10 +84,15 @@ class StatusDock(QtWidgets.QDockWidget):
         self._copy_log_button.setToolTip("Copy all log lines to clipboard")
         self._copy_log_button.clicked.connect(self._copy_log)
 
-        log_controls.addWidget(self._auto_scroll_check)
-        log_controls.addStretch()
-        log_controls.addWidget(self._copy_log_button)
-        log_controls.addWidget(self._clear_log_button)
+        # One compact row: title, filter, auto-scroll, copy, clear.  Stacking
+        # them on three rows squeezed the log itself down to a sliver.
+        log_bar = QtWidgets.QHBoxLayout()
+        log_bar.setSpacing(GRID_SPACING)
+        log_bar.addWidget(self._log_header)
+        log_bar.addWidget(self._filter_edit, 1)
+        log_bar.addWidget(self._auto_scroll_check)
+        log_bar.addWidget(self._copy_log_button)
+        log_bar.addWidget(self._clear_log_button)
 
         self._cancel_button = QtWidgets.QPushButton("Cancel Registration")
         self._cancel_button.setIcon(
@@ -102,24 +106,25 @@ class StatusDock(QtWidgets.QDockWidget):
         self._log_console = QtWidgets.QTextEdit()
         self._log_console.setReadOnly(True)
         self._log_console.setAccessibleName("Registration log")
+        self._log_console.setMinimumHeight(48)
+        self._log_console.setPlaceholderText(
+            "Progress messages appear here once registration starts."
+        )
         self._log_console.document().setMaximumBlockCount(2000)
         self._log_console.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self._log_console.customContextMenuRequested.connect(self._show_log_context_menu)
         self._log_lines: list[str] = []
 
-        divider = QtWidgets.QFrame()
-        divider.setFrameShape(QtWidgets.QFrame.Shape.HLine)
-        divider.setFrameShadow(QtWidgets.QFrame.Shadow.Plain)
+        status_row = QtWidgets.QHBoxLayout()
+        status_row.addWidget(self._stage_label)
+        status_row.addStretch(1)
+        status_row.addWidget(self._timing_label)
 
-        layout.addWidget(self._stage_label)
+        layout.addLayout(status_row)
         layout.addWidget(self._progress)
-        layout.addWidget(self._timing_label)
         layout.addWidget(self._cancel_button)
-        layout.addWidget(divider)
-        layout.addWidget(self._log_header)
-        layout.addLayout(filter_row)
-        layout.addLayout(log_controls)
-        layout.addWidget(self._log_console)
+        layout.addLayout(log_bar)
+        layout.addWidget(self._log_console, 1)
         self.setWidget(container)
 
         emitter.log_line.connect(self._append_log)
@@ -180,7 +185,7 @@ class StatusDock(QtWidgets.QDockWidget):
 
     def _clear_log(self) -> None:
         if len(self._log_lines) > 0:
-            reply = QtWidgets.QMessageBox.question(
+            reply = modal.question(
                 self,
                 "Clear Log",
                 "Clear the log display? This cannot be undone.",

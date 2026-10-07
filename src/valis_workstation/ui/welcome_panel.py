@@ -23,11 +23,24 @@ class WelcomePanel(QtWidgets.QWidget):
     """
 
     open_folder_requested = QtCore.Signal()
+    run_requested = QtCore.Signal()
 
     def __init__(self, viewer_note: str = "", parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("WelcomePanel")
-        outer = QtWidgets.QVBoxLayout(self)
+        root = QtWidgets.QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        # Scrollable so nothing is cut off or overlapped in a short window.
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.viewport().setAutoFillBackground(False)
+        root.addWidget(scroll)
+        page = QtWidgets.QWidget()
+        page.setObjectName("WelcomePage")
+        scroll.setWidget(page)
+        outer = QtWidgets.QVBoxLayout(page)
         outer.addStretch(1)
 
         card = QtWidgets.QWidget()
@@ -63,6 +76,18 @@ class WelcomePanel(QtWidgets.QWidget):
         self._open_button.clicked.connect(self.open_folder_requested.emit)
         layout.addWidget(self._open_button)
 
+        self._run_button = QtWidgets.QPushButton("Run Registration  (Ctrl+R)")
+        self._run_button.setObjectName("WelcomeRunButton")
+        self._run_button.setProperty("primary", True)
+        self._run_button.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self._run_button.setToolTip(
+            "Start aligning the loaded slides with the settings on the right"
+        )
+        self._run_button.setAccessibleName("Run registration")
+        self._run_button.clicked.connect(self.run_requested.emit)
+        self._run_button.setVisible(False)
+        layout.addWidget(self._run_button)
+
         steps = "".join(
             f"<p><b>{i}. {name}</b> &mdash; {text}</p>"
             for i, (name, text) in enumerate(WELCOME_STEPS, start=1)
@@ -93,6 +118,10 @@ class WelcomePanel(QtWidgets.QWidget):
             self._status_label.setVisible(False)
             self._intro.setVisible(True)
             self._open_button.setText("Open Slide Folder…  (Ctrl+O)")
+            self._open_button.setProperty("primary", True)
+            self._repolish(self._open_button)
+            self._run_button.setVisible(False)
+            self._steps_label.setVisible(True)
             return
         if count == 1:
             text = (
@@ -108,3 +137,15 @@ class WelcomePanel(QtWidgets.QWidget):
         self._status_label.setVisible(True)
         self._intro.setVisible(False)
         self._open_button.setText("Open a Different Folder…")
+        ready = count >= 2
+        # Once there is something to run, the page's job is to say "go":
+        # make Run the primary action and fold away the how-it-works text.
+        self._run_button.setVisible(ready)
+        self._steps_label.setVisible(not ready)
+        self._open_button.setProperty("primary", not ready)
+        self._repolish(self._open_button)
+
+    @staticmethod
+    def _repolish(widget: QtWidgets.QWidget) -> None:
+        widget.style().unpolish(widget)
+        widget.style().polish(widget)

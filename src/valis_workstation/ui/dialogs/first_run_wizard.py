@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6 import QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 
 class FirstRunWizard(QtWidgets.QWizard):
@@ -18,6 +18,37 @@ class FirstRunWizard(QtWidgets.QWizard):
         self._output_profile_combo.addItems(
             ["WSI Archive", "Fast Review", "Publication"]
         )
+        self._project_name_edit.setAccessibleName("Default project name")
+        self._project_name_edit.setToolTip(
+            "Results are saved in a folder with this name (output/<name>/).\n"
+            "You can change it for each project in the Properties panel."
+        )
+        self._project_name_edit.setPlaceholderText("New Project")
+        self._output_profile_combo.setAccessibleName("Default output profile")
+        self._output_profile_combo.setToolTip(
+            "How saved images are balanced between quality and file size.\n"
+            "Not sure? Keep WSI Archive; you can change it later."
+        )
+        for idx, tip in enumerate(
+            (
+                "Full-quality files for long-term storage (largest).",
+                "Smaller files that are quick to open and check.",
+                "High-quality images for figures and papers.",
+            )
+        ):
+            self._output_profile_combo.setItemData(
+                idx, tip, QtCore.Qt.ItemDataRole.ToolTipRole
+            )
+        self.setButtonText(QtWidgets.QWizard.WizardButton.FinishButton, "Start using VALIS")
+        for which, tip in (
+            (QtWidgets.QWizard.WizardButton.NextButton, "Go to the next page"),
+            (QtWidgets.QWizard.WizardButton.BackButton, "Go back to the previous page"),
+            (QtWidgets.QWizard.WizardButton.CancelButton, "Skip setup; the defaults are used"),
+            (QtWidgets.QWizard.WizardButton.FinishButton, "Close setup and start using VALIS"),
+        ):
+            button = self.button(which)
+            button.setToolTip(tip)
+            button.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
 
         self.addPage(self._build_welcome_page())
         self.addPage(self._build_options_page())

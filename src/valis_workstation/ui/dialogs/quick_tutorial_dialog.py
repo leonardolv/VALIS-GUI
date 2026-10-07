@@ -72,8 +72,8 @@ _STEPS: list[_TutorialStep] = [
         body=(
             "<p>Before we run, let's understand two settings:</p>"
             "<ul>"
-            "<li><b>Rigid:</b> We just move and rotate the image without changing its shape.</li>"
-            "<li><b>Non-Rigid:</b> We squish and stretch the image to fix torn or folded tissue.</li>"
+            "<li><b>Align slides (rigid):</b> We just move and rotate the image without changing its shape.</li>"
+            "<li><b>Fix tissue warping (non-rigid):</b> We squish and stretch the image to fix torn or folded tissue.</li>"
             "</ul>"
             "<p>Usually, we want <b>both</b> turned on.</p>"
         ),
@@ -87,7 +87,7 @@ _STEPS: list[_TutorialStep] = [
             "<p>For beginners, the default settings are perfect.</p>"
             "<ul>"
             "<li>Give your project a name.</li>"
-            "<li>Make sure <b>Rigid</b> and <b>Non-rigid</b> are checked.</li>"
+            "<li>Make sure <b>Align slides (rigid)</b> and <b>Fix tissue warping (non-rigid)</b> are checked.</li>"
             "</ul>"
             "<p>You can ignore the Advanced settings for now.</p>"
         ),
@@ -315,7 +315,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
 
         self._dont_show = QtWidgets.QCheckBox("Don't show on startup")
         self._dont_show.setStyleSheet(
-            "QCheckBox { color: #64748b; font-size: 12px; }"
+            "QCheckBox { color: #94a3b8; font-size: 12px; }"
             "QCheckBox::indicator { width: 16px; height: 16px; }"
         )
         settings = QtCore.QSettings("VALIS", "Workstation")
@@ -375,6 +375,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         )
         self._close_btn.clicked.connect(self.accept)
         footer_layout.addWidget(self._close_btn)
+        self._apply_accessibility()
 
         outer.addWidget(footer)
 
@@ -387,6 +388,36 @@ class QuickTutorialDialog(QtWidgets.QDialog):
 
         # Initial context detection
         self._detect_initial_context()
+
+    def _apply_accessibility(self) -> None:
+        """Accessible names, tooltips and hand cursors for every control."""
+        hand = QtCore.Qt.CursorShape.PointingHandCursor
+        for widget, name, tip in (
+            (self._prev_btn, "Previous step", "Go back one step (Left arrow key)"),
+            (self._next_btn, "Next step", "Go to the next step (Right arrow key)"),
+            (self._close_btn, "Close tutorial", "Close this tutorial. Reopen it any time with F1."),
+            (
+                self._action_btn,
+                "Do this step now",
+                "Perform this step for you, right from the tutorial",
+            ),
+            (
+                self._dont_show,
+                "Don't show tutorial on startup",
+                "Tick to stop this tutorial opening when VALIS starts. "
+                "You can always reopen it with F1 or Help > Quick Tutorial.",
+            ),
+        ):
+            widget.setAccessibleName(name)
+            if not widget.toolTip():
+                widget.setToolTip(tip)
+            if isinstance(widget, QtWidgets.QPushButton):
+                widget.setCursor(hand)
+        self._body.setAccessibleName("Tutorial step text")
+        self._step_counter.setAccessibleName("Tutorial progress")
+        for i, bubble in enumerate(self._bubbles):
+            bubble.setToolTip(f"Step {i + 1} of {len(self._bubbles)}")
+            bubble.setAccessibleName(f"Step {i + 1} indicator")
 
     # ── Context & Auto-Advance ───────────────────────────────────────
     
@@ -438,6 +469,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         self._icon_label.setText(step.icon)
         self._title_label.setText(step.title)
         self._step_counter.setText(f"Step {index + 1} of {len(_STEPS)}")
+        self._step_counter.setAccessibleDescription(f"{step.title}, step {index + 1} of {len(_STEPS)}")
         self._body.setHtml(step.body)
         
         # Update bubbles

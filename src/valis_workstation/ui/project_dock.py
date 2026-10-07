@@ -6,6 +6,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from valis_workstation.layout_constants import GRID_SPACING
 from valis_workstation.ui.icons import load_icon
+from valis_workstation.ui import modal_utils as modal
 
 
 class ProjectDock(QtWidgets.QDockWidget):
@@ -45,7 +46,18 @@ class ProjectDock(QtWidgets.QDockWidget):
         self._open_folder_button.clicked.connect(self.open_folder_requested.emit)
         self._open_folder_button.setVisible(False)
 
+        self._filter_edit.setAccessibleName("Filter slides by filename")
+        self._no_match_label = QtWidgets.QLabel("No slides match this filter. Clear the filter to see all slides.")
+        self._no_match_label.setWordWrap(True)
+        self._no_match_label.setProperty("role", "sidebar-subtle")
+        self._no_match_label.setVisible(False)
+
         self._list = QtWidgets.QListWidget()
+        self._list.setAccessibleName("Slide list")
+        self._list.setToolTip(
+            "Slides to register. Drag to reorder, Ctrl+A selects all, "
+            "Delete removes the selected slides."
+        )
         self._list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self._list.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
         self._list.setDefaultDropAction(QtCore.Qt.MoveAction)
@@ -60,6 +72,8 @@ class ProjectDock(QtWidgets.QDockWidget):
         )
         self._clear_button.setProperty("panelAction", True)
         self._clear_button.setToolTip("Remove all slides from the project")
+        self._clear_button.setAccessibleName("Clear all slides")
+        self._clear_button.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._clear_button.clicked.connect(self._clear_all_slides)
 
         self._remove_selected_button = QtWidgets.QPushButton("Remove Selected")
@@ -70,6 +84,8 @@ class ProjectDock(QtWidgets.QDockWidget):
         )
         self._remove_selected_button.setProperty("panelAction", True)
         self._remove_selected_button.setToolTip("Remove selected slides from the project (Del key). Right-click for options.")
+        self._remove_selected_button.setAccessibleName("Remove selected slides")
+        self._remove_selected_button.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._remove_selected_button.clicked.connect(self._remove_selected_slides)
         self._remove_selected_button.setEnabled(False)
 
@@ -91,6 +107,7 @@ class ProjectDock(QtWidgets.QDockWidget):
         layout.addWidget(self._filter_edit)
         layout.addWidget(self._empty_label)
         layout.addWidget(self._open_folder_button)
+        layout.addWidget(self._no_match_label)
         layout.addWidget(self._list)
 
         actions_row = QtWidgets.QHBoxLayout()
@@ -124,7 +141,7 @@ class ProjectDock(QtWidgets.QDockWidget):
         if self._list.count() == 0:
             return
 
-        reply = QtWidgets.QMessageBox.question(
+        reply = modal.question(
             self,
             "Clear All Slides",
             f"Remove all {self._list.count()} slides from the project?",
@@ -171,6 +188,9 @@ class ProjectDock(QtWidgets.QDockWidget):
         self._update_action_states()
         self._clear_button.setEnabled(total > 0)
         self._empty_label.setVisible(total == 0)
+        self._list.setVisible(total > 0)
+        self._filter_edit.setEnabled(total > 0)
+        self._no_match_label.setVisible(total > 0 and visible == 0)
         self._open_folder_button.setVisible(total == 0)
         self.count_changed.emit(total)
 
