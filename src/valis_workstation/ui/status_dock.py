@@ -237,6 +237,9 @@ class StatusDock(QtWidgets.QDockWidget):
         self._last_progress_value = value
         self._progress.setValue(value)
         if value >= 100:
+            # Stop the 1 s timer from overwriting the final label with a
+            # forever-growing elapsed time.
+            self._run_started_at = None
             self._timing_label.setText("Elapsed: complete | ETA: 00:00:00")
         if value == 100:
             logger.debug("Progress completed: 100%%")

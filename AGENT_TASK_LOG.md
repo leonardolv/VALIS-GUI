@@ -8,6 +8,15 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-13 UTC - StatusDock elapsed timer keeps counting after a run completes
+Branch `claude/zen-clarke-lx9nve` - Status: **done** (PR opened; see branch PR)
+
+**Root cause.** `StatusDock.set_progress(100)` wrote "Elapsed: complete | ETA: 00:00:00", but `_run_started_at` stayed set, so the always-running 1 s `_timing_timer` overwrote it within a second with a forever-growing "Elapsed: HH:MM:SS".
+
+**Solution.** Clear `_run_started_at` when progress reaches 100 so `_update_timing` becomes a no-op until the next run.
+
+**Validation.** New `tests/test_status_dock_timing.py` (2 tests; the completion test fails before the fix). `tests/test_gui_components.py`: 26 passed, 1 pre-existing unrelated failure (`test_quick_actions_toolbar_exists`, fails identically without the change). Headless (offscreen).
+
 ### 2026-10-07 UTC - First-time-user intuitiveness pass
 Branch `claude/zen-clarke-41pb7g` (PR #24) · Status: **done**
 
