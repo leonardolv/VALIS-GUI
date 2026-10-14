@@ -252,6 +252,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
 
         self._body = QtWidgets.QTextBrowser()
         self._body.setOpenExternalLinks(True)
+        self._body.setAccessibleName("Tutorial step text")
         self._body.setStyleSheet(
             "QTextBrowser {"
             "  background: transparent;"
@@ -282,6 +283,8 @@ class QuickTutorialDialog(QtWidgets.QDialog):
             "    stop:0 #047857, stop:1 #059669);"
             "}"
         )
+        self._action_btn.setAccessibleName("Tutorial action")
+        self._action_btn.setToolTip("Perform this step's action in the main window")
         self._action_btn.clicked.connect(self._on_action_clicked)
         body_layout.addWidget(self._action_btn, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         
@@ -322,6 +325,9 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         self._dont_show.setChecked(
             settings.value(_SETTINGS_KEY_SKIP_TUTORIAL, False, type=bool)
         )
+        self._dont_show.setAccessibleName("Don't show tutorial on startup")
+        self._dont_show.setToolTip("Skip this tutorial the next time the app starts")
+        self._dont_show.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._dont_show.toggled.connect(self._on_dont_show_toggled)
         footer_layout.addWidget(self._dont_show)
 
@@ -346,6 +352,9 @@ class QuickTutorialDialog(QtWidgets.QDialog):
             "QPushButton:disabled { color: #475569; background: #1e293b; "
             "border-color: #334155; }"
         )
+        self._prev_btn.setAccessibleName("Previous step")
+        self._prev_btn.setToolTip("Go back one step (Left arrow)")
+        self._prev_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._prev_btn.clicked.connect(self._go_prev)
         footer_layout.addWidget(self._prev_btn)
 
@@ -362,6 +371,9 @@ class QuickTutorialDialog(QtWidgets.QDialog):
             "    stop:0 #0369a1, stop:1 #0284c7);"
             "}"
         )
+        self._next_btn.setAccessibleName("Next step")
+        self._next_btn.setToolTip("Go to the next step (Right arrow)")
+        self._next_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._next_btn.clicked.connect(self._go_next)
         footer_layout.addWidget(self._next_btn)
 
@@ -373,6 +385,9 @@ class QuickTutorialDialog(QtWidgets.QDialog):
             "}"
             "QPushButton:hover { background: #475569; }"
         )
+        self._close_btn.setAccessibleName("Close tutorial")
+        self._close_btn.setToolTip("Close the tutorial; you can reopen it from the Help menu")
+        self._close_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._close_btn.clicked.connect(self.accept)
         footer_layout.addWidget(self._close_btn)
 
@@ -470,7 +485,11 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         elif action_id == "run_registration":
             if hasattr(self._parent_window, "_start_registration"):
                 self._parent_window._start_registration()
-                self._go_next() # Advance to Wait step manually
+                # Only move on to "Wait & Watch" if a run really started; the
+                # user may have cancelled the confirmation or hit a validation
+                # error, in which case they still need this step.
+                if getattr(self._parent_window, "_worker", None) is not None:
+                    self._go_next()
 
     def _go_next(self) -> None:
         if self._current_step < len(_STEPS) - 1:
