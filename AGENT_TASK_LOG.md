@@ -8,6 +8,15 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-14 UTC - FirstRunWizard and AnalysisPlotDialog accessibility, tooltips, hand cursors, and backend compatibility
+Status: **done**
+
+**Root cause.** `FirstRunWizard` lacked screen-reader accessible names, object names, descriptive tooltips, placeholder text, and pointer hand cursors across options and navigation buttons. `AnalysisPlotDialog` imported legacy `backend_qt5agg`, lacked accessible names and pointer hand cursors on the button box and close button, and risked uncaught KeyErrors on empty/missing metric summaries.
+
+**Solution.** Added `objectName`, `setAccessibleName`, `setToolTip`, `setPlaceholderText`, and `PointingHandCursor` across `FirstRunWizard` controls (`_project_name_edit`, `_output_profile_combo`, and wizard buttons). Updated `AnalysisPlotDialog` to import modern `backend_qtagg` with graceful fallback to `backend_qt5agg`, added accessible names and `PointingHandCursor` to `_close_btn`, `_summary_label`, and `_canvas`, and guarded empty/null dataframe summaries.
+
+**Validation.** Created unit test suite `tests/test_first_run_wizard_and_analysis_plot.py` (3 tests). Ran full dialog and UI regression suite: 59 passed headlessly with 0 errors in 3.07s.
+
 ### 2026-10-13 UTC - StatusDock elapsed timer keeps counting after a run completes
 Branch `claude/zen-clarke-lx9nve` - Status: **done** (PR opened; see branch PR)
 

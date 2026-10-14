@@ -6,6 +6,22 @@
 
 ## Completed
 
+### Task: Enhance FirstRunWizard and AnalysisPlotDialog Accessibility, Tooltips, Hand Cursors, and Backend Compatibility
+- **Completed**: 2026-10-14
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/first_run_wizard.py`:
+    - Added screen-reader accessible names, object names, descriptive tooltips, and placeholder text to `_project_name_edit` and `_output_profile_combo`.
+    - Added `PointingHandCursor` shapes to `_output_profile_combo` and wizard navigation buttons (Next, Back, Finish, Cancel).
+    - Added object names and accessible names to page message labels.
+  - `src/valis_workstation/ui/dialogs/analysis_plot.py`:
+    - Replaced legacy `matplotlib.backends.backend_qt5agg` with modern `backend_qtagg` with fallback.
+    - Added accessible names, object names, and `PointingHandCursor` shapes to `_close_btn`, `_summary_label`, and `_canvas`.
+    - Guarded empty and null dataframe inputs in `_update_plot` preventing unhandled exceptions.
+  - `tests/test_first_run_wizard_and_analysis_plot.py`:
+    - Created unit tests validating accessible names, tooltips, cursor shapes, page navigation, and metrics plot handling.
+- **Verification**: Verified headlessly with `pytest tests/test_first_run_wizard_and_analysis_plot.py tests/test_warp_annotations_dialog.py tests/test_merge_slides_dialog.py tests/test_quality_report_dialog.py tests/test_performance_stats_dialog.py tests/test_error_detail_dialog.py tests/test_diagnostics_dialog.py tests/test_save_options_dialog.py tests/test_roi_export_dialog.py tests/test_gui_components.py -v` (59 passed, 0 failures in 3.07s).
+- **Status**: Completed
+
 ### Task: Enhance WarpAnnotationsDialog Accessibility, Tooltips, Hand Cursors, and Headless Safety
 - **Completed**: 2026-10-06
 - **Changes**:
