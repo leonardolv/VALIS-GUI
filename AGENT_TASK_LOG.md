@@ -4,7 +4,7 @@ work this file; always append, never overwrite another agent's entries.
 
 ## In Progress
 
-_(nothing claimed)_
+- 2026-10-14T14:10Z Claude (branch claude/inspiring-galileo-kg2q3i, PR #27): CI repair (PySide6/pytest-qt missing from dev deps, docs jinja2 pin) then GUI/UX screenshot audit of all tabs and dialogs.
 
 ## Completed
 
