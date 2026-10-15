@@ -8,6 +8,15 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-15 UTC - psutil was an undeclared hard dependency of the performance monitor
+Branch `claude/inspiring-galileo-cgrzlx` - Status: **done**
+
+**Root cause.** `utils/performance.py` imported `psutil` unconditionally, but it was in neither `pyproject.toml` nor `requirements.txt`. `main_window`, the worker and the thumbnail generator all import that module, so an environment without psutil failed to start (it also made `test_quick_actions_toolbar_exists` look like a pre-existing failure).
+
+**Solution.** Import is now optional; without psutil `sample_memory()` returns 0.0. Added `psutil>=5.9.0` to `requirements.txt`.
+
+**Validation.** New `tests/test_performance_without_psutil.py`; performance suites 20 passed; `tests/test_gui_components.py` 25 passed (offscreen).
+
 ### 2026-10-14 UTC - FirstRunWizard and AnalysisPlotDialog accessibility, tooltips, hand cursors, and backend compatibility
 Status: **done**
 

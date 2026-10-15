@@ -15,7 +15,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-import psutil
+try:
+    import psutil
+except ImportError:  # pragma: no cover - exercised via monkeypatch in tests
+    psutil = None  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +125,9 @@ class PerformanceMonitor:
         """Initialize the performance monitor."""
         self.metrics = PerformanceMetrics()
         self._start_time = time.time()
-        self._memory_process = psutil.Process()
+        # psutil is not a declared dependency of every install; without it
+        # memory sampling reports 0.0 instead of the whole app failing to import.
+        self._memory_process = psutil.Process() if psutil is not None else None
 
         logger.info("Performance monitoring initialized")
 
@@ -195,6 +200,8 @@ class PerformanceMonitor:
         float
             Current memory usage in MB
         """
+        if self._memory_process is None:
+            return 0.0
         try:
             # Get memory info
             mem_info = self._memory_process.memory_info()
