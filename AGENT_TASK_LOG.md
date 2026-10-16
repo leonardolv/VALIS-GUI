@@ -4,9 +4,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## In Progress
 
-- 2026-10-14T14:10Z Claude (branch claude/inspiring-galileo-kg2q3i, PR #27): CI repair (PySide6/pytest-qt missing from dev deps, docs jinja2 pin) then GUI/UX screenshot audit of all tabs and dialogs.
+_(nothing claimed)_
 
 ## Completed
+
+### 2026-10-16 UTC - CI repair for PR #27 and GUI layout/contrast polish
+Root causes: (1) test jobs: PySide6/pytest-qt were not declared dependencies (collection error) -> added to the dev group + `uv.lock`, `QT_QPA_PLATFORM=offscreen`, Qt system libs in `ci.yml`; (2) Python 3.9/3.10: `enum.StrEnum` is 3.11+ -> `valis_workstation/compat.py`; (3) 3.11+: `test_mixed_falls_back_to_white...` re-imported the real `valis` -> block via `sys.modules[...] = None`; (4) docs: container had old jinja2 -> pin in `docs/requirements.txt`, and `docs/Makefile`/`make.bat` pointed at a non-existent `source` dir -> `.`. Verified locally on Python 3.9 and 3.13 (513+ tests) and a Sphinx 7.1.2 build. GUI details in GUI_UX_TASK_LOG.md.
 
 ### 2026-10-14 UTC - Quick Tutorial advanced to "Wait & Watch" even when no run started
 Status: **done**

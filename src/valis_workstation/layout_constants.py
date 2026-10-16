@@ -9,13 +9,13 @@ change.
 from __future__ import annotations
 
 # ── Left sidebar (Project + Slide Preview tabs) ────────────────
-LEFT_SIDEBAR_MIN: int = 220
+LEFT_SIDEBAR_MIN: int = 240
 LEFT_SIDEBAR_INIT: int = 280
 LEFT_SIDEBAR_MAX: int = 420
 
 # ── Right sidebar (Properties + Layers tabs) ───────────────────
-RIGHT_SIDEBAR_MIN: int = 280
-RIGHT_SIDEBAR_INIT: int = 360
+RIGHT_SIDEBAR_MIN: int = 340
+RIGHT_SIDEBAR_INIT: int = 380
 RIGHT_SIDEBAR_MAX: int = 520
 
 # ── Central canvas (Napari viewer) ─────────────────────────────

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import StrEnum
+from valis_workstation.compat import StrEnum
 
 
 class SettingsKeys(StrEnum):

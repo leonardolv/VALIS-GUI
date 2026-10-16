@@ -164,7 +164,7 @@ class PreferencesDialog(QtWidgets.QDialog):
             "Note: Changes to cache settings require restarting the application."
         )
         info_label.setWordWrap(True)
-        info_label.setStyleSheet("color: gray; font-style: italic;")
+        info_label.setStyleSheet("color: #b4b4b4; font-style: italic;")
         layout.addRow(info_label)
 
         add_form_spacer(layout)
@@ -203,7 +203,7 @@ class PreferencesDialog(QtWidgets.QDialog):
             "Higher worker counts speed up thumbnail generation but use more memory."
         )
         info_label.setWordWrap(True)
-        info_label.setStyleSheet("color: gray; font-style: italic;")
+        info_label.setStyleSheet("color: #b4b4b4; font-style: italic;")
         layout.addRow(info_label)
 
         add_form_spacer(layout)
