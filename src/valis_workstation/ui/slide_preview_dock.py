@@ -41,8 +41,12 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         layout.addWidget(self._slides_header)
 
         # Toolbar
+        # Two rows: one row of seven controls cannot fit a ~240px sidebar
+        # (the filter box collapsed to "slid..." and the slider vanished).
         toolbar = QtWidgets.QHBoxLayout()
         toolbar.setSpacing(GRID_SPACING)
+        toolbar2 = QtWidgets.QHBoxLayout()
+        toolbar2.setSpacing(GRID_SPACING)
 
         toolbar.addWidget(QtWidgets.QLabel("Filter:"))
         self._filter_edit = QtWidgets.QLineEdit()
@@ -50,8 +54,8 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         self._filter_edit.setToolTip("Filter thumbnails by filename")
         self._filter_edit.setClearButtonEnabled(True)
         self._filter_edit.textChanged.connect(self._apply_filter_sort)
-        self._filter_edit.setMaximumWidth(220)
-        toolbar.addWidget(self._filter_edit)
+        self._filter_edit.setMinimumWidth(80)
+        toolbar.addWidget(self._filter_edit, 1)
 
         toolbar.addWidget(QtWidgets.QLabel("Sort:"))
         self._sort_combo = QtWidgets.QComboBox()
@@ -61,20 +65,18 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         toolbar.addWidget(self._sort_combo)
 
         # Thumbnail size slider
-        toolbar.addWidget(QtWidgets.QLabel("Size:"))
+        toolbar2.addWidget(QtWidgets.QLabel("Size:"))
         self._size_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self._size_slider.setRange(64, 256)
         self._size_slider.setValue(128)
         self._size_slider.setMaximumWidth(150)
         self._size_slider.setToolTip("Thumbnail size (64–256 px)")
         self._size_slider.valueChanged.connect(self._update_thumbnail_size)
-        toolbar.addWidget(self._size_slider)
+        toolbar2.addWidget(self._size_slider, 1)
 
         self._summary_label = QtWidgets.QLabel("0 slides")
         self._summary_label.setProperty("role", "sidebar-subtle")
-        toolbar.addWidget(self._summary_label)
-
-        toolbar.addStretch()
+        toolbar2.addWidget(self._summary_label)
 
         # View mode toggle
         self._grid_view = QtWidgets.QPushButton("Grid")
@@ -102,10 +104,17 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         view_group.addButton(self._list_view)
         view_group.buttonClicked.connect(self._toggle_view_mode)
 
-        toolbar.addWidget(self._grid_view)
-        toolbar.addWidget(self._list_view)
+        # Icon-only (tooltips name them): text labels clipped the "List"
+        # button off the edge of the narrow sidebar.
+        for _btn, _name in ((self._grid_view, "Grid view"), (self._list_view, "List view")):
+            _btn.setText("")
+            _btn.setAccessibleName(_name)
+        self._size_slider.setMinimumWidth(50)
+        toolbar2.addWidget(self._grid_view)
+        toolbar2.addWidget(self._list_view)
 
         layout.addLayout(toolbar)
+        layout.addLayout(toolbar2)
 
         # Scroll area for thumbnails
         self._scroll = QtWidgets.QScrollArea()

@@ -47,7 +47,7 @@ class MergeSlidesDialog(QtWidgets.QDialog):
             "Each slide becomes a channel. Useful for CyCIF, CODEX, and other multiplexed imaging."
         )
         info.setWordWrap(True)
-        info.setStyleSheet("background: #e8f4f8; padding: 8px; border-radius: 4px;")
+        info.setStyleSheet("background: #1f3a4d; color: #d6ecf7; padding: 8px; border-radius: 4px;")
         layout.addWidget(info)
 
         # Channel mapping table

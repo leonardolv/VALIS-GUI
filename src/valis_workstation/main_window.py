@@ -645,6 +645,46 @@ class MainWindow(QtWidgets.QMainWindow):
         super().resizeEvent(event)
         if hasattr(self, "_drop_overlay"):
             self._drop_overlay.setGeometry(self.rect())
+        self._adapt_toolbars_to_width()
+
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        super().showEvent(event)
+        # Toolbar buttons have their real size only once shown and polished.
+        QtCore.QTimer.singleShot(0, self._adapt_toolbars_to_width)
+
+    def _adapt_toolbars_to_width(self) -> None:
+        """Icon-only toolbar buttons when the labelled ones would not fit.
+
+        Otherwise Qt elides every label to "Open...lder" and pushes the
+        right-hand buttons into the overflow chevron. Tooltips already name
+        each action, so nothing becomes unreachable.
+        """
+        text_beside = QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+        icon_only = QtCore.Qt.ToolButtonStyle.ToolButtonIconOnly
+        for tb in self.findChildren(QtWidgets.QToolBar):
+            if not tb.isVisible():
+                continue
+            full = tb.property("_full_text_width")
+            if full is None:
+                # First visible pass: buttons are still labelled, so their
+                # size hints are the full-width requirement.
+                full = sum(
+                    (tb.widgetForAction(a).sizeHint().width() + 4)
+                    if tb.widgetForAction(a) is not None
+                    else 0
+                    for a in tb.actions()
+                ) + 24
+                tb.setProperty("_full_text_width", full)
+            compact = full > self.width()
+            if bool(tb.property("iconOnly")) != compact:
+                tb.setProperty("iconOnly", compact)
+                tb.setToolButtonStyle(icon_only if compact else text_beside)
+                tb.style().unpolish(tb)
+                tb.style().polish(tb)
+                for btn in tb.findChildren(QtWidgets.QToolButton):
+                    btn.style().unpolish(btn)
+                    btn.style().polish(btn)
+                    btn.updateGeometry()
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """Handle window close event with proper resource cleanup."""

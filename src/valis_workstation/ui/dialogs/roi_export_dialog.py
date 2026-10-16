@@ -93,6 +93,10 @@ class ROIExportDialog(QtWidgets.QDialog):
         button_layout.addWidget(self.paste_json_btn)
 
         button_layout.addStretch()
+        layout.addLayout(button_layout)
+        # OK/Cancel/Reset on their own row so a narrow dialog cannot clip them.
+        button_layout = QtWidgets.QHBoxLayout()
+        button_layout.addStretch()
 
         btns = QtWidgets.QDialogButtonBox(
             QtWidgets.QDialogButtonBox.StandardButton.Ok

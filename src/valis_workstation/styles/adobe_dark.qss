@@ -101,11 +101,17 @@ QToolBar#QuickActionsToolbar::separator {
 }
 
 QToolBar#QuickActionsToolbar QToolButton {
-    min-width: 88px;
+    min-width: 0;
     padding: 3px 7px;
     font-size: 11px;
     font-weight: 600;
     color: #e5e5e5;
+}
+
+/* Narrow windows: labels are dropped (see MainWindow._adapt_toolbars_to_width). */
+QToolBar[iconOnly="true"] QToolButton {
+    min-width: 24px;
+    padding: 3px 6px;
 }
 
 QToolButton {
@@ -285,20 +291,16 @@ QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
     background-color: #454545;
 }
 
+/* Qt ignores the CSS border-triangle trick (it paints solid squares), so
+   the arrows are real SVGs; @STYLES_DIR@ is filled in by base_stylesheet(). */
 QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
-    image: none;
-    width: 0; height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-bottom: 5px solid #aaaaaa;
+    image: url(@STYLES_DIR@/arrow_up.svg);
+    width: 10px; height: 10px;
 }
 
 QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
-    image: none;
-    width: 0; height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid #aaaaaa;
+    image: url(@STYLES_DIR@/arrow_down.svg);
+    width: 10px; height: 10px;
 }
 
 /* ---- Combo Box --------------------------------------------- */
@@ -328,11 +330,8 @@ QComboBox::drop-down {
 }
 
 QComboBox::down-arrow {
-    image: none;
-    width: 0; height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 6px solid #aaaaaa;
+    image: url(@STYLES_DIR@/arrow_down.svg);
+    width: 10px; height: 10px;
     margin-right: 5px;
 }
 
@@ -347,9 +346,12 @@ QComboBox QAbstractItemView {
 }
 
 /* ---- Check Boxes ------------------------------------------- */
-QCheckBox {
+QCheckBox, QRadioButton {
     spacing: 6px;
     color: #e0e0e0;
+    /* Otherwise the widget's own #232323 shows as a dark strip on the
+       lighter (#2b2b2b) dialog background. */
+    background: transparent;
 }
 
 QCheckBox::indicator {
@@ -363,6 +365,7 @@ QCheckBox::indicator {
 QCheckBox::indicator:checked {
     background-color: #2d7aed;
     border-color: #2d7aed;
+    image: url(@STYLES_DIR@/check.svg);
 }
 
 QCheckBox::indicator:hover {

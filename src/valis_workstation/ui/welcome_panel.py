@@ -27,7 +27,23 @@ class WelcomePanel(QtWidgets.QWidget):
     def __init__(self, viewer_note: str = "", parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("WelcomePanel")
-        outer = QtWidgets.QVBoxLayout(self)
+        # The content lives in a frameless scroll area so a short window
+        # scrolls the steps instead of clipping them.
+        frame_layout = QtWidgets.QVBoxLayout(self)
+        frame_layout.setContentsMargins(0, 0, 0, 0)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setObjectName("WelcomeScroll")
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        scroll.viewport().setAutoFillBackground(False)
+        inner = QtWidgets.QWidget()
+        inner.setObjectName("WelcomeInner")
+        scroll.setWidget(inner)
+        frame_layout.addWidget(scroll)
+        outer = QtWidgets.QVBoxLayout(inner)
         outer.addStretch(1)
 
         card = QtWidgets.QWidget()

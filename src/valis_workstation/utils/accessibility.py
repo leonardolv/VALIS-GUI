@@ -102,7 +102,11 @@ def base_stylesheet(repo_root: Path) -> str:
     """
     qss_path = repo_root / _BASE_STYLESHEET_RELATIVE
     if qss_path.exists():
-        return qss_path.read_text(encoding="utf-8")
+        # Qt resolves url() against the process cwd, so icon paths in the
+        # theme are absolute, substituted here.
+        return qss_path.read_text(encoding="utf-8").replace(
+            "@STYLES_DIR@", qss_path.parent.as_posix()
+        )
     return ""
 
 

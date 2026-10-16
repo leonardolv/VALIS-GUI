@@ -159,7 +159,7 @@ class SaveOptionsDialog(QtWidgets.QDialog):
         self._info_label.setObjectName("save_options_info_label")
         self._info_label.setAccessibleName("Export Info Summary")
         self._info_label.setWordWrap(True)
-        self._info_label.setStyleSheet("color: #888; font-style: italic;")
+        self._info_label.setStyleSheet("color: #b4b4b4; font-style: italic;")
         self._update_info()
         layout.addWidget(self._info_label)
 

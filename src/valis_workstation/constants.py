@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from enum import StrEnum
+from valis_workstation.compat import StrEnum
 from pathlib import Path
 
 

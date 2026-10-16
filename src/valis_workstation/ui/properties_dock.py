@@ -99,6 +99,9 @@ class PropertiesDock(QtWidgets.QDockWidget):
         form.setFieldGrowthPolicy(
             QtWidgets.QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
         )
+        # Label above the field when the panel is narrow, instead of
+        # clipping the field off the right edge.
+        form.setRowWrapPolicy(QtWidgets.QFormLayout.RowWrapPolicy.WrapLongRows)
 
         self._project_name = QtWidgets.QLineEdit("New Project")
         self._project_name.setToolTip(
@@ -168,6 +171,9 @@ class PropertiesDock(QtWidgets.QDockWidget):
         adv.setFieldGrowthPolicy(
             QtWidgets.QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
         )
+        # Label above the field when the panel is narrow, instead of
+        # clipping the field off the right edge.
+        adv.setRowWrapPolicy(QtWidgets.QFormLayout.RowWrapPolicy.WrapLongRows)
 
         # Feature detector – show human-readable labels
         self._feature_detector = QtWidgets.QComboBox()
@@ -312,6 +318,9 @@ class PropertiesDock(QtWidgets.QDockWidget):
         out.setFieldGrowthPolicy(
             QtWidgets.QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
         )
+        # Label above the field when the panel is narrow, instead of
+        # clipping the field off the right edge.
+        out.setRowWrapPolicy(QtWidgets.QFormLayout.RowWrapPolicy.WrapLongRows)
 
         self._output_profile = QtWidgets.QComboBox()
         self._output_profile.addItems(

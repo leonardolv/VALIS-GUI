@@ -54,9 +54,11 @@ class StatusDock(QtWidgets.QDockWidget):
         self._filter_edit.setClearButtonEnabled(True)
         self._filter_edit.setToolTip("Filter log lines by keyword (case-insensitive)")
         self._filter_edit.textChanged.connect(self._rebuild_log_view)
-        filter_row.addWidget(self._filter_edit)
+        filter_row.addWidget(self._filter_edit, 1)
 
-        log_controls = QtWidgets.QHBoxLayout()
+        # Filter + log actions share ONE row: stacked in separate rows
+        # they overlapped each other when the bottom panel was short.
+        log_controls = filter_row
         self._auto_scroll_check = QtWidgets.QCheckBox("Auto-scroll")
         self._auto_scroll_check.setChecked(True)
         self._auto_scroll_check.setToolTip(
@@ -86,7 +88,6 @@ class StatusDock(QtWidgets.QDockWidget):
         self._copy_log_button.clicked.connect(self._copy_log)
 
         log_controls.addWidget(self._auto_scroll_check)
-        log_controls.addStretch()
         log_controls.addWidget(self._copy_log_button)
         log_controls.addWidget(self._clear_log_button)
 
@@ -111,15 +112,18 @@ class StatusDock(QtWidgets.QDockWidget):
         divider.setFrameShape(QtWidgets.QFrame.Shape.HLine)
         divider.setFrameShadow(QtWidgets.QFrame.Shadow.Plain)
 
-        layout.addWidget(self._stage_label)
+        status_row = QtWidgets.QHBoxLayout()
+        status_row.addWidget(self._stage_label)
+        status_row.addStretch(1)
+        status_row.addWidget(self._timing_label)
+
+        layout.addLayout(status_row)
         layout.addWidget(self._progress)
-        layout.addWidget(self._timing_label)
         layout.addWidget(self._cancel_button)
         layout.addWidget(divider)
         layout.addWidget(self._log_header)
         layout.addLayout(filter_row)
-        layout.addLayout(log_controls)
-        layout.addWidget(self._log_console)
+        layout.addWidget(self._log_console, 1)
         self.setWidget(container)
 
         emitter.log_line.connect(self._append_log)

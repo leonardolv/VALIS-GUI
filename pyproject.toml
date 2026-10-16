@@ -52,6 +52,8 @@ description = ""
 [dependency-groups]
 dev = [
     "pytest>=8.4.0",
+    "pytest-qt>=4.4.0",
+    "PySide6>=6.7.0",
     "sphinx>=7.4.7",
     "sphinx-rtd-theme>=3.0.2",
     "twine>=6.1.0",

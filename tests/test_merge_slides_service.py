@@ -508,8 +508,10 @@ class TestResolveChannelColormap:
     def test_mixed_falls_back_to_white_when_slide_io_is_unavailable(
         self, monkeypatch, caplog
     ):
-        monkeypatch.delitem(sys.modules, "valis.slide_io", raising=False)
-        monkeypatch.delitem(sys.modules, "valis", raising=False)
+        # A None entry makes `import valis...` raise ImportError even when the
+        # real package is installed (CI), instead of silently re-importing it.
+        monkeypatch.setitem(sys.modules, "valis.slide_io", None)
+        monkeypatch.setitem(sys.modules, "valis", None)
 
         channels = [
             {"slide_name": "a.tiff", "channel_name": "DAPI", "color": "Red"},

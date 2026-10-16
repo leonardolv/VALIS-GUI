@@ -8,6 +8,18 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-16 UTC - CI repair for PR #27 and GUI layout/contrast polish
+Root causes: (1) test jobs: PySide6/pytest-qt were not declared dependencies (collection error) -> added to the dev group + `uv.lock`, `QT_QPA_PLATFORM=offscreen`, Qt system libs in `ci.yml`; (2) Python 3.9/3.10: `enum.StrEnum` is 3.11+ -> `valis_workstation/compat.py`; (3) 3.11+: `test_mixed_falls_back_to_white...` re-imported the real `valis` -> block via `sys.modules[...] = None`; (4) docs: container had old jinja2 -> pin in `docs/requirements.txt`, and `docs/Makefile`/`make.bat` pointed at a non-existent `source` dir -> `.`. Verified locally on Python 3.9 and 3.13 (513+ tests) and a Sphinx 7.1.2 build. GUI details in GUI_UX_TASK_LOG.md.
+
+### 2026-10-14 UTC - Quick Tutorial advanced to "Wait & Watch" even when no run started
+Status: **done**
+
+**Root cause.** `QuickTutorialDialog._on_action_clicked` called `MainWindow._start_registration()` then unconditionally `_go_next()`. That method can return without starting a run (validation error, declined warning, cancelled confirmation, <2 slides), so the tutorial told the user to "wait and watch" a run that never began. The dialog's controls also had no accessible names, tooltips or hand cursors.
+
+**Solution.** Advance only when `parent._worker is not None` after the call. Added accessible names, tooltips and pointing-hand cursors to the nav buttons, action button, "don't show" checkbox and body browser.
+
+**Validation.** New `tests/test_quick_tutorial_run_step.py` (3 tests; 2 fail before the fix). Full suite headless: 513 passed. Note: the earlier "pre-existing" `test_quick_actions_toolbar_exists` failure is only a missing `psutil`/`matplotlib` in bare sandboxes, not a code bug.
+
 ### 2026-10-14 UTC - FirstRunWizard and AnalysisPlotDialog accessibility, tooltips, hand cursors, and backend compatibility
 Status: **done**
 

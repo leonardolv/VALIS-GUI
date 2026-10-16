@@ -6,6 +6,18 @@
 
 ## Completed
 
+### Task: Screenshot audit and layout/contrast polish (main window, status dock, slide preview, welcome, dialogs)
+- **Completed**: 2026-10-16
+- **Changes**:
+  - QSS: spin/combo arrows were CSS border-triangles (Qt paints solid squares); now SVGs (`styles/arrow_up.svg`, `arrow_down.svg`), checked checkboxes show a tick (`check.svg`); `@STYLES_DIR@` is resolved in `accessibility.base_stylesheet`. Checkbox/radio background transparent (dark strip on dialogs).
+  - Quick toolbar: icon-only when labelled buttons do not fit (`MainWindow._adapt_toolbars_to_width`), no more elided "Open...lder" / hidden buttons.
+  - Status dock: stage/timing on one row, filter + Auto-scroll + Copy/Clear on one row (they overlapped), log console gets the stretch.
+  - Welcome panel scrolls; Slide Preview controls split into two rows with icon-only Grid/List; Properties forms wrap long rows; sidebar minimums raised (left 240, right 340, init 380).
+  - Dialogs: merge info banner (light bg with light text) darkened; grey italic notes lightened for contrast; ROI export buttons no longer clipped at min width.
+  - Tests: `tests/test_gui_polish_layout.py`.
+- **Evidence**: offscreen `QWidget.grab()` of all tabs at 1400x900 and 1000x640 and 11 dialogs before/after.
+
+
 ### Task: Enhance FirstRunWizard and AnalysisPlotDialog Accessibility, Tooltips, Hand Cursors, and Backend Compatibility
 - **Completed**: 2026-10-14
 - **Changes**:
@@ -169,5 +181,7 @@
 - **Status**: Completed
 
 ## Backlog
+
+- **Remaining audit plan (2026-10-16)**: (1) Properties combos still elide long values ("VGG (default", "Similarity (rot") at 340px: widen or add tooltips/min contents length. (2) Not yet screenshotted: Layers tab (needs napari), WarpAnnotationsDialog, BlinkViewerDialog, FirstRunWizard at small size, Results toolbar, menus. (3) Quick Tutorial uses hard-coded colours in Python; move to QSS. (4) Quick Tutorial/FirstRun "Don't show again" checkbox has a stray line behind the label. (5) Hard-coded `#888` in splash/welcome note: check contrast. (6) Update VALIS-GUI-Manual.html screenshots/text if toolbar labels matter (toolbar is icon-only below ~1450px).
 - ~~Add thumbnail caching for large whole-slide image formats.~~ (Completed in `ThumbnailCache` and `thumbnail_generator.py`)
 - ~~Implement batch export options for registered slide sets.~~ (Completed via `SaveOptionsDialog` batch export presets)

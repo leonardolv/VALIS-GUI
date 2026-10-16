@@ -1,2 +1,4 @@
+jinja2>=3.0
+markupsafe>=2.0
 sphinx_rtd_theme
 rst2pdf
