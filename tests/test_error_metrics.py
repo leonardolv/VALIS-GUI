@@ -102,9 +102,21 @@ class TestSummarizeErrorDataframe:
         assert result["metric_column"] is None
         assert result["values"] == []
 
-    def test_handles_nan_values(self) -> None:
+    def test_nan_values_are_excluded_not_zeroed(self) -> None:
         df = pd.DataFrame({"rigid_TRE": [1.0, float("nan"), 3.0]})
         result = summarize_error_dataframe(df)
-        # NaN should be filled with 0
         assert len(result["values"]) == 3
-        assert 0.0 in result["values"]
+        assert result["n_missing"] == 1
+        assert result["mean"] == 2.0
+        assert result["max"] == 3.0
+
+    def test_all_nan_reports_zero_summary(self) -> None:
+        df = pd.DataFrame({"rigid_TRE": [float("nan")] * 2})
+        result = summarize_error_dataframe(df)
+        assert result["n_missing"] == 2
+        assert result["mean"] == 0.0 and result["max"] == 0.0
+
+    def test_non_string_column_labels_do_not_crash(self) -> None:
+        df = pd.DataFrame({0: [1.0], "rigid_TRE": [2.0]})
+        assert select_metric_column(df) == "rigid_TRE"
+        assert select_metric_column(pd.DataFrame({0: [1]})) is None
