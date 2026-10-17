@@ -28,17 +28,17 @@ def summarize_errors(errors: list[float], threshold: float) -> ErrorSummary:
 
 
 def select_metric_column(summary_df: pd.DataFrame) -> str | None:
+    # Column labels may be non-strings (e.g. a RangeIndex); never crash on them.
+    columns = [c for c in summary_df.columns if isinstance(c, str)]
     candidates = [
-        c for c in summary_df.columns if c.startswith("non_rigid") and c.endswith("TRE")
+        c for c in columns if c.startswith("non_rigid") and c.endswith("TRE")
     ]
     if not candidates:
-        candidates = [
-            c for c in summary_df.columns if c.startswith("rigid") and c.endswith("TRE")
-        ]
+        candidates = [c for c in columns if c.startswith("rigid") and c.endswith("TRE")]
     if not candidates:
-        candidates = [c for c in summary_df.columns if c.endswith("TRE")]
+        candidates = [c for c in columns if c.endswith("TRE")]
     if not candidates:
-        candidates = [c for c in summary_df.columns if c.endswith("D")]
+        candidates = [c for c in columns if c.endswith("D")]
     return candidates[0] if candidates else None
 
 
@@ -49,16 +49,24 @@ def summarize_error_dataframe(summary_df: pd.DataFrame) -> dict:
         return {
             "metric_column": None,
             "values": [],
+            "n_missing": 0,
             "mean": 0.0,
             "max": 0.0,
         }
-    values = summary_df[metric_column].fillna(0).tolist()
+    # Unmeasured pairs stay NaN: treating them as 0 would report a pair with no
+    # error estimate as a perfect registration and drag the mean down.
+    values = pd.to_numeric(summary_df[metric_column], errors="coerce").tolist()
+    measured = [v for v in values if v == v]
     logger.info(
-        "Selected metric column '%s' with %d values", metric_column, len(values)
+        "Selected metric column '%s' with %d values (%d measured)",
+        metric_column,
+        len(values),
+        len(measured),
     )
     return {
         "metric_column": metric_column,
         "values": values,
-        "mean": float(sum(values) / len(values)) if values else 0.0,
-        "max": float(max(values)) if values else 0.0,
+        "n_missing": len(values) - len(measured),
+        "mean": float(sum(measured) / len(measured)) if measured else 0.0,
+        "max": float(max(measured)) if measured else 0.0,
     }
