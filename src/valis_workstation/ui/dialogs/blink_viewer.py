@@ -35,26 +35,40 @@ class BlinkViewerDialog(QtWidgets.QDialog):
         form = QtWidgets.QFormLayout()
 
         self._slide_a = QtWidgets.QComboBox()
-        self._slide_a.setToolTip("Select a registered slide for this channel")
+        self._slide_a.setToolTip("First registered slide to compare")
+        self._slide_a.setAccessibleName("Slide A")
         self._slide_b = QtWidgets.QComboBox()
-        self._slide_b.setToolTip("Select a registered slide for this channel")
+        self._slide_b.setToolTip("Second registered slide to compare")
+        self._slide_b.setAccessibleName("Slide B")
         for slide in slide_paths:
             self._slide_a.addItem(slide.name, slide)
             self._slide_b.addItem(slide.name, slide)
+        # Comparing a slide with itself shows nothing; default B to the next slide.
+        if len(slide_paths) > 1:
+            self._slide_b.setCurrentIndex(1)
 
         self._opacity = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
         self._opacity.setRange(0, 100)
         self._opacity.setValue(50)
-        self._opacity.setToolTip("0% = Slide A only · 100% = Slide B only · 50% = equal blend")
+        self._opacity.setToolTip(
+            "0% = Slide A only · 100% = Slide B only · 50% = equal blend. "
+            "Not used in Side-by-side mode."
+        )
+        self._opacity.setAccessibleName("Blend between Slide A and Slide B")
         self._opacity.valueChanged.connect(self._apply_opacity)
 
         self._mode = QtWidgets.QComboBox()
         self._mode.addItems(["Blink", "Side-by-side", "Swipe"])
-        self._mode.setToolTip("Blink: auto-toggle · Blend: manual crossfade · Swipe: horizontal split")
+        self._mode.setToolTip(
+            "Blink: auto-toggle between slides · Side-by-side: show both fully "
+            "· Swipe: crossfade with the Blend slider"
+        )
+        self._mode.setAccessibleName("Comparison mode")
         self._mode.currentTextChanged.connect(self._on_mode_changed)
 
         self._blink_toggle = QtWidgets.QPushButton("Start Blink")
         self._blink_toggle.setCheckable(True)
+        self._blink_toggle.setAccessibleName("Start or stop blinking")
         self._blink_toggle.toggled.connect(self._toggle_blink)
 
         self._slide_a.currentIndexChanged.connect(self._reload_layers)
@@ -105,11 +119,15 @@ class BlinkViewerDialog(QtWidgets.QDialog):
     def _apply_opacity(self) -> None:
         if self._layer_a is None or self._layer_b is None:
             return
+        if self._mode.currentText() == "Side-by-side":
+            # Both layers must stay fully opaque; the slider does not apply.
+            return
         value = self._opacity.value() / 100
         self._layer_a.opacity = 1 - value
         self._layer_b.opacity = value
 
     def _on_mode_changed(self, mode: str) -> None:
+        self._opacity.setEnabled(mode != "Side-by-side")
         if self._layer_a is None or self._layer_b is None:
             return
         if mode != "Blink":

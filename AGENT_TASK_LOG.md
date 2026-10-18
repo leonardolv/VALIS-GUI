@@ -8,6 +8,15 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-18 00:11 UTC - Blink Viewer: Blend slider breaks Side-by-side mode, wrong mode tooltip, Slide B defaults to Slide A
+Branch `claude/inspiring-galileo-ynjih3` - Status: **done**
+
+**Root cause.** In `BlinkViewerDialog`, moving the Blend slider called `_apply_opacity`, which overwrote the full opacity that Side-by-side mode sets, so the mode silently stopped showing both slides. Slide A and B both defaulted to the first slide (comparing a slide with itself), the Mode tooltip named a non-existent "Blend" mode, and the combos/slider/button had no accessible names.
+
+**Solution.** `_apply_opacity` is a no-op in Side-by-side and the slider is disabled there; Slide B defaults to the second slide; tooltip corrected; accessible names added. Manual row for Blink updated.
+
+**Validation.** New `tests/test_blink_viewer_modes.py` (5 tests); with `test_all_features.py` 128 passed headless.
+
 ### 2026-10-17 UTC - Registration error summary counted unmeasured pairs as perfect (0 error)
 Status: **done**
 
