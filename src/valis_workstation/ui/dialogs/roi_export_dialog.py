@@ -138,19 +138,30 @@ class ROIExportDialog(QtWidgets.QDialog):
             data = json.loads(text)
             if not isinstance(data, dict):
                 raise ValueError("JSON must be an object with coordinates")
-            updated = False
-            if "x" in data and isinstance(data["x"], (int, float)):
-                self._x.setValue(int(data["x"]))
-                updated = True
-            if "y" in data and isinstance(data["y"], (int, float)):
-                self._y.setValue(int(data["y"]))
-                updated = True
-            if "width" in data and isinstance(data["width"], (int, float)):
-                self._width.setValue(int(data["width"]))
-                updated = True
-            if "height" in data and isinstance(data["height"], (int, float)):
-                self._height.setValue(int(data["height"]))
-                updated = True
+            # Validate every field first so a bad value cannot leave the
+            # dialog half-updated; bools are not coordinates.
+            spins = {
+                "x": self._x,
+                "y": self._y,
+                "width": self._width,
+                "height": self._height,
+            }
+            pending: dict[str, int] = {}
+            for key in spins:
+                if key not in data:
+                    continue
+                val = data[key]
+                if isinstance(val, bool) or not isinstance(val, (int, float)):
+                    raise ValueError(f"'{key}' must be a number")
+                if val != val or val in (float("inf"), float("-inf")):
+                    raise ValueError(f"'{key}' must be finite")
+                lo, hi = spins[key].minimum(), spins[key].maximum()
+                if not lo <= val <= hi:
+                    raise ValueError(f"'{key}' must be between {lo} and {hi}")
+                pending[key] = int(val)
+            for key, val in pending.items():
+                spins[key].setValue(val)
+            updated = bool(pending)
             if "format" in data and str(data["format"]) in [
                 ImageFormats.OME_TIFF,
                 ImageFormats.TIFF,
