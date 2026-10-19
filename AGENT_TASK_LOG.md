@@ -8,6 +8,15 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-19 UTC - Export ROI Crop aborted on first out-of-bounds slide; paste-from-JSON half-applied
+Status: **done**
+
+**Root cause.** `_export_roi_crop` called `extract_area(*bbox)` per slide with no bounds check inside one broad try: a box past any slide's edge raised a vips error, aborting the batch after some files were written. A cancel or failure still showed "Successfully exported". `_paste_from_json` applied fields one by one, so a bad later value left the dialog half-updated; bools were accepted as numbers and out-of-range values were silently clamped.
+
+**Solution.** New Qt-free `services/roi_export.py` (`clamp_bbox`, `export_roi_crops`): clip to slide bounds, per-slide failure isolation, cancel flag, honest summary (warning dialog if anything failed). Paste validates all fields first (atomic), rejects bools/NaN/out-of-range. Manual ROI section updated.
+
+**Validation.** New `tests/test_roi_export_service.py` (10 tests); full suite 536 passed headless.
+
 ### 2026-10-18 00:11 UTC - Blink Viewer: Blend slider breaks Side-by-side mode, wrong mode tooltip, Slide B defaults to Slide A
 Branch `claude/inspiring-galileo-ynjih3` - Status: **done**
 

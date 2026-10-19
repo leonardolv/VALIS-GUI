@@ -43,6 +43,7 @@ from valis_workstation.ui.dialogs.blink_viewer import BlinkViewerDialog
 from valis_workstation.ui.dialogs.diagnostics_dialog import DiagnosticsDialog
 from valis_workstation.ui.dialogs.merge_slides_dialog import MergeSlidesDialog
 from valis_workstation.ui.dialogs.quality_report import QualityReportDialog
+from valis_workstation.services.roi_export import export_roi_crops
 from valis_workstation.ui.dialogs.roi_export_dialog import ROIExportDialog
 from valis_workstation.ui.dialogs.save_options_dialog import SaveOptionsDialog
 from valis_workstation.ui.dialogs.warp_annotations import WarpAnnotationsDialog
@@ -1630,7 +1631,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 )
                 progress.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
 
-                new_slide_files = []
                 # Map standard formats
                 ext = ".tiff"
                 if fmt == ImageFormats.OME_TIFF:
@@ -1638,30 +1638,27 @@ class MainWindow(QtWidgets.QMainWindow):
                 elif fmt == ImageFormats.PNG:
                     ext = ".png"
 
-                i = 0
-                for slide_name, slide_obj in registrar.slide_dict.items():
-                    if progress.wasCanceled():
-                        break
-
-                    progress.setValue(i)
+                def _on_progress(idx: int, slide_name: str) -> None:
+                    progress.setValue(idx)
                     progress.setLabelText(f"Exporting ROI for {slide_name}...")
 
-                    warped_slide = slide_obj.warp_slide(level=0)
-                    roi_vips = warped_slide.extract_area(*bbox)
-
-                    out_file = out_path / f"{slide_name}_ROI{ext}"
-                    # convert properly
-                    warp_tools.save_img(str(out_file), roi_vips)
-                    new_slide_files.append(str(out_file))
-
-                    i += 1
+                roi_result = export_roi_crops(
+                    registrar.slide_dict,
+                    bbox,
+                    out_path,
+                    ext,
+                    warp_tools.save_img,
+                    on_progress=_on_progress,
+                    is_cancelled=progress.wasCanceled,
+                )
+                new_slide_files = roi_result.files
                 progress.setValue(len(registrar.slide_dict))
 
-                QtWidgets.QMessageBox.information(
-                    self,
-                    "ROI Export",
-                    f"Successfully exported {len(new_slide_files)} ROIs to:\n{out_path}",
-                )
+                msg = roi_result.summary() + f"\n\nFolder: {out_path}"
+                if roi_result.failed or roi_result.cancelled or not new_slide_files:
+                    QtWidgets.QMessageBox.warning(self, "ROI Export", msg)
+                else:
+                    QtWidgets.QMessageBox.information(self, "ROI Export", msg)
 
                 if (
                     reopen
