@@ -61,6 +61,7 @@ class TestSaveOptionsDialogFeatures:
         assert opts["write_pyramid"] is False
         assert opts["preset"] == "Custom"
         assert "single-resolution" in dlg._info_label.text()
+        assert "TIFF format" in dlg._info_label.text()
 
     def test_preset_selection_updates_controls(self, qtbot) -> None:
         dlg = SaveOptionsDialog()
@@ -83,6 +84,7 @@ class TestSaveOptionsDialogFeatures:
         assert opts["quality"] == 85
         assert opts["tile_size"] == 256
         assert "JPEG quality 85%" in dlg._info_label.text()
+        assert "Not applied by VALIS" in dlg._info_label.text()
 
         # Switch to Archival Lossless
         dlg._preset_combo.setCurrentText("Archival Lossless")

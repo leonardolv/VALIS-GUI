@@ -262,19 +262,28 @@ class SaveOptionsDialog(QtWidgets.QDialog):
         quality = self._quality.value()
         pyramids = self._pyramid_levels.value()
         write_pyr = self._write_pyramid.isChecked()
-        pyr_str = f"{pyramids} pyramid levels" if write_pyr else "single-resolution"
+        pyr_str = "multi-resolution pyramid" if write_pyr else "single-resolution"
 
+        comp_names = {0: "none", 1: "fast", 5: "balanced", 9: "maximum"}
+        comp_name = comp_names.get(compression, f"level {compression}")
+        info = f"Compression: {comp_name}, {pyr_str}"
         if format_name == "JPEG":
             info = f"JPEG quality {quality}%, {pyr_str}"
-        elif format_name in ("OME-TIFF", "TIFF"):
-            comp_names = {0: "none", 1: "fast", 5: "balanced", 9: "maximum"}
-            comp_name = comp_names.get(compression, f"level {compression}")
-            info = f"Compression: {comp_name}, {pyr_str}"
-        else:  # PNG
-            comp_names = {0: "none", 1: "fast", 5: "balanced", 9: "maximum"}
-            comp_name = comp_names.get(compression, f"level {compression}")
-            info = f"Lossless compression: {comp_name}, {pyr_str}"
 
+        # VALIS always writes lossless OME-TIFF and picks the pyramid depth
+        # itself, so say which selections will not change the output.
+        ignored = []
+        if write_pyr and pyramids:
+            ignored.append("pyramid level count")
+        if format_name != "OME-TIFF":
+            ignored.append(f"{format_name} format")
+        if format_name == "JPEG":
+            ignored.append("JPEG quality")
+        if ignored:
+            info += (
+                f". Not applied by VALIS (OME-TIFF is always written): "
+                f"{', '.join(ignored)}"
+            )
         self._info_label.setText(f"Info: {info}")
 
     def get_options(self) -> dict:

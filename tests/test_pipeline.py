@@ -6,6 +6,7 @@ from valis_workstation.models.config import Config
 from valis_workstation.services.valis_pipeline import (
     build_registrar_kwargs,
     build_save_kwargs,
+    unapplied_save_options,
 )
 
 
@@ -102,3 +103,22 @@ class TestBuildSaveKwargs:
         config.image_quality = 0
         kwargs = build_save_kwargs(config)
         assert "Q" not in kwargs
+
+
+class TestUnappliedSaveOptions:
+    def test_defaults_report_only_the_pyramid_level_count(self) -> None:
+        notes = unapplied_save_options(Config())
+        assert any("pyramid level count" in n for n in notes)
+        assert not any("format" in n or "JPEG" in n for n in notes)
+
+    def test_non_ome_format_is_reported(self) -> None:
+        notes = unapplied_save_options(Config(image_format="PNG"))
+        assert any("PNG" in n and "OME-TIFF" in n for n in notes)
+
+    def test_jpeg_reports_format_and_quality(self) -> None:
+        notes = unapplied_save_options(Config(image_format="JPEG"))
+        assert any("JPEG quality" in n for n in notes)
+
+    def test_no_pyramid_means_no_level_note(self) -> None:
+        notes = unapplied_save_options(Config(write_pyramid=False))
+        assert not any("pyramid" in n for n in notes)
