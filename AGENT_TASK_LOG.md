@@ -6,6 +6,16 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-20 UTC - QuickTutorialDialog accessibility, object names, checkbox styling, dynamic button tooltips, and dash standardization
+Status: **done**
+
+**Root cause.** `QuickTutorialDialog` lacked object names and accessible names on title, counter, action button, bubbles, and checkboxes, had a stray border line behind the "Don't show on startup" checkbox label, used em dashes in the window title and step comments, and did not dynamically update button accessibility and tooltips on the finish step.
+
+**Solution.** Added `objectName`, `setAccessibleName`, and `setToolTip` across all tutorial widgets, action buttons, and bubble indicators. Configured `background: transparent; border: none;` on `_dont_show` checkbox. Dynamically updated `_close_btn` and `_action_btn` tooltips and accessible names on step transitions. Standardized punctuation strictly to hyphens only.
+
+**Validation.** Expanded `tests/test_quick_tutorial_run_step.py`; all 85 dialog and UI component tests passed headlessly in 13.28s with 0 errors.
+
+
 ### 2026-10-20 UTC - BlinkViewerDialog accessibility, object names, interval speed control, tooltips, hand cursors, and dash standardization
 Status: **done**
 

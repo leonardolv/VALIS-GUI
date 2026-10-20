@@ -6,7 +6,7 @@ import pytest
 
 pytest.importorskip("PySide6")
 
-from PySide6 import QtWidgets
+from PySide6 import QtCore, QtWidgets
 from valis_workstation.ui.dialogs.quick_tutorial_dialog import QuickTutorialDialog
 
 RUN_STEP = 5
@@ -51,6 +51,31 @@ def test_run_started_advances_to_wait_step(qtbot):
 
 def test_controls_have_accessible_names(qtbot):
     _, dialog = _dialog(qtbot, starts=False)
+    assert dialog.objectName() == "quickTutorialDialog"
+    assert " - " in dialog.windowTitle()
+    assert "—" not in dialog.windowTitle()
+
+    assert dialog._icon_label.objectName() == "tutorialIconLabel"
+    assert dialog._icon_label.accessibleName() == "Tutorial step icon"
+
+    assert dialog._title_label.objectName() == "tutorialTitleLabel"
+    assert dialog._title_label.accessibleName() == "Tutorial step title"
+
+    assert dialog._step_counter.objectName() == "tutorialStepCounter"
+    assert dialog._step_counter.accessibleName() == "Tutorial step counter"
+
+    assert dialog._body.objectName() == "tutorialBody"
+    assert dialog._action_btn.objectName() == "tutorialActionBtn"
+    assert dialog._dont_show.objectName() == "tutorialDontShowCheck"
+    assert dialog._dont_show.cursor().shape() == QtCore.Qt.CursorShape.PointingHandCursor
+    assert dialog._prev_btn.objectName() == "tutorialPrevBtn"
+    assert dialog._next_btn.objectName() == "tutorialNextBtn"
+    assert dialog._close_btn.objectName() == "tutorialCloseBtn"
+
+    for i, bubble in enumerate(dialog._bubbles):
+        assert bubble.objectName() == f"tutorialBubble_{i}"
+        assert bubble.accessibleName() == f"Step {i + 1} indicator"
+
     for w in (
         dialog._prev_btn,
         dialog._next_btn,
@@ -62,3 +87,12 @@ def test_controls_have_accessible_names(qtbot):
         assert w.accessibleName(), w
     for b in (dialog._prev_btn, dialog._next_btn, dialog._close_btn, dialog._action_btn):
         assert b.toolTip()
+
+
+def test_finish_step_updates_close_button_accessibility(qtbot):
+    from valis_workstation.ui.dialogs.quick_tutorial_dialog import _STEPS
+    _, dialog = _dialog(qtbot, starts=False)
+    dialog._show_step(len(_STEPS) - 1)
+    assert dialog._close_btn.text() == "Finish"
+    assert dialog._close_btn.accessibleName() == "Finish tutorial"
+    assert "Finish" in dialog._close_btn.toolTip()

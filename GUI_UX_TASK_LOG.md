@@ -6,6 +6,20 @@
 
 ## Completed
 
+### Task: Enhance QuickTutorialDialog Accessibility, Object Names, Checkbox Styling, Dynamic Button Tooltips, and Dash Standardization
+- **Completed**: 2026-10-20
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/quick_tutorial_dialog.py`:
+    - Added screen-reader accessible names, object names, and descriptive tooltips across `quickTutorialDialog`, `_icon_label` (`tutorialIconLabel`), `_title_label` (`tutorialTitleLabel`), `_step_counter` (`tutorialStepCounter`), `_body` (`tutorialBody`), `_action_btn` (`tutorialActionBtn`), `_bubbles_container` (`tutorialBubblesContainer`), `_dont_show` (`tutorialDontShowCheck`), `_prev_btn` (`tutorialPrevBtn`), `_next_btn` (`tutorialNextBtn`), and `_close_btn` (`tutorialCloseBtn`).
+    - Added object names and accessible names to individual progress bubbles (`tutorialBubble_0` through `tutorialBubble_12`).
+    - Removed stray border/line behind the "Don't show on startup" checkbox label by applying `background: transparent; border: none;`.
+    - Added dynamic tooltips and accessible names on `_close_btn` ("Finish tutorial" on the final step vs "Close tutorial" on intermediate steps) and `_action_btn`.
+    - Standardized dashes strictly to hyphens only across window title, docstrings, and step comments (no em dashes, no en dashes).
+  - `tests/test_quick_tutorial_run_step.py`:
+    - Expanded test suite to validate window title hyphenation, object names, accessible names across all header/body/footer widgets and bubble indicators, cursor shapes, and finish step dynamic button states.
+- **Verification**: Verified headlessly with `pytest tests/test_quick_tutorial_run_step.py tests/test_quick_tutorial_dialog_timer.py tests/test_blink_viewer_dialog.py tests/test_first_run_wizard_and_analysis_plot.py tests/test_preferences_dialog_accessibility.py tests/test_warp_annotations_dialog.py tests/test_merge_slides_dialog.py tests/test_quality_report_dialog.py tests/test_performance_stats_dialog.py tests/test_error_detail_dialog.py tests/test_diagnostics_dialog.py tests/test_save_options_dialog.py tests/test_roi_export_dialog.py tests/test_gui_components.py -v` (85 passed in 13.28s, 0 errors).
+- **Status**: Completed
+
 ### Task: Enhance BlinkViewerDialog Accessibility, Object Names, Interval Speed Control, Tooltips, Hand Cursors, and Dash Standardization
 - **Completed**: 2026-10-20
 - **Changes**:

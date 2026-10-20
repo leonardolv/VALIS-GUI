@@ -33,7 +33,7 @@ class _TutorialStep:
 
 
 _STEPS: list[_TutorialStep] = [
-    # 1 — Welcome
+    # 1 - Welcome
     _TutorialStep(
         icon="👋",
         title="Welcome to VALIS!",
@@ -43,7 +43,7 @@ _STEPS: list[_TutorialStep] = [
             "<p>You can keep this window open and use the app at the same time.</p>"
         ),
     ),
-    # 2 — The Basics
+    # 2 - The Basics
     _TutorialStep(
         icon="🔬",
         title="What is Registration?",
@@ -53,7 +53,7 @@ _STEPS: list[_TutorialStep] = [
             "<p>This lets you compare different stains on the exact same cells.</p>"
         ),
     ),
-    # 3 — Load Data
+    # 3 - Load Data
     _TutorialStep(
         icon="📂",
         title="Load Your Slides",
@@ -65,7 +65,7 @@ _STEPS: list[_TutorialStep] = [
         action_id="load_slides",
         action_label="📂 Open Slide Folder",
     ),
-    # 4 — What is Rigid?
+    # 4 - What is Rigid?
     _TutorialStep(
         icon="📐",
         title="Rigid vs. Non-Rigid",
@@ -78,7 +78,7 @@ _STEPS: list[_TutorialStep] = [
             "<p>Usually, we want <b>both</b> turned on.</p>"
         ),
     ),
-    # 5 — Configure Settings
+    # 5 - Configure Settings
     _TutorialStep(
         icon="⚙️",
         title="Configure Settings",
@@ -92,7 +92,7 @@ _STEPS: list[_TutorialStep] = [
             "<p>You can ignore the Advanced settings for now.</p>"
         ),
     ),
-    # 6 — Run
+    # 6 - Run
     _TutorialStep(
         icon="▶️",
         title="Run Registration",
@@ -103,7 +103,7 @@ _STEPS: list[_TutorialStep] = [
         action_id="run_registration",
         action_label="▶️ Run Registration",
     ),
-    # 7 — Wait
+    # 7 - Wait
     _TutorialStep(
         icon="⏳",
         title="Wait & Watch",
@@ -113,7 +113,7 @@ _STEPS: list[_TutorialStep] = [
             "<p>If you made a mistake, you can click Cancel.</p>"
         ),
     ),
-    # 8 — View Results
+    # 8 - View Results
     _TutorialStep(
         icon="👀",
         title="View Results",
@@ -123,7 +123,7 @@ _STEPS: list[_TutorialStep] = [
             "<p>You can zoom in with your mouse wheel and drag to pan.</p>"
         ),
     ),
-    # 9 — Find Errors
+    # 9 - Find Errors
     _TutorialStep(
         icon="🔍",
         title="Check the Quality",
@@ -136,7 +136,7 @@ _STEPS: list[_TutorialStep] = [
             "</ul>"
         ),
     ),
-    # 10 — Troubleshooting
+    # 10 - Troubleshooting
     _TutorialStep(
         icon="🔧",
         title="What if it fails?",
@@ -149,7 +149,7 @@ _STEPS: list[_TutorialStep] = [
             "</ul>"
         ),
     ),
-    # 11 — Post-Processing
+    # 11 - Post-Processing
     _TutorialStep(
         icon="✂️",
         title="Post-Processing",
@@ -161,7 +161,7 @@ _STEPS: list[_TutorialStep] = [
             "</ul>"
         ),
     ),
-    # 12 — Output Files
+    # 12 - Output Files
     _TutorialStep(
         icon="💾",
         title="Where are my files?",
@@ -174,7 +174,7 @@ _STEPS: list[_TutorialStep] = [
             "</ul>"
         ),
     ),
-    # 13 — Done
+    # 13 - Done
     _TutorialStep(
         icon="🎉",
         title="You're Ready!",
@@ -195,7 +195,8 @@ class QuickTutorialDialog(QtWidgets.QDialog):
 
     def __init__(self, parent: MainWindow) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Quick Tutorial — VALIS Workstation")
+        self.setObjectName("quickTutorialDialog")
+        self.setWindowTitle("Quick Tutorial - VALIS Workstation")
         self.setMinimumSize(660, 560)
         self.resize(720, 600)
         # Non-modal so users can interact with the app
@@ -224,6 +225,8 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         header_layout.setContentsMargins(24, 18, 24, 18)
 
         self._icon_label = QtWidgets.QLabel()
+        self._icon_label.setObjectName("tutorialIconLabel")
+        self._icon_label.setAccessibleName("Tutorial step icon")
         self._icon_label.setStyleSheet("font-size: 42px;")
         header_layout.addWidget(self._icon_label)
 
@@ -231,12 +234,16 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         header_text_layout.setSpacing(4)
 
         self._title_label = QtWidgets.QLabel()
+        self._title_label.setObjectName("tutorialTitleLabel")
+        self._title_label.setAccessibleName("Tutorial step title")
         self._title_label.setStyleSheet(
             "font-size: 22px; font-weight: bold; color: #f0f9ff;"
         )
         header_text_layout.addWidget(self._title_label)
 
         self._step_counter = QtWidgets.QLabel()
+        self._step_counter.setObjectName("tutorialStepCounter")
+        self._step_counter.setAccessibleName("Tutorial step counter")
         self._step_counter.setStyleSheet("font-size: 13px; color: #bae6fd;")
         header_text_layout.addWidget(self._step_counter)
 
@@ -251,6 +258,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         body_layout.setSpacing(16)
 
         self._body = QtWidgets.QTextBrowser()
+        self._body.setObjectName("tutorialBody")
         self._body.setOpenExternalLinks(True)
         self._body.setAccessibleName("Tutorial step text")
         self._body.setStyleSheet(
@@ -268,6 +276,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
 
         # Embedded Action Button
         self._action_btn = QtWidgets.QPushButton()
+        self._action_btn.setObjectName("tutorialActionBtn")
         self._action_btn.setVisible(False)
         self._action_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._action_btn.setStyleSheet(
@@ -292,6 +301,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
 
         # ── Bubbles Progress Indicator ──────────────────────────────
         self._bubbles_container = QtWidgets.QFrame()
+        self._bubbles_container.setObjectName("tutorialBubblesContainer")
         self._bubbles_container.setStyleSheet("background: #0f172a;")
         bubbles_layout = QtWidgets.QHBoxLayout(self._bubbles_container)
         bubbles_layout.setContentsMargins(16, 0, 16, 16)
@@ -301,6 +311,8 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         self._bubbles: list[QtWidgets.QLabel] = []
         for i in range(len(_STEPS)):
             lbl = QtWidgets.QLabel()
+            lbl.setObjectName(f"tutorialBubble_{i}")
+            lbl.setAccessibleName(f"Step {i + 1} indicator")
             lbl.setFixedSize(10, 10)
             self._set_bubble_state(lbl, False)
             bubbles_layout.addWidget(lbl)
@@ -317,8 +329,9 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         footer_layout.setContentsMargins(20, 14, 20, 14)
 
         self._dont_show = QtWidgets.QCheckBox("Don't show on startup")
+        self._dont_show.setObjectName("tutorialDontShowCheck")
         self._dont_show.setStyleSheet(
-            "QCheckBox { color: #64748b; font-size: 12px; }"
+            "QCheckBox { background: transparent; border: none; color: #64748b; font-size: 12px; }"
             "QCheckBox::indicator { width: 16px; height: 16px; }"
         )
         settings = QtCore.QSettings("VALIS", "Workstation")
@@ -343,6 +356,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         )
 
         self._prev_btn = QtWidgets.QPushButton("← Previous")
+        self._prev_btn.setObjectName("tutorialPrevBtn")
         self._prev_btn.setStyleSheet(
             btn_style
             + "QPushButton {"
@@ -359,6 +373,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         footer_layout.addWidget(self._prev_btn)
 
         self._next_btn = QtWidgets.QPushButton("Next →")
+        self._next_btn.setObjectName("tutorialNextBtn")
         self._next_btn.setStyleSheet(
             btn_style
             + "QPushButton {"
@@ -378,6 +393,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         footer_layout.addWidget(self._next_btn)
 
         self._close_btn = QtWidgets.QPushButton("Close")
+        self._close_btn.setObjectName("tutorialCloseBtn")
         self._close_btn.setStyleSheet(
             btn_style
             + "QPushButton {"
@@ -462,6 +478,8 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         # Embedded Action Button
         if step.action_label and step.action_id:
             self._action_btn.setText(step.action_label)
+            self._action_btn.setAccessibleName(step.action_label)
+            self._action_btn.setToolTip(f"{step.action_label} - perform this step's action in the main window")
             self._action_btn.setProperty("action_id", step.action_id)
             self._action_btn.setVisible(True)
         else:
@@ -474,8 +492,12 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         self._close_btn.setVisible(True)
         if is_last:
             self._close_btn.setText("Finish")
+            self._close_btn.setAccessibleName("Finish tutorial")
+            self._close_btn.setToolTip("Finish the tutorial; you can reopen it from the Help menu")
         else:
             self._close_btn.setText("Close")
+            self._close_btn.setAccessibleName("Close tutorial")
+            self._close_btn.setToolTip("Close the tutorial; you can reopen it from the Help menu")
             
     def _on_action_clicked(self) -> None:
         action_id = self._action_btn.property("action_id")
