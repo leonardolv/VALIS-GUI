@@ -6,6 +6,20 @@
 
 ## Completed
 
+### Task: Enhance BlinkViewerDialog Accessibility, Object Names, Interval Speed Control, Tooltips, Hand Cursors, and Dash Standardization
+- **Completed**: 2026-10-20
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/blink_viewer.py`:
+    - Added screen-reader accessible names, object names, and descriptive tooltips across `blinkViewerDialog`, `_slide_a` (`blinkSlideACombo`), `_slide_b` (`blinkSlideBCombo`), `_mode` (`blinkModeCombo`), `_interval_spin` (`blinkIntervalSpin`), `_opacity` (`blinkOpacitySlider`), `_blink_toggle` (`blinkToggleBtn`), `_button_box` (`blinkButtonBox`), and `_close_btn` (`blinkCloseBtn`).
+    - Added `PointingHandCursor` shapes across interactive comboboxes, toggle buttons, and close buttons.
+    - Added configurable blink interval spinbox (`_interval_spin`) with range 100-3000 ms, single step 50 ms, suffix " ms", and tooltip.
+    - Added safe exception guards when interacting with viewer layer collections and opacity properties.
+    - Standardized punctuation strictly to hyphens only in comments, docstrings, and user-facing tooltips (no em dashes, no en dashes).
+  - `tests/test_blink_viewer_dialog.py`:
+    - Created unit tests validating accessible names, object names, cursor shapes, tooltips, interval adjustments, display modes switching, timer lifecycle stopping upon accept/reject/close dismissal, and empty slide handling.
+- **Verification**: Verified headlessly with `pytest tests/test_blink_viewer_dialog.py tests/test_first_run_wizard_and_analysis_plot.py tests/test_warp_annotations_dialog.py tests/test_merge_slides_dialog.py tests/test_quality_report_dialog.py tests/test_performance_stats_dialog.py tests/test_error_detail_dialog.py tests/test_diagnostics_dialog.py tests/test_save_options_dialog.py tests/test_roi_export_dialog.py tests/test_gui_components.py -v` (63 passed, 0 failures in 4.95s).
+- **Status**: Completed
+
 ### Task: Screenshot audit and layout/contrast polish (main window, status dock, slide preview, welcome, dialogs)
 - **Completed**: 2026-10-16
 - **Changes**:
@@ -16,7 +30,6 @@
   - Dialogs: merge info banner (light bg with light text) darkened; grey italic notes lightened for contrast; ROI export buttons no longer clipped at min width.
   - Tests: `tests/test_gui_polish_layout.py`.
 - **Evidence**: offscreen `QWidget.grab()` of all tabs at 1400x900 and 1000x640 and 11 dialogs before/after.
-
 
 ### Task: Enhance FirstRunWizard and AnalysisPlotDialog Accessibility, Tooltips, Hand Cursors, and Backend Compatibility
 - **Completed**: 2026-10-14

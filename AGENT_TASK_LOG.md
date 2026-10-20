@@ -4,9 +4,16 @@ work this file; always append, never overwrite another agent's entries.
 
 ## In Progress
 
-_(nothing claimed)_
-
 ## Completed
+
+### 2026-10-20 UTC - BlinkViewerDialog accessibility, object names, interval speed control, tooltips, hand cursors, and dash standardization
+Status: **done**
+
+**Root cause.** `BlinkViewerDialog` lacked screen-reader accessible names, object names, and tooltips on its slide dropdowns, opacity slider, blink toggle button, button box, and close button, and lacked interactive pointing hand cursors. It also lacked configurable alternating speed controls for differing slide registration inspection workflows, had em dashes in docstrings/comments, and risked unhandled exceptions if viewer layer collections were accessed when closed or invalid.
+
+**Solution.** Added `objectName`, `setAccessibleName`, `setToolTip`, and `PointingHandCursor` across all controls and dialog buttons. Added `_interval_spin` (`QSpinBox`) with 100-3000 ms range, 50 ms single step, and " ms" suffix. Hardened layer management against null viewer or missing layer attributes. Standardized punctuation strictly to hyphens only.
+
+**Validation.** Created unit test suite `tests/test_blink_viewer_dialog.py` (4 tests). Ran full dialog and UI regression suite: 63 passed headlessly with 0 errors in 4.95s.
 
 ### 2026-10-20 UTC - Removed orphan utils/pyramid_utils.py and added an orphan-module guard
 
