@@ -10,7 +10,7 @@ _(nothing claimed)_
 
 ### 2026-10-20 UTC - Removed orphan utils/pyramid_utils.py and added an orphan-module guard
 
-Branch `claude/inspiring-galileo-k1yg5a` - PR: see below - Status: **done**
+Branch `claude/inspiring-galileo-k1yg5a` - PR: https://github.com/leonardolv/VALIS-GUI/pull/33 - Status: **done**
 
 **Problem.** `utils/pyramid_utils.py` (334 lines, 0% coverage) was imported by
 nothing in src, tests or docs. It also contained a latent bug: with explicit
