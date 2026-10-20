@@ -261,6 +261,30 @@ def build_save_kwargs(config: Config) -> dict:
     return save_kwargs
 
 
+def unapplied_save_options(config: Config) -> list[str]:
+    """Describe the Save Options that ``warp_and_save_slides`` cannot honour.
+
+    VALIS takes only a ``pyramid`` bool (never a level count), always writes
+    ``.ome.tiff``, and ``Q`` only matters for jpeg compression, which
+    ``compression_level_to_method`` never selects. These controls stay in
+    the UI/config, so the run log says plainly that they had no effect.
+    """
+    notes: list[str] = []
+    if config.write_pyramid and config.pyramid_levels not in (None, 0):
+        notes.append(
+            f"pyramid level count ({config.pyramid_levels}) - VALIS chooses it"
+        )
+    if str(config.image_format).upper() != "OME-TIFF":
+        notes.append(
+            f"output format {config.image_format} - VALIS always writes OME-TIFF"
+        )
+    if str(config.image_format).upper() == "JPEG":
+        notes.append(
+            f"JPEG quality ({config.image_quality}) - slides are saved losslessly"
+        )
+    return notes
+
+
 def _valis_available() -> bool:
     return importlib.util.find_spec("valis") is not None
 
@@ -421,6 +445,8 @@ def run_valis_pipeline(
 
         # ── Save warped slides ─────────────────────────────────────
         save_kwargs = build_save_kwargs(config)
+        for _note in unapplied_save_options(config):
+            logger.warning("Save option not applied: %s", _note)
 
         registered_dir = output_dir / "registered"
         if stage_callback:

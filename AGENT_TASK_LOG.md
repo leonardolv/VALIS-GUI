@@ -8,6 +8,22 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-20 UTC — Save Options: say honestly which controls VALIS ignores
+
+Branch `claude/inspiring-galileo-os9p8t` · PR: see below · Status: **done**
+
+**Problem.** `pyramid_levels`, `image_format` (TIFF/JPEG/PNG) and JPEG quality
+never reach VALIS (only a `pyramid` bool is accepted, `.ome.tiff` is always
+written, `Q` only affects jpeg compression which is never selected), yet the
+Save Options dialog advertised e.g. "JPEG quality 85%, 3 pyramid levels".
+
+**Solution.** `unapplied_save_options(config)` in `valis_pipeline.py`, logged
+as warnings at save time; Save Options info label now lists what VALIS will not
+apply instead of claiming it; Manual export-format section corrected.
+
+**Validation.** New `TestUnappliedSaveOptions` + dialog assertions; full
+suite 540 passed (offscreen).
+
 ### 2026-10-19 UTC - Export ROI Crop aborted on first out-of-bounds slide; paste-from-JSON half-applied
 Status: **done**
 

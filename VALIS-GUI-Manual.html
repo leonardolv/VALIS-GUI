@@ -1204,6 +1204,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <tr><td><strong>JPEG</strong></td><td>No</td><td>None</td><td>Quick previews, presentations</td></tr>
   <tr><td><strong>PNG</strong></td><td>No</td><td>None</td><td>Lossless screenshots</td></tr>
 </table>
+<p><strong>Note:</strong> the underlying VALIS library currently always writes lossless OME-TIFF and chooses the pyramid depth itself. Choosing TIFF, JPEG or PNG, a JPEG quality, or a pyramid level count is saved with your settings but does not change the output; the Save Options summary and the run log say so. Compression, tile size and the pyramid on/off switch are applied.</p>
 </div>
 
 <!-- ─── OPTIMIZATION TIPS ────────────────────────────────────── -->
@@ -1217,7 +1218,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <li>Disable non-rigid registration for initial alignment inspection</li>
   <li>Use <strong>ORB</strong> or <strong>BRISK</strong> detector (fastest classical)</li>
   <li>Enable <strong>Slides pre-ordered</strong> if you know the physical order — skips the sorting step entirely</li>
-  <li>Set lower <strong>Pyramid levels</strong> (2 instead of 4)</li>
+  <li>Turn off <strong>Write image pyramid</strong> if you do not need a multi-resolution viewer file</li>
 </ul>
 
 <h4 style="margin-top:14px">Quality optimization</h4>
