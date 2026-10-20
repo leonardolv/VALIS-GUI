@@ -8,6 +8,21 @@ _(nothing claimed)_
 
 ## Completed
 
+### 2026-10-20 UTC - Removed orphan utils/pyramid_utils.py and added an orphan-module guard
+
+Branch `claude/inspiring-galileo-k1yg5a` - PR: https://github.com/leonardolv/VALIS-GUI/pull/33 - Status: **done**
+
+**Problem.** `utils/pyramid_utils.py` (334 lines, 0% coverage) was imported by
+nothing in src, tests or docs. It also contained a latent bug: with explicit
+`level_downsamples` it returned the first sufficient level (always level 0),
+the opposite of its documented "lowest sufficient resolution".
+
+**Solution.** Deleted the module; added `tests/test_no_orphan_modules.py`, which
+fails when any package module is not referenced by another file (verified red
+with the module restored).
+
+**Validation.** Full suite 541 passed (offscreen).
+
 ### 2026-10-20 UTC — Save Options: say honestly which controls VALIS ignores
 
 Branch `claude/inspiring-galileo-os9p8t` · PR: see below · Status: **done**
