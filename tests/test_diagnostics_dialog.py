@@ -82,3 +82,13 @@ def test_diagnostics_dialog_refresh(qtbot, tmp_path):
 
     dialog._refresh_btn.click()
     assert "VALIS Workstation Diagnostics" in dialog._text.toPlainText()
+
+
+def test_copy_button_label_survives_a_double_click(qtbot, tmp_path):
+    """A second click inside the feedback window must not freeze "Copied!"."""
+    dialog = DiagnosticsDialog(repo_root=tmp_path)
+    qtbot.addWidget(dialog)
+    dialog._copy_btn.click()
+    dialog._copy_btn.click()
+    assert dialog._copy_btn.text() == "✓ Copied!"
+    qtbot.waitUntil(lambda: dialog._copy_btn.text() == "Copy to Clipboard", timeout=4000)

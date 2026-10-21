@@ -80,3 +80,11 @@ def test_show_error_dialog_headless_safety(qtbot, tmp_path):
         exception=RuntimeError("Test exception"),
         log_file=log_file,
     )
+
+
+def test_copy_button_label_survives_a_double_click(qtbot):
+    dialog = ErrorDetailDialog(error_message="e", technical_details="t", log_excerpt="l")
+    qtbot.addWidget(dialog)
+    dialog.copy_btn.click()
+    dialog.copy_btn.click()
+    qtbot.waitUntil(lambda: dialog.copy_btn.text() == "Copy to Clipboard", timeout=4000)

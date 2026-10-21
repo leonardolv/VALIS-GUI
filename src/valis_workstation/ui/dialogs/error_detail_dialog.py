@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class ErrorDetailDialog(QtWidgets.QDialog):
     """Dialog showing detailed error information with copy-to-clipboard capability."""
 
+    _COPY_LABEL = "Copy to Clipboard"
+
     def __init__(
         self,
         error_message: str,
@@ -67,7 +69,7 @@ class ErrorDetailDialog(QtWidgets.QDialog):
         # Buttons
         button_layout = QtWidgets.QHBoxLayout()
 
-        self.copy_btn = QtWidgets.QPushButton("Copy to Clipboard")
+        self.copy_btn = QtWidgets.QPushButton(self._COPY_LABEL)
         self.copy_btn.setAccessibleName("Copy Error Details to Clipboard")
         self.copy_btn.setToolTip("Copy all error details to clipboard")
         self.copy_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
@@ -113,7 +115,9 @@ Recent Log:
 
         target_btn = self.copy_btn
         try:
-            original_text = target_btn.text()
+            # Captured once: a second click inside the feedback window must
+            # not mistake "Copied!" for the real label.
+            original_text = self._COPY_LABEL
             target_btn.setText("✓ Copied!")
 
             def _restore_text() -> None:
