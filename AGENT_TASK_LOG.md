@@ -6,6 +6,22 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-21 UTC - `_numpy_to_pixmap` renders float/constant/multi-channel thumbnails wrong
+
+Branch `claude/inspiring-galileo-owlznj` - Status: **done**
+
+**Root cause.** Non-uint8 thumbnails were converted with `astype(uint8)` unless
+max > 255: float images in 0-1 became black, a constant image with max > 255
+divided by zero (NaN garbage), NaN/negative values wrapped. The multi-channel
+branch passed a non-contiguous `array[:, :, :3]` buffer to `QImage`.
+
+**Solution.** New `_to_uint8` (scale 0-1 floats by 255, min/max stretch
+otherwise, zero for constant, NaN-safe, always C-contiguous); multi-channel
+slice made contiguous.
+
+**Validation.** `tests/test_thumbnail_numpy_conversion.py` (6 tests); full
+headless suite green.
+
 ### 2026-10-21 UTC - Copy-button feedback gets stuck on "Copied!" after a double click (DiagnosticsDialog, ErrorDetailDialog)
 
 Branch `claude/inspiring-galileo-0k34to` - Status: **done**
