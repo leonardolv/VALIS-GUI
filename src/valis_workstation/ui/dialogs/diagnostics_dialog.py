@@ -10,6 +10,8 @@ from PySide6 import QtCore, QtWidgets
 class DiagnosticsDialog(QtWidgets.QDialog):
     """Display environment and runtime diagnostics."""
 
+    _COPY_LABEL = "Copy to Clipboard"
+
     def __init__(
         self,
         repo_root: Path,
@@ -38,7 +40,7 @@ class DiagnosticsDialog(QtWidgets.QDialog):
         )
         btn_row.addWidget(self._refresh_btn)
 
-        self._copy_btn = QtWidgets.QPushButton("Copy to Clipboard")
+        self._copy_btn = QtWidgets.QPushButton(self._COPY_LABEL)
         self._copy_btn.setAccessibleName("Copy Diagnostics to Clipboard")
         self._copy_btn.setToolTip("Copy complete diagnostics report to system clipboard")
         self._copy_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
@@ -61,12 +63,14 @@ class DiagnosticsDialog(QtWidgets.QDialog):
         """Copy the diagnostic text to the clipboard and provide visual feedback."""
         text = self._text.toPlainText()
         QtWidgets.QApplication.clipboard().setText(text)
-        original_text = self._copy_btn.text()
+        # Restore the label captured at construction, never the current text:
+        # a second click inside the feedback window would otherwise capture
+        # "Copied!" itself and leave the button stuck on it.
         self._copy_btn.setText("✓ Copied!")
 
         def _reset() -> None:
             try:
-                self._copy_btn.setText(original_text)
+                self._copy_btn.setText(self._COPY_LABEL)
             except RuntimeError:
                 pass
 

@@ -6,6 +6,22 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-21 UTC - Copy-button feedback gets stuck on "Copied!" after a double click (DiagnosticsDialog, ErrorDetailDialog)
+
+Branch `claude/inspiring-galileo-0k34to` - Status: **done**
+
+**Root cause.** Both dialogs captured `button.text()` as the label to restore on
+each click. A second click inside the 2 s feedback window captured "Copied!"
+itself, so the button was permanently stuck on it. (QualityReportDialog already
+restores a constant.)
+
+**Solution.** Each dialog restores a class constant `_COPY_LABEL`, also used to
+create the button.
+
+**Validation.** New double-click test in each dialog's test file: red without
+the fix, green with it. Full headless suite: 548 passed. No user-facing docs
+mention this behaviour.
+
 ### 2026-10-20 UTC - QuickTutorialDialog accessibility, object names, checkbox styling, dynamic button tooltips, and dash standardization
 Status: **done**
 
