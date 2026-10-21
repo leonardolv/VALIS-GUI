@@ -211,6 +211,25 @@ def _extract_metadata(slide_reader, slide_path: Path) -> dict:
     return metadata
 
 
+def _to_uint8(array: np.ndarray) -> np.ndarray:
+    """Return a C-contiguous uint8 copy/view of ``array`` for display.
+
+    Integer data above 255 and float data outside 0-255 are stretched from
+    min..max to 0-255; float data already in 0-1 is scaled by 255 instead of
+    being truncated to black; a constant image maps to zeros rather than
+    dividing by zero.
+    """
+    if array.dtype != np.uint8:
+        arr = np.nan_to_num(array.astype(np.float64, copy=False))
+        lo, hi = float(arr.min()), float(arr.max())
+        if np.issubdtype(array.dtype, np.floating) and 0.0 <= lo and hi <= 1.0:
+            arr = arr * 255.0
+        elif lo < 0 or hi > 255:
+            arr = (arr - lo) / (hi - lo) * 255.0 if hi > lo else np.zeros_like(arr)
+        array = np.clip(arr, 0, 255).astype(np.uint8)
+    return np.ascontiguousarray(array)
+
+
 def _numpy_to_pixmap(array: np.ndarray, max_size: int) -> QtGui.QPixmap:
     """Convert numpy array to QPixmap and scale to max size.
 
@@ -226,15 +245,7 @@ def _numpy_to_pixmap(array: np.ndarray, max_size: int) -> QtGui.QPixmap:
     QtGui.QPixmap
         Scaled pixmap
     """
-    # Ensure uint8
-    if array.dtype != np.uint8:
-        # Scale to 0-255
-        if array.max() > 255:
-            array = ((array - array.min()) / (array.max() - array.min()) * 255).astype(
-                np.uint8
-            )
-        else:
-            array = array.astype(np.uint8)
+    array = _to_uint8(array)
 
     # Handle different image formats
     if array.ndim == 2:
@@ -270,7 +281,7 @@ def _numpy_to_pixmap(array: np.ndarray, max_size: int) -> QtGui.QPixmap:
             logger.warning(
                 f"Multi-channel image ({channels} channels), using first 3 as RGB"
             )
-            array = array[:, :, :3]
+            array = np.ascontiguousarray(array[:, :, :3])
             bytes_per_line = width * 3
             qimage = QtGui.QImage(
                 array.data, width, height, bytes_per_line, QtGui.QImage.Format_RGB888
