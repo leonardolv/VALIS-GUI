@@ -6,6 +6,24 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-22 UTC - Properties combos elide long values (GUI backlog item 1)
+
+Branch `claude/inspiring-galileo-3cbm7k` - Status: **done**
+
+**Root cause.** Feature detector, transformer, crop mode, non-rigid method and
+reference-slide combos hold long labels ("VGG (default - BRISK detect + VGG
+descriptor)"); in the narrow Properties dock the closed combo elides them and
+nothing showed the full text.
+
+**Solution.** `make_combo_readable()` in `properties_dock.py`: full text as
+per-item tooltip, drop-down list widened to its longest entry, and
+`AdjustToMinimumContentsLength` so the combo can shrink instead of forcing the
+dock wider. Applied to the five combos and re-applied when the reference-slide
+list is refreshed.
+
+**Validation.** `tests/test_properties_combo_readable.py` (3 tests); full
+headless suite 557 passed. Ruff findings in the file are pre-existing.
+
 ### 2026-10-21 UTC - `_numpy_to_pixmap` renders float/constant/multi-channel thumbnails wrong
 
 Branch `claude/inspiring-galileo-owlznj` - Status: **done**

@@ -20,6 +20,28 @@ SIMPLE_ELASTIX_BANNER = (
 )
 
 
+def make_combo_readable(combo: QtWidgets.QComboBox) -> None:
+    """Keep long combo entries readable in a narrow dock.
+
+    The closed combo may elide a long label (for example "VGG (default - ..."),
+    so every item gets its full text as a tooltip and the drop-down list is
+    widened to fit its longest entry. The combo may also shrink below its
+    longest label instead of forcing the dock wider.
+    """
+    combo.setSizeAdjustPolicy(
+        QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+    )
+    combo.setMinimumContentsLength(12)
+    metrics = combo.fontMetrics()
+    widest = 0
+    for i in range(combo.count()):
+        text = combo.itemText(i)
+        combo.setItemData(i, text, QtCore.Qt.ItemDataRole.ToolTipRole)
+        widest = max(widest, metrics.horizontalAdvance(text))
+    if widest:
+        combo.view().setMinimumWidth(widest + 40)
+
+
 class PropertiesDock(QtWidgets.QDockWidget):
     def __init__(
         self, simple_elastix_available: bool, parent: QtWidgets.QWidget | None = None
@@ -263,6 +285,14 @@ class PropertiesDock(QtWidgets.QDockWidget):
             "• RAFT (v1.2.0+): deep learning, better on challenging cases"
         )
         self._non_rigid.toggled.connect(self._non_rigid_method.setEnabled)
+        for _combo in (
+            self._feature_detector,
+            self._transformer_type,
+            self._reference_slide,
+            self._crop_mode,
+            self._non_rigid_method,
+        ):
+            make_combo_readable(_combo)
 
         # Use color features / RGB mode (C3)
         self._use_color_features = QtWidgets.QCheckBox()
@@ -683,6 +713,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._reference_slide.clear()
         self._reference_slide.addItem("Auto-detect")
         self._reference_slide.addItems(slide_names)
+        make_combo_readable(self._reference_slide)
         idx = self._reference_slide.findText(current)
         if idx >= 0:
             self._reference_slide.setCurrentIndex(idx)

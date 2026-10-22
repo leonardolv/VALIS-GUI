@@ -209,6 +209,6 @@
 
 ## Backlog
 
-- **Remaining audit plan (2026-10-16)**: (1) Properties combos still elide long values ("VGG (default", "Similarity (rot") at 340px: widen or add tooltips/min contents length. (2) Not yet screenshotted: Layers tab (needs napari), WarpAnnotationsDialog, BlinkViewerDialog, FirstRunWizard at small size, Results toolbar, menus. (3) Quick Tutorial uses hard-coded colours in Python; move to QSS. (4) Quick Tutorial/FirstRun "Don't show again" checkbox has a stray line behind the label. (5) Hard-coded `#888` in splash/welcome note: check contrast. (6) Update VALIS-GUI-Manual.html screenshots/text if toolbar labels matter (toolbar is icon-only below ~1450px).
+- **Remaining audit plan (2026-10-16)**: (1) ~~Properties combos still elide long values~~ (done 2026-10-22: per-item tooltips + wide popup). (2) Not yet screenshotted: Layers tab (needs napari), WarpAnnotationsDialog, BlinkViewerDialog, FirstRunWizard at small size, Results toolbar, menus. (3) Quick Tutorial uses hard-coded colours in Python; move to QSS. (4) Quick Tutorial/FirstRun "Don't show again" checkbox has a stray line behind the label. (5) Hard-coded `#888` in splash/welcome note: check contrast. (6) Update VALIS-GUI-Manual.html screenshots/text if toolbar labels matter (toolbar is icon-only below ~1450px).
 - ~~Add thumbnail caching for large whole-slide image formats.~~ (Completed in `ThumbnailCache` and `thumbnail_generator.py`)
 - ~~Implement batch export options for registered slide sets.~~ (Completed via `SaveOptionsDialog` batch export presets)
