@@ -92,3 +92,26 @@ def test_strenum_compat_str_is_value():
         A = "a-value"
 
     assert str(E.A) == "a-value" and E.A == "a-value"
+
+def test_welcome_panel_and_splash_contrast_and_accessibility(qtbot):
+    from valis_workstation.ui.splash_screen import SplashScreen
+    from valis_workstation.ui.welcome_panel import WelcomePanel
+
+    welcome = WelcomePanel(viewer_note="Optional Napari 3D viewer is not installed.")
+    qtbot.addWidget(welcome)
+    note = welcome.findChild(QtWidgets.QLabel, "WelcomeViewerNote")
+    assert note is not None
+    assert "color: #a0a0a0;" in note.styleSheet()
+    assert note.accessibleName() == "Viewer availability note"
+
+    steps_label = welcome._steps_label
+    assert "&mdash;" not in steps_label.text()
+    assert "—" not in steps_label.text()
+    assert " - " in steps_label.text()
+
+    splash = SplashScreen()
+    qtbot.addWidget(splash)
+    splash_src = (ROOT / "src/valis_workstation/ui/splash_screen.py").read_text(encoding="utf-8")
+    assert "#888888" not in splash_src
+    assert "color: #a0a0a0;" in splash_src
+

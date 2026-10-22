@@ -109,7 +109,7 @@ class SplashScreen(QtWidgets.QWidget):
         subtitle = QtWidgets.QLabel("Virtual Alignment of pathoLogy Image Series")
         subtitle.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         subtitle.setStyleSheet(
-            "font-size: 11px; color: #888888; background: transparent;"
+            "font-size: 11px; color: #a0a0a0; background: transparent;"
         )
         layout.addWidget(subtitle)
 

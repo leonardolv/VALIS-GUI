@@ -70,7 +70,7 @@ class WelcomePanel(QtWidgets.QWidget):
         self._status_label.setVisible(False)
         layout.addWidget(self._status_label)
 
-        self._open_button = QtWidgets.QPushButton("Open Slide Folder…  (Ctrl+O)")
+        self._open_button = QtWidgets.QPushButton("Open Slide Folder... (Ctrl+O)")
         self._open_button.setObjectName("WelcomeOpenButton")
         self._open_button.setProperty("primary", True)
         self._open_button.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
@@ -80,7 +80,7 @@ class WelcomePanel(QtWidgets.QWidget):
         layout.addWidget(self._open_button)
 
         steps = "".join(
-            f"<p><b>{i}. {name}</b> &mdash; {text}</p>"
+            f"<p><b>{i}. {name}</b> - {text}</p>"
             for i, (name, text) in enumerate(WELCOME_STEPS, start=1)
         )
         self._intro = intro
@@ -92,7 +92,8 @@ class WelcomePanel(QtWidgets.QWidget):
             note = QtWidgets.QLabel(viewer_note)
             note.setWordWrap(True)
             note.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-            note.setStyleSheet("color: #888;")
+            note.setStyleSheet("color: #a0a0a0;")
+            note.setAccessibleName("Viewer availability note")
             note.setObjectName("WelcomeViewerNote")
             layout.addWidget(note)
 
@@ -108,7 +109,7 @@ class WelcomePanel(QtWidgets.QWidget):
         if count <= 0:
             self._status_label.setVisible(False)
             self._intro.setVisible(True)
-            self._open_button.setText("Open Slide Folder…  (Ctrl+O)")
+            self._open_button.setText("Open Slide Folder... (Ctrl+O)")
             return
         if count == 1:
             text = (
@@ -123,4 +124,4 @@ class WelcomePanel(QtWidgets.QWidget):
         self._status_label.setText(text)
         self._status_label.setVisible(True)
         self._intro.setVisible(False)
-        self._open_button.setText("Open a Different Folder…")
+        self._open_button.setText("Open a Different Folder...")

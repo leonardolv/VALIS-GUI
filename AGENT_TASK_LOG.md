@@ -6,6 +6,15 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-22 UTC - Welcome panel note and splash subtitle WCAG AA contrast polish and hyphen standardization
+Status: **done**
+
+**Root cause.** Backlog item (5): Hard-coded `#888` on `WelcomeViewerNote` and `#888888` on `SplashScreen` subtitle provided borderline contrast (~4.75:1) against `#1e1e1e` backgrounds on compact displays. In addition, `welcome_panel.py` used `&mdash;` HTML entities and ellipsis characters instead of standard hyphens.
+
+**Solution.** Updated `WelcomeViewerNote` to `color: #a0a0a0;` (contrast ~6.6:1) and added `accessibleName("Viewer availability note")`. Updated `SplashScreen` subtitle to `color: #a0a0a0;`. Standardized step separators and button labels strictly to hyphens and periods.
+
+**Validation.** Verified with `pytest tests/test_gui_polish_layout.py tests/test_first_time_user_guidance.py -v` (17 passed headlessly in 8.27s).
+
 ### 2026-10-22 UTC - Tutorial "Don't show on startup" checkbox invisible and low contrast (GUI backlog item 4)
 
 Branch `claude/inspiring-galileo-eto0m2` - Status: **done**
