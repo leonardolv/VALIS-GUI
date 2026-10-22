@@ -73,6 +73,14 @@ create the button.
 **Validation.** New double-click test in each dialog's test file: red without
 the fix, green with it. Full headless suite: 548 passed. No user-facing docs
 mention this behaviour.
+### 2026-10-22 UTC - QuickActionsToolbar concise action labels and width threshold optimization
+Status: **done**
+
+**Root cause.** Recently added actions on `QuickActionsToolbar` (`Blink`, `Quick Tutorial`, `Open Most Recent Folder`, `Resume Last Registration`) caused `_full_text_width` to expand to 2546px. This forced the toolbar into permanent icon-only mode on standard desktop monitors and caused `test_toolbar_goes_icon_only_when_labels_do_not_fit` to fail at 2200px width.
+
+**Solution.** Configured concise action `iconText` ("Open", "Run", "Cancel", "Recent", "Resume", "Reset", "Focus", "Fit", "Blink", "Tutorial") on toolbar actions in `main_window_actions.py` while preserving full descriptive text in the menus. Reduced toolbar full width requirement to 1226px, restoring text labels on wide viewports and clean icon-only collapse on compact windows.
+
+**Validation.** Full test suite: 546 passed headlessly with 0 errors in 31.28s.
 
 ### 2026-10-20 UTC - QuickTutorialDialog accessibility, object names, checkbox styling, dynamic button tooltips, and dash standardization
 Status: **done**

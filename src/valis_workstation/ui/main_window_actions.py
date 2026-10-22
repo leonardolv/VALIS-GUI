@@ -260,12 +260,20 @@ def build_actions(window: MainWindow) -> None:
     view_menu.addAction(fit_content_action)
 
     # Quick toolbar actions (pro workflow: most-used commands one click away)
+    open_action.setIconText("Open")
+    run_action.setIconText("Run")
+    cancel_action.setIconText("Cancel")
+    open_recent_action.setIconText("Recent")
+    resume_action.setIconText("Resume")
     quick_toolbar.addAction(open_action)
     quick_toolbar.addAction(run_action)
     quick_toolbar.addAction(cancel_action)
     quick_toolbar.addAction(open_recent_action)
     quick_toolbar.addAction(resume_action)
     quick_toolbar.addSeparator()
+    reset_layout_action.setIconText("Reset")
+    focus_mode_action.setIconText("Focus")
+    fit_content_action.setIconText("Fit")
     quick_toolbar.addAction(reset_layout_action)
     quick_toolbar.addAction(focus_mode_action)
     quick_toolbar.addAction(fit_content_action)
@@ -418,6 +426,7 @@ def build_actions(window: MainWindow) -> None:
     window._results_toolbar = results_toolbar
 
     quick_toolbar.addSeparator()
+    blink_action.setIconText("Blink")
     quick_toolbar.addAction(blink_action)
 
     # Store result-dependent actions for contextual enable/disable
@@ -495,6 +504,7 @@ def build_actions(window: MainWindow) -> None:
 
     # Add Quick Tutorial to the quick toolbar
     quick_toolbar.addSeparator()
+    quick_tutorial_action.setIconText("Tutorial")
     quick_toolbar.addAction(quick_tutorial_action)
 
     quick_start_action = QtGui.QAction("Quick Start Guide", window)

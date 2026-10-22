@@ -6,6 +6,15 @@
 
 ## Completed
 
+### Task: QuickActionsToolbar concise action labels, width threshold optimization, and responsive adaptation
+- **Completed**: 2026-10-22
+- **Changes**:
+  - `src/valis_workstation/ui/main_window_actions.py`:
+    - Added concise `iconText` labels across toolbar actions ("Open", "Run", "Cancel", "Recent", "Resume", "Reset", "Focus", "Fit", "Blink", "Tutorial") while preserving full descriptive labels for application menus.
+    - Reduced full toolbar button width requirement from 2546px down to 1226px, enabling labels on standard desktop resolutions (~1400px+) and clean automatic fallback to icon-only buttons on compact/narrow viewports.
+- **Verification**: Verified headlessly with `pytest tests/test_gui_polish_layout.py -v` (7 passed) and full test suite `pytest tests/ -q` (546 passed, 0 failures).
+- **Status**: Completed
+
 ### Task: Enhance QuickTutorialDialog Accessibility, Object Names, Checkbox Styling, Dynamic Button Tooltips, and Dash Standardization
 - **Completed**: 2026-10-20
 - **Changes**:
