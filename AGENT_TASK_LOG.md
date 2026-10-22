@@ -6,6 +6,24 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-22 UTC - Tutorial "Don't show on startup" checkbox invisible and low contrast (GUI backlog item 4)
+
+Branch `claude/inspiring-galileo-eto0m2` - Status: **done**
+
+**Root cause.** Screenshot of `QuickTutorialDialog` showed the footer checkbox
+with no visible indicator: the custom `QCheckBox::indicator` rule set only a
+size, which strips the native box. The label colour `#64748b` on `#1e293b` was
+~3:1, and the footer's unscoped `border-top` rule cascaded to child widgets.
+
+**Solution.** Scoped the footer rule to `QFrame#tutorialFooter`; gave the
+indicator a border, dark fill, hover and checked states; label colour
+`#94a3b8` (>= 4.5:1).
+
+**Validation.** Offscreen screenshot before/after;
+`tests/test_quick_tutorial_footer_style.py` (2 tests) plus existing tutorial
+tests pass. Also noted: backlog's `high_contrast`/`reduced_motion` entry is
+stale (already wired in Preferences and `utils/accessibility.py`).
+
 ### 2026-10-22 UTC - Properties combos elide long values (GUI backlog item 1)
 
 Branch `claude/inspiring-galileo-3cbm7k` - Status: **done**
