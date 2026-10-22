@@ -24,7 +24,7 @@ def _monitoring_enabled() -> bool:
     """Whether Preferences > "Enable performance monitoring" is on.
 
     Re-read from ``QSettings`` on every call rather than cached, so toggling
-    the checkbox takes effect immediately without restarting the app — same
+    the checkbox takes effect immediately without restarting the app - same
     approach as the app's ``ui/show_tooltips`` filter. Imports Qt lazily and
     fails open (monitoring enabled) if it is unavailable, since this module
     otherwise has no Qt dependency and a missing/broken settings backend
@@ -200,8 +200,8 @@ class PerformanceMonitor:
             mem_info = self._memory_process.memory_info()
             current_mb = mem_info.rss / (1024 * 1024)
 
-            # The instantaneous reading is returned either way — it is a live
-            # process stat, not an accumulated metric — but recording it into
+            # The instantaneous reading is returned either way - it is a live
+            # process stat, not an accumulated metric - but recording it into
             # the tracked history (what "peak"/"average" are computed from)
             # honors the same monitoring toggle every other tracker does.
             if _monitoring_enabled():

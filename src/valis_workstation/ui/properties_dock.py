@@ -156,7 +156,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
             "of each slide that is used for aligning (the full-size slide is\n"
             "still what gets saved).\n"
             "Higher = better quality but slower and more memory.\n"
-            "Default: 2048 (adjust 1024–4096 based on hardware)"
+            "Default: 2048 (adjust 1024-4096 based on hardware)"
         )
 
         self._use_gpu = QtWidgets.QCheckBox()
@@ -172,7 +172,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
                 "GPU acceleration not available.\n"
                 "Requires CUDA-compatible GPU and PyTorch with CUDA."
             )
-            logger.info("GPU not available – checkbox disabled")
+            logger.info("GPU not available - checkbox disabled")
 
         form.addRow("Project name", self._project_name)
         form.addRow("Align slides (rigid)", self._rigid)
@@ -197,7 +197,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
         # clipping the field off the right edge.
         adv.setRowWrapPolicy(QtWidgets.QFormLayout.RowWrapPolicy.WrapLongRows)
 
-        # Feature detector – show human-readable labels
+        # Feature detector - show human-readable labels
         self._feature_detector = QtWidgets.QComboBox()
         for key in FeatureDetectors.all():
             self._feature_detector.addItem(FeatureDetectors.label_for(key), key)
@@ -209,7 +209,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
             "better results for challenging cases but require GPU."
         )
 
-        # Rigid transformer – show labels, store keys
+        # Rigid transformer - show labels, store keys
         self._transformer_type = QtWidgets.QComboBox()
         for key in TransformerTypes.all():
             self._transformer_type.addItem(TransformerTypes.label_for(key), key)
@@ -236,10 +236,10 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._crop_mode.setCurrentText(CropModes.REFERENCE)
         self._crop_mode.setToolTip(
             "Output cropping mode:\n"
-            "• reference – crop to reference slide bounds\n"
-            "• all_overlap – crop to intersection of all slides\n"
-            "• all – include all slide areas (union, no cropping)\n"
-            "• unchanged – keep original slide dimensions"
+            "• reference - crop to reference slide bounds\n"
+            "• all_overlap - crop to intersection of all slides\n"
+            "• all - include all slide areas (union, no cropping)\n"
+            "• unchanged - keep original slide dimensions"
         )
 
         # Tissue masks
@@ -411,7 +411,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._image_quality_spin.setValue(95)
         self._image_quality_spin.setSuffix(" %")
         self._image_quality_spin.setToolTip(
-            "JPEG quality when saving as JPEG format (1–100).\n"
+            "JPEG quality when saving as JPEG format (1-100).\n"
             "95 = high quality, 75 = smaller files.\n"
             "Only affects JPEG-compressed TIFFs"
         )
@@ -571,7 +571,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
                 logger.info("GPU detected: %s", torch.cuda.get_device_name(0))
             return available
         except ImportError:
-            logger.debug("PyTorch not installed – GPU acceleration not available")
+            logger.debug("PyTorch not installed - GPU acceleration not available")
             return False
         except Exception as exc:
             logger.warning("Error checking GPU: %s", exc)
@@ -666,7 +666,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._max_size.setValue(cfg.max_image_size)
         self._use_gpu.setChecked(cfg.use_gpu)
 
-        # Feature detector — find by data key
+        # Feature detector - find by data key
         idx = self._feature_detector.findData(cfg.feature_detector)
         if idx >= 0:
             self._feature_detector.setCurrentIndex(idx)
@@ -691,7 +691,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
         self._imgs_ordered.setChecked(cfg.imgs_ordered)
         self._use_color_features.setChecked(cfg.use_color_features)
 
-        # Non-rigid method — find by data key
+        # Non-rigid method - find by data key
         nr_idx = self._non_rigid_method.findData(cfg.non_rigid_method)
         if nr_idx >= 0:
             self._non_rigid_method.setCurrentIndex(nr_idx)

@@ -27,6 +27,13 @@ def test_first_run_wizard_accessibility_and_affordances(qtbot):
     wizard._output_profile_combo.setCurrentText("Publication")
     assert wizard.selected_project_name() == "Cohort_A"
     assert wizard.selected_output_profile() == "Publication"
+    assert wizard._open_tutorial_check.objectName() == "first_run_open_tutorial_check"
+    assert wizard._open_tutorial_check.accessibleName() == "Open Quick Tutorial when finished"
+    assert "tutorial" in wizard._open_tutorial_check.toolTip().lower()
+    assert wizard._open_tutorial_check.cursor().shape() == QtCore.Qt.PointingHandCursor
+    assert wizard.should_open_tutorial() is True
+    wizard._open_tutorial_check.setChecked(False)
+    assert wizard.should_open_tutorial() is False
 
 
 def test_analysis_plot_dialog_accessibility_and_empty_metrics(qtbot):

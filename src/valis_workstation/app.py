@@ -64,7 +64,7 @@ class _ToolTipSuppressionFilter(QtCore.QObject):
     """Blocks every tooltip while ``ui/show_tooltips`` is off.
 
     The Preferences dialog's "Show tooltips" checkbox persisted this setting
-    and nothing ever read it back — no single call site owns "did a tooltip
+    and nothing ever read it back - no single call site owns "did a tooltip
     fire", since tooltips come from dozens of individual widgets via Qt's own
     hover machinery, not from app code. Installed application-wide, this is
     the one place that can intercept them all: ``QEvent.Type.ToolTip`` is
@@ -149,6 +149,8 @@ def run_app(repo_root: Path) -> int:
                 wizard.selected_output_profile()
             )
             settings.setValue("first_run_completed", True)
+            if hasattr(wizard, "should_open_tutorial") and wizard.should_open_tutorial():
+                QtCore.QTimer.singleShot(100, main_window._show_quick_tutorial)
 
     splash.set_status("Ready")
 

@@ -34,10 +34,10 @@ class Config:
     micro_max_image_size: int = 4096
 
     # ── Output / save settings ──────────────────────────────────────
-    compression_level: int = 1  # 0 – 9
+    compression_level: int = 1  # 0 - 9
     pyramid_levels: int = 4
     tile_size: int = 512
-    image_quality: int = 95  # JPEG quality 1 – 100
+    image_quality: int = 95  # JPEG quality 1 - 100
     image_format: str = "OME-TIFF"  # OME-TIFF | TIFF | JPEG | PNG
     write_pyramid: bool = True  # False ⇒ flat (non-pyramid) output
 

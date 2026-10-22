@@ -6,6 +6,20 @@
 
 ## Completed
 
+### Task: FirstRunWizard Finish Page Quick Tutorial Checkbox and Repository-Wide Dash Standardization
+- **Completed**: 2026-10-22
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/first_run_wizard.py`:
+    - Added `_open_tutorial_check` checkbox to `_build_finish_page` with explicit object name (`first_run_open_tutorial_check`), accessible name, tooltip, pointer cursor, and transparent background styling.
+    - Added `should_open_tutorial()` predicate returning whether user selected to launch tutorial upon completing setup.
+  - `src/valis_workstation/app.py`:
+    - Wired `wizard.should_open_tutorial()` to trigger `main_window._show_quick_tutorial` on startup completion.
+  - Standardized em dashes and en dashes to hyphens across `app.py`, `models/config.py`, `services/valis_pipeline.py`, `ui/layer_controls_dock.py`, `ui/properties_dock.py`, `ui/slide_preview_dock.py`, `ui/splash_screen.py`, and `utils/performance.py`.
+  - `tests/test_first_run_wizard_and_analysis_plot.py`:
+    - Added unit test assertions verifying `first_run_open_tutorial_check` object name, accessible name, tooltip, pointer cursor, and `should_open_tutorial()` toggle behavior.
+- **Verification**: Verified headlessly with `pytest tests/test_first_run_wizard_and_analysis_plot.py tests/test_gui_polish_layout.py -v` (11 passed in 3.98s, 0 errors).
+- **Status**: Completed
+
 ### Task: Welcome Panel Note and Splash Subtitle WCAG AA Contrast Polish and Hyphen Standardization
 - **Completed**: 2026-10-22
 - **Changes**:
@@ -233,6 +247,6 @@
 
 ## Backlog
 
-- **Remaining audit plan (2026-10-16)**: (1) ~~Properties combos still elide long values~~ (done 2026-10-22: per-item tooltips + wide popup). (2) Not yet screenshotted: Layers tab (needs napari), WarpAnnotationsDialog, BlinkViewerDialog, FirstRunWizard at small size, Results toolbar, menus. (3) Quick Tutorial uses hard-coded colours in Python; move to QSS. (4) ~~Quick Tutorial "Don't show" checkbox stray line/invisible indicator~~ (done 2026-10-22; FirstRun wizard checkbox not yet checked). (5) ~~Hard-coded #888 in splash/welcome note: check contrast~~ (done 2026-10-22: polished to #a0a0a0 >= 6.5:1 WCAG AA). (6) Update VALIS-GUI-Manual.html screenshots/text if toolbar labels matter (toolbar is icon-only below ~1450px).
+- **Remaining audit plan (2026-10-16)**: (1) ~~Properties combos still elide long values~~ (done 2026-10-22: per-item tooltips + wide popup). (2) Not yet screenshotted: Layers tab (needs napari), WarpAnnotationsDialog, BlinkViewerDialog, FirstRunWizard at small size, Results toolbar, menus. (3) Quick Tutorial uses hard-coded colours in Python; move to QSS. (4) ~~Quick Tutorial "Don't show" checkbox and FirstRun wizard tutorial checkbox~~ (done 2026-10-22). (5) ~~Hard-coded #888 in splash/welcome note: check contrast~~ (done 2026-10-22: polished to #a0a0a0 >= 6.5:1 WCAG AA). (6) Update VALIS-GUI-Manual.html screenshots/text if toolbar labels matter (toolbar is icon-only below ~1450px).
 - ~~Add thumbnail caching for large whole-slide image formats.~~ (Completed in `ThumbnailCache` and `thumbnail_generator.py`)
 - ~~Implement batch export options for registered slide sets.~~ (Completed via `SaveOptionsDialog` batch export presets)

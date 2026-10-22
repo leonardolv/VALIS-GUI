@@ -70,7 +70,7 @@ class _Spinner(QtWidgets.QWidget):
 
 
 # ─────────────────────────────────────────────────────────────────
-#  SplashScreen – shown during application boot
+#  SplashScreen - shown during application boot
 # ─────────────────────────────────────────────────────────────────
 class SplashScreen(QtWidgets.QWidget):
     """Frameless dark splash window with animated spinner and status text."""
@@ -203,7 +203,7 @@ class SplashScreen(QtWidgets.QWidget):
 
 
 # ─────────────────────────────────────────────────────────────────
-#  LoadingOverlay – semi-transparent overlay for long tasks
+#  LoadingOverlay - semi-transparent overlay for long tasks
 # ─────────────────────────────────────────────────────────────────
 class LoadingOverlay(QtWidgets.QWidget):
     """Translucent overlay with spinner + message, parented to any widget.

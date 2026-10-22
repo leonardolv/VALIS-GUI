@@ -59,7 +59,7 @@ def _get_feature_detector_cls(detector_key: str, use_color: bool = False):
     cls = _map.get(detector_key)
     if cls is None:
         logger.warning(
-            "Unknown feature detector '%s' – falling back to VGG", detector_key
+            "Unknown feature detector '%s' - falling back to VGG", detector_key
         )
         return None  # VALIS will use its own default (VGG)
 
@@ -98,7 +98,7 @@ def _get_transformer_cls(transformer_key: str):
     try:
         from skimage import transform as skt  # type: ignore[import-untyped]
     except ImportError:
-        logger.warning("scikit-image not available – using default SimilarityTransform fallback")
+        logger.warning("scikit-image not available - using default SimilarityTransform fallback")
 
         class SimilarityTransform:
             """Fallback placeholder when scikit-image is not installed."""
@@ -168,7 +168,7 @@ def build_registrar_kwargs(config: Config) -> dict:
                     nr_cls = non_rigid_registrars.RAFTWarper
                     logger.info("Non-rigid method: RAFTWarper")
                 else:
-                    logger.warning("RAFTWarper not found in this VALIS version – falling back to OpticalFlow")
+                    logger.warning("RAFTWarper not found in this VALIS version - falling back to OpticalFlow")
             except ImportError:
                 pass
         if nr_cls is None:
@@ -181,7 +181,7 @@ def build_registrar_kwargs(config: Config) -> dict:
                     from valis import serial_non_rigid  # type: ignore[import-untyped]
                     nr_cls = serial_non_rigid.SerialNonRigidRegistrar
                 except ImportError:
-                    logger.warning("No non-rigid registrar available – disabling non-rigid")
+                    logger.warning("No non-rigid registrar available - disabling non-rigid")
         kwargs["non_rigid_registrar_cls"] = nr_cls
     else:
         kwargs["non_rigid_registrar_cls"] = None
@@ -227,7 +227,7 @@ def build_registrar_kwargs(config: Config) -> dict:
             }
         except ImportError:
             logger.warning(
-                "micro_rigid_registrar not importable – skipping micro-registration"
+                "micro_rigid_registrar not importable - skipping micro-registration"
             )
 
     logger.info("Registrar kwargs: %s", str(kwargs))
@@ -383,12 +383,12 @@ def run_valis_pipeline(
                     break
         if reference_img_f is None:
             logger.warning(
-                "Reference slide '%s' not found – VALIS will auto-select",
+                "Reference slide '%s' not found - VALIS will auto-select",
                 config.reference_slide,
             )
 
     if reference_img_f is None:
-        logger.info("No explicit reference – VALIS will auto-select")
+        logger.info("No explicit reference - VALIS will auto-select")
 
     # ── Initialise VALIS registrar ─────────────────────────────────
     init_kwargs: dict = {
@@ -420,7 +420,7 @@ def run_valis_pipeline(
         logger.info("Starting registration process")
         rigid_registrar, non_rigid_registrar, summary_df = registrar.register()
         logger.info(
-            "Registration completed – rigid: %s, non-rigid: %s",
+            "Registration completed - rigid: %s, non-rigid: %s",
             rigid_registrar is not None,
             non_rigid_registrar is not None,
         )

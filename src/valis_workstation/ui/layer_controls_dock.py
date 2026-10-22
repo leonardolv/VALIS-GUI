@@ -109,7 +109,7 @@ class LayerControlsDock(QtWidgets.QDockWidget):
         # Column header tooltips (E4)
         self._table.horizontalHeaderItem(0).setToolTip("Show/hide the layer")
         self._table.horizontalHeaderItem(1).setToolTip("Layer name")
-        self._table.horizontalHeaderItem(2).setToolTip("Layer transparency (0–100%)")
+        self._table.horizontalHeaderItem(2).setToolTip("Layer transparency (0-100%)")
         self._table.horizontalHeaderItem(3).setToolTip("Color map for grayscale layers")
         layout.addWidget(self._table)
         self.setWidget(container)

@@ -101,6 +101,23 @@ class FirstRunWizard(QtWidgets.QWizard):
         done_label.setObjectName("first_run_done_label")
         done_label.setAccessibleName("Setup complete message")
         layout.addWidget(done_label)
+
+        self._open_tutorial_check = QtWidgets.QCheckBox(
+            "Open Quick Tutorial when finished"
+        )
+        self._open_tutorial_check.setObjectName("first_run_open_tutorial_check")
+        self._open_tutorial_check.setAccessibleName("Open Quick Tutorial when finished")
+        self._open_tutorial_check.setToolTip(
+            "Launch the interactive 13-step beginner tutorial after finishing setup"
+        )
+        self._open_tutorial_check.setCursor(QtCore.Qt.PointingHandCursor)
+        self._open_tutorial_check.setChecked(True)
+        self._open_tutorial_check.setStyleSheet(
+            "QCheckBox { background: transparent; border: none; color: #e2e8f0; "
+            "font-size: 13px; spacing: 8px; margin-top: 14px; }"
+            "QCheckBox::indicator { width: 16px; height: 16px; border-radius: 3px; }"
+        )
+        layout.addWidget(self._open_tutorial_check)
         return page
 
     def selected_project_name(self) -> str:
@@ -108,3 +125,7 @@ class FirstRunWizard(QtWidgets.QWizard):
 
     def selected_output_profile(self) -> str:
         return self._output_profile_combo.currentText()
+
+    def should_open_tutorial(self) -> bool:
+        """Return True if the user elected to launch the Quick Tutorial on finish."""
+        return self._open_tutorial_check.isChecked()

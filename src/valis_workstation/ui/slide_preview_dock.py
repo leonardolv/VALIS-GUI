@@ -70,7 +70,7 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         self._size_slider.setRange(64, 256)
         self._size_slider.setValue(128)
         self._size_slider.setMaximumWidth(150)
-        self._size_slider.setToolTip("Thumbnail size (64–256 px)")
+        self._size_slider.setToolTip("Thumbnail size (64-256 px)")
         self._size_slider.valueChanged.connect(self._update_thumbnail_size)
         toolbar2.addWidget(self._size_slider, 1)
 

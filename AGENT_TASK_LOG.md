@@ -6,6 +6,15 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-22 UTC - FirstRunWizard finish page quick tutorial checkbox and repository-wide dash standardization
+Status: **done**
+
+**Root cause.** Backlog item (4): FirstRunWizard finish page lacked an option to launch the interactive tutorial directly after completing setup, missing an onboarding bridge for new users. In addition, several modules and tooltips contained em and en dashes violating hyphen-only guidelines.
+
+**Solution.** Added `_open_tutorial_check` (`first_run_open_tutorial_check`) checkbox on `FirstRunWizard` finish page with pointer cursor, accessible name, tooltip, and transparent styling. Added `should_open_tutorial()` predicate. Wired startup launch in `app.py`. Standardized em and en dashes across `app.py`, `models/config.py`, `services/valis_pipeline.py`, `ui/layer_controls_dock.py`, `ui/properties_dock.py`, `ui/slide_preview_dock.py`, `ui/splash_screen.py`, and `utils/performance.py`.
+
+**Validation.** Expanded `tests/test_first_run_wizard_and_analysis_plot.py` verifying checkbox attributes, tooltips, cursor, accessibility, and toggle state. Verified headlessly with `pytest tests/test_first_run_wizard_and_analysis_plot.py tests/test_gui_polish_layout.py -v` (11 passed in 3.98s, 0 errors).
+
 ### 2026-10-22 UTC - Welcome panel note and splash subtitle WCAG AA contrast polish and hyphen standardization
 Status: **done**
 
