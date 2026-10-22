@@ -322,8 +322,12 @@ class QuickTutorialDialog(QtWidgets.QDialog):
 
         # ── Footer ──────────────────────────────────────────────────
         footer = QtWidgets.QFrame()
+        footer.setObjectName("tutorialFooter")
+        # Scoped by object name: an unscoped rule cascades the border-top to
+        # every child widget (the "stray line" behind the checkbox label).
         footer.setStyleSheet(
-            "background: #1e293b; border-top: 1px solid #334155;"
+            "QFrame#tutorialFooter { background: #1e293b; "
+            "border-top: 1px solid #334155; }"
         )
         footer_layout = QtWidgets.QHBoxLayout(footer)
         footer_layout.setContentsMargins(20, 14, 20, 14)
@@ -331,8 +335,13 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         self._dont_show = QtWidgets.QCheckBox("Don't show on startup")
         self._dont_show.setObjectName("tutorialDontShowCheck")
         self._dont_show.setStyleSheet(
-            "QCheckBox { background: transparent; border: none; color: #64748b; font-size: 12px; }"
-            "QCheckBox::indicator { width: 16px; height: 16px; }"
+            "QCheckBox { background: transparent; border: none; color: #94a3b8; "
+            "font-size: 12px; spacing: 8px; }"
+            "QCheckBox::indicator { width: 16px; height: 16px; border-radius: 3px; "
+            "border: 1px solid #64748b; background: #0f172a; }"
+            "QCheckBox::indicator:hover { border-color: #38bdf8; }"
+            "QCheckBox::indicator:checked { background: #0ea5e9; "
+            "border-color: #0ea5e9; }"
         )
         settings = QtCore.QSettings("VALIS", "Workstation")
         self._dont_show.setChecked(
