@@ -6,6 +6,25 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-23 UTC - ThumbnailCache eviction over-evicts and aborts on one vanished file
+
+Branch `claude/inspiring-galileo-zu8z6a` - Status: **done**
+
+**Root cause.** `ThumbnailCache._check_cache_size` counted each entry's PNG plus
+metadata JSON in the total but subtracted only the PNG size per eviction, so
+it kept evicting well past the 90% target (with 0.5 MB PNG + 0.5 MB JSON
+entries it removed twice as many as needed). One file vanishing between
+`glob` and `stat` raised out of the loop and skipped cleanup entirely, and
+`clear()` stopped at the first entry it could not unlink (e.g. a subdirectory).
+
+**Solution.** Per-entry size now includes its JSON; vanished files are skipped;
+`clear()` removes files only and tolerates per-file `OSError`.
+
+**Validation.** New `TestEviction` in `tests/test_thumbnail_cache.py` (2 of 3
+red before the fix); `tests/test_thumbnail_cache.py` 9 passed offscreen.
+Unrelated: `tests/test_preferences_wiring_followups.py` fails on a clean tree
+here (missing `psutil`).
+
 ### 2026-10-22 UTC - FirstRunWizard finish page quick tutorial checkbox and repository-wide dash standardization
 Status: **done**
 

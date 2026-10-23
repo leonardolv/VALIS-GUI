@@ -209,27 +209,30 @@ class ThumbnailCache:
     def _check_cache_size(self):
         """
         Check total cache size and remove oldest entries if over limit.
+
+        Each entry's size is its PNG plus its metadata JSON, so evicting an
+        entry frees exactly what was counted for it. A file that vanishes
+        mid-scan (another process, antivirus) skips that entry instead of
+        aborting the whole cleanup.
         """
         try:
-            # Calculate total cache size
             total_size = 0
             cache_entries = []
 
             for file_path in self.cache_dir.glob("*.png"):
-                size = file_path.stat().st_size
-                mtime = file_path.stat().st_mtime
-                total_size += size
-                cache_entries.append((mtime, size, file_path))
+                try:
+                    st = file_path.stat()
+                    entry_size = st.st_size
+                    metadata_path = file_path.with_suffix(".json")
+                    if metadata_path.exists():
+                        entry_size += metadata_path.stat().st_size
+                except OSError:
+                    continue
+                total_size += entry_size
+                cache_entries.append((st.st_mtime, entry_size, file_path))
 
-                # Also count metadata file
-                metadata_path = file_path.with_suffix(".json")
-                if metadata_path.exists():
-                    total_size += metadata_path.stat().st_size
-
-            # Convert to MB
             total_size_mb = total_size / (1024 * 1024)
 
-            # If over limit, remove oldest entries
             if total_size_mb > self.max_cache_size_mb:
                 logger.info(
                     f"Cache size ({total_size_mb:.1f}MB) exceeds limit ({self.max_cache_size_mb}MB)"
@@ -239,7 +242,7 @@ class ThumbnailCache:
                 cache_entries.sort()
 
                 # Remove oldest entries until under limit
-                for mtime, size, file_path in cache_entries:
+                for _mtime, entry_size, file_path in cache_entries:
                     if (
                         total_size_mb <= self.max_cache_size_mb * 0.9
                     ):  # Leave 10% buffer
@@ -247,7 +250,7 @@ class ThumbnailCache:
 
                     cache_key = file_path.stem
                     self._remove_cache_entry(cache_key)
-                    total_size_mb -= size / (1024 * 1024)
+                    total_size_mb -= entry_size / (1024 * 1024)
                     logger.debug(f"Removed old cache entry: {cache_key}")
 
                 logger.info(f"Cache cleaned. New size: {total_size_mb:.1f}MB")
@@ -262,8 +265,12 @@ class ThumbnailCache:
         try:
             count = 0
             for file_path in self.cache_dir.glob("*"):
-                file_path.unlink()
-                count += 1
+                try:
+                    if file_path.is_file():
+                        file_path.unlink()
+                        count += 1
+                except OSError as e:
+                    logger.warning(f"Could not remove cache file {file_path}: {e}")
 
             logger.info(f"Cleared {count} cache entries")
 
