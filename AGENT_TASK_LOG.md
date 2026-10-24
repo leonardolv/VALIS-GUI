@@ -6,6 +6,16 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-24T00:13Z - Config JSON/preset loading accepts mistyped values (Claude)
+
+Branch `claude/inspiring-galileo-4wy9c7` - Status: **done**
+
+**Root cause.** Config files and saved presets were loaded with `Config(**json)`, which trusts value types: `"rigid_registration": "false"` became truthy, `"max_image_size": "4096"` or `null` raised inside `__post_init__` (modal "Load Error" for the whole file), floats reached `QSpinBox.setValue`, and a non-object JSON crashed on `.items()`. Preset loading had no error handling at all.
+
+**Solution.** `Config.from_dict` (models/config.py) coerces each value to its field's type, falls back to the default for invalid entries, ignores unknown keys, and returns a list of problems. `_load_config_from_path` and preset loading use it and report "(N setting(s) ignored)" in the status bar plus a log warning instead of failing.
+
+**Validation.** `tests/test_config_from_dict.py` (6 tests; red before as `from_dict` did not exist, and the probe reproduced the old truthy-string and TypeError behaviour); with `tests/test_models.py`, `test_properties_combo_readable.py`, `test_non_interactive_ui.py`, `test_all_features.py`: 141 passed offscreen.
+
 ### 2026-10-23 UTC - ThumbnailCache eviction over-evicts and aborts on one vanished file
 
 Branch `claude/inspiring-galileo-zu8z6a` - Status: **done**

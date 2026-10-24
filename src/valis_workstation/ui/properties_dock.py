@@ -493,13 +493,16 @@ class PropertiesDock(QtWidgets.QDockWidget):
         preset = self._get_presets().get(name)
         if not preset:
             return
-        cfg = Config(
-            **{k: v for k, v in preset.items() if k in Config.__dataclass_fields__}
-        )
+        cfg, problems = Config.from_dict(preset)
         self.set_config(cfg)
         logger.info("Loaded preset '%s'", name)
+        if problems:
+            logger.warning("Preset '%s': %s", name, "; ".join(problems))
         if hasattr(self, "window") and callable(self.window):
-            self.window().statusBar().showMessage(f"Preset '{name}' loaded", 3000)
+            note = f" ({len(problems)} setting(s) ignored)" if problems else ""
+            self.window().statusBar().showMessage(
+                f"Preset '{name}' loaded{note}", 3000
+            )
 
     def _delete_selected_preset(self) -> None:
         name = self._preset_combo.currentText()

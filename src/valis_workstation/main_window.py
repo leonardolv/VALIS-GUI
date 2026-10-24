@@ -1409,13 +1409,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
             # Build a Config from the dict, falling back to defaults for
             # any keys that are missing (e.g. older config files).
-            cfg = Config(
-                **{
-                    k: v
-                    for k, v in config_dict.items()
-                    if k in Config.__dataclass_fields__
-                }
-            )
+            cfg, problems = Config.from_dict(config_dict)
+            if problems:
+                logger.warning("Config %s: %s", file_path, "; ".join(problems))
 
             self._properties_dock.set_config(cfg)
             self._last_loaded_config_path = file_path
@@ -1423,8 +1419,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._save_recent_folder_config(self._current_slide_folder, file_path)
 
             logger.info("Loaded configuration from %s", file_path)
+            note = f" ({len(problems)} setting(s) ignored)" if problems else ""
             self._status_bar.showMessage(
-                f"Configuration loaded from {file_path.name}", 3000
+                f"Configuration loaded from {file_path.name}{note}", 5000
             )
         except Exception as e:
             logger.exception("Failed to load configuration")
