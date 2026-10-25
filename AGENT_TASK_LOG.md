@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-25 UTC - PerformanceStatsDialog object names, accessibility metadata, and button affordances
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/performance_stats_dialog.py`: Configured explicit `setObjectName("performanceStatsDialog")`, `setAccessibleName("Performance Statistics Dialog")`, tab container object name (`performanceTabs`), tab accessible name (`Performance Statistics Categories`), and button object names (`perfRefreshBtn`, `perfClearCacheBtn`, `perfCloseBtn`, `perfThumbCacheBar`).
+- `tests/test_performance_stats_dialog.py`: Added unit test coverage for dialog accessibility, tab container metadata, button object names, cursors, and tooltips.
+- Validation: Verified headlessly with `python -m pytest tests/test_performance_stats_dialog.py tests/test_error_and_diagnostics_dialogs.py -v` (6 passed in 1.31s, 0 errors).
+
 ### 2026-10-25 UTC - ErrorDetailDialog and DiagnosticsDialog object names, accessibility metadata, and visual copy confirmation
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/error_detail_dialog.py`: Configured explicit `setObjectName("errorDetailDialog")` and `setAccessibleName("Error Details Dialog")`; added object names on `errorMessageLabel`, `errorTextLabel`, `errorDetailsGroup`, `errorDetailsText`, `errorCopyBtn`, `errorReportBtn`, and `errorCloseBtn`.

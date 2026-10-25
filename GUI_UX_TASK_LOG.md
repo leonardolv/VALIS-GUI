@@ -6,6 +6,18 @@
 
 ## Completed
 
+### Task: PerformanceStatsDialog object names, accessibility metadata, and button affordances
+- **Completed**: 2026-10-25
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/performance_stats_dialog.py`:
+    - Configured explicit `setObjectName("performanceStatsDialog")` and `setAccessibleName("Performance Statistics Dialog")` on dialog instance.
+    - Added explicit `setObjectName("performanceTabs")` and `setAccessibleName("Performance Statistics Categories")` on tab widget.
+    - Added explicit object names across action buttons (`perfRefreshBtn`, `perfClearCacheBtn`, `perfCloseBtn`) and cache progress bar (`perfThumbCacheBar`).
+  - `tests/test_performance_stats_dialog.py`:
+    - Expanded unit tests asserting dialog and tab object names, accessible names, button object names, tooltips, and pointing hand cursor affordances.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_performance_stats_dialog.py tests/test_error_and_diagnostics_dialogs.py -v` (6 passed in 1.31s, 0 errors).
+- **Status**: Completed
+
 ### Task: ErrorDetailDialog and DiagnosticsDialog object names, accessibility metadata, and visual copy confirmation
 - **Completed**: 2026-10-25
 - **Changes**:
