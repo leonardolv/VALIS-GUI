@@ -28,6 +28,7 @@ def scan_slide_folder(
         path
         for path in folder.iterdir()
         if path.is_file()
+        and not path.name.startswith(".")  # skip macOS ._* resource forks
         and (has_supported_extension(path) if extensions is None else any(str(path).lower().endswith(ext) for ext in valid_exts))
     ]
     logger.info(
