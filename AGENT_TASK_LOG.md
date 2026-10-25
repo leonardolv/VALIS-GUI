@@ -94,6 +94,15 @@ Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/warp_annotations.py`: Added explicit `setObjectName` (`warpAnnotationsDialog`) and `setAccessibleName` (`Warp Annotations Dialog`).
 - `tests/test_roi_export_dialog.py` & `tests/test_warp_annotations_dialog.py`: Expanded unit tests asserting dialog and widget object names, accessible names, button tooltips, and pointing hand cursors.
 - Validation: Verified headlessly with `python -m pytest tests/test_roi_export_dialog.py tests/test_warp_annotations_dialog.py -v` (9 passed in 0.47s, 0 errors).
+### 2026-10-25 UTC - Folder scan listed macOS `._*` resource-fork junk as slides (Claude)
+
+Branch `claude/inspiring-galileo-nsp1xp` - Status: **done**
+
+**Root cause.** `scan_slide_folder` matched on extension only, so AppleDouble files (`._slide.svs`) that macOS writes onto external/network drives were listed as slides, producing duplicate entries that fail thumbnail generation and registration.
+
+**Solution.** Dot-prefixed files are skipped in both the default and explicit-extension paths.
+
+**Validation.** Two new tests in `tests/test_slide_scan_full.py` (red before, green after; 11 passed). Full suite offscreen: 568 passed, 1 failed (`test_toolbar_goes_icon_only_when_labels_do_not_fit`, font-width dependent, fails identically on unmodified main).
 
 ### 2026-10-24T00:13Z - Config JSON/preset loading accepts mistyped values (Claude)
 
