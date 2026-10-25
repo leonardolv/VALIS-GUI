@@ -34,6 +34,23 @@ class TestScanSlideFolder:
         assert "notes.txt" not in names
         assert "report.pdf" not in names
 
+    def test_skips_hidden_resource_fork_files(self, tmp_path: Path) -> None:
+        """macOS ``._slide.svs`` AppleDouble files copied to external drives
+        carry a slide extension but are not slides; they must not be listed."""
+        (tmp_path / "slide.svs").write_text("real")
+        (tmp_path / "._slide.svs").write_text("junk")
+        (tmp_path / ".hidden.tif").write_text("junk")
+
+        names = [s.name for s in scan_slide_folder(tmp_path)]
+        assert names == ["slide.svs"]
+
+    def test_hidden_files_skipped_with_explicit_extensions(self, tmp_path: Path) -> None:
+        (tmp_path / "a.tif").write_text("a")
+        (tmp_path / "._a.tif").write_text("junk")
+
+        names = [s.name for s in scan_slide_folder(tmp_path, [".tif"])]
+        assert names == ["a.tif"]
+
     def test_sorted_by_name(self, tmp_path: Path) -> None:
         (tmp_path / "z_slide.tif").write_text("a")
         (tmp_path / "a_slide.tif").write_text("b")
