@@ -19,12 +19,15 @@ class DiagnosticsDialog(QtWidgets.QDialog):
         parent: QtWidgets.QWidget | None = None,
     ) -> None:
         super().__init__(parent)
+        self.setObjectName("diagnosticsDialog")
+        self.setAccessibleName("Diagnostics Dialog")
         self.setWindowTitle("Diagnostics")
         self.resize(720, 480)
 
         layout = QtWidgets.QVBoxLayout(self)
 
         self._text = QtWidgets.QPlainTextEdit()
+        self._text.setObjectName("diagnosticsText")
         self._text.setReadOnly(True)
         self._text.setAccessibleName("Diagnostics Output")
         self._text.setToolTip("System environment and runtime diagnostics log")
@@ -32,6 +35,7 @@ class DiagnosticsDialog(QtWidgets.QDialog):
 
         btn_row = QtWidgets.QHBoxLayout()
         self._refresh_btn = QtWidgets.QPushButton("Refresh")
+        self._refresh_btn.setObjectName("diagnosticsRefreshBtn")
         self._refresh_btn.setAccessibleName("Refresh Diagnostics")
         self._refresh_btn.setToolTip("Reload system and workstation runtime diagnostics")
         self._refresh_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
@@ -41,6 +45,7 @@ class DiagnosticsDialog(QtWidgets.QDialog):
         btn_row.addWidget(self._refresh_btn)
 
         self._copy_btn = QtWidgets.QPushButton(self._COPY_LABEL)
+        self._copy_btn.setObjectName("diagnosticsCopyBtn")
         self._copy_btn.setAccessibleName("Copy Diagnostics to Clipboard")
         self._copy_btn.setToolTip("Copy complete diagnostics report to system clipboard")
         self._copy_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
@@ -50,6 +55,7 @@ class DiagnosticsDialog(QtWidgets.QDialog):
         btn_row.addStretch(1)
 
         self._close_btn = QtWidgets.QPushButton("Close")
+        self._close_btn.setObjectName("diagnosticsCloseBtn")
         self._close_btn.setAccessibleName("Close Diagnostics")
         self._close_btn.setToolTip("Close the diagnostics dialog")
         self._close_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)

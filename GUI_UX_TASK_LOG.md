@@ -6,6 +6,20 @@
 
 ## Completed
 
+### Task: ErrorDetailDialog and DiagnosticsDialog object names, accessibility metadata, and visual copy confirmation
+- **Completed**: 2026-10-25
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/error_detail_dialog.py`:
+    - Configured explicit `setObjectName("errorDetailDialog")` and `setAccessibleName("Error Details Dialog")` on dialog instance.
+    - Added explicit object names across message label (`errorMessageLabel`), error text label (`errorTextLabel`), details group (`errorDetailsGroup`), details text (`errorDetailsText`), copy button (`errorCopyBtn`), report button (`errorReportBtn`), and close button (`errorCloseBtn`).
+  - `src/valis_workstation/ui/dialogs/diagnostics_dialog.py`:
+    - Configured explicit `setObjectName("diagnosticsDialog")` and `setAccessibleName("Diagnostics Dialog")` on dialog instance.
+    - Added explicit object names across output text area (`diagnosticsText`), refresh button (`diagnosticsRefreshBtn`), copy button (`diagnosticsCopyBtn`), and close button (`diagnosticsCloseBtn`).
+  - `tests/test_error_and_diagnostics_dialogs.py`:
+    - Added comprehensive unit test coverage asserting dialog and widget object names, accessible names, button cursors, tooltips, and non-blocking copy confirmation feedback.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_error_and_diagnostics_dialogs.py tests/test_roi_export_dialog.py tests/test_warp_annotations_dialog.py -v` (11 passed in 0.40s, 0 errors).
+- **Status**: Completed
+
 ### Task: ROIExportDialog and WarpAnnotationsDialog object names, accessibility metadata, button tooltips, and pointer cursor affordances
 - **Completed**: 2026-10-25
 - **Changes**:

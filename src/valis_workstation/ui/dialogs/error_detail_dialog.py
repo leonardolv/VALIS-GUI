@@ -24,6 +24,8 @@ class ErrorDetailDialog(QtWidgets.QDialog):
         parent: QtWidgets.QWidget | None = None,
     ) -> None:
         super().__init__(parent)
+        self.setObjectName("errorDetailDialog")
+        self.setAccessibleName("Error Details Dialog")
         self.setWindowTitle("Error Details")
         self.resize(700, 500)
 
@@ -31,9 +33,12 @@ class ErrorDetailDialog(QtWidgets.QDialog):
 
         # User-friendly message
         self.message_label = QtWidgets.QLabel("<h3>An error occurred:</h3>")
+        self.message_label.setObjectName("errorMessageLabel")
         layout.addWidget(self.message_label)
 
         self.error_text = QtWidgets.QLabel(error_message)
+        self.error_text.setObjectName("errorTextLabel")
+        self.error_text.setAccessibleName("Error message")
         self.error_text.setWordWrap(True)
         self.error_text.setStyleSheet("color: #ff6b6b; font-size: 12pt; padding: 10px;")
         layout.addWidget(self.error_text)
@@ -44,6 +49,7 @@ class ErrorDetailDialog(QtWidgets.QDialog):
         # Expandable technical details
         if technical_details or log_excerpt:
             self.details_group = QtWidgets.QGroupBox("Technical Details (Click to expand)")
+            self.details_group.setObjectName("errorDetailsGroup")
             self.details_group.setCheckable(True)
             self.details_group.setChecked(False)
             self.details_group.setAccessibleName("Technical Details Collapsible Group")
@@ -52,6 +58,7 @@ class ErrorDetailDialog(QtWidgets.QDialog):
             details_layout = QtWidgets.QVBoxLayout(self.details_group)
 
             self.details_text = QtWidgets.QTextEdit()
+            self.details_text.setObjectName("errorDetailsText")
             self.details_text.setReadOnly(True)
             self.details_text.setFontFamily("Courier New")
             self.details_text.setAccessibleName("Technical Error Details and Log Excerpt")
@@ -70,6 +77,7 @@ class ErrorDetailDialog(QtWidgets.QDialog):
         button_layout = QtWidgets.QHBoxLayout()
 
         self.copy_btn = QtWidgets.QPushButton(self._COPY_LABEL)
+        self.copy_btn.setObjectName("errorCopyBtn")
         self.copy_btn.setAccessibleName("Copy Error Details to Clipboard")
         self.copy_btn.setToolTip("Copy all error details to clipboard")
         self.copy_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
@@ -81,6 +89,7 @@ class ErrorDetailDialog(QtWidgets.QDialog):
         button_layout.addWidget(self.copy_btn)
 
         self.report_btn = QtWidgets.QPushButton("Report Issue")
+        self.report_btn.setObjectName("errorReportBtn")
         self.report_btn.setAccessibleName("Report Issue on GitHub")
         self.report_btn.setToolTip("Open GitHub issues page to report this error")
         self.report_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
@@ -90,6 +99,7 @@ class ErrorDetailDialog(QtWidgets.QDialog):
         button_layout.addStretch()
 
         self.close_btn = QtWidgets.QPushButton("Close")
+        self.close_btn.setObjectName("errorCloseBtn")
         self.close_btn.setAccessibleName("Close Error Details Dialog")
         self.close_btn.setToolTip("Close error details dialog")
         self.close_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)

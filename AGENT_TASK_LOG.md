@@ -6,6 +6,13 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-25 UTC - ErrorDetailDialog and DiagnosticsDialog object names, accessibility metadata, and visual copy confirmation
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/error_detail_dialog.py`: Configured explicit `setObjectName("errorDetailDialog")` and `setAccessibleName("Error Details Dialog")`; added object names on `errorMessageLabel`, `errorTextLabel`, `errorDetailsGroup`, `errorDetailsText`, `errorCopyBtn`, `errorReportBtn`, and `errorCloseBtn`.
+- `src/valis_workstation/ui/dialogs/diagnostics_dialog.py`: Configured explicit `setObjectName("diagnosticsDialog")` and `setAccessibleName("Diagnostics Dialog")`; added object names on `diagnosticsText`, `diagnosticsRefreshBtn`, `diagnosticsCopyBtn`, and `diagnosticsCloseBtn`.
+- `tests/test_error_and_diagnostics_dialogs.py`: Added unit test coverage for dialog accessibility, object names, button cursors, tooltips, and copy feedback.
+- Validation: Verified headlessly with `python -m pytest tests/test_error_and_diagnostics_dialogs.py tests/test_roi_export_dialog.py tests/test_warp_annotations_dialog.py -v` (11 passed in 0.40s, 0 errors).
+
 ### 2026-10-25 UTC - ROIExportDialog and WarpAnnotationsDialog object names, accessibility metadata, button tooltips, and pointer cursor affordances
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/roi_export_dialog.py`: Added explicit object names (`roiExportDialog`, `roiXCoordSpin`, `roiYCoordSpin`, `roiWidthSpin`, `roiHeightSpin`, `roiFormatCombo`, `roiReopenCheck`, `roiFeedbackLabel`, `roiCopyJsonBtn`, `roiPasteJsonBtn`, `roiResetBtn`, `roiOkBtn`, `roiCancelBtn`), accessible names, descriptive tooltips, and pointing hand cursor affordances across form controls, clipboard buttons, and dialog button box.
