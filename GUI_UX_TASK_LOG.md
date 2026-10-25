@@ -6,6 +6,18 @@
 
 ## Completed
 
+### Task: QuickTutorialDialog Accessibility Metadata, Bubble Tooltips, and Public Navigation Helpers
+- **Completed**: 2026-10-25
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/quick_tutorial_dialog.py`:
+    - Configured explicit `setAccessibleName("Quick Tutorial Dialog")` and `setAccessibleDescription("Interactive beginner tutorial for VALIS Workstation")` on dialog instance.
+    - Added informative step title tooltips (`Step X of 13: <Title>`) across all progress bubbles.
+    - Added public ergonomic query properties and navigation helper methods: `current_step`, `total_steps`, `step_title`, `is_first_step()`, `is_last_step()`, `can_go_next()`, `can_go_prev()`, `next_step()`, `prev_step()`, and `go_to_step()`.
+  - `tests/test_quick_tutorial_run_step.py`:
+    - Expanded `test_controls_have_accessible_names` and added `test_quick_tutorial_dialog_query_and_navigation_helpers` verifying dialog accessibility metadata, bubble tooltips, and navigation methods.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_quick_tutorial_dialog_timer.py tests/test_quick_tutorial_footer_style.py tests/test_quick_tutorial_run_step.py -v` (9 passed in 0.55s, 0 errors).
+- **Status**: Completed
+
 ### Task: PerformanceStatsDialog object names, accessibility metadata, and button affordances
 - **Completed**: 2026-10-25
 - **Changes**:

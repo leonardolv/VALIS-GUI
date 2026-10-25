@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-25 UTC - QuickTutorialDialog accessibility metadata, bubble tooltips, and public navigation helpers
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/quick_tutorial_dialog.py`: Configured explicit `setAccessibleName("Quick Tutorial Dialog")` and `setAccessibleDescription("Interactive beginner tutorial for VALIS Workstation")` on dialog instance; added descriptive step tooltips across all progress bubbles (`Step X of 13: <Title>`); added public ergonomic query and navigation helpers (`current_step`, `total_steps`, `step_title`, `is_first_step()`, `is_last_step()`, `can_go_next()`, `can_go_prev()`, `next_step()`, `prev_step()`, `go_to_step()`).
+- `tests/test_quick_tutorial_run_step.py`: Expanded `test_controls_have_accessible_names` and added `test_quick_tutorial_dialog_query_and_navigation_helpers` asserting dialog accessibility properties, bubble tooltips, and navigation methods.
+- Validation: Verified headlessly with `python -m pytest tests/test_quick_tutorial_dialog_timer.py tests/test_quick_tutorial_footer_style.py tests/test_quick_tutorial_run_step.py -v` (9 passed in 0.55s, 0 errors).
+
 ### 2026-10-25 UTC - PerformanceStatsDialog object names, accessibility metadata, and button affordances
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/performance_stats_dialog.py`: Configured explicit `setObjectName("performanceStatsDialog")`, `setAccessibleName("Performance Statistics Dialog")`, tab container object name (`performanceTabs`), tab accessible name (`Performance Statistics Categories`), and button object names (`perfRefreshBtn`, `perfClearCacheBtn`, `perfCloseBtn`, `perfThumbCacheBar`).

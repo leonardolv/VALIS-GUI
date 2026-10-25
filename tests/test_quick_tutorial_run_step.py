@@ -52,6 +52,8 @@ def test_run_started_advances_to_wait_step(qtbot):
 def test_controls_have_accessible_names(qtbot):
     _, dialog = _dialog(qtbot, starts=False)
     assert dialog.objectName() == "quickTutorialDialog"
+    assert dialog.accessibleName() == "Quick Tutorial Dialog"
+    assert dialog.accessibleDescription() == "Interactive beginner tutorial for VALIS Workstation"
     assert " - " in dialog.windowTitle()
     assert "—" not in dialog.windowTitle()
 
@@ -75,6 +77,7 @@ def test_controls_have_accessible_names(qtbot):
     for i, bubble in enumerate(dialog._bubbles):
         assert bubble.objectName() == f"tutorialBubble_{i}"
         assert bubble.accessibleName() == f"Step {i + 1} indicator"
+        assert f"Step {i + 1} of" in bubble.toolTip()
 
     for w in (
         dialog._prev_btn,
@@ -96,3 +99,30 @@ def test_finish_step_updates_close_button_accessibility(qtbot):
     assert dialog._close_btn.text() == "Finish"
     assert dialog._close_btn.accessibleName() == "Finish tutorial"
     assert "Finish" in dialog._close_btn.toolTip()
+
+
+def test_quick_tutorial_dialog_query_and_navigation_helpers(qtbot):
+    _, dialog = _dialog(qtbot, starts=False)
+    assert dialog.total_steps == 13
+
+    dialog.go_to_step(0)
+    assert dialog.current_step == 0
+    assert dialog.is_first_step() is True
+    assert dialog.is_last_step() is False
+    assert dialog.can_go_prev() is False
+    assert dialog.can_go_next() is True
+    assert "Welcome" in dialog.step_title
+
+    dialog.next_step()
+    assert dialog.current_step == 1
+    assert dialog.can_go_prev() is True
+
+    dialog.prev_step()
+    assert dialog.current_step == 0
+
+    dialog.go_to_step(dialog.total_steps - 1)
+    assert dialog.current_step == dialog.total_steps - 1
+    assert dialog.is_last_step() is True
+    assert dialog.can_go_next() is False
+    assert dialog.can_go_prev() is True
+    assert "Ready" in dialog.step_title
