@@ -6,6 +6,13 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-25 UTC - ROIExportDialog and WarpAnnotationsDialog object names, accessibility metadata, button tooltips, and pointer cursor affordances
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/roi_export_dialog.py`: Added explicit object names (`roiExportDialog`, `roiXCoordSpin`, `roiYCoordSpin`, `roiWidthSpin`, `roiHeightSpin`, `roiFormatCombo`, `roiReopenCheck`, `roiFeedbackLabel`, `roiCopyJsonBtn`, `roiPasteJsonBtn`, `roiResetBtn`, `roiOkBtn`, `roiCancelBtn`), accessible names, descriptive tooltips, and pointing hand cursor affordances across form controls, clipboard buttons, and dialog button box.
+- `src/valis_workstation/ui/dialogs/warp_annotations.py`: Added explicit `setObjectName` (`warpAnnotationsDialog`) and `setAccessibleName` (`Warp Annotations Dialog`).
+- `tests/test_roi_export_dialog.py` & `tests/test_warp_annotations_dialog.py`: Expanded unit tests asserting dialog and widget object names, accessible names, button tooltips, and pointing hand cursors.
+- Validation: Verified headlessly with `python -m pytest tests/test_roi_export_dialog.py tests/test_warp_annotations_dialog.py -v` (9 passed in 0.47s, 0 errors).
+
 ### 2026-10-24T00:13Z - Config JSON/preset loading accepts mistyped values (Claude)
 
 Branch `claude/inspiring-galileo-4wy9c7` - Status: **done**

@@ -6,6 +6,21 @@
 
 ## Completed
 
+### Task: ROIExportDialog and WarpAnnotationsDialog object names, accessibility metadata, button tooltips, and pointer cursor affordances
+- **Completed**: 2026-10-25
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/roi_export_dialog.py`:
+    - Configured explicit `setObjectName` ("roiExportDialog") and `setAccessibleName` ("ROI Export Dialog") on dialog instance.
+    - Configured explicit `setObjectName` across coordinate spinboxes (`roiXCoordSpin`, `roiYCoordSpin`, `roiWidthSpin`, `roiHeightSpin`), format combobox (`roiFormatCombo`), reopen checkbox (`roiReopenCheck`), and feedback label (`roiFeedbackLabel`).
+    - Added `PointingHandCursor` affordances across format combobox, reopen checkbox, JSON clipboard action buttons (`roiCopyJsonBtn`, `roiPasteJsonBtn`), reset button (`roiResetBtn`), and dialog action buttons (`roiOkBtn`, `roiCancelBtn`).
+    - Configured explicit `setObjectName`, `setAccessibleName`, and descriptive tooltips on primary Ok and Cancel buttons.
+  - `src/valis_workstation/ui/dialogs/warp_annotations.py`:
+    - Configured explicit `setObjectName` ("warpAnnotationsDialog") and `setAccessibleName` ("Warp Annotations Dialog") on dialog instance.
+  - `tests/test_roi_export_dialog.py` and `tests/test_warp_annotations_dialog.py`:
+    - Expanded unit tests validating dialog and control object names, accessible names, button tooltips, and pointing hand cursor affordances.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_roi_export_dialog.py tests/test_warp_annotations_dialog.py -v` (9 passed in 0.47s, 0 errors).
+- **Status**: Completed
+
 ### Task: FirstRunWizard Finish Page Quick Tutorial Checkbox and Repository-Wide Dash Standardization
 - **Completed**: 2026-10-22
 - **Changes**:

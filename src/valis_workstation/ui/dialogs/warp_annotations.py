@@ -15,6 +15,8 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
         parent: QtWidgets.QWidget | None = None,
     ) -> None:
         super().__init__(parent)
+        self.setObjectName("warpAnnotationsDialog")
+        self.setAccessibleName("Warp Annotations Dialog")
         self.setWindowTitle("Warp Annotations")
         self.resize(500, 240)
         self.setModal(True)

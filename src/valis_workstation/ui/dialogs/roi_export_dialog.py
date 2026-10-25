@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from PySide6 import QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 from valis_workstation.constants import ImageFormats
 
@@ -14,6 +14,8 @@ class ROIExportDialog(QtWidgets.QDialog):
 
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
+        self.setObjectName("roiExportDialog")
+        self.setAccessibleName("ROI Export Dialog")
         self.setWindowTitle("Export ROI Crop")
         self.setModal(True)
         self.setMinimumWidth(440)
@@ -30,18 +32,21 @@ class ROIExportDialog(QtWidgets.QDialog):
         form = QtWidgets.QFormLayout()
 
         self._x = QtWidgets.QSpinBox()
+        self._x.setObjectName("roiXCoordSpin")
         self._x.setRange(0, 1_000_000)
         self._x.setAccessibleName("X Coordinate Pixels")
         self._x.setToolTip("Top-left corner of the ROI in the registered coordinate space (pixels)")
         form.addRow("X Coordinate (px):", self._x)
 
         self._y = QtWidgets.QSpinBox()
+        self._y.setObjectName("roiYCoordSpin")
         self._y.setRange(0, 1_000_000)
         self._y.setAccessibleName("Y Coordinate Pixels")
         self._y.setToolTip("Top-left corner of the ROI in the registered coordinate space (pixels)")
         form.addRow("Y Coordinate (px):", self._y)
 
         self._width = QtWidgets.QSpinBox()
+        self._width.setObjectName("roiWidthSpin")
         self._width.setRange(10, 100_000)
         self._width.setValue(1000)
         self._width.setAccessibleName("Width Pixels")
@@ -49,6 +54,7 @@ class ROIExportDialog(QtWidgets.QDialog):
         form.addRow("Width (px):", self._width)
 
         self._height = QtWidgets.QSpinBox()
+        self._height.setObjectName("roiHeightSpin")
         self._height.setRange(10, 100_000)
         self._height.setValue(1000)
         self._height.setAccessibleName("Height Pixels")
@@ -56,24 +62,29 @@ class ROIExportDialog(QtWidgets.QDialog):
         form.addRow("Height (px):", self._height)
 
         self._format = QtWidgets.QComboBox()
+        self._format.setObjectName("roiFormatCombo")
         self._format.addItems(
             [ImageFormats.OME_TIFF, ImageFormats.TIFF, ImageFormats.PNG]
         )
         self._format.setCurrentText(ImageFormats.OME_TIFF)
         self._format.setAccessibleName("Export Image Format")
         self._format.setToolTip("Image format for exported cropped slides")
+        self._format.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         form.addRow("Format:", self._format)
 
         self._reopen = QtWidgets.QCheckBox()
+        self._reopen.setObjectName("roiReopenCheck")
         self._reopen.setChecked(True)
         self._reopen.setAccessibleName("Reopen in Viewer")
         self._reopen.setToolTip("Automatically reopen exported crops in the viewer")
+        self._reopen.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         form.addRow("Reopen in Viewer:", self._reopen)
 
         layout.addLayout(form)
 
         # Status / Feedback label for non-blocking feedback
         self._feedback_label = QtWidgets.QLabel("")
+        self._feedback_label.setObjectName("roiFeedbackLabel")
         self._feedback_label.setAccessibleName("Clipboard and Validation Feedback")
         self._feedback_label.setWordWrap(True)
         layout.addWidget(self._feedback_label)
@@ -81,14 +92,18 @@ class ROIExportDialog(QtWidgets.QDialog):
         # Buttons
         button_layout = QtWidgets.QHBoxLayout()
         self.copy_json_btn = QtWidgets.QPushButton("Copy as JSON")
+        self.copy_json_btn.setObjectName("roiCopyJsonBtn")
         self.copy_json_btn.setAccessibleName("Copy Coordinates as JSON")
         self.copy_json_btn.setToolTip("Copy ROI bounding box coordinates to clipboard as JSON")
+        self.copy_json_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self.copy_json_btn.clicked.connect(self._copy_as_json)
         button_layout.addWidget(self.copy_json_btn)
 
         self.paste_json_btn = QtWidgets.QPushButton("Paste from JSON")
+        self.paste_json_btn.setObjectName("roiPasteJsonBtn")
         self.paste_json_btn.setAccessibleName("Paste Coordinates from JSON")
         self.paste_json_btn.setToolTip("Paste and populate ROI coordinates from JSON in clipboard")
+        self.paste_json_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self.paste_json_btn.clicked.connect(self._paste_from_json)
         button_layout.addWidget(self.paste_json_btn)
 
@@ -103,13 +118,31 @@ class ROIExportDialog(QtWidgets.QDialog):
             | QtWidgets.QDialogButtonBox.StandardButton.Cancel
             | QtWidgets.QDialogButtonBox.StandardButton.Reset
         )
+        btns.setObjectName("roiButtonBox")
         btns.accepted.connect(self.accept)
         btns.rejected.connect(self.reject)
         self.reset_button = btns.button(QtWidgets.QDialogButtonBox.StandardButton.Reset)
         if self.reset_button is not None:
+            self.reset_button.setObjectName("roiResetBtn")
             self.reset_button.setAccessibleName("Reset to Defaults")
             self.reset_button.setToolTip("Reset ROI coordinates and export options to defaults")
+            self.reset_button.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
             self.reset_button.clicked.connect(self._reset_defaults)
+
+        self.ok_button = btns.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        if self.ok_button is not None:
+            self.ok_button.setObjectName("roiOkBtn")
+            self.ok_button.setAccessibleName("Export ROI Crop")
+            self.ok_button.setToolTip("Export the selected ROI crop with specified dimensions and format")
+            self.ok_button.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+
+        self.cancel_button = btns.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+        if self.cancel_button is not None:
+            self.cancel_button.setObjectName("roiCancelBtn")
+            self.cancel_button.setAccessibleName("Cancel")
+            self.cancel_button.setToolTip("Close dialog without exporting")
+            self.cancel_button.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+
         button_layout.addWidget(btns)
         layout.addLayout(button_layout)
 
