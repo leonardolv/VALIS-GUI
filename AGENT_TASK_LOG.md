@@ -6,6 +6,21 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-26 UTC - Tutorial and Manual HTML brought in line with the current GUI (Claude)
+
+Branch `claude/inspiring-galileo-g1d38y` - Status: **done**
+
+**Problems found (verified against the code, not guessed).**
+- Every local image and API link in both HTML files was broken when opened from the repo root (`_images/`, `html/`, `../examples/` instead of `docs/_images/`, `docs/html/`, `examples/`); one anchor (`registration.html#module-valis.warp_tools`) never existed.
+- Stale or wrong content: the Manual listed a Quit action (`Ctrl+Q`) and a Tile Cache tab/preference that no longer exist; Preferences defaults (thumbnail size 256 vs 512, tile cache); a five-"dock" description (Project/Slide Preview are tabs of one left panel); a Welcome page described as always shown (it only replaces the canvas when napari is missing); "Start Registration" button (the dialog uses Yes/No); a Config JSON and parameter table missing five fields with wrong ranges; Save Options presented as always available and as controlling output format (it is enabled only after a run, and VALIS always writes OME-TIFF); FAQ format list including MRXS/LIF/ND2/BMP that the folder scan does not list; no mention of Open Most Recent Folder (`Ctrl+Shift+O`), `Ctrl+1..9`, the setup wizard, Analysis Plot details, Quality Report buttons, Presets, folder-linked configs, the 10 GB free-space rule, or the collapsed Advanced/Output groups.
+- In-app text: Quick Tutorial used old labels ("Rigid"/"Non-rigid", an eye icon in Layers, output files "in the project folder"); the workflow hint said "Tools > Blink Viewer" (menu item is "Blink").
+
+**Changes.** `VALIS-GUI-Tutorial.html` (v1.5): rewrote Preflight, Install (setup wizard), UI Map, First Registration (8 steps, each with expected result and what to try if not), Quality (5-minute QA routine, metric glossary), Complete GUI Operations (menus, Preferences table with when each takes effect, Project panel reference, three worked recipes with concrete values: ROI crop, annotation transfer, CyCIF-style merge), Troubleshooting, Final Checklist. `VALIS-GUI-Manual.html` (v1.5): first-registration, interface tour, task catalog, parity matrix, FAQ, output formats, all dialog accordions, config management, parameter table, shortcuts, glossary, known limits. Both: asset paths fixed, em/en dashes replaced by hyphens (AGENTS.md style). `quick_tutorial_dialog.py` step text and one `main_window.py` hint string updated; no behaviour change.
+
+**Validation.** Both HTML files parse with no unclosed or mismatched tags; every `#anchor` and every local `href`/`src` (including fragments into `docs/html/*.html`) resolves; `QT_QPA_PLATFORM=offscreen pytest tests/test_quick_tutorial_*.py` 9 passed (before and after).
+
+**Found, not fixed (out of scope).** `ui/dialogs/warp_annotations.py` calls `source_slide.warp_geojson_from_to(..., crop=True)`, but `Slide.warp_geojson_from_to` in the vendored `valis/registration.py` has no `crop` parameter (signature ends at `non_rigid`), so Tools -> Warp Annotations should raise `TypeError` against the real library; `tests/test_warp_annotations_dialog.py` hides this because its stub accepts `**kwargs`. Filed in Backlog. The docs describe the intended behaviour.
+
 ### 2026-10-25 UTC - QuickTutorialDialog accessibility metadata, bubble tooltips, and public navigation helpers
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/quick_tutorial_dialog.py`: Configured explicit `setAccessibleName("Quick Tutorial Dialog")` and `setAccessibleDescription("Interactive beginner tutorial for VALIS Workstation")` on dialog instance; added descriptive step tooltips across all progress bubbles (`Step X of 13: <Title>`); added public ergonomic query and navigation helpers (`current_step`, `total_steps`, `step_title`, `is_first_step()`, `is_last_step()`, `can_go_next()`, `can_go_prev()`, `next_step()`, `prev_step()`, `go_to_step()`).
@@ -1562,6 +1577,8 @@ path used by "Average". Validation: 41 passed in tests/test_merge_slides_service
 (not installed). PR: see branch claude/peaceful-mayer-b5br79.
 
 ## Backlog
+
+- **Warp Annotations probably raises `TypeError` with the real VALIS.** Found 2026-10-26 while documenting the tool. `WarpAnnotationsDialog._run_warp` passes `crop=True` to `Slide.warp_geojson_from_to`, which in the vendored `valis/registration.py` takes `(geojson_f, to_slide_obj, src_slide_level, src_pt_level, dst_slide_level, non_rigid)` only. The dialog test uses a fake slide with `**kwargs`, so it cannot see this. Fix is probably to drop `crop=True` (check what upstream VALIS 1.2.0 does), then add a test whose fake slide has the real signature. Not changed in the docs run because it alters behaviour.
 
 - ~~**`ui/show_tooltips` and `cache/persist` are the two remaining
   disconnected Preferences fields that need a design decision, not just a

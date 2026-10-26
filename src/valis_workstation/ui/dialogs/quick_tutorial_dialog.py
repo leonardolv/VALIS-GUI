@@ -59,8 +59,8 @@ _STEPS: list[_TutorialStep] = [
         title="Load Your Slides",
         body=(
             "<p>First, we need to load images.</p>"
-            "<p>Put all your slide images for a single case into one folder.</p>"
-            "<p>Click the button below to open a folder. (Or you can drag and drop a folder into the main window).</p>"
+            "<p>Put all your slide images for a single case into one folder (you need at least 2). Only files directly in that folder are loaded.</p>"
+            "<p>Click the button below to open a folder. (Or press <b>Ctrl+O</b>, or drag and drop a folder into the main window.)</p>"
         ),
         action_id="load_slides",
         action_label="📂 Open Slide Folder",
@@ -83,13 +83,13 @@ _STEPS: list[_TutorialStep] = [
         icon="⚙️",
         title="Configure Settings",
         body=(
-            "<p>Look at the <b>Properties</b> panel on the right.</p>"
+            "<p>Look at the <b>Properties</b> tab on the right.</p>"
             "<p>For beginners, the default settings are perfect.</p>"
             "<ul>"
-            "<li>Give your project a name.</li>"
-            "<li>Make sure <b>Rigid</b> and <b>Non-rigid</b> are checked.</li>"
+            "<li>Give your project a name. Results go to <code>output/&lt;name&gt;</code>.</li>"
+            "<li>Make sure <b>Align slides (rigid)</b> and <b>Fix tissue warping (non-rigid)</b> are checked.</li>"
             "</ul>"
-            "<p>You can ignore the Advanced settings for now.</p>"
+            "<p>Hover any setting for an explanation. You can ignore <b>Advanced Settings</b> and <b>Output Settings</b> for now; they stay collapsed until you tick their title box.</p>"
         ),
     ),
     # 6 - Run
@@ -98,7 +98,7 @@ _STEPS: list[_TutorialStep] = [
         title="Run Registration",
         body=(
             "<p>We are ready to align the slides!</p>"
-            "<p>Click the button below to start. A confirmation window will appear.</p>"
+            "<p>Click the button below to start (or press <b>Ctrl+R</b>). A confirmation window shows your settings and a time estimate; click <b>Yes</b> to go ahead.</p>"
         ),
         action_id="run_registration",
         action_label="▶️ Run Registration",
@@ -110,7 +110,7 @@ _STEPS: list[_TutorialStep] = [
         body=(
             "<p>Registration takes some time depending on the size of the images.</p>"
             "<p>Look at the <b>Status</b> panel at the bottom of the screen. It shows the progress bar and logs.</p>"
-            "<p>If you made a mistake, you can click Cancel.</p>"
+            "<p>If you made a mistake, press <b>Esc</b> or click <b>Cancel Registration</b> and confirm.</p>"
         ),
     ),
     # 8 - View Results
@@ -119,7 +119,7 @@ _STEPS: list[_TutorialStep] = [
         title="View Results",
         body=(
             "<p>When finished, the aligned images will load in the center screen.</p>"
-            "<p>Look at the <b>Layers</b> panel on the right. You can click the eye icon 👁️ to hide or show different slides.</p>"
+            "<p>Open the <b>Layers</b> tab on the right (it needs the napari viewer). Tick or untick the box in the first column to show or hide each slide, and drag the opacity slider to blend them.</p>"
             "<p>You can zoom in with your mouse wheel and drag to pan.</p>"
         ),
     ),
@@ -129,9 +129,10 @@ _STEPS: list[_TutorialStep] = [
         title="Check the Quality",
         body=(
             "<p>How do we know if it worked well?</p>"
-            "<p>Go to the <b>Tools</b> menu at the top:</p>"
+            "<p>Go to the <b>Tools</b> menu at the top (these unlock once a run has finished):</p>"
             "<ul>"
             "<li><b>Blink:</b> Rapidly switches between two slides so you can see if they move.</li>"
+            "<li><b>Analysis Plot:</b> Error for each pair of slides as a chart.</li>"
             "<li><b>Quality Report:</b> A table showing numerical errors to find bad pairs.</li>"
             "</ul>"
         ),
@@ -143,7 +144,7 @@ _STEPS: list[_TutorialStep] = [
         body=(
             "<p>Sometimes slides don't align perfectly.</p>"
             "<ul>"
-            "<li>Try changing the <b>Feature detector</b> in the Advanced settings (e.g., from VGG to BRISK).</li>"
+            "<li>Tick <b>Advanced Settings (optional)</b> and try a different <b>Feature detector</b> (e.g., from VGG to BRISK).</li>"
             "<li>If it's too slow, reduce the <b>Working resolution</b> to 1024.</li>"
             "<li>If a slide is upside down, VALIS usually fixes it automatically!</li>"
             "</ul>"
@@ -167,9 +168,9 @@ _STEPS: list[_TutorialStep] = [
         title="Where are my files?",
         body=(
             "<p>VALIS already saved your aligned slides!</p>"
-            "<p>Check the <code>output/YourProjectName</code> folder on your computer.</p>"
+            "<p>Click <b>Open output folder</b> in the status bar, or look in <code>output/YourProjectName</code> inside the application folder.</p>"
             "<ul>"
-            "<li><b>OME-TIFF files:</b> These are the huge, aligned image files.</li>"
+            "<li><b>registered/:</b> One huge, aligned OME-TIFF file per slide.</li>"
             "<li><b>summary.csv:</b> A spreadsheet of the error metrics.</li>"
             "</ul>"
         ),
@@ -180,7 +181,7 @@ _STEPS: list[_TutorialStep] = [
         title="You're Ready!",
         body=(
             "<p>You've completed the tutorial!</p>"
-            "<p>If you need more details, check out the full <b>Manual</b> in the Help menu.</p>"
+            "<p>If you need more details, open the <b>Tutorial (HTML)</b> or <b>Manual (HTML)</b> from the Help menu. Press <b>F1</b> to reopen this guide.</p>"
             "<p style='color:#7dd3fc; margin-top:12px;'>Happy registering! 🔬</p>"
         ),
     ),

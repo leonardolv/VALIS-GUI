@@ -312,7 +312,7 @@ class MainWindow(QtWidgets.QMainWindow):
         "Load": "Next: open a folder of slides (Ctrl+O) or drag one into the window. You need at least 2.",
         "Configure": "Next: check the settings on the right, then press Run Registration (Ctrl+R).",
         "Register": "Registration is running. You can follow progress below or cancel with Esc.",
-        "Review": "Done. Use Tools > Blink Viewer or Quality Report to check the alignment.",
+        "Review": "Done. Use Tools > Blink or Quality Report to check the alignment.",
     }
 
     def _build_workflow_strip(self) -> QtWidgets.QWidget:

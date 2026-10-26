@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>VALIS Workstation — Complete Manual</title>
+<title>VALIS Workstation - Complete Manual</title>
 <style>
 /* ═══════════════════════════════════════════════════════════════
    VALIS WORKSTATION v3 – TABBED PROFESSIONAL MANUAL
@@ -276,7 +276,7 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <h2>VALIS Workstation</h2>
-    <span class="version-badge">v1.4 Manual</span>
+    <span class="version-badge">v1.5 Manual</span>
     <a class="quick-link" href="VALIS-GUI-Tutorial.html">Open Step-by-Step Tutorial</a>
   </div>
 
@@ -362,7 +362,7 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 </div>
 
 <!-- ╔═══════════════════════════════════════════════════════════════════╗
-     ║              TAB 1 — BEGINNER GUIDE                              ║
+     ║              TAB 1 - BEGINNER GUIDE                              ║
      ╚═══════════════════════════════════════════════════════════════════╝ -->
 <div class="tab-content active" id="tab-beginner">
 
@@ -370,7 +370,7 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 <div class="hero">
   <h1>VALIS Workstation</h1>
   <div class="subtitle">Professional whole-slide image registration, alignment &amp; analysis</div>
-  <span class="version">v 1.4 &nbsp;|&nbsp; Beginner-Friendly User Guide</span>
+  <span class="version">v 1.5 &nbsp;|&nbsp; Beginner-Friendly User Guide</span>
   <div class="hero-tabs">
     <a class="hero-tab-link" href="VALIS-GUI-Tutorial.html">→ Guided Tutorial</a>
     <span class="hero-tab-link" onclick="activateTab('advanced')">→ Advanced Guide</span>
@@ -385,11 +385,11 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
   <div class="mini-card"><div class="icon">🖥️</div><h4>Napari Viewer</h4><p>Interactive multi-layer visualization</p></div>
   <div class="mini-card"><div class="icon">📊</div><h4>Quality Analytics</h4><p>Error plots &amp; quality reports</p></div>
   <div class="mini-card"><div class="icon">🔀</div><h4>Channel Merging</h4><p>CyCIF / CODEX composite creation</p></div>
-  <div class="mini-card"><div class="icon">💾</div><h4>Flexible Export</h4><p>OME-TIFF pyramids, JPEG, PNG</p></div>
+  <div class="mini-card"><div class="icon">💾</div><h4>Flexible Export</h4><p>Pyramidal OME-TIFF, ROI crops, merged channels</p></div>
 </div>
 
 <div class="card">
-<h4>Start Here — Pick Your Learning Path</h4>
+<h4>Start Here - Pick Your Learning Path</h4>
 <div class="learning-path">
   <div class="path">
     <p><strong>Path A: First-time user (recommended)</strong></p>
@@ -410,11 +410,11 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 </div>
 <div class="image-grid">
   <figure class="img-card">
-    <img class="doc-image" src="_images/banner.gif" alt="VALIS workflow banner" loading="lazy">
+    <img class="doc-image" src="docs/_images/banner.gif" alt="VALIS workflow banner" loading="lazy">
     <figcaption>High-level context: where VALIS fits in pathology registration workflows.</figcaption>
   </figure>
   <figure class="img-card">
-    <img class="doc-image" src="_images/pipeline.png" alt="VALIS pipeline figure" loading="lazy">
+    <img class="doc-image" src="docs/_images/pipeline.png" alt="VALIS pipeline figure" loading="lazy">
     <figcaption>Core pipeline overview from input slides to quality metrics and saved outputs.</figcaption>
   </figure>
 </div>
@@ -422,11 +422,11 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 
 <!-- ─── WHAT IS VALIS? ───────────────────────────────────────── -->
 <span class="section-anchor" id="what-is-valis"></span>
-<h2>1 — What Is VALIS?</h2>
+<h2>1 - What Is VALIS?</h2>
 <hr>
 <div class="card">
 <p><strong>VALIS</strong> (Virtual Alignment of pathoLogy Image Series) is a Python library for registering (aligning) serial whole-slide images. It was published in <em>Nature Communications</em> and handles brightfield (H&amp;E, IHC) and fluorescence (CyCIF, CODEX, mIHC) images.</p>
-<p style="margin-top:12px"><strong>VALIS Workstation</strong> is the graphical desktop application that wraps VALIS in a user-friendly GUI — no command-line or programming knowledge required.</p>
+<p style="margin-top:12px"><strong>VALIS Workstation</strong> is the graphical desktop application that wraps VALIS in a user-friendly GUI - no command-line or programming knowledge required.</p>
 
 <h4 style="margin-top:18px">What can it do?</h4>
 <ul>
@@ -470,12 +470,12 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
   <text x="715" y="96" text-anchor="middle" fill="#166534" font-size="9" font-weight="600">TIFF</text>
 </svg>
 </div>
-<p class="caption">Figure 1 — The core concept: VALIS takes unaligned serial sections and produces perfectly registered outputs</p>
+<p class="caption">Figure 1 - The core concept: VALIS takes unaligned serial sections and produces perfectly registered outputs</p>
 </div>
 
 <!-- ─── KEY CONCEPTS ─────────────────────────────────────────── -->
 <span class="section-anchor" id="concepts"></span>
-<h2>2 — Key Concepts (Before You Start)</h2>
+<h2>2 - Key Concepts (Before You Start)</h2>
 <hr>
 <div class="card">
 <p>Understanding these five terms will make everything else clearer:</p>
@@ -483,9 +483,9 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
 <table>
   <tr><th style="width:170px">Term</th><th>Plain-English Explanation</th></tr>
   <tr><td><strong>Registration</strong></td><td>The process of aligning two or more images so that the same tissue structures overlap. Think of it as "stacking" slides on top of each other.</td></tr>
-  <tr><td><strong>Rigid registration</strong></td><td>Corrects rotation, scaling, and translation. The tissue shape stays unchanged — only its position and angle are fixed.</td></tr>
+  <tr><td><strong>Rigid registration</strong></td><td>Corrects rotation, scaling, and translation. The tissue shape stays unchanged - only its position and angle are fixed.</td></tr>
   <tr><td><strong>Non-rigid registration</strong></td><td>Corrects <em>elastic</em> deformations (stretching, folding, tearing). The tissue shape is gently warped to match its pair.</td></tr>
-  <tr><td><strong>Feature detection</strong></td><td>Automatically finding unique "landmarks" (keypoints) in each image — like corners, edges, or texture patterns — that can be matched across slides.</td></tr>
+  <tr><td><strong>Feature detection</strong></td><td>Automatically finding unique "landmarks" (keypoints) in each image - like corners, edges, or texture patterns - that can be matched across slides.</td></tr>
   <tr><td><strong>OME-TIFF</strong></td><td>An open standard image format for microscopy. Supports multiple resolution levels (pyramids), tiling, and rich metadata. Compatible with QuPath, OMERO, ImageJ/FIJI, Napari.</td></tr>
 </table>
 
@@ -538,12 +538,12 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
   <text x="615" y="152" text-anchor="middle" fill="#9d174d" font-size="7.5">corrected → ✅ aligned!</text>
 </svg>
 </div>
-<p class="caption">Figure 2 — The four stages of image registration explained visually</p>
+<p class="caption">Figure 2 - The four stages of image registration explained visually</p>
 </div>
 
 <!-- ─── INSTALLATION ─────────────────────────────────────────── -->
 <span class="section-anchor" id="installation"></span>
-<h2>3 — Installation</h2>
+<h2>3 - Installation</h2>
 <hr>
 <div class="card">
 <h4>Prerequisites</h4>
@@ -551,10 +551,10 @@ mark{background:#fef08a;padding:1px 3px;border-radius:2px}
   <li><strong>Python 3.9+</strong> (3.13 tested)</li>
   <li><strong>pip</strong> or <strong>conda</strong></li>
   <li><strong>Git</strong></li>
-  <li><strong>CUDA toolkit</strong> (optional — for GPU-accelerated deep-learning detectors)</li>
+  <li><strong>CUDA toolkit</strong> (optional - for GPU-accelerated deep-learning detectors)</li>
 </ul>
 
-<h4 style="margin-top:18px">Option A — pip (simplest)</h4>
+<h4 style="margin-top:18px">Option A - pip (simplest)</h4>
 <pre><code>git clone https://github.com/leonardolv/VALIS-GUI.git
 cd VALIS-GUI
 python -m venv .venv
@@ -563,7 +563,7 @@ python -m venv .venv
 pip install -r requirements.txt
 pip install -e .</code></pre>
 
-<h4 style="margin-top:18px">Option B — conda (recommended for GPU)</h4>
+<h4 style="margin-top:18px">Option B - conda (recommended for GPU)</h4>
 <pre><code>conda create -n valis-gui python=3.10 -y
 conda activate valis-gui
 conda install numba llvmlite -c conda-forge
@@ -576,56 +576,67 @@ pip install -r requirements.txt && pip install -e .</code></pre>
 
 <!-- ─── FIRST REGISTRATION ───────────────────────────────────── -->
 <span class="section-anchor" id="first-registration"></span>
-<h2>4 — Your First Registration (Step by Step)</h2>
+<h2>4 - Your First Registration (Step by Step)</h2>
 <hr>
 <div class="card">
-<p>Complete your first registration in under 5 minutes:</p>
+<p>Complete your first registration in about 10 minutes. Each step says what to do and what you should see; the example folder <code>examples/example_datasets/ihc</code> (five IHC sections) is a known-good dataset.</p>
 
 <div class="step"><span class="step-num">1</span><div class="step-body"><strong>Launch the application</strong>
-<pre><code>python run_valis_workstation.py</code></pre></div></div>
+<pre><code>python run_valis_workstation.py</code></pre>
+The very first launch shows a short <strong>VALIS Workstation Setup</strong> wizard (Welcome, Default Settings, Done). Pick a default project name and an output profile (or just keep the defaults), leave <strong>Open Quick Tutorial when finished</strong> ticked if you want the in-app walkthrough, and click <strong>Finish</strong>.</div></div>
 
-<div class="tip"><strong>First launch:</strong> the centre of the window shows a <strong>Welcome</strong> page with the four workflow steps (<em>1. Load → 2. Configure → 3. Register → 4. Review</em>) and an <strong>Open Slide Folder…</strong> button. The strip above the canvas highlights your current step and tells you what to do next. <strong>Run Registration</strong> stays greyed out until at least 2 slides are loaded; hover it to see why. If the optional napari viewer is not installed, the Welcome page stays in the centre (with a small note) and registration still works.</div>
+<div class="tip"><strong>What the window shows:</strong> a strip above the canvas lists the four workflow steps (<em>1. Load → 2. Configure → 3. Register → 4. Review</em>), highlights the current one and tells you what to do next. <strong>Run Registration</strong> stays greyed out until at least 2 slides are loaded; hover it to see why. If the optional napari viewer is not installed, the centre shows a Welcome page (with a small note) instead of the canvas, and registration still works.</div>
 
-<div class="step"><span class="step-num">2</span><div class="step-body"><strong>Open a slide folder</strong> — click <strong>Open Slide Folder…</strong> on the Welcome page or in the Project panel, use <strong>File → Open Slide Folder</strong> (<span class="kbd">Ctrl+O</span>), or drag a folder onto the window. You need at least 2 slides.</div></div>
+<div class="step"><span class="step-num">2</span><div class="step-body"><strong>Open a slide folder</strong> - click <strong>Open Slide Folder…</strong> (Project tab or Welcome page), use <strong>File → Open Slide Folder</strong> (<span class="kbd">Ctrl+O</span>), or drag a folder onto the window. Choose <code>examples/example_datasets/ihc</code>.
+<div class="tip">You should see a loading overlay, then the tab titles change to <strong>Project (5)</strong> and <strong>Slide Preview (5)</strong>, and the strip moves to step 2. Only files directly in the folder are read (no sub-folders), and only these types: TIFF, OME-TIFF, SVS, NDPI, VSI, CZI, SCN, PNG, JPEG.</div></div></div>
 
-<div class="step"><span class="step-num">3</span><div class="step-body"><strong>Review your slides</strong> — Thumbnails appear in the <strong>Slide Preview</strong> panel. Hover over each for metadata.</div></div>
+<div class="step"><span class="step-num">3</span><div class="step-body"><strong>Review your slides</strong> - open the <strong>Slide Preview</strong> tab. Thumbnails are generated in the background; use the Size slider and the Grid / List buttons, and hover a thumbnail for its metadata. In the <strong>Project</strong> tab you can filter, drag rows into section order, and remove a bad slide with <strong>Remove Selected</strong> (<span class="kbd">Del</span>).</div></div>
 
-<div class="step"><span class="step-num">4</span><div class="step-body"><strong>Check settings</strong> — The <strong>Properties</strong> panel on the right shows all options. For beginners, the defaults are excellent:
+<div class="step"><span class="step-num">4</span><div class="step-body"><strong>Check settings</strong> - the <strong>Properties</strong> tab on the right shows the options. Set <strong>Project name</strong> to <code>IHC_Tutorial</code> (results go to <code>output/IHC_Tutorial/</code>). For beginners the defaults are excellent:
 <ul>
-  <li>Feature Detector: <strong>VGG</strong> (works on all tissue types)</li>
-  <li><strong>Align slides (rigid)</strong>: <strong>on</strong> — first rotates, shifts and scales each slide so the tissue lines up roughly</li>
-  <li><strong>Fix tissue warping (non-rigid)</strong>: <strong>on</strong> (needs SimpleElastix) — then bends each slide locally to correct tissue deformed during sectioning</li>
-  <li><strong>Working resolution</strong>: <strong>2048 px</strong> — size of the reduced copy used for aligning; higher is more precise but slower</li>
+  <li><strong>Align slides (rigid)</strong>: <strong>on</strong> - first rotates, shifts and scales each slide so the tissue lines up roughly</li>
+  <li><strong>Fix tissue warping (non-rigid)</strong>: <strong>on</strong> (needs SimpleElastix; greyed out with a banner if missing) - then bends each slide locally to correct tissue deformed during sectioning</li>
+  <li><strong>Working resolution</strong>: <strong>2048 px</strong> - size of the reduced copy used for aligning; higher is more precise but slower</li>
+  <li><strong>Use GPU</strong>: off (greyed out unless a CUDA-enabled PyTorch is installed)</li>
 </ul>
-Hover any setting for a plain-language explanation. <strong>Advanced Settings (optional)</strong> is collapsed on purpose; you rarely need it.</div></div>
+Hover any setting for a plain-language explanation. <strong>Advanced Settings (optional)</strong> (feature detector, transform, reference slide, crop mode, masks, …) and <strong>Output Settings</strong> are collapsed on purpose: tick the group's title box to expand it. You rarely need them.</div></div>
 
-<div class="step"><span class="step-num">5</span><div class="step-body"><strong>Run registration</strong> — Press <span class="kbd">Ctrl+R</span>. Review the confirmation dialog, then click <strong>Start Registration</strong>.</div></div>
+<div class="step"><span class="step-num">5</span><div class="step-body"><strong>Run registration</strong> - press <span class="kbd">Ctrl+R</span> (or <span class="kbd">F5</span>). The app first checks inputs (missing files, writable output folder, at least 10 GB free) and then shows <strong>Confirm Registration</strong>: slide count, input size, estimated output size and time, output folder and a summary of every setting. Click <strong>Yes</strong> to start.</div></div>
 
-<div class="step"><span class="step-num">6</span><div class="step-body"><strong>Monitor progress</strong> — Watch the progress bar and logs in the <strong>Status</strong> panel. You can cancel anytime.</div></div>
+<div class="step"><span class="step-num">6</span><div class="step-body"><strong>Monitor progress</strong> - the <strong>Status</strong> panel shows the Stage (<em>Preparing pipeline</em>, <em>Feature detection and rigid alignment</em>, <em>Warping and saving registered slides</em>, <em>Finalizing outputs</em>), Elapsed / ETA, the progress bar and the live log. To stop, press <span class="kbd">Esc</span> or <strong>Cancel Registration</strong> and confirm; slides already written stay on disk.</div></div>
 
-<div class="step"><span class="step-num">7</span><div class="step-body"><strong>Explore results</strong> — Registered slides load into the Napari viewer. Toggle visibility, opacity, and colormaps in the <strong>Layers</strong> panel.</div></div>
+<div class="step"><span class="step-num">7</span><div class="step-body"><strong>Explore results</strong> - a "Registration complete." box appears and the registered slides load into the napari viewer as <code>Registered: …</code> layers. In the <strong>Layers</strong> tab toggle visibility, drag opacity sliders and change colormaps. The status bar now has an <strong>Open output folder</strong> button.</div></div>
 
-<div class="step"><span class="step-num">8</span><div class="step-body"><strong>Check quality</strong> — Use <strong>Tools → Quality Report</strong> to see error metrics, or <strong>Tools → Blink</strong> for visual comparison.</div></div>
+<div class="step"><span class="step-num">8</span><div class="step-body"><strong>Check quality</strong> - use <strong>Tools → Quality Report</strong> to see error metrics, <strong>Tools → Analysis Plot</strong> for the trend, or <strong>Tools → Blink</strong> for visual comparison (see <a href="#after-registration">What to Do After Registration</a>).</div></div>
+
+<h4 style="margin-top:14px">If something does not look right</h4>
+<table>
+  <tr><th>You see</th><th>Do this</th></tr>
+  <tr><td>"No Slides Found"</td><td>The folder has no supported files directly inside it. Pick the folder that holds the images.</td></tr>
+  <tr><td>Run Registration greyed out</td><td>Load at least 2 slides. Hover the action for the exact reason.</td></tr>
+  <tr><td>"Validation Failed" box</td><td>Fix what it lists (missing files, unwritable output folder, under 10 GB free) and run again. A "Validation Warnings" box only asks whether to proceed.</td></tr>
+  <tr><td>Error Details box after a run</td><td>Open <em>Technical Details</em>, click <strong>Copy to Clipboard</strong> or <strong>Report Issue</strong>; see <a href="#failure-recovery">Failure and Recovery</a>.</td></tr>
+</table>
 
 <h4 style="margin-top:10px">What good registration should look like</h4>
 <div class="image-grid">
   <figure class="img-card">
-    <img class="doc-image" src="../examples/expected_results/registration/ihc/overlaps/ihc_original_overlap.png" alt="Original overlap before registration" loading="lazy">
+    <img class="doc-image" src="examples/expected_results/registration/ihc/overlaps/ihc_original_overlap.png" alt="Original overlap before registration" loading="lazy">
     <figcaption>Before registration: major boundary mismatch between slides.</figcaption>
   </figure>
   <figure class="img-card">
-    <img class="doc-image" src="../examples/expected_results/registration/ihc/overlaps/ihc_non_rigid_overlap.png" alt="Overlap after non-rigid registration" loading="lazy">
+    <img class="doc-image" src="examples/expected_results/registration/ihc/overlaps/ihc_non_rigid_overlap.png" alt="Overlap after non-rigid registration" loading="lazy">
     <figcaption>After non-rigid registration: tissue contours align closely.</figcaption>
   </figure>
 </div>
-<div class="tip"><strong>Practical check:</strong> if edges are still visibly doubled in key tissue regions, rerun with higher <code>max image size</code> or enable <code>micro-registration</code>.</div>
+<div class="tip"><strong>Practical check:</strong> if edges are still visibly doubled in key tissue regions, rerun with a higher <strong>Working resolution</strong> or tick <strong>Fine-detail pass (micro-reg.)</strong>.</div>
 </div>
 
 <!-- ─── INTERFACE TOUR ───────────────────────────────────────── -->
 <span class="section-anchor" id="ui-tour"></span>
-<h2>5 — Interface Tour</h2>
+<h2>5 - Interface Tour</h2>
 <hr>
-<p>The interface uses a <strong>nested resizable splitter layout</strong> with five panels around a central viewer. Panels are separated by <strong>grip handles</strong> &mdash; visible dotted bars that highlight on hover &mdash; which you can drag to resize any panel.</p>
+<p>The interface uses a <strong>nested resizable splitter layout</strong>: a tabbed left panel (Project, Slide Preview), the central canvas, a tabbed right panel (Properties, Layers) and a Status panel at the bottom. Panels are separated by <strong>grip handles</strong> - visible dotted bars that highlight on hover - which you can drag to resize any panel.</p>
 
 <div class="diagram">
 <svg viewBox="0 0 820 510" xmlns="http://www.w3.org/2000/svg" style="max-width:800px" aria-label="Main window layout">
@@ -639,7 +650,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <rect x="10" y="10" width="800" height="30" rx="10" fill="url(#tbar)"/>
   <rect x="10" y="28" width="800" height="12" fill="#0f1520"/>
   <circle cx="30" cy="25" r="5.5" fill="#ef4444"/><circle cx="48" cy="25" r="5.5" fill="#eab308"/><circle cx="66" cy="25" r="5.5" fill="#22c55e"/>
-  <text x="410" y="28" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Segoe UI,sans-serif">VALIS Workstation — My CyCIF Study</text>
+  <text x="410" y="28" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Segoe UI,sans-serif">VALIS Workstation</text>
   <!-- Menu bar -->
   <rect x="10" y="40" width="800" height="22" fill="#141926"/>
   <text x="26" y="55" fill="#94a3b8" font-size="10">File</text>
@@ -649,7 +660,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <!-- Project Dock -->
   <rect x="16" y="66" width="168" height="196" rx="5" fill="#111827" stroke="#1e3a5f" stroke-width="1.2"/>
   <rect x="16" y="66" width="168" height="22" rx="5" fill="#1e3a5f"/>
-  <text x="100" y="82" text-anchor="middle" fill="#e2e8f0" font-size="9.5" font-weight="700">PROJECT (5 slides)</text>
+  <text x="100" y="82" text-anchor="middle" fill="#e2e8f0" font-size="9.5" font-weight="700">PROJECT (5)</text>
   <text x="28" y="104" fill="#94a3b8" font-size="8.5" font-family="Consolas,monospace">slide_001.ome.tiff</text>
   <text x="28" y="120" fill="#94a3b8" font-size="8.5" font-family="Consolas,monospace">slide_002.ome.tiff</text>
   <text x="28" y="136" fill="#38bdf8" font-size="8.5" font-family="Consolas,monospace">slide_003.ome.tiff</text>
@@ -658,7 +669,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <!-- Slide Preview -->
   <rect x="16" y="268" width="168" height="168" rx="5" fill="#111827" stroke="#1e3a5f" stroke-width="1.2"/>
   <rect x="16" y="268" width="168" height="22" rx="5" fill="#1e3a5f"/>
-  <text x="100" y="284" text-anchor="middle" fill="#e2e8f0" font-size="9.5" font-weight="700">SLIDE PREVIEW</text>
+  <text x="100" y="284" text-anchor="middle" fill="#e2e8f0" font-size="9.5" font-weight="700">SLIDE PREVIEW (2nd tab)</text>
   <rect x="26" y="310" width="46" height="36" rx="4" fill="#1e293b" stroke="#334155"/>
   <rect x="80" y="310" width="46" height="36" rx="4" fill="#1e293b" stroke="#334155"/>
   <rect x="134" y="310" width="46" height="36" rx="4" fill="#1e293b" stroke="#334155"/>
@@ -674,7 +685,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <rect x="596" y="66" width="208" height="370" rx="5" fill="#111827" stroke="#1e3a5f" stroke-width="1.2"/>
   <rect x="596" y="66" width="208" height="22" rx="5" fill="#1e3a5f"/>
   <text x="700" y="82" text-anchor="middle" fill="#e2e8f0" font-size="9.5" font-weight="700">PROPERTIES</text>
-  <rect x="604" y="94" width="192" height="14" rx="3" fill="#162544"/><text x="700" y="104" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-weight="600">▾ BASIC</text>
+  <rect x="604" y="94" width="192" height="14" rx="3" fill="#162544"/><text x="700" y="104" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-weight="600">▾ REGISTRATION</text>
   <rect x="604" y="200" width="192" height="14" rx="3" fill="#162544"/><text x="700" y="210" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-weight="600">▸ ADVANCED</text>
   <rect x="604" y="222" width="192" height="14" rx="3" fill="#162544"/><text x="700" y="232" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-weight="600">▸ OUTPUT</text>
   <!-- Status Dock -->
@@ -693,17 +704,20 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <text x="699" y="61" text-anchor="middle" fill="#fff" font-size="7" font-weight="600">PROPERTIES</text>
 </svg>
 </div>
-<p class="caption">Figure 3 — Annotated layout of the VALIS Workstation with all five docks</p>
+<p class="caption">Figure 3 - Annotated layout of VALIS Workstation (Slide Preview shares the left panel with Project as a tab)</p>
 
 <div class="card">
-<h4>The Five Docks</h4>
+<h4>The Panels</h4>
+<p>Project and Slide Preview share the left panel as two tabs, and Properties and Layers share the right panel as two tabs. The Layers tab only exists when napari is installed.</p>
 <table>
-  <tr><th>Dock</th><th>Location</th><th>What It Does</th></tr>
-  <tr><td><strong>Project</strong></td><td>Top-left</td><td>Lists all loaded slides. Drag to reorder. "Clear All" button to remove.</td></tr>
-  <tr><td><strong>Slide Preview</strong></td><td>Bottom-left</td><td>Thumbnail grid. Slider to resize (64–256 px). Grid/List toggle.</td></tr>
-  <tr><td><strong>Properties</strong></td><td>Right</td><td>All registration settings: Basic, Advanced, Output (collapsible sections).</td></tr>
-  <tr><td><strong>Layer Controls</strong></td><td>Right (tab)</td><td>Per-layer visibility, opacity, and colormap for registered slides in Napari.</td></tr>
-  <tr><td><strong>Status &amp; Logs</strong></td><td>Bottom</td><td>Progress bar, live log console, Cancel button during registration.</td></tr>
+  <tr><th>Panel</th><th>Location</th><th>What It Does</th></tr>
+  <tr><td><strong>Project (N)</strong></td><td>Left, first tab</td><td>Lists all loaded slides. <em>Filter by filename…</em> box, drag rows to reorder, <strong>Remove Selected</strong> (<span class="kbd">Del</span>), <strong>Clear All</strong> (asks to confirm), <span class="kbd">Ctrl+A</span> selects all. N is the slide count.</td></tr>
+  <tr><td><strong>Slide Preview (N)</strong></td><td>Left, second tab</td><td>Thumbnail grid. Filter, Sort (Name A-Z / Z-A), size slider (64-256 px), Grid / List toggle.</td></tr>
+  <tr><td><strong>Properties</strong></td><td>Right, first tab</td><td>Presets (Save / Load / Delete), the basic Registration settings, and two collapsible groups: Advanced Settings (optional) and Output Settings.</td></tr>
+  <tr><td><strong>Layers</strong></td><td>Right, second tab</td><td>Per-layer visibility tick box, opacity slider and colormap for registered slides in napari. Search, Lock edits, Solo Selected, Reset Opacity, Show All.</td></tr>
+  <tr><td><strong>Status</strong></td><td>Bottom</td><td>Stage, Elapsed / ETA, progress bar, Log Output (filter, Auto-scroll, Clear Log, Copy Log) and the Cancel Registration button while a run is active.</td></tr>
+  <tr><td><strong>Workflow strip</strong></td><td>Top of the centre</td><td>Load → Configure → Register → Review, with a hint for the next action.</td></tr>
+  <tr><td><strong>Toolbars</strong></td><td>Top</td><td><em>Quick Actions</em> (Open, Run, Cancel, Recent, Resume, Reset, Focus, Fit, Blink, Tutorial). The <em>Results</em> toolbar (Blink, Analysis Plot, Quality Report, Warp Annotations, Export ROI Crop, Merge Slides) appears after a run completes.</td></tr>
 </table>
 </div>
 
@@ -714,13 +728,14 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <h4>File</h4>
   <table>
     <tr><td>Open Slide Folder</td><td><span class="kbd">Ctrl+O</span></td></tr>
-    <tr><td>Recent Folders</td><td>Last 10 folders</td></tr>
+    <tr><td>Open Most Recent Folder</td><td><span class="kbd">Ctrl+Shift+O</span></td></tr>
+    <tr><td>Recent Folders</td><td>Last 5-20 (default 10); <span class="kbd">Ctrl+1</span>-<span class="kbd">Ctrl+9</span></td></tr>
     <tr><td>Save Configuration</td><td>Export JSON</td></tr>
     <tr><td>Load Configuration</td><td>Import JSON</td></tr>
     <tr><td>Run Registration</td><td><span class="kbd">Ctrl+R</span> / <span class="kbd">F5</span></td></tr>
     <tr><td>Cancel Registration</td><td><span class="kbd">Esc</span></td></tr>
+    <tr><td>Resume Last Registration</td><td>Reruns last slides + settings</td></tr>
     <tr><td>Preferences</td><td><span class="kbd">Ctrl+,</span></td></tr>
-    <tr><td>Quit</td><td><span class="kbd">Ctrl+Q</span></td></tr>
   </table>
 </div>
 <div class="ui-col">
@@ -735,7 +750,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 </div>
 <div class="ui-col">
   <h4>Tools</h4>
-  <p style="font-size:0.85em;color:#94a3b8;margin:0 0 6px">Post-registration tools are disabled until results exist.</p>
+  <p style="font-size:0.85em;color:#94a3b8;margin:0 0 6px">All but Export Session Bundle are disabled until a run completes.</p>
   <table>
     <tr><td>Blink</td><td></td></tr>
     <tr><td>Analysis Plot</td><td></td></tr>
@@ -744,12 +759,13 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
     <tr><td>Save Options</td><td></td></tr>
     <tr><td>Export ROI Crop</td><td></td></tr>
     <tr><td>Merge Slides</td><td></td></tr>
-    <tr><td>Export Session Bundle</td><td></td></tr>
+    <tr><td>Export Session Bundle</td><td>always on</td></tr>
   </table>
   <h4 style="margin-top:10px">Help</h4>
   <table>
-    <tr><td>Performance Stats</td><td><span class="kbd">Ctrl+Shift+P</span></td></tr>
-    <tr><td>Manual, Tutorial, Diagnostics, About</td><td></td></tr>
+    <tr><td>Quick Tutorial</td><td><span class="kbd">F1</span></td></tr>
+    <tr><td>Performance Statistics</td><td><span class="kbd">Ctrl+Shift+P</span></td></tr>
+    <tr><td>Manual, Tutorial, Quick Start Guide, Report Issue, Diagnostics, About</td><td></td></tr>
   </table>
 </div>
 </div>
@@ -766,13 +782,14 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <table>
   <tr><th>Task</th><th>Where</th><th>How</th><th>Result</th></tr>
   <tr><td>Open slides</td><td>File -&gt; Open Slide Folder</td><td>Select a directory with slide files (or press <span class="kbd">Ctrl+O</span>)</td><td>Slides load into Project + Slide Preview panels</td></tr>
-  <tr><td>Load recent project folder</td><td>File -&gt; Recent Folders</td><td>Pick one of up to 10 recent entries</td><td>Folder is rescanned and loaded</td></tr>
-  <tr><td>Save settings profile</td><td>File -&gt; Save Configuration</td><td>Choose destination JSON file</td><td>Current Properties values exported</td></tr>
-  <tr><td>Load settings profile</td><td>File -&gt; Load Configuration</td><td>Select a previously saved JSON file</td><td>Properties panel updates to saved values</td></tr>
+  <tr><td>Reopen the last folder</td><td>File -&gt; Open Most Recent Folder</td><td>One keystroke (<span class="kbd">Ctrl+Shift+O</span>)</td><td>Last folder is rescanned and loaded</td></tr>
+  <tr><td>Load recent project folder</td><td>File -&gt; Recent Folders</td><td>Pick one of the recent entries (5-20, default 10; <span class="kbd">Ctrl+1</span>-<span class="kbd">Ctrl+9</span>). An "Open with config" line appears when a settings file is linked to the folder</td><td>Folder is rescanned and loaded; the linked configuration is applied</td></tr>
+  <tr><td>Save settings profile</td><td>File -&gt; Save Configuration</td><td>Choose destination JSON file (dialog starts in the <code>configs</code> folder)</td><td>Current Properties values exported</td></tr>
+  <tr><td>Load settings profile</td><td>File -&gt; Load Configuration</td><td>Select a previously saved JSON file</td><td>Properties panel updates to saved values; invalid entries are ignored and counted in the status bar</td></tr>
   <tr><td>Run registration</td><td>File -&gt; Run Registration</td><td>Review confirmation dialog and proceed (<span class="kbd">Ctrl+R</span>)</td><td>Worker starts, progress/logs update, outputs written</td></tr>
   <tr><td>Cancel registration</td><td>File -&gt; Cancel Registration</td><td>Stop the active registration safely (<span class="kbd">Esc</span>)</td><td>Run stops; partial output may remain</td></tr>
-  <tr><td>Resume last run</td><td>File -&gt; Resume Last Registration</td><td>Re-run the most recent context after cancel/failure</td><td>Previous run settings are reused without reconfiguration</td></tr>
-  <tr><td>Open Preferences</td><td>File -&gt; Preferences</td><td>Adjust cache/performance/UI options (<span class="kbd">Ctrl+,</span>)</td><td>Settings persisted via QSettings</td></tr>
+  <tr><td>Resume last run</td><td>File -&gt; Resume Last Registration</td><td>Re-run the most recent context after cancel/failure</td><td>The same slides and settings run again from the start; nothing needs re-entering</td></tr>
+  <tr><td>Open Preferences</td><td>File -&gt; Preferences</td><td>Adjust cache / performance / UI / accessibility options (<span class="kbd">Ctrl+,</span>)</td><td>Settings persisted via QSettings</td></tr>
 </table>
 
 <h4 style="margin-top:14px">View Menu (Layout Controls)</h4>
@@ -782,18 +799,18 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <tr><td>Toggle Left Sidebar</td><td>View -&gt; Toggle Left Sidebar</td><td>Show/hide the Project &amp; Slide Preview panel (<span class="kbd">Ctrl+[</span>)</td><td>Left panel collapses or expands</td></tr>
   <tr><td>Toggle Right Sidebar</td><td>View -&gt; Toggle Right Sidebar</td><td>Show/hide the Properties &amp; Layers panel (<span class="kbd">Ctrl+]</span>)</td><td>Right panel collapses or expands</td></tr>
   <tr><td>Toggle Focus Mode</td><td>View -&gt; Toggle Focus Mode</td><td>Collapse both sidebars to maximize viewer (<span class="kbd">Ctrl+Shift+\</span>)</td><td>Napari viewer fills available width</td></tr>
-  <tr><td>Fit to Content</td><td>View -&gt; Fit to Content</td><td>Adjust panel sizes to match current content</td><td>Panels resize to optimal widths</td></tr>
+  <tr><td>Fit to Content</td><td>View -&gt; Fit to Content</td><td>Reset the bottom panel height and re-frame the viewer</td><td>Status panel returns to default height; all layers are in view</td></tr>
 </table>
 
 <h4 style="margin-top:14px">Tools Menu (Post-Registration)</h4>
-<p style="font-size:0.9em;color:#94a3b8;margin:0 0 8px">Tools menu actions are <strong>contextually enabled</strong> &mdash; post-registration tools are disabled until a registration run completes successfully.</p>
+<p style="font-size:0.9em;color:#94a3b8;margin:0 0 8px">Tools menu actions are <strong>contextually enabled</strong> - post-registration tools are disabled until a registration run completes successfully.</p>
 <table>
   <tr><th>Task</th><th>Where</th><th>How</th><th>Result</th></tr>
   <tr><td>Blink comparison</td><td>Tools -&gt; Blink</td><td>Slide B starts on the second slide; pick the two slides, choose a mode (Blink, Side-by-side or Swipe), then start/stop blink or move the Blend slider (the slider is disabled in Side-by-side, which shows both slides fully)</td><td>Visual A/B alignment validation</td></tr>
   <tr><td>Error trend plot</td><td>Tools -&gt; Analysis Plot</td><td>Open after successful run</td><td>Pairwise error chart + summary metrics</td></tr>
   <tr><td>Quality table</td><td>Tools -&gt; Quality Report</td><td>Open after successful run and sort columns</td><td>Detailed metric table for outlier review</td></tr>
   <tr><td>Warp annotations</td><td>Tools -&gt; Warp Annotations</td><td>Select GeoJSON + source slide + output folder</td><td>One warped GeoJSON per registered target slide</td></tr>
-  <tr><td>Set export options</td><td>Tools -&gt; Save Options</td><td>Choose format, pyramids, compression, tile size, quality</td><td>Values copied into Output settings for next saves</td></tr>
+  <tr><td>Set export options</td><td>Tools -&gt; Save Options</td><td>Choose a preset or set pyramid, compression, tile size, quality, format (enabled after a run)</td><td>Values copied into Properties → Output Settings for the next run and merges</td></tr>
   <tr><td>Export ROI crop</td><td>Tools -&gt; Export ROI Crop...</td><td>Enter X/Y/Width/Height, select output format, choose destination folder</td><td>Cropped aligned ROIs are saved across all registered slides</td></tr>
   <tr><td>Merge channels</td><td>Tools -&gt; Merge Slides</td><td>Map slides to channels, assign colors, choose overlap strategy</td><td>Merged multi-channel output file</td></tr>
   <tr><td>Export session bundle</td><td>Tools -&gt; Export Session Bundle...</td><td>Choose ZIP output path</td><td>Bundle with session summary + logs for debugging/handoff</td></tr>
@@ -802,6 +819,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <h4 style="margin-top:14px">Help Menu + Utility Actions</h4>
 <table>
   <tr><th>Task</th><th>Where</th><th>How</th><th>Result</th></tr>
+  <tr><td>Quick Tutorial</td><td>Help -&gt; Quick Tutorial</td><td>Press <span class="kbd">F1</span></td><td>Non-modal 13-step walkthrough opens</td></tr>
   <tr><td>Open manual</td><td>Help -&gt; Manual (HTML)</td><td>Launches local manual path</td><td>Documentation opens in system browser/editor</td></tr>
   <tr><td>Open tutorial</td><td>Help -&gt; Tutorial (HTML)</td><td>Launches local tutorial path</td><td>Step-by-step tutorial opens</td></tr>
   <tr><td>Open quick start</td><td>Help -&gt; Quick Start Guide</td><td>Launches local quick-start path</td><td>Quick onboarding guide opens</td></tr>
@@ -815,11 +833,11 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 
 <div class="image-grid">
   <figure class="img-card">
-    <img class="doc-image" src="_images/point_warping.png" alt="Point warping concept figure" loading="lazy">
+    <img class="doc-image" src="docs/_images/point_warping.png" alt="Point warping concept figure" loading="lazy">
     <figcaption>Warp tools in action: transformed coordinates and annotations across slides.</figcaption>
   </figure>
   <figure class="img-card">
-    <img class="doc-image" src="_images/pu_color_mplex.png" alt="Multiplex channel visualization example" loading="lazy">
+    <img class="doc-image" src="docs/_images/pu_color_mplex.png" alt="Multiplex channel visualization example" loading="lazy">
     <figcaption>Channel-oriented workflows: useful reference when configuring Merge Slides.</figcaption>
   </figure>
 </div>
@@ -833,6 +851,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <table class="feature-matrix">
   <tr><th>Menu</th><th>Action</th><th>Primary Guidance</th><th>Prerequisite</th><th>Status</th></tr>
   <tr><td>File</td><td>Open Slide Folder</td><td><a href="#first-registration">First Registration</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>File</td><td>Open Most Recent Folder (<span class="kbd">Ctrl+Shift+O</span>)</td><td><a href="#gui-tasks">GUI Task Catalog</a></td><td>A previously opened folder</td><td><span class="status-pill ready">Available</span></td></tr>
   <tr><td>File</td><td>Recent Folders</td><td><a href="#gui-tasks">GUI Task Catalog</a></td><td>Previously opened case folder</td><td><span class="status-pill ready">Available</span></td></tr>
   <tr><td>File</td><td>Save Configuration / Load Configuration</td><td><a href="#gui-tasks">GUI Task Catalog</a>, <a href="#config-mgmt">Config Management</a></td><td>Open project context</td><td><span class="status-pill ready">Available</span></td></tr>
   <tr><td>File</td><td>Run Registration</td><td><a href="#first-registration">First Registration</a></td><td>Loaded slides + valid settings</td><td><span class="status-pill ready">Available</span></td></tr>
@@ -846,11 +865,12 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 
   <tr><td>Tools</td><td>Blink / Analysis Plot / Quality Report</td><td><a href="#after-registration">After Registration</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>Completed registration</td><td><span class="status-pill gated">Enabled post-run</span></td></tr>
   <tr><td>Tools</td><td>Warp Annotations</td><td><a href="#after-registration">After Registration</a>, <a href="#warp-api">Warp Tools API</a></td><td>Completed registration + source annotations</td><td><span class="status-pill gated">Enabled post-run</span></td></tr>
-  <tr><td>Tools</td><td>Save Options</td><td><a href="#output-formats">Output &amp; Formats</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
+  <tr><td>Tools</td><td>Save Options</td><td><a href="#output-formats">Output &amp; Formats</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>Completed registration (Properties → Output Settings is always available)</td><td><span class="status-pill gated">Enabled post-run</span></td></tr>
   <tr><td>Tools</td><td>Export ROI Crop</td><td><a href="#after-registration">After Registration</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>Completed registration</td><td><span class="status-pill gated">Enabled post-run</span></td></tr>
   <tr><td>Tools</td><td>Merge Slides</td><td><a href="#after-registration">After Registration</a>, <a href="#use-cases">Use Cases</a></td><td>Completed registration</td><td><span class="status-pill gated">Enabled post-run</span></td></tr>
   <tr><td>Tools</td><td>Export Session Bundle</td><td><a href="#gui-tasks">GUI Task Catalog</a>, <a href="#troubleshooting">Troubleshooting</a></td><td>Session with logs/results</td><td><span class="status-pill ready">Available</span></td></tr>
 
+  <tr><td>Help</td><td>Quick Tutorial (<span class="kbd">F1</span>)</td><td><a href="#advanced-dialogs">All Dialogs &amp; Tools</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
   <tr><td>Help</td><td>Manual (HTML) / Tutorial (HTML)</td><td><a href="#beginner-faq">FAQ</a>, <a href="#gui-tasks">GUI Task Catalog</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
   <tr><td>Help</td><td>Quick Start Guide</td><td><a href="#what-is-valis">What Is VALIS?</a>, <a href="#first-registration">First Registration</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
   <tr><td>Help</td><td>Report Issue / Diagnostics / Performance Statistics / About</td><td><a href="#troubleshooting">Troubleshooting</a>, <a href="#gui-arch">GUI Architecture</a></td><td>None</td><td><span class="status-pill ready">Available</span></td></tr>
@@ -859,7 +879,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 </div>
 
 <span class="section-anchor" id="after-registration"></span>
-<h2>8 — What to Do After Registration</h2>
+<h2>8 - What to Do After Registration</h2>
 <hr>
 <div class="card">
 <h4>Your toolkit after a successful registration:</h4>
@@ -869,17 +889,17 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <div class="mini-card"><div class="icon">📋</div><h4>Quality Report</h4><p>Sortable table of all alignment metrics</p></div>
   <div class="mini-card"><div class="icon">📎</div><h4>Warp Annotations</h4><p>Transfer GeoJSON from one slide to all others</p></div>
   <div class="mini-card"><div class="icon">🔀</div><h4>Merge Slides</h4><p>Create multi-channel composites for CyCIF/CODEX</p></div>
-  <div class="mini-card"><div class="icon">💾</div><h4>Save Options</h4><p>Configure export format, pyramids, compression</p></div>
+  <div class="mini-card"><div class="icon">💾</div><h4>Save Options</h4><p>Set compression, tile size and pyramid for the next run and merges</p></div>
   <div class="mini-card"><div class="icon">✂️</div><h4>Export ROI Crop</h4><p>Batch export matching ROI crops from all registered slides</p></div>
   <div class="mini-card"><div class="icon">🧳</div><h4>Session Bundle</h4><p>Export summary + logs for support, handoff, and reproducibility</p></div>
 </div>
 <div class="image-grid">
   <figure class="img-card">
-    <img class="doc-image" src="_images/annotation_transfer.png" alt="Annotation transfer example" loading="lazy">
+    <img class="doc-image" src="docs/_images/annotation_transfer.png" alt="Annotation transfer example" loading="lazy">
     <figcaption>Warp Annotations: transfer one GeoJSON ROI set across all registered slides.</figcaption>
   </figure>
   <figure class="img-card">
-    <img class="doc-image" src="_images/merge_ome_tiff.png" alt="Merged OME-TIFF channels example" loading="lazy">
+    <img class="doc-image" src="docs/_images/merge_ome_tiff.png" alt="Merged OME-TIFF channels example" loading="lazy">
     <figcaption>Merge Slides: build multi-channel composites for CyCIF/CODEX workflows.</figcaption>
   </figure>
 </div>
@@ -887,21 +907,21 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 
 <!-- ─── USE CASES ────────────────────────────────────────────── -->
 <span class="section-anchor" id="use-cases"></span>
-<h2>9 — Common Use Cases</h2>
+<h2>9 - Common Use Cases</h2>
 <hr>
 
 <div class="usecase">
   <h4><span class="uc-icon">🔬</span> Serial H&amp;E Sections</h4>
   <div class="uc-tags"><span class="uc-tag bf">Brightfield</span></div>
-  <p><strong>Scenario:</strong> You have 5–20 serial sections stained with H&amp;E and need to align them for 3D reconstruction or cross-section comparison.</p>
+  <p><strong>Scenario:</strong> You have 5-20 serial sections stained with H&amp;E and need to align them for 3D reconstruction or cross-section comparison.</p>
   <p><strong>Settings:</strong> Feature detector = <strong>VGG</strong> · Transform = <strong>Similarity</strong> · Non-rigid = <strong>ON</strong></p>
-  <p><strong>Tips:</strong> Default settings work well. Enable "Slides pre-ordered" if your slides are already in physical order.</p>
+  <p><strong>Tips:</strong> Default settings work well. Tick "Slides already in order" (Advanced Settings) if your slides are already in physical order, after dragging them into order in the Project tab.</p>
 </div>
 
 <div class="usecase">
   <h4><span class="uc-icon">🧬</span> CyCIF / CODEX Multiplexed Imaging</h4>
   <div class="uc-tags"><span class="uc-tag fl">Fluorescence</span><span class="uc-tag multi">Multiplex</span></div>
-  <p><strong>Scenario:</strong> Multiple rounds of staining on the same slide. Each round has DAPI + 2–4 markers. You need to align rounds and merge into one multi-channel image.</p>
+  <p><strong>Scenario:</strong> Multiple rounds of staining on the same slide. Each round has DAPI + 2-4 markers. You need to align rounds and merge into one multi-channel image.</p>
   <p><strong>Settings:</strong> Feature detector = <strong>DISK</strong> or <strong>SuperPoint</strong> · Transform = <strong>Similarity</strong> · Non-rigid = <strong>ON</strong></p>
   <p><strong>After registration:</strong> Use <strong>Tools → Merge Slides</strong> to create the composite. Name channels (DAPI, CD3, CD8, PanCK, etc.) and assign colors.</p>
 </div>
@@ -910,7 +930,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <h4><span class="uc-icon">🎯</span> IHC Serial Stain Comparison</h4>
   <div class="uc-tags"><span class="uc-tag bf">Brightfield</span></div>
   <p><strong>Scenario:</strong> Adjacent sections with different IHC stains (e.g., Ki67 vs. p53). Register to compare marker expression in the same tissue region.</p>
-  <p><strong>Settings:</strong> Feature detector = <strong>VGG</strong> · Tissue masks = <strong>ON</strong> · Crop = <strong>all_overlap</strong></p>
+  <p><strong>Settings:</strong> Feature detector = <strong>VGG</strong> · Use tissue masks = <strong>ON</strong> · Crop = <strong>all_overlap</strong></p>
   <p><strong>After registration:</strong> Use <strong>Tools → Blink</strong> to visually toggle between stains at the same location.</p>
 </div>
 
@@ -923,29 +943,38 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 
 <!-- ─── BEGINNER FAQ ─────────────────────────────────────────── -->
 <span class="section-anchor" id="beginner-faq"></span>
-<h2>10 — Frequently Asked Questions</h2>
+<h2>10 - Frequently Asked Questions</h2>
 <hr>
 <div class="card">
 <h4>Q: What image formats are supported?</h4>
-<p>TIFF, OME-TIFF, SVS (Aperio), NDPI (Hamamatsu), MRXS (3DHISTECH), CZI (Zeiss), LIF (Leica), ND2 (Nikon), JPEG, PNG, BMP, and 300+ more via Bio-Formats.</p>
+<p>The Open Slide Folder scan lists files ending in <code>.tif .tiff .ome.tif .ome.tiff .svs .ndpi .vsi .czi .scn .png .jpg .jpeg</code>. Other formats that Bio-Formats can read (for example LIF, ND2, MRXS) are handled by VALIS itself, but the folder scan will not list them; convert them to OME-TIFF first.</p>
 
 <h4 style="margin-top:14px">Q: Is there a step-by-step tutorial for new lab members?</h4>
 <p>Yes. Open <a href="VALIS-GUI-Tutorial.html">VALIS-GUI-Tutorial.html</a> for a didactic, image-guided workflow from setup through quality validation.</p>
 
-<h4 style="margin-top:14px">Q: My GPU checkbox is grayed out — why?</h4>
+<h4 style="margin-top:14px">Q: My GPU checkbox is grayed out - why?</h4>
 <p>PyTorch was not installed with CUDA support, or no CUDA GPU was detected. Install PyTorch with CUDA: <code>pip install torch --index-url https://download.pytorch.org/whl/cu121</code></p>
 
 <h4 style="margin-top:14px">Q: Which feature detector should I use?</h4>
 <p><strong>VGG</strong> is the best default for most cases. For fluorescence images, try <strong>DISK</strong> or <strong>SuperPoint</strong>. For maximum speed, use <strong>ORB</strong> or <strong>BRISK</strong>.</p>
 
-<h4 style="margin-top:14px">Q: Registration is very slow — how to speed it up?</h4>
+<h4 style="margin-top:14px">Q: Registration is very slow - how to speed it up?</h4>
 <p>Reduce <strong>Working resolution</strong> (try 1024). Turn off <strong>Fix tissue warping (non-rigid)</strong> for initial tests. Use a classical detector (VGG, BRISK, ORB) instead of neural.</p>
 
 <h4 style="margin-top:14px">Q: Can I cancel a running registration?</h4>
-<p>Yes. Click <strong>Cancel</strong> in the Status dock. Partial output may remain.</p>
+<p>Yes. Press <span class="kbd">Esc</span>, or click <strong>Cancel Registration</strong> in the Status panel, and confirm. Slides already written stay on disk and pending ones are not registered.</p>
 
 <h4 style="margin-top:14px">Q: What is the output?</h4>
-<p>Pyramidal OME-TIFF files + a CSV summary with alignment metrics. Configure via <strong>Tools → Save Options</strong>.</p>
+<p>In <code>output/&lt;project name&gt;/</code> (inside the application folder): one pyramidal OME-TIFF per slide in <code>registered/</code> and <code>summary.csv</code> with the alignment metrics. The status bar's <strong>Open output folder</strong> button jumps there. Compression and tile size are set in Properties → Output Settings (or Tools → Save Options).</p>
+
+<h4 style="margin-top:14px">Q: What does Resume Last Registration do?</h4>
+<p>It runs the previous slides and settings again from the start, so you do not have to reload or reconfigure after a cancel or failure. It is not a checkpoint restart.</p>
+
+<h4 style="margin-top:14px">Q: Why are the Tools menu items greyed out?</h4>
+<p>Everything except Export Session Bundle needs a finished registration. They switch on when a run completes.</p>
+
+<h4 style="margin-top:14px">Q: Can I reuse my settings on the next case?</h4>
+<p>Yes. Save a preset in Properties (Presets → Save) or use <strong>File → Save Configuration…</strong>. Loading a configuration while a folder is open links it to that folder, and reopening the folder from Recent Folders applies it automatically.</p>
 
 <h4 style="margin-top:14px">Q: Does this work on macOS / Linux?</h4>
 <p>Yes. PySide6 + Napari are fully cross-platform.</p>
@@ -955,7 +984,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 
 
 <!-- ╔═══════════════════════════════════════════════════════════════════╗
-     ║              TAB 2 — ADVANCED GUIDE                              ║
+     ║              TAB 2 - ADVANCED GUIDE                              ║
      ╚═══════════════════════════════════════════════════════════════════╝ -->
 <div class="tab-content" id="tab-advanced">
 
@@ -1060,7 +1089,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <text x="505" y="268" text-anchor="middle" fill="#94a3b8" font-size="7.5">GeoJSON transfer</text>
 </svg>
 </div>
-<p class="caption">Figure 4 — Complete 9-stage VALIS registration pipeline (dashed = optional)</p>
+<p class="caption">Figure 4 - Complete 9-stage VALIS registration pipeline (dashed = optional)</p>
 </div>
 
 <!-- ─── FEATURE DETECTORS GUIDE ──────────────────────────────── -->
@@ -1071,33 +1100,33 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <p>This section maps GUI capabilities to VALIS internals so both beginner and advanced users can understand full functional coverage.</p>
 <table>
   <tr><th>VALIS Module</th><th>What It Covers</th><th>Core Classes / Functions</th><th>GUI Surface</th><th>Full Local Docs</th></tr>
-  <tr><td><code>valis.registration</code></td><td>End-to-end orchestration</td><td><code>Valis</code>, <code>register()</code>, <code>warp_and_save_slides()</code>, <code>measure_error()</code></td><td>Run Registration, confirmation dialog, output saving</td><td><a href="html/registration.html">registration.html</a></td></tr>
-  <tr><td><code>valis.slide_io</code></td><td>File reading + format support</td><td><code>BioFormatsSlideReader</code>, <code>VipsSlideReader</code>, <code>init_jvm()</code>, <code>load_registrar()</code></td><td>Open Slide Folder, slide loading, drag/drop folder</td><td><a href="html/slide_io.html">slide_io.html</a></td></tr>
-  <tr><td><code>valis.feature_detectors</code></td><td>Feature extraction</td><td><code>VggFD</code>, <code>KazeFD</code>, <code>BriskFD</code>, <code>OrbFD</code>, <code>AkazeFD</code>, <code>SuperPointFD</code>, <code>DiskFD</code>, <code>DeDoDeFD</code></td><td>Properties - Feature detector selector</td><td><a href="html/feature_detectors.html">feature_detectors.html</a></td></tr>
-  <tr><td><code>valis.feature_matcher</code></td><td>Feature matching + filtering</td><td><code>Matcher</code>, <code>LightGlueMatcher</code>, <code>SuperGlueMatcher</code>, <code>filter_matches_ransac()</code>, <code>filter_matches_gms()</code></td><td>Implicit in registration engine</td><td><a href="html/feature_matcher.html">feature_matcher.html</a></td></tr>
-  <tr><td><code>valis.non_rigid_registrars</code></td><td>Elastic alignment</td><td><code>OpticalFlowWarper</code>, <code>RAFTWarper</code>, <code>SimpleElastixWarper</code>, <code>NonRigidTileRegistrar</code></td><td>Properties - Non-rigid checkbox + advanced behavior</td><td><a href="html/non_rigid_registrars.html">non_rigid_registrars.html</a></td></tr>
-  <tr><td><code>valis.affine_optimizer</code></td><td>Rigid transform refinement</td><td><code>AffineOptimizerMattesMI</code>, <code>AffineOptimizerRMI</code>, <code>AffineOptimizerDisplacement</code>, <code>AffineOptimizerKNN</code></td><td>Advanced tuning / programmatic use</td><td><a href="html/affine_optimizer.html">affine_optimizer.html</a></td></tr>
-  <tr><td><code>valis.preprocessing</code></td><td>Image conditioning + masks</td><td><code>OD</code>, <code>ChannelGetter</code>, <code>HEDeconvolution</code>, <code>create_tissue_mask()</code>, <code>denoise_img()</code></td><td>Use tissue masks, denoise options</td><td><a href="html/preprocessing.html">preprocessing.html</a></td></tr>
-  <tr><td><code>valis.warp_tools</code></td><td>Image/point/geometry warping</td><td><code>warp_img()</code>, <code>warp_xy()</code>, <code>warp_xy_from_to()</code>, <code>warp_shapely_geom()</code></td><td>Warp Annotations + downstream coordinate transfer</td><td><a href="html/registration.html#module-valis.warp_tools">warp_tools API section</a></td></tr>
-  <tr><td><code>valis.viz</code></td><td>Quality visuals + overlays</td><td><code>draw_matches()</code>, <code>create_overlap_img()</code>, plotting helpers</td><td>Blink, Analysis Plot, quality review workflows</td><td><a href="html/viz.html">viz.html</a></td></tr>
+  <tr><td><code>valis.registration</code></td><td>End-to-end orchestration</td><td><code>Valis</code>, <code>register()</code>, <code>warp_and_save_slides()</code>, <code>measure_error()</code></td><td>Run Registration, confirmation dialog, output saving</td><td><a href="docs/html/registration.html">registration.html</a></td></tr>
+  <tr><td><code>valis.slide_io</code></td><td>File reading + format support</td><td><code>BioFormatsSlideReader</code>, <code>VipsSlideReader</code>, <code>init_jvm()</code>, <code>load_registrar()</code></td><td>Open Slide Folder, slide loading, drag/drop folder</td><td><a href="docs/html/slide_io.html">slide_io.html</a></td></tr>
+  <tr><td><code>valis.feature_detectors</code></td><td>Feature extraction</td><td><code>VggFD</code>, <code>KazeFD</code>, <code>BriskFD</code>, <code>OrbFD</code>, <code>AkazeFD</code>, <code>SuperPointFD</code>, <code>DiskFD</code>, <code>DeDoDeFD</code></td><td>Properties - Feature detector selector</td><td><a href="docs/html/feature_detectors.html">feature_detectors.html</a></td></tr>
+  <tr><td><code>valis.feature_matcher</code></td><td>Feature matching + filtering</td><td><code>Matcher</code>, <code>LightGlueMatcher</code>, <code>SuperGlueMatcher</code>, <code>filter_matches_ransac()</code>, <code>filter_matches_gms()</code></td><td>Implicit in registration engine</td><td><a href="docs/html/feature_matcher.html">feature_matcher.html</a></td></tr>
+  <tr><td><code>valis.non_rigid_registrars</code></td><td>Elastic alignment</td><td><code>OpticalFlowWarper</code>, <code>RAFTWarper</code>, <code>SimpleElastixWarper</code>, <code>NonRigidTileRegistrar</code></td><td>Properties - Non-rigid checkbox + advanced behavior</td><td><a href="docs/html/non_rigid_registrars.html">non_rigid_registrars.html</a></td></tr>
+  <tr><td><code>valis.affine_optimizer</code></td><td>Rigid transform refinement</td><td><code>AffineOptimizerMattesMI</code>, <code>AffineOptimizerRMI</code>, <code>AffineOptimizerDisplacement</code>, <code>AffineOptimizerKNN</code></td><td>Advanced tuning / programmatic use</td><td><a href="docs/html/affine_optimizer.html">affine_optimizer.html</a></td></tr>
+  <tr><td><code>valis.preprocessing</code></td><td>Image conditioning + masks</td><td><code>OD</code>, <code>ChannelGetter</code>, <code>HEDeconvolution</code>, <code>create_tissue_mask()</code>, <code>denoise_img()</code></td><td>Use tissue masks, denoise options</td><td><a href="docs/html/preprocessing.html">preprocessing.html</a></td></tr>
+  <tr><td><code>valis.warp_tools</code></td><td>Image/point/geometry warping</td><td><code>warp_img()</code>, <code>warp_xy()</code>, <code>warp_xy_from_to()</code>, <code>warp_shapely_geom()</code></td><td>Warp Annotations + downstream coordinate transfer</td><td><a href="docs/html/registration.html#slide">warp_tools API section</a></td></tr>
+  <tr><td><code>valis.viz</code></td><td>Quality visuals + overlays</td><td><code>draw_matches()</code>, <code>create_overlap_img()</code>, plotting helpers</td><td>Blink, Analysis Plot, quality review workflows</td><td><a href="docs/html/viz.html">viz.html</a></td></tr>
 </table>
 
 <div class="info"><strong>Coverage note:</strong> The GUI exposes the high-value workflow surface. This manual plus the linked module pages provide full class/function coverage for VALIS usage in this repository.</div>
 
 <div class="image-grid">
   <figure class="img-card">
-    <img class="doc-image" src="_images/3d_recon.png" alt="3D reconstruction style example" loading="lazy">
+    <img class="doc-image" src="docs/_images/3d_recon.png" alt="3D reconstruction style example" loading="lazy">
     <figcaption>Advanced downstream: aligned stacks can be used for 3D reconstruction workflows.</figcaption>
   </figure>
   <figure class="img-card">
-    <img class="doc-image" src="_images/3D_error_plot.png" alt="3D error visualization" loading="lazy">
+    <img class="doc-image" src="docs/_images/3D_error_plot.png" alt="3D error visualization" loading="lazy">
     <figcaption>Error visualization helps validate parameter changes at advanced tuning stages.</figcaption>
   </figure>
 </div>
 </div>
 
 <span class="section-anchor" id="detectors-guide"></span>
-<h2>Feature Detectors — Choosing the Right One</h2>
+<h2>Feature Detectors - Choosing the Right One</h2>
 <hr>
 <div class="card">
 <p>VALIS supports <strong>8 feature detectors</strong> spanning classical computer vision and modern deep learning. The detector you choose affects speed, accuracy, and GPU requirements.</p>
@@ -1113,9 +1142,9 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <tr><td><strong>DISK</strong></td><td>Neural</td><td>Yes*</td><td>⚡⚡</td><td>⭐⭐⭐⭐⭐</td><td>Dense features, used in default VALIS pipeline with LightGlue.</td></tr>
   <tr><td><strong>DeDoDe</strong></td><td>Neural</td><td>Yes*</td><td>⚡</td><td>⭐⭐⭐⭐⭐</td><td>State-of-the-art descriptor-free detection.</td></tr>
 </table>
-<p style="font-size:.85rem;color:#64748b">* GPU strongly recommended. Will run on CPU but 10–50× slower.</p>
+<p style="font-size:.85rem;color:#64748b">* GPU strongly recommended. Will run on CPU but 10-50× slower.</p>
 
-<div class="info"><strong>Default pipeline:</strong> VALIS uses <strong>VGG</strong> for initial sorting, then <strong>DiskFD + LightGlueMatcher</strong> for the actual registration matching. The GUI's "Feature detector" setting controls the sorting matcher.</div>
+<div class="info"><strong>Default pipeline:</strong> VALIS uses <strong>VGG</strong> for initial sorting, then <strong>DiskFD + LightGlueMatcher</strong> for the actual registration matching. The GUI's "Feature detector" setting is passed to VALIS as the registration feature detector and replaces the detector inside the default matcher.</div>
 
 <p style="margin-top:14px">Beyond these 8, the VALIS library also supports: <strong>DaisyFD</strong>, <strong>LatchFD</strong>, <strong>BoostFD</strong>, <strong>OrbVggFD</strong>, <strong>SKOrbVggFD</strong>, <strong>CensureVggFD</strong> (programmatic use only).</p>
 </div>
@@ -1184,7 +1213,10 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <hr>
 <div class="card">
 <h4>Output directory structure</h4>
-<pre><code>output/&lt;project_name&gt;/
+<pre><code>output/&lt;project_name&gt;/              (inside the application folder)
+├── registered/           # Final aligned slides, one OME-TIFF per slide
+├── summary.csv           # Quality metrics table
+├── transforms/           # Saved rigid / non-rigid transforms per slide
 ├── images/               # Converted input images
 ├── processed/            # Preprocessed single-channel images
 ├── rigid_registration/   # Rigidly aligned images
@@ -1194,16 +1226,19 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 ├── data/                 # Registration data (transforms, keypoints)
 ├── micro_registration/   # Micro-registration results (if enabled)
 ├── masks/                # Tissue masks (if enabled)
-└── summary.csv           # Quality metrics table</code></pre>
+├── warped_annotations/   # Created by Tools → Warp Annotations
+└── merged_image.ome.tiff # Created by Tools → Merge Slides</code></pre>
 
-<h4 style="margin-top:16px">Export formats</h4>
+<h4 style="margin-top:16px">Which tool writes which format</h4>
 <table>
-  <tr><th>Format</th><th>Pyramids</th><th>Metadata</th><th>Best For</th></tr>
-  <tr><td><strong>OME-TIFF</strong> (default)</td><td>Yes</td><td>Full OME-XML</td><td>QuPath, OMERO, ImageJ, Napari</td></tr>
-  <tr><td><strong>TIFF</strong></td><td>Optional</td><td>Basic TIFF tags</td><td>General image analysis</td></tr>
-  <tr><td><strong>JPEG</strong></td><td>No</td><td>None</td><td>Quick previews, presentations</td></tr>
-  <tr><td><strong>PNG</strong></td><td>No</td><td>None</td><td>Lossless screenshots</td></tr>
+  <tr><th>Output</th><th>Format</th><th>Notes</th></tr>
+  <tr><td><strong>Registered slides</strong> (File → Run Registration)</td><td>OME-TIFF (always)</td><td>Pyramid on/off, compression and tile size are applied. Best for QuPath, OMERO, ImageJ, Napari.</td></tr>
+  <tr><td><strong>ROI crops</strong> (Tools → Export ROI Crop)</td><td>OME-TIFF, TIFF or PNG</td><td>You choose in the dialog.</td></tr>
+  <tr><td><strong>Merged image</strong> (Tools → Merge Slides)</td><td>OME-TIFF</td><td>Multi-channel; uses your Output Settings.</td></tr>
+  <tr><td><strong>Warped annotations</strong></td><td>GeoJSON</td><td>One file per target slide.</td></tr>
+  <tr><td><strong>Quality table</strong></td><td>CSV</td><td><code>summary.csv</code>, or Export CSV… in the Quality Report.</td></tr>
 </table>
+
 <p><strong>Note:</strong> the underlying VALIS library currently always writes lossless OME-TIFF and chooses the pyramid depth itself. Choosing TIFF, JPEG or PNG, a JPEG quality, or a pyramid level count is saved with your settings but does not change the output; the Save Options summary and the run log say so. Compression, tile size and the pyramid on/off switch are applied.</p>
 </div>
 
@@ -1217,7 +1252,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <li>Reduce <strong>Working resolution</strong> to 1024 for quick tests</li>
   <li>Disable non-rigid registration for initial alignment inspection</li>
   <li>Use <strong>ORB</strong> or <strong>BRISK</strong> detector (fastest classical)</li>
-  <li>Enable <strong>Slides pre-ordered</strong> if you know the physical order — skips the sorting step entirely</li>
+  <li>Tick <strong>Slides already in order</strong> if you know the physical order - it skips the sorting step entirely</li>
   <li>Turn off <strong>Write image pyramid</strong> if you do not need a multi-resolution viewer file</li>
 </ul>
 
@@ -1225,24 +1260,24 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <ul>
   <li>Increase <strong>Working resolution</strong> to 4096 or higher</li>
   <li>Use <strong>DISK</strong> or <strong>SuperPoint</strong> with GPU enabled</li>
-  <li>Enable <strong>Micro-registration</strong> for sub-pixel accuracy</li>
-  <li>Enable <strong>Tissue masks</strong> to focus matching on tissue regions only</li>
-  <li>Enable <strong>Denoise</strong> for noisy fluorescence images</li>
+  <li>Tick <strong>Fine-detail pass (micro-reg.)</strong> for finer local accuracy</li>
+  <li>Tick <strong>Use tissue masks</strong> to focus matching on tissue regions only</li>
+  <li>Tick <strong>Denoise images</strong> for noisy fluorescence images</li>
 </ul>
 
 <h4 style="margin-top:14px">Memory optimization</h4>
 <ul>
-  <li>Lower max image size and pyramid levels</li>
-  <li>Reduce tile cache in <strong>Preferences → Cache</strong></li>
+  <li>Lower <strong>Working resolution</strong> (and the Fine-detail resolution if used)</li>
+  <li>Lower <strong>Max Thumbnail Cache</strong> and <strong>Parallel Thumbnail Workers</strong> in <strong>Preferences</strong></li>
   <li>Monitor memory via <strong>Help → Performance Statistics</strong></li>
 </ul>
 <div class="image-grid">
   <figure class="img-card">
-    <img class="doc-image" src="_images/new_fd_2025_error_v_time.png" alt="Registration error over time chart" loading="lazy">
+    <img class="doc-image" src="docs/_images/new_fd_2025_error_v_time.png" alt="Registration error over time chart" loading="lazy">
     <figcaption>Use error-vs-time trends to compare settings for speed-quality tradeoffs.</figcaption>
   </figure>
   <figure class="img-card">
-    <img class="doc-image" src="_images/new_fd_2025_error_correlation.png" alt="Registration error correlation chart" loading="lazy">
+    <img class="doc-image" src="docs/_images/new_fd_2025_error_correlation.png" alt="Registration error correlation chart" loading="lazy">
     <figcaption>Error correlation helps identify detector/parameter regimes that fail consistently.</figcaption>
   </figure>
 </div>
@@ -1250,7 +1285,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 
 <!-- ─── DECISION TREES ───────────────────────────────────────── -->
 <span class="section-anchor" id="decision-trees"></span>
-<h2>Decision Trees — Choosing Settings</h2>
+<h2>Decision Trees - Choosing Settings</h2>
 <hr>
 
 <div class="decision-tree">
@@ -1277,10 +1312,10 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 
 <div class="decision-tree">
 <h4>🌳 Which crop mode?</h4>
-<div class="dt-node answer"><span class="dt-icon">📐</span><div><strong>reference</strong> (default) — Crop output to the reference slide's boundary. Best for most cases.</div></div>
-<div class="dt-node answer"><span class="dt-icon">🔲</span><div><strong>all_overlap</strong> — Only keep the region where ALL slides overlap. Useful for analysis requiring complete correspondence.</div></div>
-<div class="dt-node answer"><span class="dt-icon">📏</span><div><strong>all</strong> — Expand to include the union of all slides (may have blank borders).</div></div>
-<div class="dt-node answer"><span class="dt-icon">↔️</span><div><strong>unchanged</strong> — No cropping at all.</div></div>
+<div class="dt-node answer"><span class="dt-icon">📐</span><div><strong>reference</strong> (default) - Crop output to the reference slide's boundary. Best for most cases.</div></div>
+<div class="dt-node answer"><span class="dt-icon">🔲</span><div><strong>all_overlap</strong> - Only keep the region where ALL slides overlap. Useful for analysis requiring complete correspondence.</div></div>
+<div class="dt-node answer"><span class="dt-icon">📏</span><div><strong>all</strong> - Expand to include the union of all slides (may have blank borders).</div></div>
+<div class="dt-node answer"><span class="dt-icon">↔️</span><div><strong>unchanged</strong> - No cropping at all.</div></div>
 </div>
 
 <!-- ─── DECISION SUPPORT MATRIX ─────────────────────────────── -->
@@ -1292,10 +1327,10 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <table class="decision-matrix">
   <tr><th>Scenario</th><th>Primary objective</th><th>Recommended stack</th><th>High-value toggles</th></tr>
   <tr><td>Brightfield serial sections</td><td>Stable baseline alignment</td><td>Detector: <strong>VGG</strong> · Transform: <strong>Similarity</strong> · Non-rigid: <strong>ON</strong></td><td>Masks OFF first pass, then ON only if background noise is high</td></tr>
-  <tr><td>Challenging fluorescence</td><td>Landmark robustness</td><td>Detector: <strong>DISK</strong> or <strong>SuperPoint</strong> · Non-rigid: <strong>ON</strong></td><td>GPU ON, Denoise ON, increase max image size incrementally</td></tr>
+  <tr><td>Challenging fluorescence</td><td>Landmark robustness</td><td>Detector: <strong>DISK</strong> or <strong>SuperPoint</strong> · Non-rigid: <strong>ON</strong></td><td>GPU ON, Denoise images ON, raise Working resolution step by step</td></tr>
   <tr><td>Need fastest smoke test</td><td>Detect bad inputs quickly</td><td>Detector: <strong>ORB</strong> or <strong>BRISK</strong> · Non-rigid: <strong>OFF</strong></td><td>Working resolution 1024, lower pyramid levels</td></tr>
   <tr><td>Shear or mounting distortion</td><td>Recover global geometry</td><td>Transform: <strong>Affine</strong> + Non-rigid ON</td><td>Inspect outliers in Quality Report before full rerun</td></tr>
-  <tr><td>High precision publication output</td><td>Minimize local residual error</td><td>Detector: <strong>DISK/SuperPoint</strong> + Micro-registration</td><td>Working resolution 4096+, monitor memory/performance stats</td></tr>
+  <tr><td>High precision publication output</td><td>Minimize local residual error</td><td>Detector: <strong>DISK/SuperPoint</strong> + Fine-detail pass (micro-reg.)</td><td>Working resolution 4096+, monitor memory/performance stats</td></tr>
   <tr><td>Annotation transfer priority</td><td>Preserve ROI geometry across slides</td><td>Similarity/Affine + Non-rigid ON</td><td>Validate warped annotations on 2-3 sentinel slides first</td></tr>
 </table>
 <div class="note"><strong>Decision rule:</strong> if runtime increases but rTRE does not improve, revert the last change and test a different detector before changing multiple knobs.</div>
@@ -1310,19 +1345,19 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <div class="playbook-grid">
   <div class="playbook-step">
     <h4>1) Registration canceled intentionally</h4>
-    <p>Use <strong>File -&gt; Resume Last Registration</strong>, confirm settings, and rerun. Partial outputs may remain, so compare timestamps in the output folder before reusing files.</p>
+    <p>Use <strong>File -&gt; Resume Last Registration</strong> to rerun the same slides and settings from the start. Partial outputs may remain, so compare timestamps in the output folder before reusing files.</p>
   </div>
   <div class="playbook-step">
     <h4>2) Registration failed with error dialog</h4>
-    <p>Copy technical details, open <strong>Help -&gt; Diagnostics</strong>, then export a session bundle from <strong>Tools -&gt; Export Session Bundle...</strong> for support triage.</p>
+    <p>In the Error Details box open <em>Technical Details</em> and click <strong>Copy to Clipboard</strong>, open <strong>Help -&gt; Diagnostics</strong>, then export a session bundle from <strong>Tools -&gt; Export Session Bundle...</strong> for support triage.</p>
   </div>
   <div class="playbook-step">
     <h4>3) Unexpected close or crash</h4>
-    <p>Reopen the app, reload your slide folder, then use <strong>Load Configuration</strong> if available. Resume from the last known-good run context and verify <code>summary.csv</code>.</p>
+    <p>Reopen the app, then open the folder from <strong>File → Recent Folders</strong> (a configuration linked to that folder loads with it, otherwise use <strong>Load Configuration</strong>). Rerun, and verify <code>summary.csv</code>; completed slides from the crashed run may already be in <code>registered/</code>.</p>
   </div>
   <div class="playbook-step">
     <h4>4) Out-of-memory or severe slowdown</h4>
-    <p>Lower max image size and pyramid levels, reduce cache limits in Preferences, rerun with non-rigid OFF for triage, then re-enable once baseline rigid alignment looks good.</p>
+    <p>Lower Working resolution, reduce cache limits and thumbnail workers in Preferences, rerun with non-rigid OFF for triage, then re-enable once baseline rigid alignment looks good.</p>
   </div>
   <div class="playbook-step">
     <h4>5) Quality outliers after success</h4>
@@ -1340,12 +1375,12 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <h2>Known Limits and Pending Features</h2>
 <hr>
 <div class="card">
-<p>Status snapshot aligned to repository docs as of 2026-04-11. See <a href="README_VALIS_WORKSTATION.md">README roadmap</a> and <a href="WORKSTATION_CHANGELOG.md">workstation changelog</a> for updates.</p>
+<p>Status snapshot refreshed 2026-10-26 against the current GUI code; the README roadmap may lag behind. See <a href="README_VALIS_WORKSTATION.md">README roadmap</a> and <a href="WORKSTATION_CHANGELOG.md">workstation changelog</a> for updates.</p>
 <div class="limits-grid">
   <div class="limit-card"><h4>Batch project processing</h4><p>Single-project interactive flow is primary today. Batch mode remains under consideration in roadmap planning.</p></div>
   <div class="limit-card"><h4>Warp points workflow in GUI</h4><p>Annotation warping is exposed; direct point-warp workflows are not yet surfaced as a dedicated GUI action.</p></div>
-  <div class="limit-card"><h4>Non-rigid registrar selection UI</h4><p>Non-rigid registration is available, but explicit registrar-family switching is still a parity-gap candidate.</p></div>
-  <div class="limit-card"><h4>Slide deletion granularity</h4><p>Multi-select exists, while dedicated delete-selected UX remains a pending enhancement.</p></div>
+  <div class="limit-card"><h4>Non-rigid registrar families</h4><p>The Non-rigid method list offers Optical Flow and RAFT. SimpleElastix and groupwise registrars are not selectable in the GUI.</p></div>
+  <div class="limit-card"><h4>Output format choice</h4><p>VALIS always writes OME-TIFF for registered slides and picks the pyramid depth, so the TIFF / JPEG / PNG format, JPEG quality and Pyramid levels count are stored but not applied.</p></div>
   <div class="limit-card"><h4>Persistent colormap presets</h4><p>Color controls are available; reusable named colormap preset management is still planned work.</p></div>
   <div class="limit-card"><h4>Plugin ecosystem hooks</h4><p>Core dialogs are integrated, but a formal plugin API/system is listed as future work.</p></div>
 </div>
@@ -1360,24 +1395,32 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <div class="accordion">
   <div class="accordion-header" onclick="toggleAccordion(this)">🔄 Blink Viewer <span class="arrow">▶</span></div>
   <div class="accordion-body">
-    <p><strong>Purpose:</strong> A/B comparison of registered slides.</p>
-    <ul>
-      <li><strong>Slide A / B:</strong> ComboBox selectors for any two registered slides</li>
-      <li><strong>Blend slider:</strong> Manual crossfade 0–100%</li>
-      <li><strong>Blink mode:</strong> Timer-driven toggle at 600ms intervals</li>
-    </ul>
-    <div class="tip"><strong>Tip:</strong> Blink first to spot gross errors, then blend for fine assessment.</div>
+    <p><strong>Entry point:</strong> <strong>Tools → Blink</strong> (needs a finished run and the napari viewer).</p>
+    <p><strong>Purpose:</strong> A/B comparison of two registered slides directly in the viewer.</p>
+    <ol>
+      <li>Choose <strong>Slide A</strong> and <strong>Slide B</strong> (B starts on the second slide so the two differ).</li>
+      <li>Pick a <strong>Mode</strong>:
+        <ul>
+          <li><strong>Blink</strong> - click <strong>Start Blink</strong> to alternate the two slides automatically; <strong>Interval</strong> sets the delay (100-3000 ms, default 600). The button becomes <strong>Stop Blink</strong>.</li>
+          <li><strong>Swipe</strong> - both slides stay visible and the <strong>Blend</strong> slider mixes them (0% = only A, 50% = equal, 100% = only B).</li>
+          <li><strong>Side-by-side</strong> - both layers are shown at full opacity; the Blend slider is disabled. Use the Layers tab to toggle each one.</li>
+        </ul>
+      </li>
+      <li>Click <strong>Close</strong>; blinking stops however the dialog is dismissed.</li>
+    </ol>
+    <div class="tip"><strong>Tip:</strong> Blink first to spot gross errors, then use Swipe for fine assessment. Watch a distinctive structure (a vessel or gland edge): in a good registration it changes colour but not shape or position.</div>
   </div>
 </div>
 
 <div class="accordion">
   <div class="accordion-header" onclick="toggleAccordion(this)">📈 Analysis Plot <span class="arrow">▶</span></div>
   <div class="accordion-body">
-    <p><strong>Purpose:</strong> Matplotlib chart of Target Registration Error (TRE) per slide pair.</p>
+    <p><strong>Entry point:</strong> <strong>Tools → Analysis Plot</strong> (window title "Registration Analysis").</p>
+    <p><strong>Purpose:</strong> Matplotlib chart of registration error per slide pair.</p>
     <ul>
-      <li>Line/bar plot with markers showing error per pair</li>
-      <li>Summary label: Mean / Max error</li>
-      <li>Matplotlib toolbar: zoom, pan, save as PNG</li>
+      <li>Line plot with markers; x axis is the <em>Pair index</em>, y axis the chosen metric. The metric is the non-rigid <code>rTRE</code> column if present, otherwise the rigid one, otherwise any other <code>…TRE</code> or <code>…D</code> column.</li>
+      <li>Summary label under the plot: <code>Metric | Mean | Max</code>. Pairs without a measurement are excluded and counted, never plotted as zero.</li>
+      <li>"No metrics available" is shown when the summary has no usable column.</li>
     </ul>
   </div>
 </div>
@@ -1385,38 +1428,47 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <div class="accordion">
   <div class="accordion-header" onclick="toggleAccordion(this)">📋 Quality Report <span class="arrow">▶</span></div>
   <div class="accordion-body">
-    <p><strong>Purpose:</strong> Sortable data table of all alignment quality metrics.</p>
-    <p>Columns: Slide name, Rigid error, Non-rigid error, Features matched. Click headers to sort.</p>
-    <p>Data source: <code>summary_df</code> which includes: <code>rigid_D</code>, <code>rigid_rTRE</code>, <code>non_rigid_D</code>, <code>non_rigid_rTRE</code>, <code>rigid_time_minutes</code>, <code>non_rigid_time_minutes</code></p>
+    <p><strong>Entry point:</strong> <strong>Tools → Quality Report</strong> ("Alignment Quality Report").</p>
+    <p><strong>Purpose:</strong> Sortable table of all alignment quality metrics, one row per slide pair. Click a header to sort; hover a header for an explanation where one exists.</p>
+    <p>Columns come straight from VALIS's <code>summary_df</code>: <code>filename</code>, <code>from</code> (moving slide), <code>to</code> (fixed slide), <code>original_D</code>, <code>original_rTRE</code>, <code>rigid_D</code>, <code>rigid_rTRE</code>, <code>non_rigid_D</code>, <code>non_rigid_rTRE</code> (non-rigid only when that stage ran), image shapes, <code>mean_*_D</code>, <code>physical_units</code>, <code>resolution</code>, <code>rigid_time_minutes</code> and <code>non_rigid_time_minutes</code>.</p>
+    <ul>
+      <li><code>*_D</code> = median distance between matched features; <code>*_rTRE</code> = target registration error relative to image size. Lower is better, and values should fall from <code>original</code> to <code>rigid</code> to <code>non_rigid</code>.</li>
+      <li>Buttons: <strong>Copy Table</strong> (tab-delimited to the clipboard, button flashes "✓ Copied!"), <strong>Export CSV…</strong>, <strong>Close</strong>. Right-click the table for <em>Copy Row</em> / <em>Copy Table</em>.</li>
+    </ul>
   </div>
 </div>
 
 <div class="accordion">
   <div class="accordion-header" onclick="toggleAccordion(this)">📎 Warp Annotations <span class="arrow">▶</span></div>
   <div class="accordion-body">
-    <p><strong>Purpose:</strong> Transfer GeoJSON annotations from one slide's coordinate system to all others.</p>
+    <p><strong>Purpose:</strong> Transfer GeoJSON annotations from one slide's coordinate system to all registered slides.</p>
     <ol>
-      <li>Browse for a <code>.geojson</code> file</li>
-      <li>Select the <strong>source slide</strong> (the one annotations were drawn on)</li>
-      <li>Choose output directory (default: <code>&lt;output&gt;/warped_annotations/</code>)</li>
-      <li>Click OK — one warped GeoJSON per target slide</li>
+      <li>Open <strong>Tools → Warp Annotations</strong>.</li>
+      <li><strong>Annotation file</strong>: type or <strong>Browse</strong> for a <code>.geojson</code> file (coordinates in pixels of the source slide's original image).</li>
+      <li><strong>Source slide</strong>: the slide the annotations were drawn on.</li>
+      <li><strong>Output directory</strong>: default <code>&lt;output&gt;/warped_annotations/</code>.</li>
+      <li>Click <strong>OK</strong> - one file <code>&lt;source&gt;_to_&lt;target&gt;.geojson</code> is written for every slide in the run.</li>
     </ol>
-    <p>Uses both rigid transform matrices AND non-rigid displacement fields for accurate transfer.</p>
+    <p>Uses both the rigid transform matrices and, when the run included non-rigid registration, the non-rigid displacement fields. The warped coordinates are expressed in each target slide's original image space, so spot-check two or three results over the original slides before relying on them.</p>
   </div>
 </div>
 
 <div class="accordion">
   <div class="accordion-header" onclick="toggleAccordion(this)">💾 Save Options <span class="arrow">▶</span></div>
   <div class="accordion-body">
-    <p><strong>Purpose:</strong> Configure export parameters for registered slides.</p>
+    <p><strong>Entry point:</strong> <strong>Tools → Save Options…</strong> (enabled after a run). The same controls live permanently in <strong>Properties → Output Settings</strong>, which is where to set them <em>before</em> a run. OK copies the values into Output Settings; they apply to the next run and to Merge Slides, not to files already saved.</p>
+    <p><strong>Preset</strong> choices: Default (Balanced OME-TIFF), Diagnostic High-Quality, Web / Fast Preview, Archival Lossless, or Custom (shown automatically when you change a value by hand). <strong>Reset to Defaults</strong> returns to the first one.</p>
     <table>
-      <tr><th>Option</th><th>Choices</th><th>Default</th></tr>
-      <tr><td>Format</td><td>OME-TIFF, TIFF, JPEG, PNG</td><td>OME-TIFF</td></tr>
-      <tr><td>Pyramid levels</td><td>1–10</td><td>4</td></tr>
-      <tr><td>Compression</td><td>0–9</td><td>1</td></tr>
-      <tr><td>JPEG quality</td><td>1–100</td><td>95</td></tr>
-      <tr><td>Tile size</td><td>128/256/512/1024/2048</td><td>512</td></tr>
+      <tr><th>Option</th><th>Choices</th><th>Default</th><th>Applied?</th></tr>
+      <tr><td>Write image pyramid</td><td>on / off</td><td>on</td><td>Yes</td></tr>
+      <tr><td>Pyramid levels</td><td>0-10</td><td>4</td><td>No - VALIS picks the depth itself</td></tr>
+      <tr><td>Compression (0-9)</td><td>0 none, 1-4 LZW, 5-9 Deflate</td><td>1</td><td>Yes</td></tr>
+      <tr><td>JPEG Quality</td><td>1-100</td><td>95</td><td>No - slides are saved losslessly</td></tr>
+      <tr><td>Tile size</td><td>128 / 256 / 512 / 1024 / 2048</td><td>512</td><td>Yes</td></tr>
+      <tr><td>Format</td><td>OME-TIFF, TIFF, JPEG, PNG</td><td>OME-TIFF</td><td>No - registered slides are always OME-TIFF</td></tr>
     </table>
+    <p>The dialog's info line names the selections that VALIS will not apply, and the run log repeats it.</p>
+    <p>Properties also offers an <strong>Output profile</strong> shortcut: <em>WSI Archive</em> (compression 6, 5 levels, tile 512, quality 95), <em>Fast Review</em> (2, 3, 256, 85), <em>Publication</em> (4, 4, 512, 100) or <em>Custom</em>.</p>
   </div>
 </div>
 
@@ -1425,13 +1477,13 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <div class="accordion-body">
     <p><strong>Purpose:</strong> Export the same ROI bounds from every registered slide for compact review datasets and downstream animation workflows.</p>
     <ol>
-      <li>Open <strong>Tools → Export ROI Crop...</strong></li>
-      <li>Enter <strong>X, Y, Width, Height</strong> bounds in pixels</li>
-      <li>Choose output format (<strong>OME-TIFF</strong>, TIFF, or PNG)</li>
-      <li>Optionally enable <strong>Reopen in Viewer</strong> for immediate QC</li>
-      <li>Select destination directory and export</li>
+      <li>Open <strong>Tools → Export ROI Crop…</strong></li>
+      <li>Enter <strong>X Coordinate</strong>, <strong>Y Coordinate</strong> (top-left corner), <strong>Width</strong> and <strong>Height</strong> in pixels of the registered image (defaults 0, 0, 1000, 1000). Tip: napari reports the cursor position as row, column, so Y comes first there.</li>
+      <li>Choose <strong>Format</strong> (<strong>OME-TIFF</strong>, TIFF or PNG)</li>
+      <li>Optionally keep <strong>Reopen in Viewer</strong> ticked for immediate QC</li>
+      <li>Click <strong>OK</strong>, then pick the destination folder. Files are named <code>&lt;slide&gt;_ROI.&lt;ext&gt;</code>.</li>
     </ol>
-    <p>Boxes that extend past a slide are clipped to it; a slide the box misses entirely is skipped. A summary lists clipped, failed and cancelled slides. <strong>Paste from JSON</strong> rejects the whole clipboard if any value is invalid or out of range.</p>
+    <p>Helper buttons: <strong>Copy as JSON</strong> and <strong>Paste from JSON</strong> (shares a box as <code>{"x","y","width","height"}</code>) and <strong>Reset</strong>. Boxes that extend past a slide are clipped to it; a slide the box misses entirely is skipped. A summary lists clipped, failed and cancelled slides. <strong>Paste from JSON</strong> rejects the whole clipboard if any value is invalid or out of range.</p>
     <div class="tip"><strong>Recommended:</strong> use OME-TIFF for WSI-compatible crop workflows and better metadata preservation.</div>
   </div>
 </div>
@@ -1439,13 +1491,16 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <div class="accordion">
   <div class="accordion-header" onclick="toggleAccordion(this)">🔀 Merge Slides <span class="arrow">▶</span></div>
   <div class="accordion-body">
-    <p><strong>Purpose:</strong> Combine registered slides into multi-channel composites (CyCIF, CODEX).</p>
+    <p><strong>Purpose:</strong> Combine registered slides into one multi-channel OME-TIFF (CyCIF, CODEX). Needs at least 2 registered slides; runs in the background.</p>
     <ul>
-      <li><strong>Channel table:</strong> Include/exclude slides, set channel names (DAPI, CD3, etc.), assign colors</li>
+      <li><strong>Channel Mapping table</strong> (columns Include, Slide Name, Channel Name, Color): include/exclude slides, set channel names (DAPI, CD3, …; default <code>Channel_1…</code>), assign colors. <strong>Select All</strong> / <strong>Select None</strong> flip every row.</li>
       <li><strong>Colors:</strong> Auto, Red, Green, Blue, Cyan, Magenta, Yellow, Gray, White</li>
-      <li><strong>Overlap handling:</strong> Average, Maximum, Minimum, First, Last</li>
-      <li><strong>Normalize intensities:</strong> Balance channel intensities</li>
+      <li><strong>Overlap handling</strong> (used when two included slides share a channel name): Average (default), Maximum, Minimum, First, Last</li>
+      <li><strong>Output name</strong> (default <code>merged_image</code>; <code>.ome.tiff</code> is appended) - the file is written to the project's output folder</li>
+      <li><strong>Normalize intensities</strong> (on by default): stretches each channel to a comparable range</li>
+      <li><strong>Export config…</strong> saves the table as JSON</li>
     </ul>
+    <p>Compression, tile size and quality come from your current Output Settings.</p>
   </div>
 </div>
 
@@ -1454,8 +1509,8 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <div class="accordion-body">
     <p><strong>Purpose:</strong> Create a compact ZIP bundle for debugging, issue reporting, or collaborator handoff.</p>
     <ul>
-      <li><strong>Entry point:</strong> <strong>Tools → Export Session Bundle...</strong></li>
-      <li><strong>Includes:</strong> <code>session_summary.json</code> and <code>logs/valis_workstation.log</code> (when available)</li>
+      <li><strong>Entry point:</strong> <strong>Tools → Export Session Bundle…</strong> (always available; starts in the <code>logs</code> folder)</li>
+      <li><strong>Includes:</strong> <code>session_summary.json</code> (timestamp, current settings, slide folder, last result) and <code>valis_workstation.log</code> (when it exists)</li>
       <li><strong>Use cases:</strong> reproducibility snapshots, bug reports, and pipeline audits</li>
     </ul>
   </div>
@@ -1465,47 +1520,54 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   <div class="accordion-header" onclick="toggleAccordion(this)">🧪 Diagnostics <span class="arrow">▶</span></div>
   <div class="accordion-body">
     <p><strong>Entry point:</strong> <strong>Help → Diagnostics</strong>.</p>
-    <p>Shows environment and runtime status (Python/Qt versions, repository/log paths, and current run context) for rapid support triage.</p>
+    <p>Shows environment and runtime status (Python/Qt versions, repository/log paths, and current run context) for rapid support triage. Buttons: <strong>Refresh</strong>, <strong>Copy to Clipboard</strong>, <strong>Close</strong>.</p>
   </div>
 </div>
 
 <div class="accordion">
   <div class="accordion-header" onclick="toggleAccordion(this)">📊 Performance Statistics <span class="arrow">▶</span></div>
   <div class="accordion-body">
-    <p><strong>Shortcut:</strong> <span class="kbd">Ctrl+Shift+P</span> · Auto-refreshes every 2 seconds.</p>
-    <p><strong>4 tabs:</strong></p>
+    <p><strong>Shortcut:</strong> <span class="kbd">Ctrl+Shift+P</span> · Auto-refreshes every 2 seconds by default (Preferences → Performance).</p>
+    <p><strong>3 tabs:</strong></p>
     <ul>
-      <li><strong>Overview:</strong> Uptime, memory, cache hit rate, slides loaded, registrations run</li>
-      <li><strong>Thumbnail Cache:</strong> Size/max, hits/misses, cache directory</li>
-      <li><strong>Tile Cache:</strong> Memory usage, evictions, hit rate</li>
-      <li><strong>Memory:</strong> Current/peak/average MB</li>
+      <li><strong>Overview:</strong> Uptime, current and peak memory, thumbnail hit rate and load time, slides loaded, registrations run</li>
+      <li><strong>Thumbnail Cache:</strong> Entries, size / maximum, directory, hits, misses, generated, average time</li>
+      <li><strong>Memory:</strong> Current / peak / average MB and sample count</li>
     </ul>
-    <p>Buttons: Refresh Now, Clear Thumbnail Cache, Clear Tile Cache</p>
+    <p>Buttons: Refresh Now, Clear Thumbnail Cache, Close</p>
   </div>
 </div>
 
 <div class="accordion">
   <div class="accordion-header" onclick="toggleAccordion(this)">⚙️ Preferences <span class="arrow">▶</span></div>
   <div class="accordion-body">
-    <p><strong>Shortcut:</strong> <span class="kbd">Ctrl+,</span> · Persistent via QSettings.</p>
+    <p><strong>Shortcut:</strong> <span class="kbd">Ctrl+,</span> · Persistent via QSettings. Buttons: OK, Cancel, Restore Defaults (asks to confirm). After OK the app notes that some changes need a restart.</p>
     <table>
-      <tr><th>Tab</th><th>Settings</th></tr>
-      <tr><td><strong>Cache</strong></td><td>Cache dir, Max thumbnail cache (500 MB), Max tile cache (1024 MB), Persist between sessions</td></tr>
-      <tr><td><strong>Performance</strong></td><td>Parallel workers (4), Tile size (512), Enable monitoring, Auto-refresh (2s)</td></tr>
-      <tr><td><strong>UI</strong></td><td>Show tooltips, Show status bar, Confirm closing, Recent files (10), Default thumbnail size (256)</td></tr>
+      <tr><th>Tab</th><th>Settings (default)</th><th>Takes effect</th></tr>
+      <tr><td><strong>Cache</strong></td><td>Cache Directory (<code>~/.valis_cache</code>), Max Thumbnail Cache (500 MB, 10-10000), Keep cache between sessions (on)</td><td>Directory and size: after restart. "Keep cache" off: cache is cleared when the app closes</td></tr>
+      <tr><td><strong>Performance</strong></td><td>Parallel Thumbnail Workers (4, 1-16), Enable performance monitoring (on), Stats Auto-Refresh (2 s, 1-60)</td><td>Workers: next folder load. Monitoring: immediately. Refresh: next time the dialog opens</td></tr>
+      <tr><td><strong>User Interface</strong></td><td>Show tooltips (on), Show status bar (on), Confirm before closing (off), Recent Files to Remember (10, 5-20), Default Thumbnail Size (512, 128-1024), High contrast mode (off), Reduce motion (off)</td><td>Tooltips, confirm-close and high contrast: immediately. Status bar: next launch. Recent files and thumbnail size: next folder load</td></tr>
     </table>
+  </div>
+</div>
+
+<div class="accordion">
+  <div class="accordion-header" onclick="toggleAccordion(this)">🎓 Quick Tutorial and Setup Wizard <span class="arrow">▶</span></div>
+  <div class="accordion-body">
+    <p><strong>Quick Tutorial</strong> (<strong>Help → Quick Tutorial</strong>, <span class="kbd">F1</span>, or the <em>Tutorial</em> toolbar button) is a non-modal 13-step wizard: Welcome, What is Registration, Load Your Slides, Rigid vs. Non-Rigid, Configure Settings, Run Registration, Wait &amp; Watch, View Results, Check the Quality, What if it fails, Post-Processing, Where are my files, You're Ready. Steps 3 and 6 have action buttons that open the folder picker and start a run for you. You can keep it open while using the app.</p>
+    <p><strong>VALIS Workstation Setup</strong> appears once, on the first launch: Welcome, Default Settings (default project name, default output profile) and Done (<em>Open Quick Tutorial when finished</em>).</p>
   </div>
 </div>
 
 <div class="accordion">
   <div class="accordion-header" onclick="toggleAccordion(this)">🚨 Error Detail Dialog <span class="arrow">▶</span></div>
   <div class="accordion-body">
-    <p>Shown when registration fails. Contains:</p>
+    <p>Shown (title "Error Details") when registration fails. Contains:</p>
     <ul>
       <li>User-friendly error message</li>
-      <li>Collapsible Technical Details (traceback + last 50 log lines)</li>
+      <li>Collapsible "Technical Details" group (traceback + last 50 log lines)</li>
       <li>"Copy to Clipboard" button (flashes ✓ Copied!)</li>
-      <li>"Report Issue" button (opens GitHub)</li>
+      <li>"Report Issue" button (opens the issue tracker) and "Close"</li>
     </ul>
   </div>
 </div>
@@ -1516,7 +1578,7 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 <hr>
 <div class="card">
 <h4>Save Configuration (File → Save Configuration)</h4>
-<p>Exports all Properties dock settings to a JSON file:</p>
+<p>Exports all Properties settings to a JSON file:</p>
 <pre><code>{
   "project_name": "My CyCIF Study",
   "rigid_registration": true,
@@ -1530,17 +1592,30 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
   "use_masks": false,
   "denoise": false,
   "imgs_ordered": false,
+  "crop_for_rigid_reg": true,
+  "use_color_features": false,
+  "non_rigid_method": "optical_flow",
   "micro_registration": false,
   "micro_max_image_size": 4096,
   "compression_level": 1,
   "pyramid_levels": 4,
   "tile_size": 512,
-  "image_quality": 95
+  "image_quality": 95,
+  "image_format": "OME-TIFF",
+  "write_pyramid": true
 }</code></pre>
+<p style="margin-top:10px">Loading is forgiving: unknown keys and values of the wrong type are ignored (the status bar reports how many), and anything missing keeps its default. Out-of-range numbers are clamped.</p>
+<h4 style="margin-top:16px">Three ways to keep settings</h4>
+<table>
+  <tr><th>Mechanism</th><th>Where</th><th>Good for</th></tr>
+  <tr><td>Presets</td><td>Properties → Presets (Save / Load / Delete)</td><td>Your own named profiles, stored in the app settings</td></tr>
+  <tr><td>Configuration files</td><td>File → Save Configuration… / Load Configuration…</td><td>Sharing with colleagues, attaching to a paper or an issue</td></tr>
+  <tr><td>Folder-linked configuration</td><td>Load a configuration while a folder is open</td><td>Reopening that case later: Recent Folders applies the linked file automatically</td></tr>
+</table>
 <h4 style="margin-top:16px">Drag &amp; Drop</h4>
 <table>
   <tr><th>Drop a…</th><th>Action</th></tr>
-  <tr><td><code>.json</code> file</td><td>Loads configuration into Properties dock</td></tr>
+  <tr><td><code>.json</code> file</td><td>Loads configuration into the Properties panel</td></tr>
   <tr><td>Folder</td><td>Scans for slide images and loads into Project</td></tr>
 </table>
 </div>
@@ -1559,12 +1634,21 @@ Hover any setting for a plain-language explanation. <strong>Advanced Settings (o
 python -c "import torch; print(torch.cuda.is_available())"</code></pre>
 
 <h4 style="margin-top:16px">"SimpleElastix not found"</h4>
-<p>Without SimpleElastix, only rigid registration works. Non-rigid uses OpticalFlowWarper as an alternative.</p>
+<p>The Properties panel shows the banner "SimpleElastix not found. Only Rigid Registration is available." and the <strong>Fix tissue warping (non-rigid)</strong> box is unticked and greyed out. Rigid registration still works. Install SimpleITK with Elastix support and restart to enable non-rigid.</p>
+
+<h4 style="margin-top:16px">"No Slides Found", or a greyed-out Run Registration</h4>
+<p>Only files directly inside the chosen folder are scanned, and only TIFF, OME-TIFF, SVS, NDPI, VSI, CZI, SCN, PNG and JPEG. Registration needs at least 2 slides; hover the greyed action to see its reason.</p>
+
+<h4 style="margin-top:16px">"Validation Failed" before a run</h4>
+<p>The pre-run check blocks on missing files, an output folder that is not writable, an output path that is a file, or less than 10 GB free. It only warns on low space (under ~3x the input size) and on slides over 5 GB.</p>
+
+<h4 style="margin-top:16px">Where is the log?</h4>
+<p><code>logs/valis_workstation.log</code> in the application folder; the same lines scroll in the Status panel, and <strong>Tools → Export Session Bundle…</strong> zips it up.</p>
 
 <h4 style="margin-top:16px">Out of memory</h4>
 <ul>
-  <li>Reduce Working resolution and Pyramid levels</li>
-  <li>Lower tile cache in Preferences</li>
+  <li>Reduce Working resolution</li>
+  <li>Lower Max Thumbnail Cache and Parallel Thumbnail Workers in Preferences</li>
   <li>Monitor via Help → Performance Statistics → Memory tab</li>
 </ul>
 
@@ -1576,13 +1660,13 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
 
 
 <!-- ╔═══════════════════════════════════════════════════════════════════╗
-     ║              TAB 3 — API REFERENCE                               ║
+     ║              TAB 3 - API REFERENCE                               ║
      ╚═══════════════════════════════════════════════════════════════════╝ -->
 <div class="tab-content" id="tab-api">
 
 <!-- ─── VALIS CLASS ──────────────────────────────────────────── -->
 <span class="section-anchor" id="valis-class"></span>
-<h2>Valis Class — Main Orchestrator</h2>
+<h2>Valis Class - Main Orchestrator</h2>
 <hr>
 <div class="card">
 <p>The <code>Valis</code> class in <code>valis.registration</code> is the primary entry point for all registration operations.</p>
@@ -1626,8 +1710,8 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
 <table>
   <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
   <tr><td><code>register()</code></td><td>rigid_reg, non_rigid_reg, summary_df</td><td>Run full registration pipeline</td></tr>
-  <tr><td><code>register_micro()</code></td><td>—</td><td>High-resolution refinement pass</td></tr>
-  <tr><td><code>warp_and_save_slides()</code></td><td>—</td><td>Warp at full resolution and save OME-TIFF</td></tr>
+  <tr><td><code>register_micro()</code></td><td>-</td><td>High-resolution refinement pass</td></tr>
+  <tr><td><code>warp_and_save_slides()</code></td><td>-</td><td>Warp at full resolution and save OME-TIFF</td></tr>
   <tr><td><code>warp_and_merge_slides()</code></td><td>merged_img</td><td>Merge into multi-channel composite</td></tr>
   <tr><td><code>measure_error()</code></td><td>summary_df</td><td>Recompute alignment error metrics</td></tr>
   <tr><td><code>get_slide(name)</code></td><td>Slide</td><td>Return Slide object by filename</td></tr>
@@ -1659,7 +1743,7 @@ print(error_df[["filename", "rigid_D", "non_rigid_D"]])</code></pre>
 
 <!-- ─── SLIDE CLASS ──────────────────────────────────────────── -->
 <span class="section-anchor" id="slide-class"></span>
-<h2>Slide Class — Per-Image Operations</h2>
+<h2>Slide Class - Per-Image Operations</h2>
 <hr>
 <div class="card">
 <p>Each loaded image becomes a <code>Slide</code> object. After registration, you can warp images, points, and annotations.</p>
@@ -1738,9 +1822,9 @@ SuperPointFD (standalone, PyTorch)
 
 <h4 style="margin-top:14px">Key Parameters</h4>
 <ul>
-  <li><code>MAX_FEATURES = 7500</code> — maximum keypoints per image</li>
-  <li><code>detect_and_compute(image, mask)</code> — returns keypoints + descriptors</li>
-  <li><code>rgb=False</code> — whether detector expects RGB input</li>
+  <li><code>MAX_FEATURES = 7500</code> - maximum keypoints per image</li>
+  <li><code>detect_and_compute(image, mask)</code> - returns keypoints + descriptors</li>
+  <li><code>rgb=False</code> - whether detector expects RGB input</li>
 </ul>
 </div>
 
@@ -1787,9 +1871,9 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
 
 <h4 style="margin-top:14px">Serial Registration Strategies</h4>
 <ul>
-  <li><code>register_serial()</code> — Register toward center of the stack</li>
-  <li><code>register_to_ref()</code> — Register each image directly to reference</li>
-  <li><code>register_groupwise()</code> — All images simultaneously</li>
+  <li><code>register_serial()</code> - Register toward center of the stack</li>
+  <li><code>register_to_ref()</code> - Register each image directly to reference</li>
+  <li><code>register_groupwise()</code> - All images simultaneously</li>
 </ul>
 </div>
 
@@ -1802,9 +1886,9 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
 <table>
   <tr><th>Optimizer</th><th>Cost Function</th><th>Requirements</th></tr>
   <tr><td><code>AffineOptimizerMattesMI</code></td><td>Mattes Mutual Information</td><td>SimpleITK</td></tr>
-  <tr><td><code>AffineOptimizerRMI</code></td><td>Regional Mutual Information</td><td>—</td></tr>
-  <tr><td><code>AffineOptimizerDisplacement</code></td><td>Mean Squared Error</td><td>—</td></tr>
-  <tr><td><code>AffineOptimizerKNN</code></td><td>KNN entropy</td><td>—</td></tr>
+  <tr><td><code>AffineOptimizerRMI</code></td><td>Regional Mutual Information</td><td>-</td></tr>
+  <tr><td><code>AffineOptimizerDisplacement</code></td><td>Mean Squared Error</td><td>-</td></tr>
+  <tr><td><code>AffineOptimizerKNN</code></td><td>KNN entropy</td><td>-</td></tr>
 </table>
 <p style="margin-top:8px">Common parameters: <code>nlevels=1</code>, <code>nbins=256</code>, <code>optimization="Powell"</code>, <code>transformation="EuclideanTransform"</code>. Uses Gaussian pyramid for multi-resolution optimization.</p>
 </div>
@@ -1827,8 +1911,8 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
   <tr><td><code>ColorDeconvolver</code></td><td>Brightfield</td><td><code>cspace="JzAzBz", method="similarity"</code></td></tr>
   <tr><td><code>HEDeconvolution</code></td><td>H&amp;E stains</td><td><code>stain="hem", Io=240</code></td></tr>
   <tr><td><code>StainFlattener</code></td><td>Brightfield</td><td><code>n_colors=100, q=95</code></td></tr>
-  <tr><td><code>Gray</code></td><td>Any</td><td>—</td></tr>
-  <tr><td><code>Luminosity</code></td><td>General</td><td>—</td></tr>
+  <tr><td><code>Gray</code></td><td>Any</td><td>-</td></tr>
+  <tr><td><code>Luminosity</code></td><td>General</td><td>-</td></tr>
   <tr><td><code>BgColorDistance</code></td><td>General</td><td><code>brightness_q=0.99</code></td></tr>
 </table>
 
@@ -1912,12 +1996,12 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
   <rect x="285" y="40" width="70" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="320" y="60" text-anchor="middle" fill="#1e40af" font-size="8" font-weight="600">Preview</text>
   <rect x="365" y="40" width="60" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="395" y="60" text-anchor="middle" fill="#1e40af" font-size="8" font-weight="600">Status</text>
   <rect x="435" y="40" width="60" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="465" y="60" text-anchor="middle" fill="#1e40af" font-size="8" font-weight="600">Layers</text>
-  <rect x="505" y="40" width="115" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="562" y="60" text-anchor="middle" fill="#1e40af" font-size="8" font-weight="600">9 Dialogs</text>
+  <rect x="505" y="40" width="115" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="562" y="60" text-anchor="middle" fill="#1e40af" font-size="8" font-weight="600">13 Dialogs</text>
   <rect x="630" y="40" width="80" height="40" rx="5" fill="#e0e7ff" stroke="#a5b4fc"/><text x="670" y="60" text-anchor="middle" fill="#3730a3" font-size="8" font-weight="600">Napari</text>
   <!-- Data Layer -->
   <rect x="10" y="108" width="720" height="52" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5" filter="url(#gs2)"/>
   <text x="370" y="128" text-anchor="middle" fill="#92400e" font-size="11" font-weight="700">Data &amp; Models</text>
-  <rect x="120" y="136" width="100" height="18" rx="4" fill="#fde68a" stroke="#fbbf24"/><text x="170" y="149" text-anchor="middle" fill="#92400e" font-size="8">Config (18 fields)</text>
+  <rect x="120" y="136" width="100" height="18" rx="4" fill="#fde68a" stroke="#fbbf24"/><text x="170" y="149" text-anchor="middle" fill="#92400e" font-size="8">Config (23 fields)</text>
   <rect x="260" y="136" width="100" height="18" rx="4" fill="#fde68a" stroke="#fbbf24"/><text x="310" y="149" text-anchor="middle" fill="#92400e" font-size="8">Constants</text>
   <rect x="400" y="136" width="100" height="18" rx="4" fill="#fde68a" stroke="#fbbf24"/><text x="450" y="149" text-anchor="middle" fill="#92400e" font-size="8">Validation</text>
   <rect x="540" y="136" width="100" height="18" rx="4" fill="#fde68a" stroke="#fbbf24"/><text x="590" y="149" text-anchor="middle" fill="#92400e" font-size="8">QSettings</text>
@@ -1951,16 +2035,17 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
   <line x1="370" y1="230" x2="370" y2="246" stroke="#475569" stroke-width="1.8" marker-end="url(#ar4)"/>
 </svg>
 </div>
-<p class="caption">Figure 5 — Four-layer GUI architecture: GUI → Data → Services → Core Library</p>
+<p class="caption">Figure 5 - Four-layer GUI architecture: GUI → Data → Services → Core Library</p>
 
 <h4 style="margin-top:16px">Worker Threading Model</h4>
 <p>Registration runs in a separate <code>QThread</code> via <code>moveToThread()</code>:</p>
 <table>
   <tr><th>Signal</th><th>Type</th><th>Purpose</th></tr>
   <tr><td><code>started</code></td><td>Signal()</td><td>Worker begins execution</td></tr>
-  <tr><td><code>progress</code></td><td>Signal(int)</td><td>0–100% updates</td></tr>
+  <tr><td><code>progress</code></td><td>Signal(int)</td><td>0-100% updates</td></tr>
+  <tr><td><code>stage_changed</code></td><td>Signal(str)</td><td>Stage label for the Status panel</td></tr>
   <tr><td><code>finished</code></td><td>Signal(dict)</td><td>Success with result dict</td></tr>
-  <tr><td><code>failed</code></td><td>Signal(str)</td><td>Error message</td></tr>
+  <tr><td><code>failed</code></td><td>Signal(str, str)</td><td>Error message and technical details</td></tr>
   <tr><td><code>cancelled</code></td><td>Signal()</td><td>User cancelled</td></tr>
 </table>
 </div>
@@ -1971,26 +2056,32 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
 <hr>
 <div class="card">
 <table>
-  <tr><th>Config Field</th><th>Type</th><th>Default</th><th>Range</th><th>Widget</th><th>Section</th></tr>
-  <tr><td><code>project_name</code></td><td>str</td><td>"New Project"</td><td>—</td><td>QLineEdit</td><td>Basic</td></tr>
-  <tr><td><code>rigid_registration</code></td><td>bool</td><td>True</td><td>—</td><td>QCheckBox</td><td>Basic</td></tr>
-  <tr><td><code>non_rigid_registration</code></td><td>bool</td><td>True</td><td>—</td><td>QCheckBox</td><td>Basic</td></tr>
-  <tr><td><code>max_image_size</code></td><td>int</td><td>2048</td><td>256–16384</td><td>QSpinBox</td><td>Basic</td></tr>
-  <tr><td><code>use_gpu</code></td><td>bool</td><td>False</td><td>—</td><td>QCheckBox</td><td>Basic</td></tr>
-  <tr><td><code>feature_detector</code></td><td>str</td><td>"vgg"</td><td>8 options</td><td>QComboBox</td><td>Advanced</td></tr>
-  <tr><td><code>transformer_type</code></td><td>str</td><td>"similarity"</td><td>3 options</td><td>QComboBox</td><td>Advanced</td></tr>
-  <tr><td><code>reference_slide</code></td><td>str|None</td><td>None</td><td>dynamic</td><td>QComboBox</td><td>Advanced</td></tr>
-  <tr><td><code>crop_mode</code></td><td>str</td><td>"reference"</td><td>4 options</td><td>QComboBox</td><td>Advanced</td></tr>
-  <tr><td><code>use_masks</code></td><td>bool</td><td>False</td><td>—</td><td>QCheckBox</td><td>Advanced</td></tr>
-  <tr><td><code>denoise</code></td><td>bool</td><td>False</td><td>—</td><td>QCheckBox</td><td>Advanced</td></tr>
-  <tr><td><code>imgs_ordered</code></td><td>bool</td><td>False</td><td>—</td><td>QCheckBox</td><td>Advanced</td></tr>
-  <tr><td><code>micro_registration</code></td><td>bool</td><td>False</td><td>—</td><td>QCheckBox</td><td>Advanced</td></tr>
-  <tr><td><code>micro_max_image_size</code></td><td>int</td><td>4096</td><td>2048–32768</td><td>QSpinBox</td><td>Advanced</td></tr>
-  <tr><td><code>compression_level</code></td><td>int</td><td>1</td><td>0–9</td><td>QSpinBox</td><td>Output</td></tr>
-  <tr><td><code>pyramid_levels</code></td><td>int</td><td>4</td><td>0–10</td><td>QSpinBox</td><td>Output</td></tr>
-  <tr><td><code>tile_size</code></td><td>int</td><td>512</td><td>128–4096</td><td>QSpinBox</td><td>Output</td></tr>
-  <tr><td><code>image_quality</code></td><td>int</td><td>95</td><td>1–100</td><td>QSpinBox</td><td>Output</td></tr>
+  <tr><th>Config Field</th><th>Type</th><th>Default</th><th>Range</th><th>Widget (label)</th><th>Section</th></tr>
+  <tr><td><code>project_name</code></td><td>str</td><td>"New Project"</td><td>not empty; no <code>&lt; &gt; : " / \ | ? *</code></td><td>QLineEdit (Project name)</td><td>Basic</td></tr>
+  <tr><td><code>rigid_registration</code></td><td>bool</td><td>True</td><td>-</td><td>QCheckBox (Align slides (rigid))</td><td>Basic</td></tr>
+  <tr><td><code>non_rigid_registration</code></td><td>bool</td><td>True</td><td>-</td><td>QCheckBox (Fix tissue warping (non-rigid))</td><td>Basic</td></tr>
+  <tr><td><code>max_image_size</code></td><td>int</td><td>2048</td><td>64-32768</td><td>QSpinBox (Working resolution)</td><td>Basic</td></tr>
+  <tr><td><code>use_gpu</code></td><td>bool</td><td>False</td><td>-</td><td>QCheckBox (Use GPU)</td><td>Basic</td></tr>
+  <tr><td><code>feature_detector</code></td><td>str</td><td>"vgg"</td><td>8 options</td><td>QComboBox (Feature detector)</td><td>Advanced</td></tr>
+  <tr><td><code>transformer_type</code></td><td>str</td><td>"similarity"</td><td>3 options</td><td>QComboBox (Rigid transform)</td><td>Advanced</td></tr>
+  <tr><td><code>use_color_features</code></td><td>bool</td><td>False</td><td>-</td><td>QCheckBox (Use color features (RGB))</td><td>Advanced</td></tr>
+  <tr><td><code>reference_slide</code></td><td>str|None</td><td>None (Auto-detect)</td><td>dynamic</td><td>QComboBox (Reference slide)</td><td>Advanced</td></tr>
+  <tr><td><code>crop_mode</code></td><td>str</td><td>"reference"</td><td>4 options</td><td>QComboBox (Crop mode)</td><td>Advanced</td></tr>
+  <tr><td><code>crop_for_rigid_reg</code></td><td>bool</td><td>True</td><td>-</td><td>QCheckBox (Pre-crop tissue)</td><td>Advanced</td></tr>
+  <tr><td><code>use_masks</code></td><td>bool</td><td>False</td><td>-</td><td>QCheckBox (Use tissue masks)</td><td>Advanced</td></tr>
+  <tr><td><code>denoise</code></td><td>bool</td><td>False</td><td>-</td><td>QCheckBox (Denoise images)</td><td>Advanced</td></tr>
+  <tr><td><code>imgs_ordered</code></td><td>bool</td><td>False</td><td>-</td><td>QCheckBox (Slides already in order)</td><td>Advanced</td></tr>
+  <tr><td><code>non_rigid_method</code></td><td>str</td><td>"optical_flow"</td><td>optical_flow | raft</td><td>QComboBox (Non-rigid method)</td><td>Advanced</td></tr>
+  <tr><td><code>micro_registration</code></td><td>bool</td><td>False</td><td>-</td><td>QCheckBox (Fine-detail pass (micro-reg.))</td><td>Advanced</td></tr>
+  <tr><td><code>micro_max_image_size</code></td><td>int</td><td>4096</td><td>512-65536</td><td>QSpinBox (Fine-detail resolution)</td><td>Advanced</td></tr>
+  <tr><td><code>image_format</code></td><td>str</td><td>"OME-TIFF"</td><td>OME-TIFF, TIFF, JPEG, PNG</td><td>QComboBox (Format)</td><td>Output</td></tr>
+  <tr><td><code>write_pyramid</code></td><td>bool</td><td>True</td><td>-</td><td>QCheckBox (Write image pyramid)</td><td>Output</td></tr>
+  <tr><td><code>compression_level</code></td><td>int</td><td>1</td><td>0-9</td><td>QSpinBox (Compression level)</td><td>Output</td></tr>
+  <tr><td><code>pyramid_levels</code></td><td>int</td><td>4</td><td>0-10</td><td>QSpinBox (Pyramid levels)</td><td>Output</td></tr>
+  <tr><td><code>tile_size</code></td><td>int</td><td>512</td><td>128-4096</td><td>QSpinBox (Tile size)</td><td>Output</td></tr>
+  <tr><td><code>image_quality</code></td><td>int</td><td>95</td><td>1-100</td><td>QSpinBox (JPEG quality)</td><td>Output</td></tr>
 </table>
+<p style="font-size:.85rem;color:#64748b;margin-top:8px">Out-of-range values are clamped to the nearest limit. Output format, JPEG quality and the pyramid level count are stored but not applied by VALIS (see <a href="#output-formats">Output &amp; File Formats</a>).</p>
 </div>
 
 <!-- ─── KEYBOARD SHORTCUTS ───────────────────────────────────── -->
@@ -1999,19 +2090,23 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
 <hr>
 <div class="card">
 <table>
-  <tr><th style="width:160px">Shortcut</th><th>Action</th><th>Menu</th></tr>
+  <tr><th style="width:200px">Shortcut</th><th>Action</th><th>Menu / Where</th></tr>
   <tr><td><span class="kbd">Ctrl+O</span></td><td>Open Slide Folder</td><td>File</td></tr>
+  <tr><td><span class="kbd">Ctrl+Shift+O</span></td><td>Open Most Recent Folder</td><td>File</td></tr>
+  <tr><td><span class="kbd">Ctrl+1</span> … <span class="kbd">Ctrl+9</span></td><td>Open the 1st-9th folder in Recent Folders</td><td>File → Recent Folders</td></tr>
   <tr><td><span class="kbd">Ctrl+R</span>, <span class="kbd">F5</span></td><td>Run Registration</td><td>File</td></tr>
-  <tr><td><span class="kbd">Esc</span></td><td>Cancel Registration</td><td>File</td></tr>
+  <tr><td><span class="kbd">Esc</span></td><td>Cancel Registration (only during a run)</td><td>File</td></tr>
+  <tr><td><span class="kbd">Ctrl+,</span></td><td>Preferences</td><td>File</td></tr>
   <tr><td><span class="kbd">Ctrl+[</span></td><td>Toggle Left Sidebar</td><td>View</td></tr>
   <tr><td><span class="kbd">Ctrl+]</span></td><td>Toggle Right Sidebar</td><td>View</td></tr>
   <tr><td><span class="kbd">Ctrl+Shift+L</span></td><td>Reset Layout</td><td>View</td></tr>
   <tr><td><span class="kbd">Ctrl+Shift+\</span></td><td>Toggle Focus Mode</td><td>View</td></tr>
-  <tr><td><span class="kbd">Ctrl+,</span></td><td>Preferences</td><td>File</td></tr>
   <tr><td><span class="kbd">F1</span></td><td>Quick Tutorial</td><td>Help</td></tr>
   <tr><td><span class="kbd">Ctrl+Shift+P</span></td><td>Performance Statistics</td><td>Help</td></tr>
-  <tr><td><span class="kbd">Ctrl+Q</span></td><td>Quit Application</td><td>File</td></tr>
+  <tr><td><span class="kbd">Del</span></td><td>Remove the selected slides</td><td>Project list</td></tr>
+  <tr><td><span class="kbd">Ctrl+A</span></td><td>Select all slides</td><td>Project list</td></tr>
 </table>
+<p style="font-size:.85rem;color:#64748b;margin-top:8px">The window's own close button (or your OS shortcut) quits the app; there is no separate Quit action in the File menu.</p>
 </div>
 
 <!-- ─── GLOSSARY ─────────────────────────────────────────────── -->
@@ -2020,6 +2115,10 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
 <hr>
 <div class="card">
 <dl class="glossary">
+  <dt>Working resolution</dt><dd>The longest side, in pixels, of the reduced copy of each slide that is used for aligning (Config field <code>max_image_size</code>). The full-size slide is still what gets saved.</dd>
+  <dt>Reference slide</dt><dd>The slide all others are aligned to. Auto-detect picks the middle image.</dd>
+  <dt>Preset</dt><dd>A named set of Properties values saved in the app (Properties → Presets).</dd>
+  <dt>Session bundle</dt><dd>A ZIP with the session summary and log, made by Tools → Export Session Bundle….</dd>
   <dt>Registration</dt><dd>The process of aligning two or more images so corresponding structures overlap.</dd>
   <dt>Rigid registration</dt><dd>Alignment using only rotation, scaling, and translation. Shape is preserved.</dd>
   <dt>Non-rigid / elastic registration</dt><dd>Alignment that allows local deformation (stretching, warping) of the tissue.</dd>
@@ -2027,7 +2126,7 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
   <dt>Feature matching</dt><dd>Finding corresponding keypoints between two images.</dd>
   <dt>TRE (Target Registration Error)</dt><dd>The distance between corresponding points after registration. Lower = better.</dd>
   <dt>rTRE (relative TRE)</dt><dd>TRE normalized by image size for cross-study comparison.</dd>
-  <dt>OME-TIFF</dt><dd>Open Microscopy Environment TIFF — a standardized format for microscopy images.</dd>
+  <dt>OME-TIFF</dt><dd>Open Microscopy Environment TIFF - a standardized format for microscopy images.</dd>
   <dt>Pyramid / multi-resolution</dt><dd>An image stored at multiple resolutions for efficient viewing at different zoom levels.</dd>
   <dt>Displacement field</dt><dd>A 2D grid of (dx, dy) vectors describing how each pixel should move during non-rigid warp.</dd>
   <dt>Optical flow</dt><dd>A computer vision technique estimating pixel-level motion between frames.</dd>
@@ -2035,8 +2134,8 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
   <dt>Similarity transform</dt><dd>A subset of affine: rotation + uniform scaling + translation.</dd>
   <dt>Brightfield microscopy</dt><dd>Standard transmitted-light microscopy (H&amp;E, IHC stains).</dd>
   <dt>Fluorescence microscopy</dt><dd>Imaging using fluorescent markers excited by specific wavelengths.</dd>
-  <dt>CyCIF</dt><dd>Cyclic Immunofluorescence — iterative staining and imaging of the same tissue.</dd>
-  <dt>CODEX</dt><dd>CO-Detection by indEXing — highly multiplexed tissue imaging.</dd>
+  <dt>CyCIF</dt><dd>Cyclic Immunofluorescence - iterative staining and imaging of the same tissue.</dd>
+  <dt>CODEX</dt><dd>CO-Detection by indEXing - highly multiplexed tissue imaging.</dd>
   <dt>GeoJSON</dt><dd>A JSON-based format for encoding geographic/spatial data. Used for slide annotations.</dd>
   <dt>Bio-Formats</dt><dd>A Java library for reading 300+ microscopy file formats.</dd>
   <dt>pyvips</dt><dd>Python bindings for libvips, a fast image processing library efficient with large images.</dd>
@@ -2053,16 +2152,16 @@ NonRigidTileRegistrar(tile_wh=512, tile_buffer=100)</code></pre>
 
 <!-- ═══════════════════════════════════════════════════ FOOTER ═══ -->
 <footer>
-  <p><strong>VALIS Workstation — Complete Manual</strong> — Version 1.4</p>
+  <p><strong>VALIS Workstation - Complete Manual</strong> - Version 1.5</p>
   <p>Built on the <a href="https://github.com/MathOnco/valis">VALIS library</a> (Nature Communications) by Chandler Gatenbee · MIT License</p>
-  <p style="margin-top:6px;font-size:.78rem">Standalone HTML document — no external dependencies required.</p>
+  <p style="margin-top:6px;font-size:.78rem">Standalone HTML document - no external dependencies required.</p>
 </footer>
 
 </div><!-- .main -->
 </div><!-- .page -->
 
 <!-- ═══════════════════════════════════════════════════════════════
-     JAVASCRIPT — Tab switching, Search, Accordion, Active nav
+     JAVASCRIPT - Tab switching, Search, Accordion, Active nav
      ═══════════════════════════════════════════════════════════════ -->
 <script>
 // ─── TAB SWITCHING ─────────────────────────────────────────────

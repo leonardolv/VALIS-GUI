@@ -660,7 +660,7 @@ footer {
             <span class="badge" style="background:rgba(16,185,129,.25); border-color:rgba(16,185,129,.4);">NEW: In-app Quick Tutorial (F1)</span>
           </div>
         </div>
-        <img src="_images/banner.gif" alt="VALIS banner showing registration context" loading="eager">
+        <img src="docs/_images/banner.gif" alt="VALIS banner showing registration context" loading="eager">
       </div>
     </header>
 
@@ -668,6 +668,7 @@ footer {
       <a class="jump-link" href="#first-run">Fast path registration</a>
       <a class="jump-link" href="#quality">Quality checks</a>
       <a class="jump-link" href="#tools">All GUI actions</a>
+      <a class="jump-link" href="#recipes">Worked recipes</a>
       <a class="jump-link" href="#cookbook">Settings cookbook</a>
       <a class="jump-link" href="#troubleshooting">Troubleshooting</a>
     </div>
@@ -675,7 +676,7 @@ footer {
     <section class="callouts">
       <article class="callout">
         <h3>What you will produce</h3>
-        <p>Registered slides in <code>output/&lt;project_name&gt;/registered/</code> plus <code>summary.csv</code> for quality metrics.</p>
+        <p>One aligned OME-TIFF per slide in <code>output/&lt;project_name&gt;/registered/</code> plus <code>summary.csv</code> with the quality metrics, created inside the application folder.</p>
       </article>
       <article class="callout">
         <h3>Time estimate</h3>
@@ -683,20 +684,27 @@ footer {
       </article>
       <article class="callout">
         <h3>Best entry setting</h3>
-        <p>Start with <code>VGG</code>, <code>Align slides (rigid) ON</code>, <code>Fix tissue warping (non-rigid) ON</code>, <code>Working resolution = 2048</code>, then tune only if needed.</p>
+        <p>Keep the defaults: <code>Align slides (rigid)</code> ON, <code>Fix tissue warping (non-rigid)</code> ON, <code>Working resolution</code> 2048 px, feature detector <code>VGG</code> (Advanced Settings). Tune only if the quality check asks for it.</p>
       </article>
     </section>
 
     <section id="goals" class="section">
       <h2>1. Goals and Outcomes</h2>
-      <p>By the end of this tutorial, you should be able to load a slide folder, run registration, review quality, and use post-registration tools (Blink, Quality Report, Warp Annotations, Save Options, Export ROI Crop, Merge Slides, and Session Bundle export).</p>
+      <p>By the end of this tutorial, you should be able to:</p>
+      <ul>
+        <li>load a folder of slides and check them in the Project and Slide Preview tabs;</li>
+        <li>run a rigid + non-rigid registration and understand what each Stage in the Status panel means;</li>
+        <li>judge the result with Blink, Analysis Plot and the Quality Report, and decide whether to accept or rerun;</li>
+        <li>use the post-registration tools: Export ROI Crop, Warp Annotations, Merge Slides, Save Options and Export Session Bundle;</li>
+        <li>tune Preferences and keep your settings reproducible with presets and saved configurations.</li>
+      </ul>
       <div class="grid-2">
         <figure class="figure">
-          <img src="_images/pipeline.png" alt="VALIS registration pipeline diagram" loading="lazy">
+          <img src="docs/_images/pipeline.png" alt="VALIS registration pipeline diagram" loading="lazy">
           <figcaption>Pipeline overview from import to saved registered outputs.</figcaption>
         </figure>
         <figure class="figure">
-          <img src="_images/valis_logo_black_no_bg.png" alt="VALIS logo" loading="lazy" style="object-fit: contain; background: #eef6ff;">
+          <img src="docs/_images/valis_logo_black_no_bg.png" alt="VALIS logo" loading="lazy" style="object-fit: contain; background: #eef6ff;">
           <figcaption>VALIS Workstation is the GUI front-end for the VALIS registration engine.</figcaption>
         </figure>
       </div>
@@ -730,21 +738,21 @@ footer {
           <span class="track-chip">Track 3 - ROI Workflow</span>
           <h3>Export aligned ROI crops</h3>
           <ul>
-            <li>Set Save Options to WSI-compatible format</li>
-            <li>Export batch ROI crops from registered slides</li>
+            <li>Find the region's X / Y / Width / Height</li>
+            <li>Export the same crop from every registered slide</li>
             <li>Reopen outputs for animation or review</li>
           </ul>
-          <a class="cta" href="#tools">Go to Track 3</a>
+          <a class="cta" href="#recipe-roi">Go to Track 3</a>
         </article>
         <article class="track-card">
           <span class="track-chip">Track 4 - Multiplex Merge</span>
           <h3>Build merged multi-channel outputs</h3>
           <ul>
-            <li>Map channels and assign colors</li>
-            <li>Tune overlap/normalization options</li>
+            <li>Map channels, names and colors</li>
+            <li>Choose overlap handling and normalization</li>
             <li>Export a collaboration-ready merged file</li>
           </ul>
-          <a class="cta" href="#cookbook">Go to Track 4</a>
+          <a class="cta" href="#recipe-merge">Go to Track 4</a>
         </article>
       </div>
       <div class="note"><strong>Recommendation:</strong> complete Tracks 1 and 2 before moving to ROI export or merge workflows.</div>
@@ -752,6 +760,7 @@ footer {
 
     <section id="preflight" class="section">
       <h2>3. Preflight Checklist</h2>
+      <p>Five minutes here saves a failed run later. Tick each row before you open the app.</p>
       <table class="preflight">
         <tr>
           <th>Check</th>
@@ -770,16 +779,22 @@ footer {
         </tr>
         <tr>
           <td>Disk free space</td>
-          <td>At least 2-3x total input size</td>
-          <td>Registered outputs and intermediates can be large.</td>
+          <td>At least <strong>10 GB</strong> free where the app lives; ideally 2-3x the total input size</td>
+          <td>Below 10 GB the app refuses to start a run ("Insufficient disk space"). Below roughly 3x the input size it warns you first. Results are written to <code>output/&lt;project name&gt;/</code> inside the application folder.</td>
         </tr>
         <tr>
           <td>GPU (optional)</td>
           <td>CUDA + PyTorch CUDA build</td>
-          <td>Improves speed for SuperPoint/DISK/DeDoDe detectors.</td>
+          <td>Speeds up the SuperPoint, DISK and DeDoDe detectors. Without it, <em>Use GPU</em> is greyed out and the app works fine on CPU.</td>
+        </tr>
+        <tr>
+          <td>Slide files</td>
+          <td>Two or more files of type TIFF / OME-TIFF, SVS, NDPI, VSI, CZI, SCN, PNG or JPEG</td>
+          <td>These are the extensions the folder scan recognises. Registration compares slides with each other, so a single slide cannot be registered.</td>
         </tr>
       </table>
-      <div class="note"><strong>Data prep:</strong> keep one case per folder and avoid mixing unrelated projects in the same input directory.</div>
+      <div class="note"><strong>Data prep:</strong> keep one case per folder. Only the files directly inside the folder you pick are loaded - sub-folders are <em>not</em> scanned - and they are listed alphabetically by file name.</div>
+      <div class="tip"><strong>Name your files in section order.</strong> If your files are called <code>case7_HE.svs</code>, <code>case7_Ki67.svs</code> and so on, the alphabetical order may not match the physical order of the sections. You can drag rows in the Project list to fix it later (section 6, step 3).</div>
     </section>
 
     <section id="install" class="section">
@@ -788,108 +803,256 @@ footer {
       <pre><code>git clone https://github.com/leonardolv/VALIS-GUI.git
 cd VALIS-GUI
 python -m venv .venv
-.venv\Scripts\Activate.ps1   # Windows
+.venv\Scripts\Activate.ps1      # Windows (PowerShell)
+# source .venv/bin/activate     # macOS / Linux
 pip install -r requirements.txt
 pip install -e .</code></pre>
 
       <h3>Run the app</h3>
       <pre><code>python run_valis_workstation.py</code></pre>
+      <p>A splash screen reports what is loading (Java virtual machine, SimpleElastix check, user interface) and then the main window opens.</p>
 
       <h3>Quick health checks</h3>
       <pre><code>python -c "import valis, napari; print('Core packages OK')"
 python -c "import torch; print(torch.cuda.is_available())"</code></pre>
 
-      <div class="tip"><strong>If the app launches but viewer is missing:</strong> install napari with <code>pip install "napari[all]"</code>, then restart.</div>
-    </section>
+      <div class="tip"><strong>If the app launches but the viewer is missing:</strong> the centre of the window shows a Welcome page with a small note "Image viewer (napari) is not installed". Registration still works, but results cannot be previewed in the window and <strong>Tools -&gt; Blink</strong> is unavailable. Install napari with <code>pip install "napari[all]"</code>, then restart.</div>
 
-    <section id="ui-map" class="section">
-      <h2>5. UI Map</h2>
-      <p>The interface uses a <strong>nested resizable splitter layout</strong> with five areas: Project, Slide Preview, central Napari viewer, Properties/Layers, and Status/Logs. All panels are separated by <strong>grip handles</strong> &mdash; dotted bars that highlight on hover &mdash; which you can drag to resize any panel.</p>
-      <p>The left sidebar has <strong>Project</strong> and <strong>Slide Preview</strong> tabs. The right sidebar has <strong>Properties</strong> and <strong>Layers</strong> tabs. The center holds the Napari viewer. The bottom bar shows progress and logs.</p>
-      <div class="grid-2">
-        <figure class="figure">
-          <img src="_images/merge_ome_tiff.png" alt="Merged OME-TIFF visualization example" loading="lazy">
-          <figcaption>Example downstream result: merged channels from registered slides.</figcaption>
-        </figure>
-        <figure class="figure">
-          <img src="_images/annotation_transfer.png" alt="Annotation transfer visual example" loading="lazy">
-          <figcaption>Annotation transfer concept used by the Warp Annotations tool.</figcaption>
-        </figure>
-      </div>
-      <div class="note"><strong>Layout keyboard shortcuts:</strong> <span class="kbd">Ctrl+O</span> open folder, <span class="kbd">Ctrl+R</span> / <span class="kbd">F5</span> run registration, <span class="kbd">Esc</span> cancel registration, <span class="kbd">Ctrl+Shift+P</span> performance stats, <span class="kbd">Ctrl+[</span> toggle left sidebar, <span class="kbd">Ctrl+]</span> toggle right sidebar, <span class="kbd">Ctrl+Shift+L</span> reset layout, <span class="kbd">Ctrl+Shift+\</span> toggle focus mode.</div>
-    </section>
-
-    <section id="first-run" class="section">
-      <h2>6. First Registration (Hands-On)</h2>
-      <p>Use the bundled example dataset to get a known-good first result:</p>
-      <pre><code>examples/example_datasets/ihc/</code></pre>
-
+      <h3>First launch only: the setup wizard</h3>
+      <p>The very first time you start the app, a short <strong>VALIS Workstation Setup</strong> wizard appears. It has three pages:</p>
       <ol class="timeline">
         <li>
           <span class="step">1</span>
           <div>
-            <div class="label">Open slide folder</div>
-            <p>On first launch, click <strong>Open Slide Folder…</strong> on the Welcome page (or use <strong>File -> Open Slide Folder</strong>, <span class="kbd">Ctrl+O</span>), and select <code>examples/example_datasets/ihc</code>. The strip above the canvas (<em>1. Load -> 2. Configure -> 3. Register -> 4. Review</em>) shows where you are and what to do next.</p>
-            <div class="outcome">You should see slides listed in Project and thumbnails in Slide Preview.</div>
+            <div class="label">Welcome</div>
+            <p>Summarises the four steps (Load, Configure, Register, Review). Click <strong>Next</strong>.</p>
           </div>
         </li>
         <li>
           <span class="step">2</span>
           <div>
-            <div class="label">Confirm baseline settings</div>
-            <p>Project name: <code>IHC_Tutorial</code>. Keep defaults: VGG, Similarity, <em>Align slides (rigid)</em> and <em>Fix tissue warping (non-rigid)</em> enabled, <em>Working resolution</em> 2048. Hover any setting for a plain-language explanation. Note that <strong>Run Registration</strong> is greyed out until 2 or more slides are loaded.</p>
-            <div class="outcome">This setup is stable and representative for first run validation.</div>
+            <div class="label">Default Settings</div>
+            <p>Choose a <strong>Default project name</strong> (results go in a folder with this name) and a <strong>Default output profile</strong>: <em>WSI Archive</em> (largest, for storage), <em>Fast Review</em> (smaller, quick to open) or <em>Publication</em> (high quality). Not sure? Keep the defaults - you can change both later in Properties.</p>
           </div>
         </li>
         <li>
           <span class="step">3</span>
           <div>
-            <div class="label">Run registration</div>
-            <p>Use <strong>File -> Run Registration</strong> or <span class="kbd">Ctrl+R</span>. Confirm in the dialog.</p>
-            <div class="outcome">Progress moves to 100%; registered layers appear in viewer when complete.</div>
+            <div class="label">Done</div>
+            <p>Leave <strong>Open Quick Tutorial when finished</strong> ticked if you want the 13-step in-app walkthrough, then click <strong>Finish</strong>. You can reopen it any time with <span class="kbd">F1</span>.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="ui-map" class="section">
+      <h2>5. UI Map</h2>
+      <p>The window is a set of resizable panels around a central canvas. Drag the dotted <strong>grip handles</strong> between panels to resize them; your layout is remembered between sessions, and <strong>View -&gt; Reset Layout</strong> restores the defaults.</p>
+      <table class="preflight">
+        <tr><th>Area</th><th>Where</th><th>What you do there</th></tr>
+        <tr><td><strong>Workflow strip</strong></td><td>Top of the centre</td><td>Shows <em>1. Load -&gt; 2. Configure -&gt; 3. Register -&gt; 4. Review</em>. The current step is highlighted and a hint line under it says what to do next. Hover a step for a tooltip.</td></tr>
+        <tr><td><strong>Project (N)</strong> tab</td><td>Left panel</td><td>The list of loaded slides. <em>Filter by filename...</em> box, drag rows to reorder, <strong>Remove Selected</strong> (<span class="kbd">Del</span>), <strong>Clear All</strong> (asks to confirm), <span class="kbd">Ctrl+A</span> selects all. The number in the tab title is the slide count.</td></tr>
+        <tr><td><strong>Slide Preview (N)</strong> tab</td><td>Left panel</td><td>Thumbnails of every slide. <em>Filter</em>, <em>Sort</em> (Name A-Z / Z-A), a <em>Size</em> slider (64-256 px) and <strong>Grid</strong> / <strong>List</strong> buttons. Hover a thumbnail for its metadata.</td></tr>
+        <tr><td><strong>Canvas</strong></td><td>Centre</td><td>The napari viewer, where registered slides appear. Scroll to zoom, drag to pan. Without napari you see the Welcome page instead.</td></tr>
+        <tr><td><strong>Properties</strong> tab</td><td>Right panel</td><td>Presets (Save / Load / Delete), the basic <em>Registration</em> settings, and two collapsed groups: <strong>Advanced Settings (optional)</strong> and <strong>Output Settings</strong>. Tick a group's title box to expand it.</td></tr>
+        <tr><td><strong>Layers</strong> tab</td><td>Right panel (needs napari)</td><td>One row per layer: a visibility tick box, name, opacity slider and colormap. Buttons: <em>Search</em>, <strong>Lock edits</strong>, <strong>Solo Selected</strong>, <strong>Reset Opacity</strong>, <strong>Show All</strong>.</td></tr>
+        <tr><td><strong>Status panel</strong></td><td>Bottom</td><td><em>Stage</em>, <em>Elapsed / ETA</em>, the progress bar, and <strong>Log Output</strong> with a filter box, <strong>Auto-scroll</strong>, <strong>Clear Log</strong>, <strong>Copy Log</strong> and the <strong>Cancel Registration</strong> button (visible during a run).</td></tr>
+        <tr><td><strong>Status bar</strong></td><td>Bottom edge</td><td>One-line messages. After a successful run an <strong>Open output folder</strong> button appears here.</td></tr>
+        <tr><td><strong>Toolbars</strong></td><td>Top</td><td><em>Quick Actions</em>: Open, Run, Cancel, Recent, Resume, Reset, Focus, Fit, Blink, Tutorial. A second <em>Results</em> toolbar (Blink, Analysis Plot, Quality Report, Warp Annotations, Export ROI Crop, Merge Slides) appears only after a run finishes.</td></tr>
+      </table>
+      <div class="grid-2">
+        <figure class="figure">
+          <img src="docs/_images/merge_ome_tiff.png" alt="Merged OME-TIFF visualization example" loading="lazy">
+          <figcaption>Example downstream result: merged channels from registered slides.</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="docs/_images/annotation_transfer.png" alt="Annotation transfer visual example" loading="lazy">
+          <figcaption>Annotation transfer concept used by the Warp Annotations tool.</figcaption>
+        </figure>
+      </div>
+      <h3>Keyboard shortcuts you will use most</h3>
+      <table class="preflight">
+        <tr><th>Keys</th><th>Action</th></tr>
+        <tr><td><span class="kbd">Ctrl+O</span></td><td>Open Slide Folder</td></tr>
+        <tr><td><span class="kbd">Ctrl+Shift+O</span></td><td>Open Most Recent Folder</td></tr>
+        <tr><td><span class="kbd">Ctrl+1</span> ... <span class="kbd">Ctrl+9</span></td><td>Open the 1st-9th entry of <strong>File -&gt; Recent Folders</strong></td></tr>
+        <tr><td><span class="kbd">Ctrl+R</span> or <span class="kbd">F5</span></td><td>Run Registration</td></tr>
+        <tr><td><span class="kbd">Esc</span></td><td>Cancel Registration (asks you to confirm)</td></tr>
+        <tr><td><span class="kbd">Ctrl+,</span></td><td>Preferences</td></tr>
+        <tr><td><span class="kbd">Ctrl+[</span> / <span class="kbd">Ctrl+]</span></td><td>Toggle left / right sidebar</td></tr>
+        <tr><td><span class="kbd">Ctrl+Shift+\</span></td><td>Toggle Focus Mode (hide both sidebars)</td></tr>
+        <tr><td><span class="kbd">Ctrl+Shift+L</span></td><td>Reset Layout</td></tr>
+        <tr><td><span class="kbd">F1</span></td><td>Quick Tutorial</td></tr>
+        <tr><td><span class="kbd">Ctrl+Shift+P</span></td><td>Performance Statistics</td></tr>
+      </table>
+    </section>
+
+    <section id="first-run" class="section">
+      <h2>6. First Registration (Hands-On)</h2>
+      <p>Use the bundled example dataset to get a known-good first result. It contains five IHC serial sections:</p>
+      <pre><code>examples/example_datasets/ihc/
+    ihc_1.ome.tiff  ihc_2.ome.tiff  ihc_3.ome.tiff  ihc_4.ome.tiff  ihc_5.ome.tiff</code></pre>
+      <p>Each step below says <strong>what to do</strong>, <strong>what you should see</strong>, and <strong>what to try if you do not</strong>.</p>
+
+      <ol class="timeline">
+        <li>
+          <span class="step">1</span>
+          <div>
+            <div class="label">Open the slide folder</div>
+            <p>Use any one of: the <strong>Open Slide Folder...</strong> button (Project tab, Quick Actions toolbar, or Welcome page), <strong>File -&gt; Open Slide Folder</strong> / <span class="kbd">Ctrl+O</span>, or drag the <code>ihc</code> folder onto the window. Pick <code>examples/example_datasets/ihc</code>.</p>
+            <div class="outcome">A loading overlay appears while thumbnails are generated. Then the tabs read <strong>Project (5)</strong> and <strong>Slide Preview (5)</strong>, the status bar says "Loaded 5 slides from ihc", and the workflow strip moves to <em>2. Configure</em>.</div>
+            <p><strong>If not:</strong> "No Slides Found" means the folder has no supported files directly inside it - pick the folder that contains the images, not its parent.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step">2</span>
+          <div>
+            <div class="label">Look at your slides</div>
+            <p>Switch to the <strong>Slide Preview</strong> tab. Use the Size slider and the Grid / List buttons to judge that the tissue is visible and nothing is blank or corrupt.</p>
+            <div class="outcome">Five thumbnails. Hovering one shows its file details.</div>
+          </div>
+        </li>
+        <li>
+          <span class="step">3</span>
+          <div>
+            <div class="label">Check the slide order</div>
+            <p>In the <strong>Project</strong> tab slides are listed alphabetically. For the example that is already the correct order, so leave it. For your own data, if the files are <em>not</em> in physical section order, either drag rows into order and tick <strong>Slides already in order</strong> (Advanced Settings), or leave that box unticked and let VALIS sort them by similarity.</p>
+            <div class="outcome">No change needed for the example dataset.</div>
           </div>
         </li>
         <li>
           <span class="step">4</span>
           <div>
+            <div class="label">Confirm the settings</div>
+            <p>In the <strong>Properties</strong> tab set <strong>Project name</strong> to <code>IHC_Tutorial</code> and leave everything else at its default:</p>
+            <table class="preflight">
+              <tr><th>Setting</th><th>Value</th><th>What it does</th></tr>
+              <tr><td>Align slides (rigid)</td><td>on</td><td>Rotates, shifts and scales each slide so the tissue lines up roughly.</td></tr>
+              <tr><td>Fix tissue warping (non-rigid)</td><td>on</td><td>Then bends each slide locally to correct deformation from sectioning. Greyed out, with a banner, if SimpleElastix is not installed.</td></tr>
+              <tr><td>Working resolution</td><td>2048 px</td><td>Longest side of the reduced copy used for aligning. Higher is more precise but slower.</td></tr>
+              <tr><td>Use GPU</td><td>off</td><td>Only useful with the deep-learning detectors; greyed out without CUDA.</td></tr>
+            </table>
+            <p>Hover any setting for a plain-language tooltip. The two groups below (<strong>Advanced Settings (optional)</strong>, <strong>Output Settings</strong>) stay collapsed until you tick their title box; you do not need them for this run.</p>
+            <div class="outcome">An empty name gets an orange border and a name with <code>&lt; &gt; : " / \ | ? *</code> gets a red one. (Invalid characters are replaced by <code>_</code> when the run starts.)</div>
+            <p><strong>Tip:</strong> once you have settings you like, use the <strong>Presets</strong> row at the top of Properties: <strong>Save</strong> a named preset, <strong>Load</strong> it later, or <strong>Delete</strong> it.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step">5</span>
+          <div>
+            <div class="label">Run registration</div>
+            <p>Press <span class="kbd">Ctrl+R</span> (or <strong>File -&gt; Run Registration</strong>, or the <strong>Run</strong> toolbar button). The app first checks the inputs, then shows <strong>Confirm Registration</strong> with the number of slides, input size, estimated output size and time, the output folder and every setting. Read it once, then click <strong>Yes</strong>.</p>
+            <div class="outcome">The strip moves to <em>3. Register</em> and the Status panel starts counting.</div>
+            <p><strong>If not:</strong> <em>Run Registration</em> is greyed out until at least 2 slides are loaded (hover it for the reason). A "Validation Failed" box lists blocking problems, such as missing files, an output folder that is not writable, or less than 10 GB free. A "Validation Warnings" box lists soft problems (low space, very large slides) and asks whether to proceed.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step">6</span>
+          <div>
+            <div class="label">Watch the progress</div>
+            <p>In the Status panel the <em>Stage</em> label walks through <em>Starting</em>, <em>Preparing pipeline</em>, <em>Feature detection and rigid alignment</em>, <em>Warping and saving registered slides</em>, <em>Finalizing outputs</em> and <em>Complete</em>. <em>Elapsed</em> and <em>ETA</em> update every second and the log scrolls (type in the filter box to search it).</p>
+            <div class="outcome">Progress reaches 100% and a "Registration complete." box appears.</div>
+            <div class="warn"><strong>Cancelling:</strong> press <span class="kbd">Esc</span> or the <strong>Cancel Registration</strong> button and answer <strong>Yes</strong>. Slides already written stay on disk; pending slides are not registered. <strong>File -&gt; Resume Last Registration</strong> simply runs the same slides and settings again from the start.</div>
+          </div>
+        </li>
+        <li>
+          <span class="step">7</span>
+          <div>
+            <div class="label">Review in the viewer</div>
+            <p>The registered slides load into the canvas as layers named <code>Registered: ...</code>. Open the <strong>Layers</strong> tab and untick/tick the visibility boxes or move the opacity sliders to flick between slides. The strip is now on <em>4. Review</em> and the post-registration tools in the Tools menu are enabled.</p>
+            <div class="outcome">Tissue outlines stay put when you toggle layers. Go to section 7 for a proper quality check.</div>
+          </div>
+        </li>
+        <li>
+          <span class="step">8</span>
+          <div>
             <div class="label">Inspect outputs on disk</div>
-            <p>Open <code>output/IHC_Tutorial</code> and verify <code>registered/</code> plus <code>summary.csv</code>.</p>
-            <div class="outcome">You now have reproducible artifacts for QA and reporting.</div>
+            <p>Click <strong>Open output folder</strong> in the status bar, or browse to <code>output/IHC_Tutorial</code> inside the application folder.</p>
+<pre><code>output/IHC_Tutorial/
+    registered/     one aligned .ome.tiff per slide
+    summary.csv     the quality metrics (same table as Tools -&gt; Quality Report)
+    transforms/     saved transforms for each slide
+    overlaps/       before / after overlay pictures
+    ...             other working folders written by VALIS</code></pre>
+            <div class="outcome">You now have reproducible artifacts for QA and reporting. Use a new project name for each run so results are never mixed.</div>
           </div>
         </li>
       </ol>
-
-      <div class="warn"><strong>Cancellation:</strong> use the <strong>Cancel Registration</strong> button in Status dock only when needed. Partial outputs may remain.</div>
     </section>
 
     <section id="quality" class="section">
       <h2>7. Quality Validation (Visual + Quantitative)</h2>
-      <p>Use both overlays and metrics. Do not rely on one signal alone.</p>
+      <p>Use both overlays and metrics. Do not rely on one signal alone. All three tools below are in the <strong>Tools</strong> menu and are enabled once a run has finished.</p>
 
       <h3>Visual progression example</h3>
+      <p>These are the overlap pictures VALIS writes for the IHC example: colour fringes along tissue edges show where the sections disagree.</p>
       <div class="compare">
         <figure class="figure">
-          <img src="../examples/expected_results/registration/ihc/overlaps/ihc_original_overlap.png" alt="Original unregistered overlap" loading="lazy">
+          <img src="examples/expected_results/registration/ihc/overlaps/ihc_original_overlap.png" alt="Original unregistered overlap" loading="lazy">
           <figcaption>Original overlap (pre-registration)</figcaption>
         </figure>
         <figure class="figure">
-          <img src="../examples/expected_results/registration/ihc/overlaps/ihc_rigid_overlap.png" alt="Rigid registration overlap" loading="lazy">
+          <img src="examples/expected_results/registration/ihc/overlaps/ihc_rigid_overlap.png" alt="Rigid registration overlap" loading="lazy">
           <figcaption>After rigid registration</figcaption>
         </figure>
         <figure class="figure">
-          <img src="../examples/expected_results/registration/ihc/overlaps/ihc_non_rigid_overlap.png" alt="Non-rigid registration overlap" loading="lazy">
+          <img src="examples/expected_results/registration/ihc/overlaps/ihc_non_rigid_overlap.png" alt="Non-rigid registration overlap" loading="lazy">
           <figcaption>After non-rigid registration</figcaption>
         </figure>
       </div>
 
+      <h3>A five-minute QA routine</h3>
+      <ol class="timeline">
+        <li>
+          <span class="step">1</span>
+          <div>
+            <div class="label">Blink the neighbouring pairs</div>
+            <p>Open <strong>Tools -&gt; Blink</strong>. Pick <strong>Slide A</strong> and <strong>Slide B</strong> (B starts on the second slide, so the two differ). Leave <strong>Mode</strong> on <em>Blink</em>, keep <strong>Interval</strong> at 600 ms (100-3000 ms) and click <strong>Start Blink</strong>. Watch a distinctive structure such as a vessel or a gland edge.</p>
+            <div class="outcome">A well-registered pair looks like the same picture changing colour, not shape. Anything that jumps sideways is residual misalignment. Click <strong>Stop Blink</strong> when done.</div>
+            <p>The other modes: <em>Swipe</em> lets you move the <strong>Blend</strong> slider (0% = only Slide A, 50% = equal mix, 100% = only Slide B). <em>Side-by-side</em> shows both layers at full opacity and disables the slider; use the Layers tab to toggle them. Blink needs the napari viewer.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step">2</span>
+          <div>
+            <div class="label">Plot the error trend</div>
+            <p>Open <strong>Tools -&gt; Analysis Plot</strong> (window title <em>Registration Analysis</em>). It plots one error value per slide pair (x axis: <em>Pair index</em>). It uses the non-rigid <code>rTRE</code> column when there is one, otherwise the rigid one, and prints <code>Metric | Mean | Max</code> underneath.</p>
+            <div class="outcome">A flat line with no spikes. A single tall spike is a pair worth inspecting. Pairs with no measurement are excluded and counted in the label.</div>
+          </div>
+        </li>
+        <li>
+          <span class="step">3</span>
+          <div>
+            <div class="label">Sort the Quality Report</div>
+            <p>Open <strong>Tools -&gt; Quality Report</strong> (<em>Alignment Quality Report</em>). Click a column header to sort, for example <code>non_rigid_rTRE</code> descending to see the worst pair first. Use <strong>Copy Table</strong> or <strong>Export CSV...</strong> for a spreadsheet, or right-click a row for <em>Copy Row</em>.</p>
+            <table class="preflight">
+              <tr><th>Column</th><th>Meaning</th></tr>
+              <tr><td><code>from</code> / <code>to</code></td><td>The slide that was moved and the slide it was aligned to.</td></tr>
+              <tr><td><code>original_*</code>, <code>rigid_*</code>, <code>non_rigid_*</code></td><td>Error before registration, after the rigid stage, and after the non-rigid stage. The values should fall from left to right.</td></tr>
+              <tr><td><code>*_D</code></td><td>Median distance between matched features (in <code>physical_units</code>).</td></tr>
+              <tr><td><code>*_rTRE</code></td><td>Target registration error, relative to image size, so pairs of different size can be compared. Lower is better.</td></tr>
+              <tr><td><code>mean_*</code>, <code>*_time_minutes</code></td><td>Averages across all pairs and the time each stage took.</td></tr>
+            </table>
+            <div class="outcome">Every row improves from <code>original</code> to <code>rigid</code> to <code>non_rigid</code>. A row where it does not, or a row several times worse than its neighbours, is an outlier.</div>
+          </div>
+        </li>
+        <li>
+          <span class="step">4</span>
+          <div>
+            <div class="label">Decide: accept or rerun one thing</div>
+            <p>If the numbers and the Blink check agree the result is good, accept it. If one pair is bad, blink that pair at high zoom, then rerun changing <em>one</em> thing (for example a different Feature detector, or a higher Working resolution). Compare the new <code>summary.csv</code> with the old one.</p>
+          </div>
+        </li>
+      </ol>
+
       <h3>Metrics view</h3>
       <div class="grid-2">
         <figure class="figure">
-          <img src="_images/new_fd_2025_error_v_time.png" alt="Error over time chart" loading="lazy">
+          <img src="docs/_images/new_fd_2025_error_v_time.png" alt="Error over time chart" loading="lazy">
           <figcaption>Error trend example. Use to compare detector or setting profiles.</figcaption>
         </figure>
         <figure class="figure">
-          <img src="_images/3D_error_plot.png" alt="3D registration error plot" loading="lazy">
+          <img src="docs/_images/3D_error_plot.png" alt="3D registration error plot" loading="lazy">
           <figcaption>3D error surface style visualization for deeper QC analysis.</figcaption>
         </figure>
       </div>
@@ -898,92 +1061,165 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
 
     <section id="tools" class="section">
       <h2>8. Complete GUI Operations (How To Do Everything)</h2>
-      <p>This section is a click-by-click map of all main GUI actions in the current app.</p>
+      <p>This section is a click-by-click map of every menu action, followed by worked recipes with concrete values. Jump to a recipe: <a href="#recipe-roi">Export an ROI crop</a>, <a href="#recipe-warp">Transfer annotations</a>, <a href="#recipe-merge">Merge into a multi-channel image</a>.</p>
 
       <h3>File Menu</h3>
       <table class="preflight">
         <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
-        <tr><td>Open slides</td><td><code>File -&gt; Open Slide Folder</code></td><td>Select one folder containing your case slides.</td><td>Slides load into Project + Slide Preview docks.</td></tr>
-        <tr><td>Recent folders</td><td><code>File -&gt; Recent Folders</code></td><td>Select previously opened folder.</td><td>Folder is reloaded immediately.</td></tr>
-        <tr><td>Save configuration</td><td><code>File -&gt; Save Configuration...</code></td><td>Choose destination JSON file.</td><td>All Properties settings are saved for reproducibility.</td></tr>
-        <tr><td>Load configuration</td><td><code>File -&gt; Load Configuration...</code></td><td>Select existing JSON config.</td><td>Properties values are restored.</td></tr>
-        <tr><td>Run registration</td><td><code>File -&gt; Run Registration</code> / <span class="kbd">Ctrl+R</span> / <span class="kbd">F5</span></td><td>Confirm run settings in dialog and proceed.</td><td>Worker starts, progress/logs update, outputs are generated.</td></tr>
-        <tr><td>Cancel registration</td><td><code>File -&gt; Cancel Registration</code> / <span class="kbd">Esc</span></td><td>Stop the active registration safely.</td><td>Run stops; partial output may remain on disk.</td></tr>
-        <tr><td>Resume last registration</td><td><code>File -&gt; Resume Last Registration</code></td><td>Use after cancel/failure to rerun the previous context quickly.</td><td>Last slides + settings are restored and run again.</td></tr>
-        <tr><td>Preferences</td><td><code>File -&gt; Preferences...</code> / <span class="kbd">Ctrl+,</span></td><td>Adjust cache, performance, and UI options.</td><td>Settings persist in QSettings.</td></tr>
-      </table>
-
-      <h3>Tools Menu</h3>
-      <div class="note"><strong>Contextual actions:</strong> Post-registration tools (Blink, Analysis Plot, Quality Report, Warp Annotations, Export ROI Crop, Merge Slides) are <strong>disabled</strong> until a registration run completes. They become active automatically when results are available.</div>
-      <table class="preflight">
-        <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
-        <tr><td>Blink</td><td><code>Tools -&gt; Blink</code></td><td>Pick Slide A/B, blend or auto-blink.</td><td>Fast visual detection of local drift/misalignment.</td></tr>
-        <tr><td>Analysis Plot</td><td><code>Tools -&gt; Analysis Plot</code></td><td>Open after a completed run.</td><td>Error trend chart + summary stats.</td></tr>
-        <tr><td>Quality Report</td><td><code>Tools -&gt; Quality Report</code></td><td>Sort/report table columns to find outliers.</td><td>Detailed metric table from <code>summary_df</code>.</td></tr>
-        <tr><td>Warp Annotations</td><td><code>Tools -&gt; Warp Annotations</code></td><td>Provide GeoJSON + source slide + output folder.</td><td>One warped GeoJSON for each target slide.</td></tr>
-        <tr><td>Save Options</td><td><code>Tools -&gt; Save Options...</code></td><td>Set format, pyramids, compression, tile size, quality.</td><td>Output settings updated in Properties dock.</td></tr>
-        <tr><td>Export ROI Crop</td><td><code>Tools -&gt; Export ROI Crop...</code></td><td>Set X/Y/Width/Height, choose format and output folder.</td><td>Aligned ROI crops are exported for each registered slide.</td></tr>
-        <tr><td>Merge Slides</td><td><code>Tools -&gt; Merge Slides...</code></td><td>Map channels, set colors, overlap strategy, normalize.</td><td>Merged multi-channel output created.</td></tr>
-        <tr><td>Export Session Bundle</td><td><code>Tools -&gt; Export Session Bundle...</code></td><td>Select destination ZIP path.</td><td>Bundle contains session summary and available logs.</td></tr>
+        <tr><td>Open slides</td><td><code>File -&gt; Open Slide Folder</code> / <span class="kbd">Ctrl+O</span></td><td>Select one folder containing your case slides. Dragging a folder onto the window does the same.</td><td>Slides load into the Project and Slide Preview tabs.</td></tr>
+        <tr><td>Open most recent</td><td><code>File -&gt; Open Most Recent Folder</code> / <span class="kbd">Ctrl+Shift+O</span></td><td>One keystroke to reopen the last case.</td><td>The last folder is reloaded. A message appears if there is no history or the folder was moved.</td></tr>
+        <tr><td>Recent folders</td><td><code>File -&gt; Recent Folders</code> (<span class="kbd">Ctrl+1</span> to <span class="kbd">Ctrl+9</span>)</td><td>Pick an earlier folder. Missing folders are shown as <em>[missing]</em> and cannot be clicked. An extra <em>Open with config</em> line appears when a settings file was linked to that folder.</td><td>Folder is reloaded immediately, and its linked configuration is applied automatically.</td></tr>
+        <tr><td>Save configuration</td><td><code>File -&gt; Save Configuration...</code></td><td>Choose a JSON file name (the dialog starts in the <code>configs</code> folder).</td><td>Every setting in Properties is saved for reproducibility.</td></tr>
+        <tr><td>Load configuration</td><td><code>File -&gt; Load Configuration...</code> (or drop a <code>.json</code> file on the window)</td><td>Select an existing JSON config.</td><td>Properties are restored. Unknown or invalid entries are ignored, and the status bar tells you how many.</td></tr>
+        <tr><td>Run registration</td><td><code>File -&gt; Run Registration</code> / <span class="kbd">Ctrl+R</span> / <span class="kbd">F5</span></td><td>Review the Confirm Registration box, click Yes.</td><td>Worker starts, progress and logs update, outputs are generated.</td></tr>
+        <tr><td>Cancel registration</td><td><code>File -&gt; Cancel Registration</code> / <span class="kbd">Esc</span></td><td>Only enabled during a run. Confirm with Yes.</td><td>Run stops; partial output may remain on disk.</td></tr>
+        <tr><td>Resume last registration</td><td><code>File -&gt; Resume Last Registration</code></td><td>Use after a cancel or failure.</td><td>The same slides and settings are run again from the start (no re-entering, but no checkpoint either).</td></tr>
+        <tr><td>Preferences</td><td><code>File -&gt; Preferences...</code> / <span class="kbd">Ctrl+,</span></td><td>See the Preferences table below.</td><td>Settings persist between sessions.</td></tr>
       </table>
 
       <h3>View Menu (Layout Controls)</h3>
       <table class="preflight">
         <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
-        <tr><td>Reset Layout</td><td><code>View -&gt; Reset Layout</code> / <span class="kbd">Ctrl+Shift+L</span></td><td>Restore all panels to default sizes.</td><td>Sidebars and center return to initial proportions.</td></tr>
-        <tr><td>Toggle Left Sidebar</td><td><code>View -&gt; Toggle Left Sidebar</code> / <span class="kbd">Ctrl+[</span></td><td>Show or hide the Project/Slide Preview panel.</td><td>Left panel collapses or expands.</td></tr>
-        <tr><td>Toggle Right Sidebar</td><td><code>View -&gt; Toggle Right Sidebar</code> / <span class="kbd">Ctrl+]</span></td><td>Show or hide the Properties/Layers panel.</td><td>Right panel collapses or expands.</td></tr>
-        <tr><td>Toggle Focus Mode</td><td><code>View -&gt; Toggle Focus Mode</code> / <span class="kbd">Ctrl+Shift+\</span></td><td>Collapse both sidebars to maximize the viewer.</td><td>Napari viewer fills the available width.</td></tr>
-        <tr><td>Fit to Content</td><td><code>View -&gt; Fit to Content</code></td><td>Adjust panel sizes to match their content.</td><td>Panels resize to their optimal widths.</td></tr>
+        <tr><td>Reset Layout</td><td><code>View -&gt; Reset Layout</code> / <span class="kbd">Ctrl+Shift+L</span></td><td>Restore all panels to default sizes.</td><td>Sidebars and centre return to initial proportions.</td></tr>
+        <tr><td>Toggle Left Sidebar</td><td><code>View -&gt; Toggle Left Sidebar</code> / <span class="kbd">Ctrl+[</span></td><td>Show or hide the Project / Slide Preview panel.</td><td>Left panel collapses or expands.</td></tr>
+        <tr><td>Toggle Right Sidebar</td><td><code>View -&gt; Toggle Right Sidebar</code> / <span class="kbd">Ctrl+]</span></td><td>Show or hide the Properties / Layers panel.</td><td>Right panel collapses or expands.</td></tr>
+        <tr><td>Toggle Focus Mode</td><td><code>View -&gt; Toggle Focus Mode</code> / <span class="kbd">Ctrl+Shift+\</span></td><td>Collapse both sidebars to maximise the viewer.</td><td>The viewer fills the available width; press again to restore.</td></tr>
+        <tr><td>Fit to Content</td><td><code>View -&gt; Fit to Content</code></td><td>Reset the bottom panel height and re-frame the viewer.</td><td>The status panel returns to its default height and the napari view is reset so all layers are visible.</td></tr>
       </table>
+
+      <h3>Tools Menu</h3>
+      <div class="note"><strong>Contextual actions:</strong> Blink, Analysis Plot, Quality Report, Warp Annotations, <strong>Save Options</strong>, Export ROI Crop and Merge Slides are <strong>disabled</strong> until a registration run completes. They switch on automatically, and the Results toolbar appears. <strong>Export Session Bundle</strong> is always available.</div>
+      <table class="preflight">
+        <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
+        <tr><td>Blink</td><td><code>Tools -&gt; Blink</code></td><td>Pick Slide A / B, a Mode (Blink, Side-by-side, Swipe), then Start Blink or move Blend.</td><td>Fast visual detection of local drift or misalignment. Needs the napari viewer.</td></tr>
+        <tr><td>Analysis Plot</td><td><code>Tools -&gt; Analysis Plot</code></td><td>Open after a completed run.</td><td>Error trend chart plus Mean and Max.</td></tr>
+        <tr><td>Quality Report</td><td><code>Tools -&gt; Quality Report</code></td><td>Sort columns to find outliers; Copy Table / Export CSV...</td><td>Detailed metric table from the run's summary.</td></tr>
+        <tr><td>Warp Annotations</td><td><code>Tools -&gt; Warp Annotations</code></td><td>Provide a GeoJSON file, the source slide and an output folder. See recipe B.</td><td>One warped GeoJSON per slide.</td></tr>
+        <tr><td>Save Options</td><td><code>Tools -&gt; Save Options...</code></td><td>Pick a preset or set Write image pyramid, Pyramid levels, Compression (0-9), JPEG Quality, Tile size and Format. Click OK.</td><td>Values are copied into <em>Properties -&gt; Output Settings</em> and used by the <em>next</em> run and by Merge Slides. They do not rewrite files already saved.</td></tr>
+        <tr><td>Export ROI Crop</td><td><code>Tools -&gt; Export ROI Crop...</code></td><td>Enter X / Y / Width / Height, a format and a folder. See recipe A.</td><td>The same region is cut from every registered slide.</td></tr>
+        <tr><td>Merge Slides</td><td><code>Tools -&gt; Merge Slides...</code></td><td>Map channels, names and colours. See recipe C.</td><td>A merged multi-channel OME-TIFF is written in the project's output folder.</td></tr>
+        <tr><td>Export Session Bundle</td><td><code>Tools -&gt; Export Session Bundle...</code></td><td>Choose a destination ZIP path (starts in the <code>logs</code> folder).</td><td>The ZIP holds <code>session_summary.json</code> (settings, slide folder, last result) and the log file when it exists.</td></tr>
+      </table>
+      <div class="note"><strong>About the Output Settings choices:</strong> the underlying VALIS library always writes lossless OME-TIFF and chooses the pyramid depth itself. Compression, Tile size and Write image pyramid are applied. Choosing TIFF, JPEG or PNG as the Format, a JPEG quality, or a Pyramid levels count is saved with your settings but does not change the files; the Save Options dialog and the run log say so. Compression 0 = none, 1-4 = LZW, 5-9 = Deflate.</div>
 
       <h3>Help Menu + Utility Actions</h3>
       <table class="preflight">
         <tr><th>Action</th><th>Click path</th><th>How to use</th><th>Expected result</th></tr>
-        <tr><td>Quick Tutorial</td><td><code>Help -&gt; Quick Tutorial</code> / <span class="kbd">F1</span></td><td>Opens an in-app step-by-step wizard without leaving the app.</td><td>Multi-step tutorial dialog walks through the full workflow.</td></tr>
-        <tr><td>Manual (HTML)</td><td><code>Help -&gt; Manual (HTML)</code></td><td>Open local manual.</td><td>Manual opens in default handler.</td></tr>
-        <tr><td>Tutorial (HTML)</td><td><code>Help -&gt; Tutorial (HTML)</code></td><td>Reopen this tutorial directly from the app.</td><td>Tutorial opens in default handler.</td></tr>
-        <tr><td>Quick Start</td><td><code>Help -&gt; Quick Start Guide</code></td><td>Open quick-start file.</td><td>Short onboarding guide opens.</td></tr>
-        <tr><td>Report Issue</td><td><code>Help -&gt; Report Issue</code></td><td>Opens issue URL.</td><td>GitHub issue page opens.</td></tr>
-        <tr><td>Performance Statistics</td><td><code>Help -&gt; Performance Statistics</code> / <span class="kbd">Ctrl+Shift+P</span></td><td>Inspect Overview, Thumbnail Cache, Tile Cache, Memory tabs.</td><td>Live telemetry + cache management controls.</td></tr>
-        <tr><td>Diagnostics</td><td><code>Help -&gt; Diagnostics</code></td><td>Open environment and run-context diagnostics.</td><td>Quick troubleshooting snapshot for support.</td></tr>
+        <tr><td>Quick Tutorial</td><td><code>Help -&gt; Quick Tutorial</code> / <span class="kbd">F1</span></td><td>Opens the in-app 13-step wizard. It stays open while you use the app.</td><td>Steps with buttons that open a folder or start a run for you.</td></tr>
+        <tr><td>Manual (HTML)</td><td><code>Help -&gt; Manual (HTML)</code></td><td>Open the local manual.</td><td>Manual opens in your default browser.</td></tr>
+        <tr><td>Tutorial (HTML)</td><td><code>Help -&gt; Tutorial (HTML)</code></td><td>Reopen this tutorial directly from the app.</td><td>Tutorial opens in your default browser.</td></tr>
+        <tr><td>Quick Start</td><td><code>Help -&gt; Quick Start Guide</code></td><td>Open the quick-start file.</td><td>Short onboarding guide opens.</td></tr>
+        <tr><td>Report Issue</td><td><code>Help -&gt; Report Issue</code></td><td>Opens the issue tracker.</td><td>A GitHub issue page opens in your browser.</td></tr>
+        <tr><td>Performance Statistics</td><td><code>Help -&gt; Performance Statistics</code> / <span class="kbd">Ctrl+Shift+P</span></td><td>Tabs: Overview, Thumbnail Cache, Memory. Buttons: Refresh Now, Clear Thumbnail Cache, Close.</td><td>Live telemetry that auto-refreshes (every 2 s by default).</td></tr>
+        <tr><td>Diagnostics</td><td><code>Help -&gt; Diagnostics</code></td><td>Review, then Refresh or Copy to Clipboard.</td><td>Environment and run-context snapshot for support.</td></tr>
         <tr><td>About dialog</td><td><code>Help -&gt; About VALIS Workstation</code></td><td>View app metadata.</td><td>Version and attribution details shown.</td></tr>
-        <tr><td>Drag-and-drop folder</td><td>Main window</td><td>Drop a folder onto the app.</td><td>Folder is scanned and loaded.</td></tr>
-        <tr><td>Drag-and-drop JSON</td><td>Main window</td><td>Drop a config <code>.json</code>.</td><td>Configuration is loaded into Properties dock.</td></tr>
+        <tr><td>Drag-and-drop folder</td><td>Main window</td><td>Drop a folder onto the app (a "Drop a slide folder here" overlay appears).</td><td>Folder is scanned and loaded.</td></tr>
+        <tr><td>Drag-and-drop JSON</td><td>Main window</td><td>Drop a config <code>.json</code>.</td><td>Configuration is loaded into Properties.</td></tr>
       </table>
+
+      <h3 id="preferences">Preferences (File -&gt; Preferences..., Ctrl+,)</h3>
+      <p>Three tabs, plus <strong>OK</strong>, <strong>Cancel</strong> and <strong>Restore Defaults</strong> (asks to confirm). After OK the app reminds you that some changes need a restart.</p>
+      <table class="preflight">
+        <tr><th>Tab</th><th>Setting</th><th>Default</th><th>When it takes effect</th></tr>
+        <tr><td rowspan="3">Cache</td><td>Cache Directory (Browse...)</td><td><code>~/.valis_cache</code></td><td>After restart</td></tr>
+        <tr><td>Max Thumbnail Cache (10-10000 MB)</td><td>500 MB</td><td>After restart</td></tr>
+        <tr><td>Keep cache between sessions</td><td>on</td><td>On exit: when off, the thumbnail cache is cleared as the app closes</td></tr>
+        <tr><td rowspan="3">Performance</td><td>Parallel Thumbnail Workers (1-16)</td><td>4</td><td>Next time you open a folder. More workers = faster thumbnails, more memory</td></tr>
+        <tr><td>Enable performance monitoring</td><td>on</td><td>Immediately (feeds Performance Statistics)</td></tr>
+        <tr><td>Stats Auto-Refresh (1-60 s)</td><td>2 s</td><td>Next time you open Performance Statistics</td></tr>
+        <tr><td rowspan="7">User Interface</td><td>Show tooltips</td><td>on</td><td>Immediately</td></tr>
+        <tr><td>Show status bar</td><td>on</td><td>At next launch</td></tr>
+        <tr><td>Confirm before closing</td><td>off</td><td>Immediately</td></tr>
+        <tr><td>Recent Files to Remember (5-20)</td><td>10</td><td>Next time you open a folder</td></tr>
+        <tr><td>Default Thumbnail Size (128-1024)</td><td>512</td><td>Next time you open a folder</td></tr>
+        <tr><td>High contrast mode</td><td>off</td><td>Immediately</td></tr>
+        <tr><td>Reduce motion</td><td>off</td><td>Skips or shortens fade transitions such as the splash and loading overlay</td></tr>
+      </table>
+
+      <h3>Project panel quick reference</h3>
+      <table class="preflight">
+        <tr><th>I want to...</th><th>Do this</th></tr>
+        <tr><td>Find one slide in a long list</td><td>Type part of its name in <em>Filter by filename...</em> (this only hides rows; it never deletes).</td></tr>
+        <tr><td>Remove a bad slide</td><td>Click it (<span class="kbd">Ctrl</span>/<span class="kbd">Shift</span>-click for several, <span class="kbd">Ctrl+A</span> for all), then <strong>Remove Selected</strong> or <span class="kbd">Del</span>.</td></tr>
+        <tr><td>Start again</td><td><strong>Clear All</strong>, confirm, then open a different folder.</td></tr>
+        <tr><td>Change the section order</td><td>Drag rows up or down, then tick <strong>Slides already in order</strong> in Advanced Settings.</td></tr>
+        <tr><td>Pick the slide everything is aligned to</td><td>Advanced Settings -&gt; <strong>Reference slide</strong> (default <em>Auto-detect</em>, which picks the middle image).</td></tr>
+      </table>
+
+      <h3 id="recipes">Worked recipes</h3>
+
+      <h4 id="recipe-roi">Recipe A - Export the same ROI from every slide</h4>
+      <p>Goal: a 1024 x 1024 pixel region around a tumour edge, cut from all five registered IHC slides.</p>
+      <ol class="timeline">
+        <li><span class="step">1</span><div><div class="label">Find the region</div>
+          <p>In the viewer, hover the top-left corner of the region and read the cursor position in napari's status line. napari prints it as row, column - that is <em>Y first, then X</em> - so check with a known corner. Suppose the corner is at X = 2000, Y = 1500.</p></div></li>
+        <li><span class="step">2</span><div><div class="label">Open the dialog</div>
+          <p><strong>Tools -&gt; Export ROI Crop...</strong> and fill in <strong>X Coordinate</strong> 2000, <strong>Y Coordinate</strong> 1500, <strong>Width</strong> 1024, <strong>Height</strong> 1024 (the defaults are 0, 0, 1000, 1000). Set <strong>Format</strong> to <em>OME-TIFF</em>. Leave <strong>Reopen in Viewer</strong> ticked to check the result straight away.</p>
+          <p>Handy buttons: <strong>Copy as JSON</strong> / <strong>Paste from JSON</strong> to share a box with a colleague, and <strong>Reset</strong> to return to the defaults.</p></div></li>
+        <li><span class="step">3</span><div><div class="label">Choose a folder</div>
+          <p>Click <strong>OK</strong>, then pick a destination in "Select Directory for ROI Crops". A progress box counts the slides.</p>
+          <div class="outcome">One file per slide named <code>&lt;slide&gt;_ROI.ome.tiff</code>, and a summary listing any slide that was clipped (the box ran past its edge), failed or was cancelled.</div></div></li>
+      </ol>
+
+      <h4 id="recipe-warp">Recipe B - Transfer annotations to all slides</h4>
+      <p>Goal: regions drawn once (for example in QuPath, saved as GeoJSON) appear on every other section.</p>
+      <ol class="timeline">
+        <li><span class="step">1</span><div><div class="label">Prepare</div>
+          <p>Export your annotations as <code>tumour_regions.geojson</code> from the slide you drew them on. Coordinates must be in pixels of that slide's original image.</p></div></li>
+        <li><span class="step">2</span><div><div class="label">Run the tool</div>
+          <p><strong>Tools -&gt; Warp Annotations</strong>. Click <strong>Browse</strong> next to <strong>Annotation file</strong> and pick the GeoJSON. Set <strong>Source slide</strong> to the slide the annotations were drawn on (not just any slide). Leave <strong>Output directory</strong> at its default, <code>output/&lt;project&gt;/warped_annotations</code>, or choose another. Click <strong>OK</strong>.</p>
+          <div class="outcome">One file per slide named <code>&lt;source&gt;_to_&lt;target&gt;.geojson</code>. The non-rigid warp is used whenever the run included non-rigid registration.</div></div></li>
+        <li><span class="step">3</span><div><div class="label">Spot-check</div>
+          <p>Load two or three of the outputs over the matching original slides in your annotation tool and confirm the outlines sit on the same tissue structures before using them in analysis.</p></div></li>
+      </ol>
+
+      <h4 id="recipe-merge">Recipe C - Merge registered slides into one multi-channel image</h4>
+      <p>Goal: three imaging rounds (say <em>DAPI</em>, <em>CD3</em>, <em>CD8</em>) combined into a single file for QuPath or Fiji.</p>
+      <ol class="timeline">
+        <li><span class="step">1</span><div><div class="label">Open the dialog</div>
+          <p><strong>Tools -&gt; Merge Slides...</strong> shows one row per registered slide (it needs at least 2).</p></div></li>
+        <li><span class="step">2</span><div><div class="label">Fill the Channel Mapping table</div>
+          <p>For each row: keep <strong>Include</strong> ticked (use <strong>Select All</strong> / <strong>Select None</strong> to flip them all), edit <strong>Channel Name</strong> (the default is <code>Channel_1</code>, <code>Channel_2</code>, ...; type <code>DAPI</code>, <code>CD3</code>, <code>CD8</code>), and pick a <strong>Color</strong> (Auto, Red, Green, Blue, Cyan, Magenta, Yellow, Gray, White). Each row contributes one named channel.</p></div></li>
+        <li><span class="step">3</span><div><div class="label">Merge Options</div>
+          <p><strong>Output name</strong>: <code>merged_image</code> (the <code>.ome.tiff</code> ending is added). <strong>Normalize intensities</strong>: on by default - stretches each channel to a comparable range for display. <strong>Overlap handling</strong> only matters when two included slides share the same channel name (for example two rounds both called DAPI): Average, Maximum (brightest), Minimum (darkest), First or Last.</p>
+          <p>Optional: <strong>Export config...</strong> saves the table as JSON for your records.</p></div></li>
+        <li><span class="step">4</span><div><div class="label">Run it</div>
+          <p>Click <strong>OK</strong>. The merge runs in the background (status bar: "Merging N channels..."). Compression, tile size and quality come from your current Output Settings.</p>
+          <div class="outcome">A "Merge Complete" box shows the path: <code>output/&lt;project&gt;/merged_image.ome.tiff</code>.</div></div></li>
+      </ol>
 
       <h3>Recommended finalization sequence</h3>
       <ol class="timeline">
         <li>
           <span class="step">A</span>
           <div>
-            <div class="label">Tune output defaults</div>
-            <p>Open <strong>Tools -&gt; Save Options...</strong> and confirm pyramids/compression/tile size for your downstream viewer.</p>
+            <div class="label">Set output defaults <em>before</em> the production run</div>
+            <p>Choose Compression, Tile size and Write image pyramid in <strong>Properties -&gt; Output Settings</strong> (or an Output profile: <em>WSI Archive</em>, <em>Fast Review</em>, <em>Publication</em>). They are applied when the registered files are written, so changing them afterwards only affects later runs and merges.</p>
           </div>
         </li>
         <li>
           <span class="step">B</span>
           <div>
             <div class="label">Export ROI crops for focused review</div>
-            <p>Use <strong>Tools -&gt; Export ROI Crop...</strong> to generate aligned ROI subsets for rapid QC and animation workflows.</p>
+            <p>Use <strong>Tools -&gt; Export ROI Crop...</strong> (recipe A) to generate aligned ROI subsets for rapid QC and animation workflows.</p>
           </div>
         </li>
         <li>
           <span class="step">C</span>
           <div>
             <div class="label">Package reproducibility artifacts</div>
-            <p>Use <strong>Tools -&gt; Export Session Bundle...</strong> to create a ZIP for collaborators, reviewers, or issue reports.</p>
+            <p>Use <strong>File -&gt; Save Configuration...</strong> and <strong>Tools -&gt; Export Session Bundle...</strong> to create a settings file and a ZIP for collaborators, reviewers, or issue reports.</p>
           </div>
         </li>
       </ol>
 
       <div class="grid-2">
         <figure class="figure">
-          <img src="_images/point_warping.png" alt="Point warping visualization" loading="lazy">
+          <img src="docs/_images/point_warping.png" alt="Point warping visualization" loading="lazy">
           <figcaption>Warp workflows support point/annotation transfer across registered slides.</figcaption>
         </figure>
         <figure class="figure">
-          <img src="_images/pu_color_mplex.png" alt="Multiplex color channel example" loading="lazy">
+          <img src="docs/_images/pu_color_mplex.png" alt="Multiplex color channel example" loading="lazy">
           <figcaption>Merge workflows are especially useful for multiplexed marker panels.</figcaption>
         </figure>
       </div>
@@ -1009,12 +1245,12 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
         </tr>
         <tr>
           <td>Challenging fluorescence</td>
-          <td>DISK/SuperPoint + GPU, masks ON, non-rigid ON</td>
+          <td>DISK/SuperPoint + GPU, <em>Use tissue masks</em> ON, non-rigid ON</td>
           <td>Improves landmark robustness in difficult texture.</td>
         </tr>
         <tr>
           <td>Highest precision</td>
-          <td>Enable micro-registration, increase max sizes</td>
+          <td>Tick <em>Fine-detail pass (micro-reg.)</em>, raise <em>Working resolution</em> and <em>Fine-detail resolution</em></td>
           <td>Refines local alignment at higher resolution.</td>
         </tr>
       </table>
@@ -1022,27 +1258,27 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
       <h3 style="margin-top:14px">Decision Support Quick Matrix</h3>
       <table class="preflight">
         <tr><th>If you see...</th><th>Change first</th><th>Then verify with...</th></tr>
-        <tr><td>Good global overlap but local drift</td><td>Enable/keep non-rigid ON and test higher max image size</td><td>Blink + outlier rows in Quality Report</td></tr>
-        <tr><td>Very long runtime on first pass</td><td>Set max image size to 1024 and temporarily disable non-rigid</td><td>Runtime drop and basic rigid overlap quality</td></tr>
-        <tr><td>Fluorescence landmarks are inconsistent</td><td>Switch to DISK or SuperPoint, enable GPU if available</td><td>Error trend in Analysis Plot</td></tr>
-        <tr><td>Shear-like mismatch after rigid stage</td><td>Try Affine transform before changing many other parameters</td><td>Pairwise visual alignment in Blink</td></tr>
-        <tr><td>Memory pressure or stutter</td><td>Reduce pyramid levels and tile cache limits in Preferences</td><td>Performance Statistics memory tab</td></tr>
+        <tr><td>Good global overlap but local drift</td><td>Keep <em>Fix tissue warping (non-rigid)</em> ON and test a higher <em>Working resolution</em></td><td>Blink + outlier rows in Quality Report</td></tr>
+        <tr><td>Very long runtime on first pass</td><td>Set <em>Working resolution</em> to 1024 and temporarily untick non-rigid</td><td>Runtime drop (see Elapsed in the Status panel) and basic rigid overlap quality</td></tr>
+        <tr><td>Fluorescence landmarks are inconsistent</td><td>In Advanced Settings switch <em>Feature detector</em> to DISK or SuperPoint, tick <em>Use GPU</em> if available</td><td>Error trend in Analysis Plot and rTRE in Quality Report</td></tr>
+        <tr><td>Shear-like mismatch after rigid stage</td><td>Set <em>Rigid transform</em> to Affine before changing many other parameters</td><td>Pairwise visual alignment in Blink</td></tr>
+        <tr><td>Memory pressure or stutter</td><td>Lower <em>Working resolution</em>, and in Preferences lower <em>Max Thumbnail Cache</em> and <em>Parallel Thumbnail Workers</em></td><td>Performance Statistics memory tab</td></tr>
       </table>
-      <div class="note"><strong>Best practice:</strong> change one parameter group at a time and keep your previous configuration JSON so you can roll back quickly.</div>
+      <div class="note"><strong>Best practice:</strong> change one parameter group at a time, save each good state with <strong>File -&gt; Save Configuration...</strong> (or a Properties preset) so you can roll back quickly.</div>
 
       <h3 style="margin-top:14px">VALIS Modules, Features, and Functions</h3>
       <p>Use this map to connect GUI actions with VALIS internals and full function references.</p>
       <table class="preflight">
         <tr><th>Module</th><th>Core classes / functions</th><th>GUI touchpoint</th><th>Local reference</th></tr>
-        <tr><td><code>valis.registration</code></td><td><code>Valis</code>, <code>register()</code>, <code>warp_and_save_slides()</code>, <code>measure_error()</code></td><td>Run Registration + output generation</td><td><a href="html/registration.html">registration.html</a></td></tr>
-        <tr><td><code>valis.slide_io</code></td><td>Readers, <code>init_jvm()</code>, <code>load_registrar()</code></td><td>Open Slide Folder + format handling</td><td><a href="html/slide_io.html">slide_io.html</a></td></tr>
-        <tr><td><code>valis.feature_detectors</code></td><td>VGG, KAZE, BRISK, ORB, AKAZE, SuperPoint, DISK, DeDoDe</td><td>Feature detector setting</td><td><a href="html/feature_detectors.html">feature_detectors.html</a></td></tr>
-        <tr><td><code>valis.feature_matcher</code></td><td><code>Matcher</code>, <code>LightGlueMatcher</code>, <code>SuperGlueMatcher</code>, match filters</td><td>Implicit during registration</td><td><a href="html/feature_matcher.html">feature_matcher.html</a></td></tr>
-        <tr><td><code>valis.non_rigid_registrars</code></td><td><code>OpticalFlowWarper</code>, <code>RAFTWarper</code>, <code>SimpleElastixWarper</code></td><td>Non-rigid mode</td><td><a href="html/non_rigid_registrars.html">non_rigid_registrars.html</a></td></tr>
-        <tr><td><code>valis.affine_optimizer</code></td><td>Affine optimizer classes (MI/RMI/MSE/KNN)</td><td>Advanced tuning path</td><td><a href="html/affine_optimizer.html">affine_optimizer.html</a></td></tr>
-        <tr><td><code>valis.preprocessing</code></td><td><code>OD</code>, <code>ChannelGetter</code>, masking/denoise utilities</td><td>Use masks + denoise settings</td><td><a href="html/preprocessing.html">preprocessing.html</a></td></tr>
-        <tr><td><code>valis.warp_tools</code></td><td><code>warp_img()</code>, <code>warp_xy()</code>, <code>warp_xy_from_to()</code>, geometry warps</td><td>Warp Annotations + coordinate transfer</td><td><a href="html/registration.html#module-valis.warp_tools">warp_tools section</a></td></tr>
-        <tr><td><code>valis.viz</code></td><td><code>draw_matches()</code>, <code>create_overlap_img()</code>, visualization helpers</td><td>QC plotting + overlays</td><td><a href="html/viz.html">viz.html</a></td></tr>
+        <tr><td><code>valis.registration</code></td><td><code>Valis</code>, <code>register()</code>, <code>warp_and_save_slides()</code>, <code>measure_error()</code></td><td>Run Registration + output generation</td><td><a href="docs/html/registration.html">registration.html</a></td></tr>
+        <tr><td><code>valis.slide_io</code></td><td>Readers, <code>init_jvm()</code>, <code>load_registrar()</code></td><td>Open Slide Folder + format handling</td><td><a href="docs/html/slide_io.html">slide_io.html</a></td></tr>
+        <tr><td><code>valis.feature_detectors</code></td><td>VGG, KAZE, BRISK, ORB, AKAZE, SuperPoint, DISK, DeDoDe</td><td>Feature detector setting</td><td><a href="docs/html/feature_detectors.html">feature_detectors.html</a></td></tr>
+        <tr><td><code>valis.feature_matcher</code></td><td><code>Matcher</code>, <code>LightGlueMatcher</code>, <code>SuperGlueMatcher</code>, match filters</td><td>Implicit during registration</td><td><a href="docs/html/feature_matcher.html">feature_matcher.html</a></td></tr>
+        <tr><td><code>valis.non_rigid_registrars</code></td><td><code>OpticalFlowWarper</code>, <code>RAFTWarper</code>, <code>SimpleElastixWarper</code></td><td>Non-rigid mode</td><td><a href="docs/html/non_rigid_registrars.html">non_rigid_registrars.html</a></td></tr>
+        <tr><td><code>valis.affine_optimizer</code></td><td>Affine optimizer classes (MI/RMI/MSE/KNN)</td><td>Advanced tuning path</td><td><a href="docs/html/affine_optimizer.html">affine_optimizer.html</a></td></tr>
+        <tr><td><code>valis.preprocessing</code></td><td><code>OD</code>, <code>ChannelGetter</code>, masking/denoise utilities</td><td>Use masks + denoise settings</td><td><a href="docs/html/preprocessing.html">preprocessing.html</a></td></tr>
+        <tr><td><code>valis.warp_tools</code></td><td><code>warp_img()</code>, <code>warp_xy()</code>, <code>warp_xy_from_to()</code>, geometry warps</td><td>Warp Annotations + coordinate transfer</td><td><a href="docs/html/registration.html#slide">Slide warp methods</a></td></tr>
+        <tr><td><code>valis.viz</code></td><td><code>draw_matches()</code>, <code>create_overlap_img()</code>, visualization helpers</td><td>QC plotting + overlays</td><td><a href="docs/html/viz.html">viz.html</a></td></tr>
       </table>
       <div class="note"><strong>Complete function coverage:</strong> this tutorial gives practical workflows; the linked local module pages provide exhaustive class/function detail.</div>
     </section>
@@ -1055,7 +1291,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
           <span class="step">1</span>
           <div>
             <div class="label">Cancel or failure during run</div>
-            <p>Stop safely, then use <strong>File -&gt; Resume Last Registration</strong> to continue from the same context.</p>
+            <p>If the run failed, an <strong>Error Details</strong> box shows a plain-language message. Open <em>Technical Details</em> for the traceback and last log lines, then use <strong>Copy to Clipboard</strong> or <strong>Report Issue</strong>. To try again with the same slides and settings, choose <strong>File -&gt; Resume Last Registration</strong> (it reruns from the start).</p>
             <div class="outcome">You avoid re-entering all settings manually.</div>
           </div>
         </li>
@@ -1063,7 +1299,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
           <span class="step">2</span>
           <div>
             <div class="label">Capture diagnostics</div>
-            <p>Open <strong>Help -&gt; Diagnostics</strong> and review runtime/environment state before rerunning.</p>
+            <p>Open <strong>Help -&gt; Diagnostics</strong> and review runtime/environment state before rerunning. <strong>Copy to Clipboard</strong> puts the whole report on your clipboard.</p>
             <div class="outcome">You can distinguish environment issues from parameter issues.</div>
           </div>
         </li>
@@ -1071,7 +1307,7 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
           <span class="step">3</span>
           <div>
             <div class="label">Package evidence for support</div>
-            <p>Run <strong>Tools -&gt; Export Session Bundle...</strong> and save the current configuration JSON.</p>
+            <p>Run <strong>Tools -&gt; Export Session Bundle...</strong> and save the current configuration with <strong>File -&gt; Save Configuration...</strong>.</p>
             <div class="outcome">Issue reports include logs + reproducible settings.</div>
           </div>
         </li>
@@ -1088,50 +1324,80 @@ python -c "import torch; print(torch.cuda.is_available())"</code></pre>
       <h3>Common issues</h3>
       <table class="preflight">
         <tr>
-          <th>Issue</th>
+          <th>What you see</th>
+          <th>Why</th>
           <th>Action</th>
         </tr>
         <tr>
-          <td>"Napari not available"</td>
-          <td>Install/upgrade napari: <code>pip install "napari[all]"</code>.</td>
+          <td>Welcome page note "Image viewer (napari) is not installed"; Blink says "Napari not available."</td>
+          <td>The optional viewer is missing.</td>
+          <td>Install it: <code>pip install "napari[all]"</code>, then restart. Registration works without it.</td>
+        </tr>
+        <tr>
+          <td>"No Slides Found"</td>
+          <td>The folder has no supported files directly inside it.</td>
+          <td>Pick the folder that holds the images (sub-folders are not scanned). Supported: TIFF, OME-TIFF, SVS, NDPI, VSI, CZI, SCN, PNG, JPEG.</td>
+        </tr>
+        <tr>
+          <td>Run Registration is greyed out</td>
+          <td>Fewer than 2 slides are loaded, or a run is already active.</td>
+          <td>Load a folder with 2+ slides. Hover the action for the exact reason.</td>
+        </tr>
+        <tr>
+          <td>Banner "SimpleElastix not found. Only Rigid Registration is available." and the non-rigid box is greyed</td>
+          <td>SimpleITK with Elastix is not installed.</td>
+          <td>Work with rigid only, or install SimpleElastix and restart.</td>
         </tr>
         <tr>
           <td>GPU checkbox disabled</td>
-          <td>Install CUDA-capable PyTorch build and verify <code>torch.cuda.is_available()</code>.</td>
+          <td>No CUDA-enabled PyTorch.</td>
+          <td>Install a CUDA-capable PyTorch build and verify <code>torch.cuda.is_available()</code>.</td>
+        </tr>
+        <tr>
+          <td>"Validation Failed: Insufficient disk space"</td>
+          <td>Less than 10 GB free on the output drive.</td>
+          <td>Free space or move the application folder to a larger drive.</td>
         </tr>
         <tr>
           <td>Registration too slow</td>
-          <td>Reduce max image size, disable non-rigid for test runs, use ORB/BRISK for speed checks.</td>
+          <td>Large working resolution, non-rigid or micro-registration on.</td>
+          <td>Lower Working resolution (1024), turn off non-rigid for test runs, use ORB/BRISK for speed checks.</td>
         </tr>
         <tr>
           <td>Out of memory</td>
-          <td>Lower image size/pyramids, close other memory-heavy apps, use smaller batches.</td>
+          <td>Slides or working resolution too large for RAM.</td>
+          <td>Lower Working resolution, close other memory-heavy apps, register fewer slides at a time, check <strong>Help -&gt; Performance Statistics -&gt; Memory</strong>.</td>
+        </tr>
+        <tr>
+          <td>Tools -&gt; Blink / Merge etc. are greyed out</td>
+          <td>No finished run in this session.</td>
+          <td>Run a registration first; the tools unlock when it completes.</td>
         </tr>
       </table>
-      <div class="tip"><strong>Log file:</strong> detailed diagnostics are written to <code>logs/valis_workstation.log</code>.</div>
+      <div class="tip"><strong>Log file:</strong> detailed diagnostics are written to <code>logs/valis_workstation.log</code> in the application folder, and the same lines appear live in the Status panel.</div>
 
       <h3 style="margin-top:14px">Known limits and pending features</h3>
-      <div class="warn"><strong>Roadmap-aware note:</strong> batch processing mode, point-warp GUI workflow, and persistent colormap presets are still under consideration. Check <a href="README_VALIS_WORKSTATION.md">README roadmap</a> and <a href="WORKSTATION_CHANGELOG.md">changelog</a> before planning large pipeline automation around these features.</div>
+      <div class="warn"><strong>Roadmap-aware note:</strong> batch processing mode, a point-warp GUI workflow, persistent colormap presets and a plugin system are still under consideration. Already available: choosing the non-rigid method (Optical Flow or RAFT) and removing selected slides. Check <a href="README_VALIS_WORKSTATION.md">README roadmap</a> and <a href="WORKSTATION_CHANGELOG.md">changelog</a> before planning large pipeline automation around these features.</div>
     </section>
 
     <section id="final-check" class="section">
       <h2>11. Final Checklist</h2>
       <p>Use this before handing results to collaborators.</p>
       <div class="checklist">
-        <label class="check-item"><input type="checkbox"> Outputs exist under the expected <code>output/&lt;project_name&gt;</code> folder.</label>
+        <label class="check-item"><input type="checkbox"> Aligned files exist under <code>output/&lt;project_name&gt;/registered/</code>.</label>
         <label class="check-item"><input type="checkbox"> <code>summary.csv</code> has no obvious outlier pairs left unreviewed.</label>
         <label class="check-item"><input type="checkbox"> Visual QC performed in Blink for at least critical slide pairs.</label>
-        <label class="check-item"><input type="checkbox"> Export options (pyramids/compression/tile size) match downstream tools.</label>
+        <label class="check-item"><input type="checkbox"> Output Settings (compression, tile size, pyramid) match downstream tools.</label>
         <label class="check-item"><input type="checkbox"> ROI crops exported when focused review subsets are needed.</label>
         <label class="check-item"><input type="checkbox"> If using annotations, warped GeoJSON files were spot-checked.</label>
         <label class="check-item"><input type="checkbox"> Session bundle ZIP generated for handoff/support traceability.</label>
-        <label class="check-item"><input type="checkbox"> Configuration saved to JSON for reproducibility.</label>
+        <label class="check-item"><input type="checkbox"> Configuration saved to JSON (File -&gt; Save Configuration...) for reproducibility.</label>
       </div>
       <div class="note"><strong>Next:</strong> use <a href="VALIS-GUI-Manual.html">the full manual</a> for API details, advanced parameter tables, and architecture reference.</div>
     </section>
 
     <footer>
-      VALIS Workstation Tutorial v1.4 | Standalone HTML | Updated for current GUI behavior in this repository.
+      VALIS Workstation Tutorial v1.5 | Standalone HTML | Updated 2026-10-26 against the current GUI code in this repository.
     </footer>
   </main>
 </div>
