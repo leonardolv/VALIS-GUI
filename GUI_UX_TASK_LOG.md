@@ -6,6 +6,19 @@
 
 ## Completed
 
+### Task: PreferencesDialog object names, accessibility metadata, tabs container properties, and unit tests
+- **Completed**: 2026-10-26
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/preferences_dialog.py`:
+    - Configured explicit `setObjectName("preferencesDialog")` and `setAccessibleName("Preferences Dialog")` on root dialog.
+    - Added explicit `setObjectName("preferencesTabs")` and `setAccessibleName("Preferences Categories")` on tab container.
+    - Assigned explicit object names across all form controls (`prefCacheDirEdit`, `prefBrowseCacheBtn`, `prefMaxThumbCacheSpin`, `prefPersistCacheCheck`, `prefParallelWorkersSpin`, `prefPerfMonitoringCheck`, `prefAutoRefreshSpin`, `prefShowTooltipsCheck`, `prefShowStatusbarCheck`, `prefConfirmCloseCheck`, `prefRecentFilesSpin`, `prefDefaultThumbSizeSpin`, `prefHighContrastCheck`, `prefReducedMotionCheck`, `prefButtonBox`, `prefOkBtn`, `prefCancelBtn`, `prefRestoreBtn`).
+    - Exposed `tabs` and `button_box` properties on `PreferencesDialog`.
+  - `tests/test_preferences_dialog_accessibility.py`:
+    - Added `test_preferences_dialog_metadata_and_object_names` asserting dialog metadata, tab container properties, and control object names.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_preferences_dialog_accessibility.py -v` (17 passed in 0.23s, 0 errors).
+- **Status**: Completed
+
 ### Task: QuickTutorialDialog Accessibility Metadata, Bubble Tooltips, and Public Navigation Helpers
 - **Completed**: 2026-10-25
 - **Changes**:

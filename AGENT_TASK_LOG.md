@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-26 UTC - PreferencesDialog Object Names, Accessibility Metadata, Tabs Container Properties, and Unit Tests
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/preferences_dialog.py`: Configured explicit `setObjectName("preferencesDialog")` and `setAccessibleName("Preferences Dialog")` on root dialog; configured `setObjectName("preferencesTabs")` and `setAccessibleName("Preferences Categories")` on tab widget; assigned explicit object names across form controls (`prefCacheDirEdit`, `prefBrowseCacheBtn`, `prefMaxThumbCacheSpin`, `prefPersistCacheCheck`, `prefParallelWorkersSpin`, `prefPerfMonitoringCheck`, `prefAutoRefreshSpin`, `prefShowTooltipsCheck`, `prefShowStatusbarCheck`, `prefConfirmCloseCheck`, `prefRecentFilesSpin`, `prefDefaultThumbSizeSpin`, `prefHighContrastCheck`, `prefReducedMotionCheck`, `prefButtonBox`, `prefOkBtn`, `prefCancelBtn`, `prefRestoreBtn`); exposed `tabs` and `button_box` properties.
+- `tests/test_preferences_dialog_accessibility.py`: Added unit test `test_preferences_dialog_metadata_and_object_names` asserting dialog metadata, tab container properties, and control object names.
+- Validation: Verified headlessly with `python -m pytest tests/test_preferences_dialog_accessibility.py -v` (17 passed in 0.23s, 0 errors).
+
 ### 2026-10-25 UTC - QuickTutorialDialog accessibility metadata, bubble tooltips, and public navigation helpers
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/quick_tutorial_dialog.py`: Configured explicit `setAccessibleName("Quick Tutorial Dialog")` and `setAccessibleDescription("Interactive beginner tutorial for VALIS Workstation")` on dialog instance; added descriptive step tooltips across all progress bubbles (`Step X of 13: <Title>`); added public ergonomic query and navigation helpers (`current_step`, `total_steps`, `step_title`, `is_first_step()`, `is_last_step()`, `can_go_next()`, `can_go_prev()`, `next_step()`, `prev_step()`, `go_to_step()`).

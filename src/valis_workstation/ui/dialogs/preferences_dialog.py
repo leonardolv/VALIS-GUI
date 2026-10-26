@@ -30,6 +30,8 @@ class PreferencesDialog(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setObjectName("preferencesDialog")
+        self.setAccessibleName("Preferences Dialog")
         self.setWindowTitle("Preferences")
         self.resize(500, 400)
 
@@ -44,6 +46,9 @@ class PreferencesDialog(QtWidgets.QDialog):
 
         # Create tab widget for different preference categories
         tabs = QtWidgets.QTabWidget()
+        tabs.setObjectName("preferencesTabs")
+        tabs.setAccessibleName("Preferences Categories")
+        self._tabs = tabs
 
         # Cache tab
         cache_widget = self._create_cache_tab()
@@ -107,6 +112,32 @@ class PreferencesDialog(QtWidgets.QDialog):
             (self._high_contrast_check, "High contrast mode", None),
             (self._reduced_motion_check, "Reduce motion", None),
         ]
+        # Configure explicit object names across form controls
+        self._cache_dir_edit.setObjectName("prefCacheDirEdit")
+        self._browse_cache_btn.setObjectName("prefBrowseCacheBtn")
+        self._max_thumb_cache_spin.setObjectName("prefMaxThumbCacheSpin")
+        self._persist_cache_check.setObjectName("prefPersistCacheCheck")
+        self._parallel_workers_spin.setObjectName("prefParallelWorkersSpin")
+        self._perf_monitoring_check.setObjectName("prefPerfMonitoringCheck")
+        self._auto_refresh_spin.setObjectName("prefAutoRefreshSpin")
+        self._show_tooltips_check.setObjectName("prefShowTooltipsCheck")
+        self._show_statusbar_check.setObjectName("prefShowStatusbarCheck")
+        self._confirm_close_check.setObjectName("prefConfirmCloseCheck")
+        self._recent_files_spin.setObjectName("prefRecentFilesSpin")
+        self._default_thumb_size_spin.setObjectName("prefDefaultThumbSizeSpin")
+        self._high_contrast_check.setObjectName("prefHighContrastCheck")
+        self._reduced_motion_check.setObjectName("prefReducedMotionCheck")
+        self._button_box.setObjectName("prefButtonBox")
+        ok_btn = self._button_box.button(Std.Ok)
+        if ok_btn:
+            ok_btn.setObjectName("prefOkBtn")
+        cancel_btn = self._button_box.button(Std.Cancel)
+        if cancel_btn:
+            cancel_btn.setObjectName("prefCancelBtn")
+        restore_btn = self._button_box.button(Std.RestoreDefaults)
+        if restore_btn:
+            restore_btn.setObjectName("prefRestoreBtn")
+
         for widget, name, tip in specs:
             widget.setAccessibleName(name)
             if tip and not widget.toolTip():
@@ -417,3 +448,13 @@ class PreferencesDialog(QtWidgets.QDialog):
             self._reduced_motion_check.setChecked(False)
 
             logger.info("Preferences reset to defaults")
+
+    @property
+    def tabs(self) -> QtWidgets.QTabWidget:
+        """Return the preference categories tab widget."""
+        return self._tabs
+
+    @property
+    def button_box(self) -> QtWidgets.QDialogButtonBox:
+        """Return the dialog button box."""
+        return self._button_box
