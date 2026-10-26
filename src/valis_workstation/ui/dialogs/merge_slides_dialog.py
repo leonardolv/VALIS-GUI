@@ -32,6 +32,9 @@ class MergeSlidesDialog(QtWidgets.QDialog):
             Parent widget
         """
         super().__init__(parent)
+        self.setObjectName("mergeSlidesDialog")
+        self.setAccessibleName("Merge Slides Dialog")
+        self.setAccessibleDescription("Configure channel mapping and options for merging registered slides")
         self.setWindowTitle("Merge Slides")
         self.setModal(True)
         self.setMinimumWidth(600)
@@ -46,12 +49,16 @@ class MergeSlidesDialog(QtWidgets.QDialog):
             "Merge registered slides into a single multi-channel image.\n"
             "Each slide becomes a channel. Useful for CyCIF, CODEX, and other multiplexed imaging."
         )
+        info.setObjectName("mergeInfoBanner")
+        info.setAccessibleName("Merge Information Banner")
         info.setWordWrap(True)
         info.setStyleSheet("background: #1f3a4d; color: #d6ecf7; padding: 8px; border-radius: 4px;")
         layout.addWidget(info)
 
         # Channel mapping table
         group = QtWidgets.QGroupBox("Channel Mapping")
+        group.setObjectName("channelMappingGroup")
+        group.setAccessibleName("Channel Mapping Group")
         group_layout = QtWidgets.QVBoxLayout(group)
 
         self._table = QtWidgets.QTableWidget()
@@ -113,6 +120,8 @@ class MergeSlidesDialog(QtWidgets.QDialog):
 
         # Options
         options_group = QtWidgets.QGroupBox("Merge Options")
+        options_group.setObjectName("mergeOptionsGroup")
+        options_group.setAccessibleName("Merge Options Group")
         options_layout = QtWidgets.QFormLayout(options_group)
 
         # Duplicate handling
@@ -126,11 +135,11 @@ class MergeSlidesDialog(QtWidgets.QDialog):
         self._duplicate_handling.setCurrentText("Average")
         self._duplicate_handling.setToolTip(
             "How to handle overlapping pixels:\n"
-            "• Average: Average overlapping values\n"
-            "• Maximum: Take brightest value\n"
-            "• Minimum: Take darkest value\n"
-            "• First: Use first slide's value\n"
-            "• Last: Use last slide's value"
+            "- Average: Average overlapping values\n"
+            "- Maximum: Take brightest value\n"
+            "- Minimum: Take darkest value\n"
+            "- First: Use first slide's value\n"
+            "- Last: Use last slide's value"
         )
         options_layout.addRow("Overlap handling:", self._duplicate_handling)
 
@@ -281,3 +290,74 @@ class MergeSlidesDialog(QtWidgets.QDialog):
             "output_name": self._output_name.text(),
             "normalize": self._normalize.isChecked(),
         }
+
+    # -- Public properties & helpers ---------------------------------------
+
+    @property
+    def table(self) -> QtWidgets.QTableWidget:
+        return self._table
+
+    @property
+    def button_box(self) -> QtWidgets.QDialogButtonBox:
+        return self._button_box
+
+    @property
+    def select_all_button(self) -> QtWidgets.QPushButton:
+        return self._select_all_btn
+
+    @property
+    def select_none_button(self) -> QtWidgets.QPushButton:
+        return self._select_none_btn
+
+    @property
+    def export_config_button(self) -> QtWidgets.QPushButton:
+        return self._export_config_btn
+
+    @property
+    def ok_button(self) -> QtWidgets.QPushButton | None:
+        return self._ok_btn
+
+    @property
+    def cancel_button(self) -> QtWidgets.QPushButton | None:
+        return self._cancel_btn
+
+    @property
+    def duplicate_handling_combo(self) -> QtWidgets.QComboBox:
+        return self._duplicate_handling
+
+    @property
+    def output_name_edit(self) -> QtWidgets.QLineEdit:
+        return self._output_name
+
+    @property
+    def normalize_checkbox(self) -> QtWidgets.QCheckBox:
+        return self._normalize
+
+    def included_slide_count(self) -> int:
+        """Return the count of slides currently marked for inclusion."""
+        count = 0
+        for i in range(self._table.rowCount()):
+            cb = self._table.cellWidget(i, 0)
+            if isinstance(cb, QtWidgets.QCheckBox) and cb.isChecked():
+                count += 1
+        return count
+
+    def is_all_selected(self) -> bool:
+        """Return True if all slide rows are currently selected."""
+        total = self._table.rowCount()
+        return total > 0 and self.included_slide_count() == total
+
+    def is_none_selected(self) -> bool:
+        """Return True if no slide rows are currently selected."""
+        return self.included_slide_count() == 0
+
+    def selected_slide_names(self) -> list[str]:
+        """Return list of slide names currently marked for inclusion."""
+        names = []
+        for i in range(self._table.rowCount()):
+            cb = self._table.cellWidget(i, 0)
+            if isinstance(cb, QtWidgets.QCheckBox) and cb.isChecked():
+                item = self._table.item(i, 1)
+                if item:
+                    names.append(item.text())
+        return names

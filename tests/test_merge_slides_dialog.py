@@ -17,6 +17,26 @@ def test_merge_slides_dialog_accessibility_and_tooltips(qtbot):
     dialog = MergeSlidesDialog(slides)
     qtbot.addWidget(dialog)
 
+# Dialog and group metadata
+    assert dialog.objectName() == "mergeSlidesDialog"
+    assert dialog.accessibleName() == "Merge Slides Dialog"
+    assert "channel mapping" in dialog.accessibleDescription().lower()
+    assert dialog.findChild(QtWidgets.QLabel, "mergeInfoBanner") is not None
+    assert dialog.findChild(QtWidgets.QGroupBox, "channelMappingGroup") is not None
+    assert dialog.findChild(QtWidgets.QGroupBox, "mergeOptionsGroup") is not None
+
+    # Public widget property accessors
+    assert dialog.table is dialog._table
+    assert dialog.button_box is dialog._button_box
+    assert dialog.select_all_button is dialog._select_all_btn
+    assert dialog.select_none_button is dialog._select_none_btn
+    assert dialog.export_config_button is dialog._export_config_btn
+    assert dialog.ok_button is dialog._ok_btn
+    assert dialog.cancel_button is dialog._cancel_btn
+    assert dialog.duplicate_handling_combo is dialog._duplicate_handling
+    assert dialog.output_name_edit is dialog._output_name
+    assert dialog.normalize_checkbox is dialog._normalize
+
     # Table accessibility
     assert dialog._table.accessibleName() == "Channel Mapping Table"
     assert "channel" in dialog._table.accessibleDescription().lower()
@@ -81,17 +101,31 @@ def test_merge_slides_dialog_selection_toggle_actions(qtbot):
         cb = dialog._table.cellWidget(i, 0)
         assert cb.isChecked() is True
 
+    # Selection query helpers
+    assert dialog.included_slide_count() == 2
+    assert dialog.is_all_selected() is True
+    assert dialog.is_none_selected() is False
+    assert dialog.selected_slide_names() == ["Slide_1", "Slide_2"]
+
     # Click Select None
     dialog._select_none_btn.click()
     for i in range(2):
         cb = dialog._table.cellWidget(i, 0)
         assert cb.isChecked() is False
+    assert dialog.included_slide_count() == 0
+    assert dialog.is_all_selected() is False
+    assert dialog.is_none_selected() is True
+    assert dialog.selected_slide_names() == []
 
     # Click Select All
     dialog._select_all_btn.click()
     for i in range(2):
         cb = dialog._table.cellWidget(i, 0)
         assert cb.isChecked() is True
+    assert dialog.included_slide_count() == 2
+    assert dialog.is_all_selected() is True
+    assert dialog.is_none_selected() is False
+    assert dialog.selected_slide_names() == ["Slide_1", "Slide_2"]
 
 
 def test_merge_slides_dialog_headless_export_config(qtbot, tmp_path, monkeypatch):

@@ -6,6 +6,20 @@
 
 ## Completed
 
+### Task: MergeSlidesDialog object names, accessibility metadata, public properties, selection queries, and tooltip hyphen standardization
+- **Completed**: 2026-10-26
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/merge_slides_dialog.py`:
+    - Configured explicit `setObjectName("mergeSlidesDialog")`, `setAccessibleName("Merge Slides Dialog")`, and `setAccessibleDescription(...)` on root dialog.
+    - Assigned explicit object names and accessible names on info banner (`mergeInfoBanner`), channel mapping group (`channelMappingGroup`), and merge options group (`mergeOptionsGroup`).
+    - Standardized duplicate handling tooltip to use hyphens (`- Average: ...`, `- Maximum: ...`).
+    - Exposed public widget properties (`table`, `button_box`, `select_all_button`, `select_none_button`, `export_config_button`, `ok_button`, `cancel_button`, `duplicate_handling_combo`, `output_name_edit`, `normalize_checkbox`).
+    - Added ergonomic query helpers (`included_slide_count()`, `is_all_selected()`, `is_none_selected()`, `selected_slide_names()`).
+  - `tests/test_merge_slides_dialog.py`:
+    - Expanded test suite asserting dialog metadata, group and banner object names, public widget properties, and selection query helpers.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_merge_slides_dialog.py tests/test_preferences_dialog_accessibility.py -v` (20 passed in 0.53s, 0 errors).
+- **Status**: Completed
+
 ### Task: PreferencesDialog object names, accessibility metadata, tabs container properties, and unit tests
 - **Completed**: 2026-10-26
 - **Changes**:

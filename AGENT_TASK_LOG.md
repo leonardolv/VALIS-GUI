@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-26 UTC - MergeSlidesDialog Object Names, Accessibility Metadata, Public Properties, Selection Queries, and Tooltip Hyphen Standardization
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/merge_slides_dialog.py`: Configured explicit `setObjectName("mergeSlidesDialog")`, `setAccessibleName("Merge Slides Dialog")`, and `setAccessibleDescription(...)` on root dialog; assigned object names on banner and group boxes; standardized duplicate handling tooltip hyphens; exposed public widget properties (`table`, `button_box`, `select_all_button`, etc.); added selection query helpers (`included_slide_count()`, `is_all_selected()`, `is_none_selected()`, `selected_slide_names()`).
+- `tests/test_merge_slides_dialog.py`: Expanded test suite asserting dialog metadata, properties, and selection queries.
+- Validation: Verified headlessly with `python -m pytest tests/test_merge_slides_dialog.py tests/test_preferences_dialog_accessibility.py -v` (20 passed in 0.53s, 0 errors).
+
 ### 2026-10-26 UTC - PreferencesDialog Object Names, Accessibility Metadata, Tabs Container Properties, and Unit Tests
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/preferences_dialog.py`: Configured explicit `setObjectName("preferencesDialog")` and `setAccessibleName("Preferences Dialog")` on root dialog; configured `setObjectName("preferencesTabs")` and `setAccessibleName("Preferences Categories")` on tab widget; assigned explicit object names across form controls (`prefCacheDirEdit`, `prefBrowseCacheBtn`, `prefMaxThumbCacheSpin`, `prefPersistCacheCheck`, `prefParallelWorkersSpin`, `prefPerfMonitoringCheck`, `prefAutoRefreshSpin`, `prefShowTooltipsCheck`, `prefShowStatusbarCheck`, `prefConfirmCloseCheck`, `prefRecentFilesSpin`, `prefDefaultThumbSizeSpin`, `prefHighContrastCheck`, `prefReducedMotionCheck`, `prefButtonBox`, `prefOkBtn`, `prefCancelBtn`, `prefRestoreBtn`); exposed `tabs` and `button_box` properties.
