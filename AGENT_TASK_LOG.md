@@ -6,6 +6,13 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-27 UTC - Font-independent toolbar icon-only test (audit pass)
+Status: **done** (Claude)
+- Audit: all four named backlog items (`track_tile_load`, `get_tile_cache`, orphaned settings keys, "Last" overlap handling) were already resolved and covered by tests; the "Average" duplicate-band reduction is also implemented. Baseline suite had one failure.
+- Root cause: `tests/test_gui_polish_layout.py::test_toolbar_goes_icon_only_when_labels_do_not_fit` assumed the labelled toolbar is wider than 1000 px, which depends on the installed font (765 px with Inter here) and the window minimum width (~992 px), so the compact mode was unreachable and the test failed on a clean checkout.
+- Solution: test now drives `_adapt_toolbars_to_width()` through the cached `_full_text_width` in both directions. No product change, so no manual/tutorial edit.
+- Validation: full suite 573 passed headlessly (offscreen).
+
 ### 2026-10-26 UTC - MergeSlidesDialog Object Names, Accessibility Metadata, Public Properties, Selection Queries, and Tooltip Hyphen Standardization
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/merge_slides_dialog.py`: Configured explicit `setObjectName("mergeSlidesDialog")`, `setAccessibleName("Merge Slides Dialog")`, and `setAccessibleDescription(...)` on root dialog; assigned object names on banner and group boxes; standardized duplicate handling tooltip hyphens; exposed public widget properties (`table`, `button_box`, `select_all_button`, etc.); added selection query helpers (`included_slide_count()`, `is_all_selected()`, `is_none_selected()`, `selected_slide_names()`).
