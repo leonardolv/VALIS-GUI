@@ -148,3 +148,16 @@ def test_merge_slides_dialog_headless_export_config(qtbot, tmp_path, monkeypatch
     assert "channels" in data
     assert len(data["channels"]) == 2
     assert data["output_name"] == "merged_image"
+
+
+def test_name_columns_stretch_to_fill_the_table(qtbot):
+    from PySide6 import QtWidgets
+
+    from valis_workstation.ui.dialogs.merge_slides_dialog import MergeSlidesDialog
+
+    dlg = MergeSlidesDialog(["a_very_long_slide_name_stain_01.ndpi", "b.tif"])
+    qtbot.addWidget(dlg)
+    header = dlg.table.horizontalHeader()
+    stretch = QtWidgets.QHeaderView.ResizeMode.Stretch
+    assert header.sectionResizeMode(1) == stretch
+    assert header.sectionResizeMode(2) == stretch

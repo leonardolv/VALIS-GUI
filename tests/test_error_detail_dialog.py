@@ -88,3 +88,16 @@ def test_copy_button_label_survives_a_double_click(qtbot):
     dialog.copy_btn.click()
     dialog.copy_btn.click()
     qtbot.waitUntil(lambda: dialog.copy_btn.text() == "Copy to Clipboard", timeout=4000)
+
+
+def test_technical_details_hidden_until_group_is_expanded(qtbot):
+    from valis_workstation.ui.dialogs.error_detail_dialog import ErrorDetailDialog
+
+    dialog = ErrorDetailDialog("boom", "trace", "log")
+    qtbot.addWidget(dialog)
+    dialog.show()
+    assert dialog.details_text.isHidden()
+    dialog.details_group.setChecked(True)
+    assert not dialog.details_text.isHidden()
+    dialog.details_group.setChecked(False)
+    assert dialog.details_text.isHidden()

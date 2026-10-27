@@ -72,6 +72,13 @@ class MergeSlidesDialog(QtWidgets.QDialog):
             ["Include", "Slide Name", "Channel Name", "Color"]
         )
         self._table.setRowCount(len(slide_names))
+        # Let the name columns take the free width (long slide file names were
+        # cut off while an empty strip sat to the right of the Color column).
+        header = self._table.horizontalHeader()
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 
         # Populate table
         for i, name in enumerate(slide_names):

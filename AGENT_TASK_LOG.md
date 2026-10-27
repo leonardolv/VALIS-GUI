@@ -6,6 +6,14 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-27 UTC - GUI screenshot audit: error details collapse, merge table width, save-options note
+Status: **done** (Claude)
+- Audit: rendered the main window and every dialog (merge slides, preferences, save options, ROI export, error details, diagnostics, performance stats, first-run wizard, quick tutorial) offscreen with the installed Inter font at 1280x720 and 1920x1080. Nothing clipped; three real defects found.
+- ErrorDetailDialog: the "Technical Details (Click to expand)" group was unchecked yet showed a greyed-out, unusable text box, because an unchecked checkable QGroupBox only disables children. The text is now hidden until the group is ticked.
+- MergeSlidesDialog: the Slide Name and Channel Name columns kept narrow fixed widths (long file names cut off, empty strip to the right); they now stretch, Include and Color size to contents.
+- SaveOptionsDialog: the grey note read "Not applied by VALIS (OME-TIFF is always written): pyramid level count" (also at defaults). It now explains that VALIS always writes OME-TIFF and chooses the pyramid depth, and names the ignored controls as labelled ("Pyramid levels", "Format", "JPEG Quality").
+- Tests: new tests for the first two (both fail before the fix), save-options assertions updated. Full suite 575 passed headless. The Manual already describes the details section as collapsible, so no HTML change.
+
 ### 2026-10-27 UTC - Font-independent toolbar icon-only test (audit pass)
 Status: **done** (Claude)
 - Audit: all four named backlog items (`track_tile_load`, `get_tile_cache`, orphaned settings keys, "Last" overlap handling) were already resolved and covered by tests; the "Average" duplicate-band reduction is also implemented. Baseline suite had one failure.

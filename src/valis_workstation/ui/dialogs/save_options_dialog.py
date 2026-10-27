@@ -271,18 +271,18 @@ class SaveOptionsDialog(QtWidgets.QDialog):
             info = f"JPEG quality {quality}%, {pyr_str}"
 
         # VALIS always writes lossless OME-TIFF and picks the pyramid depth
-        # itself, so say which selections will not change the output.
+        # itself, so name the controls that will not change the output.
         ignored = []
         if write_pyr and pyramids:
-            ignored.append("pyramid level count")
+            ignored.append("Pyramid levels")
         if format_name != "OME-TIFF":
-            ignored.append(f"{format_name} format")
+            ignored.append("Format")
         if format_name == "JPEG":
-            ignored.append("JPEG quality")
+            ignored.append("JPEG Quality")
         if ignored:
             info += (
-                f". Not applied by VALIS (OME-TIFF is always written): "
-                f"{', '.join(ignored)}"
+                ". Not applied by VALIS (it always writes OME-TIFF and "
+                f"chooses the pyramid depth itself): {', '.join(ignored)}"
             )
         self._info_label.setText(f"Info: {info}")
 
