@@ -71,6 +71,11 @@ class ErrorDetailDialog(QtWidgets.QDialog):
 
             self.details_text.setPlainText(full_details)
             details_layout.addWidget(self.details_text)
+            # An unchecked checkable QGroupBox only disables its children; it
+            # does not hide them. Without this the "collapsed" group showed a
+            # greyed-out, unscrollable text box that looked expanded.
+            self.details_text.setVisible(False)
+            self.details_group.toggled.connect(self.details_text.setVisible)
             layout.addWidget(self.details_group)
 
         # Buttons
