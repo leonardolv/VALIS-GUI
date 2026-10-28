@@ -13,7 +13,6 @@ import numpy as np
 from valis_workstation.constants import (
     CropModes,
     FeatureDetectors,
-    ImageFormats,
     TransformerTypes,
     compression_level_to_method,
 )
