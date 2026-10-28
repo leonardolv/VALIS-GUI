@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-28 UTC - Slides with the same file stem vanished from the preview; case-insensitive sort
+Status: **done** (Claude)
+- Root cause: the Slide Preview dock is keyed by name and `_load_thumbnails_parallel` / the Reference slide list used `Path.stem`, so `HE.tif` and `HE.svs` (or `A.tif`/`a.tif`) in one folder silently replaced each other: one slide was missing from the preview and the reference dropdown (registration itself still used both). The dock's A-Z sort was case-sensitive (uppercase first) unlike the folder scan's order.
+- Solution: new `slide_display_names()` (services/slide_scan.py) gives the stem normally and the full file name for colliding stems; used for thumbnails and the reference list. Sort now ignores case. Manual updated (Review your slides step).
+- Validation: 4 new tests in `tests/test_slide_scan_full.py` (3 red before the fix, plus the sort one); full suite 582 passed offscreen (baseline 578).
+
 ### 2026-10-28 UTC - ThumbnailCache: corrupt sidecar self-heal and race-tolerant stats
 Status: **done** (Claude)
 - Root cause: `ThumbnailCache.get()` treated a truncated/garbled `.json` sidecar (crash mid-write) as a generic error, returned None and left the entry in place, so it logged an error on every lookup until something overwrote it; a JSON value that was not an object would also have crashed callers. `get_stats()` let one PNG vanishing mid-scan zero out the stats for the whole cache (its sibling `_check_cache_size` already tolerated this).

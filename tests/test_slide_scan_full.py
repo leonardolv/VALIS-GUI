@@ -82,3 +82,63 @@ class TestScanSlideFolder:
         assert ".png" in DEFAULT_EXTENSIONS
         assert ".jpg" in DEFAULT_EXTENSIONS
         assert ".jpeg" in DEFAULT_EXTENSIONS
+
+
+class TestSlideDisplayNames:
+    def test_unique_stems_use_the_stem(self) -> None:
+        from valis_workstation.services.slide_scan import slide_display_names
+
+        a, b = Path("/x/a.ome.tiff"), Path("/x/b.svs")
+        assert slide_display_names([a, b]) == {a: "a.ome", b: "b"}
+
+    def test_shared_stems_use_full_file_names(self) -> None:
+        from valis_workstation.services.slide_scan import slide_display_names
+
+        a, b, c = Path("/x/HE.tif"), Path("/x/he.svs"), Path("/x/other.tif")
+        names = slide_display_names([a, b, c])
+        assert names == {a: "HE.tif", b: "he.svs", c: "other"}
+        assert len(set(names.values())) == 3
+
+
+class TestPreviewKeepsSlidesWithSharedStems:
+    def test_both_slides_reach_the_preview_and_reference_list(
+        self, qtbot, tmp_path
+    ) -> None:
+        from unittest.mock import patch
+
+        from valis_workstation.main_window import MainWindow
+        from valis_workstation.utils.qt_logging import QtLogEmitter
+
+        win = MainWindow(
+            repo_root=tmp_path,
+            log_emitter=QtLogEmitter(),
+            simple_elastix_available=False,
+        )
+        qtbot.addWidget(win)
+        slides = [tmp_path / "HE.tif", tmp_path / "HE.svs", tmp_path / "z.tif"]
+        for s in slides:
+            s.write_bytes(b"x")
+        with patch(
+            "valis_workstation.services.thumbnail_generator.generate_thumbnail",
+            return_value=(None, {}),
+        ):
+            win._load_thumbnails_parallel(slides, overlay=None)
+        assert set(win._slide_preview_dock._thumbnails) == {"HE.tif", "HE.svs", "z"}
+
+
+def test_preview_sort_ignores_case(qtbot) -> None:
+    from valis_workstation.ui.slide_preview_dock import SlidePreviewDock
+
+    dock = SlidePreviewDock()
+    qtbot.addWidget(dock)
+    for n in ["B", "a", "c"]:
+        dock.add_slide(n, None, {})
+    items = {dock._grid_layout.itemAt(i).widget().property("slideName") for i in range(3)}
+    order = [
+        dock._grid_layout.itemAtPosition(r, c).widget().property("slideName")
+        for r in range(3)
+        for c in range(3)
+        if dock._grid_layout.itemAtPosition(r, c)
+    ]
+    assert items == {"B", "a", "c"}
+    assert order == ["a", "B", "c"]
