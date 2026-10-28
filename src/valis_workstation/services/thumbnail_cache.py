@@ -117,8 +117,17 @@ class ThumbnailCache:
                 return None
 
             # Load metadata
-            with open(metadata_path, "r") as f:
-                metadata = json.load(f)
+            try:
+                with open(metadata_path, "r") as f:
+                    metadata = json.load(f)
+                if not isinstance(metadata, dict):
+                    raise ValueError("metadata is not a JSON object")
+            except (ValueError, UnicodeDecodeError) as e:
+                # Truncated/garbled sidecar (e.g. crash mid-write). Drop the
+                # entry so it is regenerated instead of failing on every call.
+                logger.warning(f"Discarding corrupt thumbnail metadata {metadata_path}: {e}")
+                self._remove_cache_entry(cache_key)
+                return None
 
             # Validate cache entry (check modification time)
             current_mtime = slide_path.stat().st_mtime
@@ -289,13 +298,17 @@ class ThumbnailCache:
             count = 0
 
             for file_path in self.cache_dir.glob("*.png"):
-                total_size += file_path.stat().st_size
+                try:
+                    entry_size = file_path.stat().st_size
+                    # Also count metadata file
+                    metadata_path = file_path.with_suffix(".json")
+                    if metadata_path.exists():
+                        entry_size += metadata_path.stat().st_size
+                except OSError:
+                    # Vanished mid-scan: skip it, keep the rest of the stats.
+                    continue
+                total_size += entry_size
                 count += 1
-
-                # Also count metadata file
-                metadata_path = file_path.with_suffix(".json")
-                if metadata_path.exists():
-                    total_size += metadata_path.stat().st_size
 
             return {
                 "count": count,
