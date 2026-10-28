@@ -15,7 +15,7 @@ Date: 2026-01-11
 import logging
 from pathlib import Path
 
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 from valis_workstation.ui.form_layout_utils import add_form_spacer
 

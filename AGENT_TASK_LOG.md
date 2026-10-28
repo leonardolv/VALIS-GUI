@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-28 UTC - Conservative dead-code audit: remove 9 unused imports
+Status: **done** (Claude)
+- Removed (ruff F401, each grep-verified to have no reference in src/tests incl. patch targets and re-exports): `dataclasses.field` (models/config.py), `QBuffer`/`QByteArray`/`QIODevice` (services/thumbnail_cache.py), `ImageFormats` (services/valis_pipeline.py), `QtGui` (ui/dialogs/preferences_dialog.py), `Callable` (ui/dialogs/quick_tutorial_dialog.py), `datetime`/`Path` (utils/performance.py).
+- Kept for a human decision (vulture, 60% confidence, unused but plausibly meant to be wired up or public helpers): `constants.ConfigKeys` and three `key_for_label`, `MainWindow._start_registration_from_context/_confirm_registration/_safe_total_size_bytes/expand_center/_open_repo_document`, `error_metrics.summarize_errors`, merge dialog selection helpers, `QuickTutorialDialog` step-navigation methods, `splitter_utils.set_splitter_sizes/expand_panel`, `paths.ensure_dir/normalize_path`, `performance.TimingContext/log_performance_summary/get_performance_status`.
+- Validation: 585 passed offscreen before and after; ruff src+tests 183 -> 174 findings.
+
 ### 2026-10-28 UTC - Reference slide pick with case-clashing names; warn about stem clashes before registering
 Status: **done** (Claude)
 - Root cause: the pipeline resolved the Reference slide case-insensitively and first-match-wins, so with `A.tif` and `a.tif` choosing `a.tif` registered against `A.tif`. Pre-registration validation was also silent that VALIS renames same-stem slides (`HE_0`, `HE_1`), which changes all output names.
