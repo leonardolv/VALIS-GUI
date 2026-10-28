@@ -18,6 +18,7 @@ from valis_workstation.constants import (
     compression_level_to_method,
 )
 from valis_workstation.models.config import Config
+from valis_workstation.services.slide_scan import find_reference_slide
 from valis_workstation.utils.exceptions import UserVisibleError
 
 logger = logging.getLogger(__name__)
@@ -369,18 +370,9 @@ def run_valis_pipeline(
     # ── Determine reference image ──────────────────────────────────
     reference_img_f: str | None = None
     if config.reference_slide and config.reference_slide != "auto-detect":
-        ref_lower = config.reference_slide.lower()
-        for sp in slide_paths:
-            if Path(sp).stem.lower() == ref_lower:
-                reference_img_f = sp
-                logger.info("Reference slide (by stem): %s", reference_img_f)
-                break
-        if reference_img_f is None:
-            for sp in slide_paths:
-                if Path(sp).name.lower() == ref_lower:
-                    reference_img_f = sp
-                    logger.info("Reference slide (by name): %s", reference_img_f)
-                    break
+        reference_img_f = find_reference_slide(slide_paths, config.reference_slide)
+        if reference_img_f is not None:
+            logger.info("Reference slide: %s", reference_img_f)
         if reference_img_f is None:
             logger.warning(
                 "Reference slide '%s' not found - VALIS will auto-select",
