@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-28 UTC - ThumbnailCache: corrupt sidecar self-heal and race-tolerant stats
+Status: **done** (Claude)
+- Root cause: `ThumbnailCache.get()` treated a truncated/garbled `.json` sidecar (crash mid-write) as a generic error, returned None and left the entry in place, so it logged an error on every lookup until something overwrote it; a JSON value that was not an object would also have crashed callers. `get_stats()` let one PNG vanishing mid-scan zero out the stats for the whole cache (its sibling `_check_cache_size` already tolerated this).
+- Solution: `get()` now discards entries whose metadata is unparsable or not a JSON object (so they regenerate); `get_stats()` skips vanished files per entry. No user-facing feature change, so no manual/tutorial edit.
+- Validation: 3 new tests in `tests/test_thumbnail_cache.py` fail before the fix; full suite 578 passed offscreen (baseline 575).
+
 ### 2026-10-27 UTC - GUI screenshot audit: error details collapse, merge table width, save-options note
 Status: **done** (Claude)
 - Audit: rendered the main window and every dialog (merge slides, preferences, save options, ROI export, error details, diagnostics, performance stats, first-run wizard, quick tutorial) offscreen with the installed Inter font at 1280x720 and 1920x1080. Nothing clipped; three real defects found.
