@@ -65,6 +65,20 @@ def validate_slides(
             f"{', '.join(f.name for f in unsupported_files[:3])}"
         )
 
+    # VALIS names slides by file stem and renames clashes (HE_0, HE_1), which
+    # changes every output file name; tell the user before they start.
+    by_stem: dict[str, list[Path]] = {}
+    for s in slides:
+        by_stem.setdefault(s.stem, []).append(s)
+    clashes = [v for v in by_stem.values() if len(v) > 1]
+    if clashes:
+        shown = "; ".join(" + ".join(f.name for f in v) for v in clashes[:3])
+        warnings.append(
+            f"{len(clashes)} group(s) of slides share a file name once the "
+            f"extension is ignored ({shown}). VALIS will rename them with a "
+            f"numeric suffix (for example HE_0, HE_1) in its output."
+        )
+
     # Calculate total size
     existing_slides = [s for s in slides if s.exists()]
     if existing_slides:

@@ -142,3 +142,20 @@ def test_preview_sort_ignores_case(qtbot) -> None:
     ]
     assert items == {"B", "a", "c"}
     assert order == ["a", "B", "c"]
+
+
+class TestFindReferenceSlide:
+    def test_exact_case_beats_case_insensitive(self) -> None:
+        from valis_workstation.services.slide_scan import find_reference_slide
+
+        paths = ["/d/A.tif", "/d/a.tif"]
+        assert find_reference_slide(paths, "a.tif") == "/d/a.tif"
+        assert find_reference_slide(paths, "A.tif") == "/d/A.tif"
+
+    def test_stem_name_and_missing(self) -> None:
+        from valis_workstation.services.slide_scan import find_reference_slide
+
+        paths = ["/d/HE.tif", "/d/IHC.svs"]
+        assert find_reference_slide(paths, "ihc") == "/d/IHC.svs"
+        assert find_reference_slide(paths, "HE.tif") == "/d/HE.tif"
+        assert find_reference_slide(paths, "nope") is None

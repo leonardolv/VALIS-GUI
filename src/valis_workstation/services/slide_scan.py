@@ -56,3 +56,22 @@ def slide_display_names(slides: Iterable[Path]) -> dict[Path, str]:
         path: (path.name if counts[path.stem.lower()] > 1 else path.stem)
         for path in paths
     }
+
+
+def find_reference_slide(slide_paths: Iterable[str | Path], label: str) -> str | None:
+    """Return the slide path that the Reference-slide ``label`` refers to.
+
+    ``label`` is either a file stem or a full file name (see
+    :func:`slide_display_names`). An exact (case-sensitive) match wins over a
+    case-insensitive one, so ``A.tif`` and ``a.tif`` in one folder can each be
+    chosen; the stem is tried before the full name at each strictness.
+    """
+    paths = [str(p) for p in slide_paths]
+    for fold in (False, True):
+        want = label.lower() if fold else label
+        for attr in ("stem", "name"):
+            for sp in paths:
+                got = getattr(Path(sp), attr)
+                if (got.lower() if fold else got) == want:
+                    return sp
+    return None

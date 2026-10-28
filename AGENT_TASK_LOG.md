@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-28 UTC - Reference slide pick with case-clashing names; warn about stem clashes before registering
+Status: **done** (Claude)
+- Root cause: the pipeline resolved the Reference slide case-insensitively and first-match-wins, so with `A.tif` and `a.tif` choosing `a.tif` registered against `A.tif`. Pre-registration validation was also silent that VALIS renames same-stem slides (`HE_0`, `HE_1`), which changes all output names.
+- Solution: new `find_reference_slide()` (exact case before case-insensitive, stem then name); `validate_slides` warns about clashing stems. Manual updated.
+- Validation: 3 new tests; full suite 585 passed offscreen; ruff finding count unchanged from baseline.
+
 ### 2026-10-28 UTC - Slides with the same file stem vanished from the preview; case-insensitive sort
 Status: **done** (Claude)
 - Root cause: the Slide Preview dock is keyed by name and `_load_thumbnails_parallel` / the Reference slide list used `Path.stem`, so `HE.tif` and `HE.svs` (or `A.tif`/`a.tif`) in one folder silently replaced each other: one slide was missing from the preview and the reference dropdown (registration itself still used both). The dock's A-Z sort was case-sensitive (uppercase first) unlike the folder scan's order.
