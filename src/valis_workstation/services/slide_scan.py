@@ -37,3 +37,22 @@ def scan_slide_folder(
         valid_exts,
     )
     return sorted(slides, key=lambda p: p.name.lower())
+
+
+def slide_display_names(slides: Iterable[Path]) -> dict[Path, str]:
+    """Map each slide to a unique label for the preview and reference lists.
+
+    The label is the file stem, which is what VALIS uses to name a slide. When
+    two slides share a stem (``HE.tif`` and ``HE.svs``, or ``A.tif`` and
+    ``a.tif``) a stem-keyed list would show only one of them, so those slides
+    are labelled with their full file name instead.
+    """
+    paths = [Path(s) for s in slides]
+    counts: dict[str, int] = {}
+    for path in paths:
+        key = path.stem.lower()
+        counts[key] = counts.get(key, 0) + 1
+    return {
+        path: (path.name if counts[path.stem.lower()] > 1 else path.stem)
+        for path in paths
+    }

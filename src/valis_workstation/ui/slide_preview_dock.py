@@ -354,9 +354,9 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
 
         names = list(self._thumbnails.keys())
         if self._sort_combo.currentText() == "Name (Z-A)":
-            names.sort(reverse=True)
+            names.sort(key=lambda n: (n.lower(), n), reverse=True)
         else:
-            names.sort()
+            names.sort(key=lambda n: (n.lower(), n))
 
         # Ensure layout is rebuilt in the sorted order.
         for widget in self._thumbnails.values():
