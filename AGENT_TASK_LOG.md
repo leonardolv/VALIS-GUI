@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-29 UTC - Project name ".." / trailing dots could escape or alias the output folder
+Status: **done** (Claude)
+- Root cause: `PropertiesDock.config()` only replaced `< > : " / \ | ? *`, so a project name of `..` produced `output/..` (the repo root) as the registration output directory, and `study.` / `study ` alias `study` on Windows. The red-border validator duplicated the rules separately and also accepted these.
+- Solution: new `sanitize_project_name()` / `is_valid_project_name()` in `utils/validation.py` (drops trailing dots/spaces, falls back to "New Project" for dot-only names, reserved-name suffix); `config()` and the validator now share it, with a tooltip for the new case. No manual change needed (the manual does not describe name rules).
+- Validation: new `tests/test_project_name_sanitize.py` (19 tests); full suite 605 passed offscreen (baseline 585).
+
 ### 2026-10-28 UTC - Reference slide pick with case-clashing names; warn about stem clashes before registering
 Status: **done** (Claude)
 - Root cause: the pipeline resolved the Reference slide case-insensitively and first-match-wins, so with `A.tif` and `a.tif` choosing `a.tif` registered against `A.tif`. Pre-registration validation was also silent that VALIS renames same-stem slides (`HE_0`, `HE_1`), which changes all output names.

@@ -11,6 +11,11 @@ from valis_workstation.constants import CropModes, FeatureDetectors, ImageFormat
 from valis_workstation.layout_constants import GRID_SPACING
 from valis_workstation.models.config import Config
 from valis_workstation.ui.icons import load_icon
+from valis_workstation.utils.validation import (
+    RESERVED_NAMES,
+    is_valid_project_name,
+    sanitize_project_name,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -581,24 +586,20 @@ class PropertiesDock(QtWidgets.QDockWidget):
             return False
 
     def _validate_project_name(self, text: str) -> None:
-        invalid_chars = r'[<>:"/\\|?*]'
-        reserved_names = {
-            "CON",
-            "PRN",
-            "AUX",
-            "NUL",
-            *(f"COM{i}" for i in range(1, 10)),
-            *(f"LPT{i}" for i in range(1, 10)),
-        }
         if not text.strip():
             self._project_name.setStyleSheet("QLineEdit { border: 1px solid orange; }")
             self._project_name.setToolTip("Project name cannot be empty")
-        elif re.search(invalid_chars, text):
+        elif re.search(r'[<>:"/\\|?*]', text):
             self._project_name.setStyleSheet("QLineEdit { border: 2px solid red; }")
             self._project_name.setToolTip('Invalid characters: < > : " / \\ | ? *')
-        elif text.strip().upper() in reserved_names:
+        elif text.strip().upper() in RESERVED_NAMES:
             self._project_name.setStyleSheet("QLineEdit { border: 2px solid red; }")
             self._project_name.setToolTip(f"'{text}' is a reserved system name")
+        elif not is_valid_project_name(text):
+            self._project_name.setStyleSheet("QLineEdit { border: 2px solid red; }")
+            self._project_name.setToolTip(
+                "Names cannot end with a dot or space, or be made only of dots"
+            )
         else:
             self._project_name.setStyleSheet("")
             self._project_name.setToolTip(
@@ -610,19 +611,7 @@ class PropertiesDock(QtWidgets.QDockWidget):
     def config(self) -> Config:
         """Build a :class:`Config` from the current widget state."""
         # Sanitize project name
-        project_name = re.sub(r'[<>:"/\\|?*]', "_", self._project_name.text().strip())
-        if not project_name:
-            project_name = "New Project"
-        reserved = {
-            "CON",
-            "PRN",
-            "AUX",
-            "NUL",
-            *(f"COM{i}" for i in range(1, 10)),
-            *(f"LPT{i}" for i in range(1, 10)),
-        }
-        if project_name.upper() in reserved:
-            project_name = f"{project_name}_project"
+        project_name = sanitize_project_name(self._project_name.text())
 
         # Reference slide (None ⇒ auto-detect)
         ref_slide = None
