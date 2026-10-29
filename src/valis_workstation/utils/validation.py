@@ -3,12 +3,47 @@
 from __future__ import annotations
 
 import logging
+import re
 import shutil
 from pathlib import Path
 
 from valis_workstation.constants import has_supported_extension
 
 logger = logging.getLogger(__name__)
+
+
+_INVALID_NAME_CHARS = re.compile(r'[<>:"/\\|?*]')
+RESERVED_NAMES = {
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    *(f"COM{i}" for i in range(1, 10)),
+    *(f"LPT{i}" for i in range(1, 10)),
+}
+DEFAULT_PROJECT_NAME = "New Project"
+
+
+def sanitize_project_name(text: str) -> str:
+    """Return a safe single-folder name for ``output/<project_name>/``.
+
+    Replaces characters Windows forbids, drops trailing dots and spaces (the
+    OS strips them silently, so "x." and "x" would share a folder), and
+    refuses names made only of dots: ``".."`` would send the results to the
+    parent of ``output/``. Empty results fall back to the default name and
+    reserved device names get a ``_project`` suffix.
+    """
+    name = _INVALID_NAME_CHARS.sub("_", text.strip()).rstrip(". ")
+    if not name:
+        name = DEFAULT_PROJECT_NAME
+    if name.upper() in RESERVED_NAMES:
+        name = f"{name}_project"
+    return name
+
+
+def is_valid_project_name(text: str) -> bool:
+    """True when ``text`` can be used as the folder name unchanged."""
+    return bool(text.strip()) and sanitize_project_name(text) == text.strip()
 
 
 class ValidationResult:
