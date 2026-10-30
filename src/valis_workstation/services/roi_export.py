@@ -48,6 +48,21 @@ class ROIExportResult:
         return "\n".join(parts)
 
 
+def _unique_file_name(stem: str, ext: str, used: set[str]) -> str:
+    """Return ``stem+ext``, suffixed ``_2``, ``_3``... if it clashes.
+
+    Compared case-insensitively: on Windows/macOS ``A_ROI.png`` and
+    ``a_ROI.png`` are the same file, so the second slide would silently
+    overwrite the first crop.
+    """
+    candidate, n = f"{stem}{ext}", 1
+    while candidate.casefold() in used:
+        n += 1
+        candidate = f"{stem}_{n}{ext}"
+    used.add(candidate.casefold())
+    return candidate
+
+
 def export_roi_crops(
     slides: Mapping[str, Any],
     bbox: tuple[int, int, int, int],
@@ -63,6 +78,7 @@ def export_roi_crops(
     entirely outside a slide is reported as a failure for that slide only.
     """
     result = ROIExportResult()
+    used_names: set[str] = set()
     for i, (name, slide) in enumerate(slides.items()):
         if is_cancelled is not None and is_cancelled():
             result.cancelled = True
@@ -79,7 +95,7 @@ def export_roi_crops(
             if box != tuple(bbox):
                 result.clipped.append(name)
             roi = warped.extract_area(*box)
-            out_file = Path(out_dir) / f"{name}_ROI{ext}"
+            out_file = Path(out_dir) / _unique_file_name(f"{name}_ROI", ext, used_names)
             save_fn(str(out_file), roi)
             result.files.append(str(out_file))
         except Exception as exc:  # noqa: BLE001 - report per slide

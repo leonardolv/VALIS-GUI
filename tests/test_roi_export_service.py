@@ -101,3 +101,13 @@ def test_paste_is_atomic_on_invalid_values(qtbot, payload):
     d.paste_json_btn.click()
     assert d.get_options()["bbox"] == (0, 0, 1000, 1000)
     assert "Invalid ROI JSON" in d._feedback_label.text()
+
+
+def test_case_only_name_clash_does_not_overwrite(tmp_path):
+    a, _ = _slide(1000, 1000)
+    b, _ = _slide(1000, 1000)
+    res = export_roi_crops(
+        {"Slide": a, "slide": b}, (0, 0, 10, 10), tmp_path, ".png",
+        lambda path, img: None,
+    )
+    assert [Path(f).name for f in res.files] == ["Slide_ROI.png", "slide_ROI_2.png"]
