@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-10-30 UTC - ROI export: slides whose names differ only by case overwrote each other's crop
+Status: **done** (Claude)
+- Root cause: `export_roi_crops` wrote `{name}_ROI{ext}` per slide; on case-insensitive filesystems (Windows/macOS) `Slide` and `slide` map to one file, so one crop was silently lost while both were reported as exported.
+- Solution: `_unique_file_name()` tracks used names case-insensitively and appends `_2`, `_3`... on a clash. Test added in `tests/test_roi_export_service.py`. No manual change needed.
+- Validation: `QT_QPA_PLATFORM=offscreen pytest tests` -> 606 passed.
+
 ### 2026-10-29 UTC - Project name ".." / trailing dots could escape or alias the output folder
 Status: **done** (Claude)
 - Root cause: `PropertiesDock.config()` only replaced `< > : " / \ | ? *`, so a project name of `..` produced `output/..` (the repo root) as the registration output directory, and `study.` / `study ` alias `study` on Windows. The red-border validator duplicated the rules separately and also accepted these.
