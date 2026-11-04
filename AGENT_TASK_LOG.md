@@ -7,6 +7,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-11-04 UTC - BlinkViewerDialog Public Properties, Query Helpers, and Unit Tests
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/blink_viewer.py`: Exposed public property accessors on `BlinkViewerDialog` (`slide_a_combo`, `slide_b_combo`, `mode_combo`, `interval_spin`, `opacity_slider`, `blink_toggle_button`, `button_box`, `close_button`); added ergonomic query and mutation helpers (`selected_slide_a()`, `selected_slide_b()`, `current_mode()`, `set_mode(mode)`, `interval_ms()`, `set_interval_ms(ms)`, `blend_ratio()`, `set_blend_ratio(ratio)`, `is_blinking()`).
+- `tests/test_blink_viewer_dialog.py`: Added unit test `test_blink_viewer_properties_and_query_helpers` asserting property accessors, path retrieval, mode changes, interval and blend manipulation, and blinking state.
+- Validation: Verified headlessly with `python -m pytest tests/test_blink_viewer_dialog.py tests/test_blink_viewer_modes.py tests/test_roi_export_dialog.py tests/test_save_options_dialog.py -v` (21 passed in 0.47s, 0 errors).
+
 ### 2026-11-04 UTC - ROIExportDialog Public Properties, Bounding Box Query Helpers, and Unit Tests
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/roi_export_dialog.py`: Saved `self._button_box`; exposed public property accessors (`x_spin`, `y_spin`, `width_spin`, `height_spin`, `format_combo`, `reopen_checkbox`, `feedback_label`, `button_box`); added ergonomic bounding box query helpers and state predicates (`coordinates()`, `area()`, `is_valid_roi()`, `selected_format()`, `should_reopen()`, `feedback_text()`); refactored `get_options()` to reuse query helpers.

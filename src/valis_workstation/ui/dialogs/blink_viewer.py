@@ -262,3 +262,89 @@ class BlinkViewerDialog(QtWidgets.QDialog):
     def closeEvent(self, event) -> None:
         self._stop_blink_timer()
         super().closeEvent(event)
+
+    # ------------------------------------------------------------------ #
+    #  Properties & Ergonomic Query Helpers                              #
+    # ------------------------------------------------------------------ #
+
+    @property
+    def slide_a_combo(self) -> QtWidgets.QComboBox:
+        """The slide A selection combo box."""
+        return self._slide_a
+
+    @property
+    def slide_b_combo(self) -> QtWidgets.QComboBox:
+        """The slide B selection combo box."""
+        return self._slide_b
+
+    @property
+    def mode_combo(self) -> QtWidgets.QComboBox:
+        """The display mode selection combo box."""
+        return self._mode
+
+    @property
+    def interval_spin(self) -> QtWidgets.QSpinBox:
+        """The blink interval spin box."""
+        return self._interval_spin
+
+    @property
+    def opacity_slider(self) -> QtWidgets.QSlider:
+        """The blend opacity slider."""
+        return self._opacity
+
+    @property
+    def blink_toggle_button(self) -> QtWidgets.QPushButton:
+        """The auto blink toggle button."""
+        return self._blink_toggle
+
+    @property
+    def button_box(self) -> QtWidgets.QDialogButtonBox:
+        """The dialog button box."""
+        return self._button_box
+
+    @property
+    def close_button(self) -> QtWidgets.QPushButton | None:
+        """The Close dialog button."""
+        return self._close_btn
+
+    def selected_slide_a(self) -> Path | None:
+        """Return the currently selected Path for Slide A, or None."""
+        data = self._slide_a.currentData()
+        return data if isinstance(data, Path) else None
+
+    def selected_slide_b(self) -> Path | None:
+        """Return the currently selected Path for Slide B, or None."""
+        data = self._slide_b.currentData()
+        return data if isinstance(data, Path) else None
+
+    def current_mode(self) -> str:
+        """Return the active display mode name ('Blink', 'Side-by-side', or 'Swipe')."""
+        return self._mode.currentText()
+
+    def set_mode(self, mode: str) -> bool:
+        """Set the active display mode. Returns True if mode was found."""
+        idx = self._mode.findText(mode)
+        if idx >= 0:
+            self._mode.setCurrentIndex(idx)
+            return True
+        return False
+
+    def interval_ms(self) -> int:
+        """Return the current blink interval in milliseconds."""
+        return self._interval_spin.value()
+
+    def set_interval_ms(self, ms: int) -> None:
+        """Set the blink interval in milliseconds."""
+        self._interval_spin.setValue(ms)
+
+    def blend_ratio(self) -> int:
+        """Return the current blend opacity percentage (0-100)."""
+        return self._opacity.value()
+
+    def set_blend_ratio(self, ratio: int) -> None:
+        """Set the blend opacity percentage (0-100)."""
+        self._opacity.setValue(ratio)
+
+    def is_blinking(self) -> bool:
+        """Return True if auto-blinking is active."""
+        return self._blink_toggle.isChecked() and self._timer.isActive()

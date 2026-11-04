@@ -133,3 +133,46 @@ def test_blink_viewer_empty_slides(qtbot):
     assert dlg._slide_b.count() == 0
     assert dlg._layer_a is None
     assert dlg._layer_b is None
+
+
+def test_blink_viewer_properties_and_query_helpers(qtbot, mock_viewer):
+    slides = [Path("sample1.tif"), Path("sample2.tif")]
+    dlg = BlinkViewerDialog(viewer=mock_viewer, slide_paths=slides)
+    qtbot.addWidget(dlg)
+
+    # Public property accessors
+    assert dlg.slide_a_combo is dlg._slide_a
+    assert dlg.slide_b_combo is dlg._slide_b
+    assert dlg.mode_combo is dlg._mode
+    assert dlg.interval_spin is dlg._interval_spin
+    assert dlg.opacity_slider is dlg._opacity
+    assert dlg.blink_toggle_button is dlg._blink_toggle
+    assert dlg.button_box is dlg._button_box
+    assert dlg.close_button is dlg._close_btn
+
+    # Query helpers
+    assert dlg.selected_slide_a() == Path("sample1.tif")
+    assert dlg.selected_slide_b() == Path("sample2.tif")
+    assert dlg.current_mode() == "Blink"
+    assert dlg.interval_ms() == 600
+    assert dlg.blend_ratio() == 50
+    assert not dlg.is_blinking()
+
+    # Mutation via query helpers
+    dlg.set_interval_ms(750)
+    assert dlg.interval_ms() == 750
+
+    dlg.set_blend_ratio(80)
+    assert dlg.blend_ratio() == 80
+
+    assert dlg.set_mode("Swipe") is True
+    assert dlg.current_mode() == "Swipe"
+    assert dlg.set_mode("InvalidMode") is False
+    assert dlg.current_mode() == "Swipe"
+
+    # Auto-blink state
+    dlg.set_mode("Blink")
+    dlg.blink_toggle_button.setChecked(True)
+    assert dlg.is_blinking()
+    dlg.blink_toggle_button.setChecked(False)
+    assert not dlg.is_blinking()

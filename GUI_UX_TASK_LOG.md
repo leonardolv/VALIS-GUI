@@ -7,6 +7,17 @@
 
 ## Completed
 
+### Task: BlinkViewerDialog public properties, query helpers, and unit tests
+- **Completed**: 2026-11-04
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/blink_viewer.py`:
+    - Exposed public property accessors on `BlinkViewerDialog`: `slide_a_combo`, `slide_b_combo`, `mode_combo`, `interval_spin`, `opacity_slider`, `blink_toggle_button`, `button_box`, and `close_button`.
+    - Added ergonomic query and mutation helpers: `selected_slide_a()`, `selected_slide_b()`, `current_mode()`, `set_mode(mode)`, `interval_ms()`, `set_interval_ms(ms)`, `blend_ratio()`, `set_blend_ratio(ratio)`, and `is_blinking()`.
+  - `tests/test_blink_viewer_dialog.py`:
+    - Added unit test `test_blink_viewer_properties_and_query_helpers` verifying property accessors, selected slide paths, mode queries/changes, interval and blend settings, and auto-blink state toggling.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_blink_viewer_dialog.py tests/test_blink_viewer_modes.py tests/test_roi_export_dialog.py tests/test_save_options_dialog.py -v` (21 passed in 0.47s, 0 errors).
+- **Status**: Completed
+
 ### Task: ROIExportDialog public properties, bounding box query helpers, and unit tests
 - **Completed**: 2026-11-04
 - **Changes**:
