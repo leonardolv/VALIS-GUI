@@ -137,3 +137,41 @@ def test_warp_annotations_dialog_run_warp_success(qtbot, tmp_path):
     assert "saved" in dialog._status.text().lower()
     assert (out_folder / "Slide_A_to_Slide_A.geojson").exists()
     assert (out_folder / "Slide_A_to_Slide_B.geojson").exists()
+
+
+def test_warp_annotations_dialog_properties_and_query_helpers(qtbot, tmp_path):
+    registrar = MockRegistrar(["Slide_A", "Slide_B"])
+    dialog = WarpAnnotationsDialog(registrar, tmp_path)
+    qtbot.addWidget(dialog)
+
+    # Public widget property accessors
+    assert dialog.annotation_path_edit == dialog._annotation_path
+    assert dialog.browse_annotation_button == dialog._browse_annotation_btn
+    assert dialog.source_slide_combo == dialog._source_slide
+    assert dialog.output_dir_edit == dialog._output_dir_edit
+    assert dialog.browse_output_button == dialog._browse_output_btn
+    assert dialog.status_label == dialog._status
+    assert dialog.button_box == dialog._button_box
+    assert dialog.ok_button == dialog._ok_btn
+    assert dialog.cancel_button == dialog._cancel_btn
+
+    # Initial state and query helpers
+    assert dialog.annotation_file_path() == ""
+    assert "warped_annotations" in dialog.output_directory()
+    assert dialog.source_slide_count() == 2
+    assert dialog.selected_source_slide_name() == "Slide_A"
+    assert dialog.selected_source_slide_path() == "/path/Slide_A.ndpi"
+    assert dialog.status_text() == ""
+    assert dialog.is_non_rigid() is True
+
+    # Mutator and selection helpers
+    dialog.set_annotation_file_path(tmp_path / "custom.geojson")
+    assert dialog.annotation_file_path() == str(tmp_path / "custom.geojson")
+
+    dialog.set_output_directory(tmp_path / "custom_out")
+    assert dialog.output_directory() == str(tmp_path / "custom_out")
+
+    dialog.select_source_slide_index(1)
+    assert dialog.selected_source_slide_name() == "Slide_B"
+    assert dialog.selected_source_slide_path() == "/path/Slide_B.ndpi"
+

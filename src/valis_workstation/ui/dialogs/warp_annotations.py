@@ -107,6 +107,95 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
         self._button_box.rejected.connect(self.reject)
         layout.addWidget(self._button_box)
 
+    # ------------------------------------------------------------------ #
+    #  Public Properties & Query Helpers                                 #
+    # ------------------------------------------------------------------ #
+
+    @property
+    def annotation_path_edit(self) -> QtWidgets.QLineEdit:
+        """Return the annotation file path line edit."""
+        return self._annotation_path
+
+    @property
+    def browse_annotation_button(self) -> QtWidgets.QPushButton:
+        """Return the browse annotation file button."""
+        return self._browse_annotation_btn
+
+    @property
+    def source_slide_combo(self) -> QtWidgets.QComboBox:
+        """Return the source slide selection combo box."""
+        return self._source_slide
+
+    @property
+    def output_dir_edit(self) -> QtWidgets.QLineEdit:
+        """Return the output directory line edit."""
+        return self._output_dir_edit
+
+    @property
+    def browse_output_button(self) -> QtWidgets.QPushButton:
+        """Return the browse output directory button."""
+        return self._browse_output_btn
+
+    @property
+    def status_label(self) -> QtWidgets.QLabel:
+        """Return the status message label."""
+        return self._status
+
+    @property
+    def button_box(self) -> QtWidgets.QDialogButtonBox:
+        """Return the dialog button box."""
+        return self._button_box
+
+    @property
+    def ok_button(self) -> QtWidgets.QPushButton | None:
+        """Return the Ok (Warp) action button."""
+        return self._ok_btn
+
+    @property
+    def cancel_button(self) -> QtWidgets.QPushButton | None:
+        """Return the Cancel action button."""
+        return self._cancel_btn
+
+    def annotation_file_path(self) -> str:
+        """Return the current trimmed annotation file path string."""
+        return self._annotation_path.text().strip()
+
+    def set_annotation_file_path(self, path: str | Path) -> None:
+        """Set the annotation file path."""
+        self._annotation_path.setText(str(path))
+
+    def output_directory(self) -> str:
+        """Return the current trimmed output directory string."""
+        return self._output_dir_edit.text().strip()
+
+    def set_output_directory(self, path: str | Path) -> None:
+        """Set the output directory path."""
+        self._output_dir_edit.setText(str(path))
+
+    def selected_source_slide_name(self) -> str:
+        """Return the display name of the currently selected source slide."""
+        return self._source_slide.currentText()
+
+    def selected_source_slide_path(self) -> str | None:
+        """Return the file path data of the currently selected source slide, or None."""
+        return self._source_slide.currentData()
+
+    def source_slide_count(self) -> int:
+        """Return the number of available source slides in the selector."""
+        return self._source_slide.count()
+
+    def select_source_slide_index(self, index: int) -> None:
+        """Select a source slide by item index."""
+        self._source_slide.setCurrentIndex(index)
+
+    def status_text(self) -> str:
+        """Return the current text of the status label."""
+        return self._status.text()
+
+    def is_non_rigid(self) -> bool:
+        """Return True if non-rigid registration is available on the registrar."""
+        return bool(self._use_non_rigid)
+
     def _browse_annotation(self) -> None:
         settings = QtCore.QSettings("VALIS", "Workstation")
         last_dir = settings.value("ui/last_warp_annotation_dir", str(Path.home()))

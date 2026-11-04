@@ -7,6 +7,17 @@
 
 ## Completed
 
+### Task: WarpAnnotationsDialog public properties, query and path mutation helpers, and unit tests
+- **Completed**: 2026-11-04
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/warp_annotations.py`:
+    - Exposed public property accessors on `WarpAnnotationsDialog`: `annotation_path_edit`, `browse_annotation_button`, `source_slide_combo`, `output_dir_edit`, `browse_output_button`, `status_label`, `button_box`, `ok_button`, and `cancel_button`.
+    - Added ergonomic query and mutation helpers: `annotation_file_path()`, `set_annotation_file_path(path)`, `output_directory()`, `set_output_directory(path)`, `selected_source_slide_name()`, `selected_source_slide_path()`, `source_slide_count()`, `select_source_slide_index(index)`, `status_text()`, and `is_non_rigid()`.
+  - `tests/test_warp_annotations_dialog.py`:
+    - Added unit test `test_warp_annotations_dialog_properties_and_query_helpers` verifying property accessors, default paths and slide counts, path mutation helpers, and slide index selection.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_warp_annotations_dialog.py tests/test_blink_viewer_dialog.py tests/test_roi_export_dialog.py tests/test_save_options_dialog.py tests/test_merge_slides_dialog.py -v` (25 passed in 0.44s, 0 errors).
+- **Status**: Completed
+
 ### Task: BlinkViewerDialog public properties, query helpers, and unit tests
 - **Completed**: 2026-11-04
 - **Changes**:
