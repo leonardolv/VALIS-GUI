@@ -196,6 +196,8 @@ class QuickTutorialDialog(QtWidgets.QDialog):
     def __init__(self, parent: MainWindow) -> None:
         super().__init__(parent)
         self.setObjectName("quickTutorialDialog")
+        self.setAccessibleName("Quick Tutorial Dialog")
+        self.setAccessibleDescription("Interactive beginner tutorial for VALIS Workstation")
         self.setWindowTitle("Quick Tutorial - VALIS Workstation")
         self.setMinimumSize(660, 560)
         self.resize(720, 600)
@@ -313,6 +315,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
             lbl = QtWidgets.QLabel()
             lbl.setObjectName(f"tutorialBubble_{i}")
             lbl.setAccessibleName(f"Step {i + 1} indicator")
+            lbl.setToolTip(f"Step {i + 1} of {len(_STEPS)}: {_STEPS[i].title}")
             lbl.setFixedSize(10, 10)
             self._set_bubble_state(lbl, False)
             bubbles_layout.addWidget(lbl)
@@ -536,6 +539,49 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         logger.debug("Quick tutorial 'don't show' set to %s", checked)
 
     # ── Class helpers ────────────────────────────────────────────────
+
+    @property
+    def current_step(self) -> int:
+        """Return the 0-based index of the currently displayed step."""
+        return self._current_step
+
+    @property
+    def total_steps(self) -> int:
+        """Return the total number of tutorial steps."""
+        return len(_STEPS)
+
+    @property
+    def step_title(self) -> str:
+        """Return the title of the current step."""
+        return _STEPS[self._current_step].title
+
+    def is_first_step(self) -> bool:
+        """Return True if currently on the first tutorial step."""
+        return self._current_step == 0
+
+    def is_last_step(self) -> bool:
+        """Return True if currently on the final tutorial step."""
+        return self._current_step == len(_STEPS) - 1
+
+    def can_go_next(self) -> bool:
+        """Return True if subsequent tutorial steps exist."""
+        return self._current_step < len(_STEPS) - 1
+
+    def can_go_prev(self) -> bool:
+        """Return True if previous tutorial steps exist."""
+        return self._current_step > 0
+
+    def next_step(self) -> None:
+        """Advance to the next tutorial step."""
+        self._go_next()
+
+    def prev_step(self) -> None:
+        """Return to the previous tutorial step."""
+        self._go_prev()
+
+    def go_to_step(self, index: int) -> None:
+        """Display a specific step by 0-based index."""
+        self._show_step(index)
 
     @staticmethod
     def should_show_on_startup() -> bool:

@@ -30,7 +30,10 @@ from valis_workstation.layout_constants import (
 )
 from valis_workstation.models.config import Config
 from valis_workstation.settings_keys import SettingsKeys, SplitterKeys
-from valis_workstation.services.slide_scan import scan_slide_folder
+from valis_workstation.services.slide_scan import (
+    scan_slide_folder,
+    slide_display_names,
+)
 from valis_workstation.services.thumbnail_cache import get_thumbnail_cache
 from valis_workstation.utils.accessibility import apply_theme, base_stylesheet
 from valis_workstation.ui import (
@@ -1118,7 +1121,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._set_workflow_step("Configure")
 
                 # Update reference slide list in properties dock
-                slide_names = [s.stem for s in slides]
+                display_names = slide_display_names(slides)
+                slide_names = [display_names[s] for s in slides]
                 self._properties_dock.update_reference_slide_list(slide_names)
 
                 # Update slide preview dock with real thumbnails (parallel loading)
@@ -1180,6 +1184,8 @@ class MainWindow(QtWidgets.QMainWindow):
             "ui/default_thumbnail_size", 512, type=int
         )
 
+        display_names = slide_display_names(slides)
+
         def generate_and_update(
             slide_path: Path,
         ) -> tuple[str, QtGui.QPixmap | None, dict]:
@@ -1188,12 +1194,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 thumbnail, metadata = generate_thumbnail(
                     slide_path, max_size=thumbnail_size
                 )
-                return slide_path.stem, thumbnail, metadata
+                return display_names[slide_path], thumbnail, metadata
             except Exception as e:
                 logger.warning(
                     "Failed to generate thumbnail for %s: %s", slide_path.name, e
                 )
-                return slide_path.stem, None, {"file_path": str(slide_path)}
+                return display_names[slide_path], None, {"file_path": str(slide_path)}
 
         # Use ThreadPoolExecutor with limited workers to avoid overwhelming disk I/O
         settings = QtCore.QSettings("VALIS", "Workstation")

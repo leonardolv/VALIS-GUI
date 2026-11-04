@@ -15,6 +15,94 @@ Branch `claude/inspiring-galileo-nsp1xp` - Status: **done**
 **Solution.** Dot-prefixed files are skipped in both the default and explicit-extension paths.
 
 **Validation.** Two new tests in `tests/test_slide_scan_full.py` (red before, green after; 11 passed). Full suite offscreen: 568 passed, 1 failed (`test_toolbar_goes_icon_only_when_labels_do_not_fit`, font-width dependent, fails identically on unmodified main).
+### 2026-11-04 UTC - summarize_errors ignored NaN (unmeasured) pairs inconsistently
+Status: **done** (Claude)
+- Root cause: `summarize_errors` summed/maxed raw values, so one NaN made the mean NaN and `max` order-dependent; its sibling `summarize_error_dataframe` already skips unmeasured pairs.
+- Solution: skip NaN values; an all-NaN list behaves like an empty one.
+- Validation: 2 new tests in `tests/test_error_metrics.py` (both fail before); file 18 passed. Qt suite not run (no PySide6 in sandbox). No manual change needed.
+
+### 2026-10-30 UTC - ROI export: slides whose names differ only by case overwrote each other's crop
+Status: **done** (Claude)
+- Root cause: `export_roi_crops` wrote `{name}_ROI{ext}` per slide; on case-insensitive filesystems (Windows/macOS) `Slide` and `slide` map to one file, so one crop was silently lost while both were reported as exported.
+- Solution: `_unique_file_name()` tracks used names case-insensitively and appends `_2`, `_3`... on a clash. Test added in `tests/test_roi_export_service.py`. No manual change needed.
+- Validation: `QT_QPA_PLATFORM=offscreen pytest tests` -> 606 passed.
+
+### 2026-10-29 UTC - Project name ".." / trailing dots could escape or alias the output folder
+Status: **done** (Claude)
+- Root cause: `PropertiesDock.config()` only replaced `< > : " / \ | ? *`, so a project name of `..` produced `output/..` (the repo root) as the registration output directory, and `study.` / `study ` alias `study` on Windows. The red-border validator duplicated the rules separately and also accepted these.
+- Solution: new `sanitize_project_name()` / `is_valid_project_name()` in `utils/validation.py` (drops trailing dots/spaces, falls back to "New Project" for dot-only names, reserved-name suffix); `config()` and the validator now share it, with a tooltip for the new case. No manual change needed (the manual does not describe name rules).
+- Validation: new `tests/test_project_name_sanitize.py` (19 tests); full suite 605 passed offscreen (baseline 585).
+
+### 2026-10-28 UTC - Reference slide pick with case-clashing names; warn about stem clashes before registering
+Status: **done** (Claude)
+- Root cause: the pipeline resolved the Reference slide case-insensitively and first-match-wins, so with `A.tif` and `a.tif` choosing `a.tif` registered against `A.tif`. Pre-registration validation was also silent that VALIS renames same-stem slides (`HE_0`, `HE_1`), which changes all output names.
+- Solution: new `find_reference_slide()` (exact case before case-insensitive, stem then name); `validate_slides` warns about clashing stems. Manual updated.
+- Validation: 3 new tests; full suite 585 passed offscreen; ruff finding count unchanged from baseline.
+
+### 2026-10-28 UTC - Slides with the same file stem vanished from the preview; case-insensitive sort
+Status: **done** (Claude)
+- Root cause: the Slide Preview dock is keyed by name and `_load_thumbnails_parallel` / the Reference slide list used `Path.stem`, so `HE.tif` and `HE.svs` (or `A.tif`/`a.tif`) in one folder silently replaced each other: one slide was missing from the preview and the reference dropdown (registration itself still used both). The dock's A-Z sort was case-sensitive (uppercase first) unlike the folder scan's order.
+- Solution: new `slide_display_names()` (services/slide_scan.py) gives the stem normally and the full file name for colliding stems; used for thumbnails and the reference list. Sort now ignores case. Manual updated (Review your slides step).
+- Validation: 4 new tests in `tests/test_slide_scan_full.py` (3 red before the fix, plus the sort one); full suite 582 passed offscreen (baseline 578).
+
+### 2026-10-28 UTC - ThumbnailCache: corrupt sidecar self-heal and race-tolerant stats
+Status: **done** (Claude)
+- Root cause: `ThumbnailCache.get()` treated a truncated/garbled `.json` sidecar (crash mid-write) as a generic error, returned None and left the entry in place, so it logged an error on every lookup until something overwrote it; a JSON value that was not an object would also have crashed callers. `get_stats()` let one PNG vanishing mid-scan zero out the stats for the whole cache (its sibling `_check_cache_size` already tolerated this).
+- Solution: `get()` now discards entries whose metadata is unparsable or not a JSON object (so they regenerate); `get_stats()` skips vanished files per entry. No user-facing feature change, so no manual/tutorial edit.
+- Validation: 3 new tests in `tests/test_thumbnail_cache.py` fail before the fix; full suite 578 passed offscreen (baseline 575).
+
+### 2026-10-27 UTC - GUI screenshot audit: error details collapse, merge table width, save-options note
+Status: **done** (Claude)
+- Audit: rendered the main window and every dialog (merge slides, preferences, save options, ROI export, error details, diagnostics, performance stats, first-run wizard, quick tutorial) offscreen with the installed Inter font at 1280x720 and 1920x1080. Nothing clipped; three real defects found.
+- ErrorDetailDialog: the "Technical Details (Click to expand)" group was unchecked yet showed a greyed-out, unusable text box, because an unchecked checkable QGroupBox only disables children. The text is now hidden until the group is ticked.
+- MergeSlidesDialog: the Slide Name and Channel Name columns kept narrow fixed widths (long file names cut off, empty strip to the right); they now stretch, Include and Color size to contents.
+- SaveOptionsDialog: the grey note read "Not applied by VALIS (OME-TIFF is always written): pyramid level count" (also at defaults). It now explains that VALIS always writes OME-TIFF and chooses the pyramid depth, and names the ignored controls as labelled ("Pyramid levels", "Format", "JPEG Quality").
+- Tests: new tests for the first two (both fail before the fix), save-options assertions updated. Full suite 575 passed headless. The Manual already describes the details section as collapsible, so no HTML change.
+
+### 2026-10-27 UTC - Font-independent toolbar icon-only test (audit pass)
+Status: **done** (Claude)
+- Audit: all four named backlog items (`track_tile_load`, `get_tile_cache`, orphaned settings keys, "Last" overlap handling) were already resolved and covered by tests; the "Average" duplicate-band reduction is also implemented. Baseline suite had one failure.
+- Root cause: `tests/test_gui_polish_layout.py::test_toolbar_goes_icon_only_when_labels_do_not_fit` assumed the labelled toolbar is wider than 1000 px, which depends on the installed font (765 px with Inter here) and the window minimum width (~992 px), so the compact mode was unreachable and the test failed on a clean checkout.
+- Solution: test now drives `_adapt_toolbars_to_width()` through the cached `_full_text_width` in both directions. No product change, so no manual/tutorial edit.
+- Validation: full suite 573 passed headlessly (offscreen).
+
+### 2026-10-26 UTC - MergeSlidesDialog Object Names, Accessibility Metadata, Public Properties, Selection Queries, and Tooltip Hyphen Standardization
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/merge_slides_dialog.py`: Configured explicit `setObjectName("mergeSlidesDialog")`, `setAccessibleName("Merge Slides Dialog")`, and `setAccessibleDescription(...)` on root dialog; assigned object names on banner and group boxes; standardized duplicate handling tooltip hyphens; exposed public widget properties (`table`, `button_box`, `select_all_button`, etc.); added selection query helpers (`included_slide_count()`, `is_all_selected()`, `is_none_selected()`, `selected_slide_names()`).
+- `tests/test_merge_slides_dialog.py`: Expanded test suite asserting dialog metadata, properties, and selection queries.
+- Validation: Verified headlessly with `python -m pytest tests/test_merge_slides_dialog.py tests/test_preferences_dialog_accessibility.py -v` (20 passed in 0.53s, 0 errors).
+
+### 2026-10-26 UTC - PreferencesDialog Object Names, Accessibility Metadata, Tabs Container Properties, and Unit Tests
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/preferences_dialog.py`: Configured explicit `setObjectName("preferencesDialog")` and `setAccessibleName("Preferences Dialog")` on root dialog; configured `setObjectName("preferencesTabs")` and `setAccessibleName("Preferences Categories")` on tab widget; assigned explicit object names across form controls (`prefCacheDirEdit`, `prefBrowseCacheBtn`, `prefMaxThumbCacheSpin`, `prefPersistCacheCheck`, `prefParallelWorkersSpin`, `prefPerfMonitoringCheck`, `prefAutoRefreshSpin`, `prefShowTooltipsCheck`, `prefShowStatusbarCheck`, `prefConfirmCloseCheck`, `prefRecentFilesSpin`, `prefDefaultThumbSizeSpin`, `prefHighContrastCheck`, `prefReducedMotionCheck`, `prefButtonBox`, `prefOkBtn`, `prefCancelBtn`, `prefRestoreBtn`); exposed `tabs` and `button_box` properties.
+- `tests/test_preferences_dialog_accessibility.py`: Added unit test `test_preferences_dialog_metadata_and_object_names` asserting dialog metadata, tab container properties, and control object names.
+- Validation: Verified headlessly with `python -m pytest tests/test_preferences_dialog_accessibility.py -v` (17 passed in 0.23s, 0 errors).
+
+### 2026-10-25 UTC - QuickTutorialDialog accessibility metadata, bubble tooltips, and public navigation helpers
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/quick_tutorial_dialog.py`: Configured explicit `setAccessibleName("Quick Tutorial Dialog")` and `setAccessibleDescription("Interactive beginner tutorial for VALIS Workstation")` on dialog instance; added descriptive step tooltips across all progress bubbles (`Step X of 13: <Title>`); added public ergonomic query and navigation helpers (`current_step`, `total_steps`, `step_title`, `is_first_step()`, `is_last_step()`, `can_go_next()`, `can_go_prev()`, `next_step()`, `prev_step()`, `go_to_step()`).
+- `tests/test_quick_tutorial_run_step.py`: Expanded `test_controls_have_accessible_names` and added `test_quick_tutorial_dialog_query_and_navigation_helpers` asserting dialog accessibility properties, bubble tooltips, and navigation methods.
+- Validation: Verified headlessly with `python -m pytest tests/test_quick_tutorial_dialog_timer.py tests/test_quick_tutorial_footer_style.py tests/test_quick_tutorial_run_step.py -v` (9 passed in 0.55s, 0 errors).
+
+### 2026-10-25 UTC - PerformanceStatsDialog object names, accessibility metadata, and button affordances
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/performance_stats_dialog.py`: Configured explicit `setObjectName("performanceStatsDialog")`, `setAccessibleName("Performance Statistics Dialog")`, tab container object name (`performanceTabs`), tab accessible name (`Performance Statistics Categories`), and button object names (`perfRefreshBtn`, `perfClearCacheBtn`, `perfCloseBtn`, `perfThumbCacheBar`).
+- `tests/test_performance_stats_dialog.py`: Added unit test coverage for dialog accessibility, tab container metadata, button object names, cursors, and tooltips.
+- Validation: Verified headlessly with `python -m pytest tests/test_performance_stats_dialog.py tests/test_error_and_diagnostics_dialogs.py -v` (6 passed in 1.31s, 0 errors).
+
+### 2026-10-25 UTC - ErrorDetailDialog and DiagnosticsDialog object names, accessibility metadata, and visual copy confirmation
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/error_detail_dialog.py`: Configured explicit `setObjectName("errorDetailDialog")` and `setAccessibleName("Error Details Dialog")`; added object names on `errorMessageLabel`, `errorTextLabel`, `errorDetailsGroup`, `errorDetailsText`, `errorCopyBtn`, `errorReportBtn`, and `errorCloseBtn`.
+- `src/valis_workstation/ui/dialogs/diagnostics_dialog.py`: Configured explicit `setObjectName("diagnosticsDialog")` and `setAccessibleName("Diagnostics Dialog")`; added object names on `diagnosticsText`, `diagnosticsRefreshBtn`, `diagnosticsCopyBtn`, and `diagnosticsCloseBtn`.
+- `tests/test_error_and_diagnostics_dialogs.py`: Added unit test coverage for dialog accessibility, object names, button cursors, tooltips, and copy feedback.
+- Validation: Verified headlessly with `python -m pytest tests/test_error_and_diagnostics_dialogs.py tests/test_roi_export_dialog.py tests/test_warp_annotations_dialog.py -v` (11 passed in 0.40s, 0 errors).
+
+### 2026-10-25 UTC - ROIExportDialog and WarpAnnotationsDialog object names, accessibility metadata, button tooltips, and pointer cursor affordances
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/roi_export_dialog.py`: Added explicit object names (`roiExportDialog`, `roiXCoordSpin`, `roiYCoordSpin`, `roiWidthSpin`, `roiHeightSpin`, `roiFormatCombo`, `roiReopenCheck`, `roiFeedbackLabel`, `roiCopyJsonBtn`, `roiPasteJsonBtn`, `roiResetBtn`, `roiOkBtn`, `roiCancelBtn`), accessible names, descriptive tooltips, and pointing hand cursor affordances across form controls, clipboard buttons, and dialog button box.
+- `src/valis_workstation/ui/dialogs/warp_annotations.py`: Added explicit `setObjectName` (`warpAnnotationsDialog`) and `setAccessibleName` (`Warp Annotations Dialog`).
+- `tests/test_roi_export_dialog.py` & `tests/test_warp_annotations_dialog.py`: Expanded unit tests asserting dialog and widget object names, accessible names, button tooltips, and pointing hand cursors.
+- Validation: Verified headlessly with `python -m pytest tests/test_roi_export_dialog.py tests/test_warp_annotations_dialog.py -v` (9 passed in 0.47s, 0 errors).
 
 ### 2026-10-24T00:13Z - Config JSON/preset loading accepts mistyped values (Claude)
 

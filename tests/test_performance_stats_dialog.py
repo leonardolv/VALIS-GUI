@@ -16,11 +16,23 @@ def test_performance_stats_dialog_accessibility_and_tooltips(qtbot):
     dialog = PerformanceStatsDialog()
     qtbot.addWidget(dialog)
 
+    # Object names and dialog accessibility
+    assert dialog.objectName() == "performanceStatsDialog"
+    assert dialog.accessibleName() == "Performance Statistics Dialog"
+    assert dialog._tabs.objectName() == "performanceTabs"
+    assert dialog._tabs.accessibleName() == "Performance Statistics Categories"
+
     # Accessible names
     assert dialog._refresh_btn.accessibleName() == "Refresh Performance Statistics"
     assert dialog._clear_thumb_cache_btn.accessibleName() == "Clear Thumbnail Cache"
     assert dialog._close_btn.accessibleName() == "Close Dialog"
     assert dialog._thumb_cache_bar.accessibleName() == "Thumbnail Cache Usage"
+
+    # Object names
+    assert dialog._refresh_btn.objectName() == "perfRefreshBtn"
+    assert dialog._clear_thumb_cache_btn.objectName() == "perfClearCacheBtn"
+    assert dialog._close_btn.objectName() == "perfCloseBtn"
+    assert dialog._thumb_cache_bar.objectName() == "perfThumbCacheBar"
 
     # Tooltips
     assert "refresh" in dialog._refresh_btn.toolTip().lower()

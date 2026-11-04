@@ -136,3 +136,45 @@ class TestEviction:
         (cache.cache_dir / "subdir").mkdir()
         cache.clear()
         assert cache.get_stats()["count"] == 0
+
+
+class TestThumbnailCacheRobustness:
+    def test_corrupt_metadata_entry_is_discarded(self, cache, dummy_slide) -> None:
+        cache.put(dummy_slide, _make_pixmap(), {"width": 64})
+        key = cache._get_cache_key(dummy_slide)
+        image_path, metadata_path = cache._get_cache_paths(key)
+        metadata_path.write_text('{"width": 6')  # truncated mid-write
+
+        assert cache.get(dummy_slide) is None
+        assert not image_path.exists()
+        assert not metadata_path.exists()
+
+    def test_non_object_metadata_is_discarded(self, cache, dummy_slide) -> None:
+        cache.put(dummy_slide, _make_pixmap(), {})
+        key = cache._get_cache_key(dummy_slide)
+        image_path, metadata_path = cache._get_cache_paths(key)
+        metadata_path.write_text("[1, 2]")
+
+        assert cache.get(dummy_slide) is None
+        assert not image_path.exists()
+
+    def test_stats_survive_file_vanishing_mid_scan(
+        self, cache, tmp_path, monkeypatch
+    ) -> None:
+        for name in ("a.tif", "b.tif"):
+            slide = tmp_path / name
+            slide.write_bytes(b"\x00" * 10)
+            cache.put(slide, _make_pixmap(), {})
+
+        vanished = sorted(cache.cache_dir.glob("*.png"))[0]
+        real_stat = Path.stat
+
+        def flaky_stat(self, *a, **k):
+            if self == vanished:
+                raise FileNotFoundError(str(self))
+            return real_stat(self, *a, **k)
+
+        monkeypatch.setattr(Path, "stat", flaky_stat)
+        stats = cache.get_stats()
+        assert stats["count"] == 1
+        assert stats["size_mb"] > 0

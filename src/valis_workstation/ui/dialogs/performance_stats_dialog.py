@@ -28,6 +28,8 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setObjectName("performanceStatsDialog")
+        self.setAccessibleName("Performance Statistics Dialog")
         self.setWindowTitle("Performance Statistics")
         self.resize(600, 500)
 
@@ -52,6 +54,9 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
 
         # Create tab widget for different stat categories
         tabs = QtWidgets.QTabWidget()
+        tabs.setObjectName("performanceTabs")
+        tabs.setAccessibleName("Performance Statistics Categories")
+        self._tabs = tabs
 
         # Overview tab
         overview_widget = self._create_overview_tab()
@@ -71,6 +76,7 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
         button_layout = QtWidgets.QHBoxLayout()
 
         self._refresh_btn = QtWidgets.QPushButton("Refresh Now")
+        self._refresh_btn.setObjectName("perfRefreshBtn")
         self._refresh_btn.setAccessibleName("Refresh Performance Statistics")
         self._refresh_btn.setToolTip("Immediately refresh all performance and memory metrics")
         self._refresh_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -78,6 +84,7 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
         button_layout.addWidget(self._refresh_btn)
 
         self._clear_thumb_cache_btn = QtWidgets.QPushButton("Clear Thumbnail Cache")
+        self._clear_thumb_cache_btn.setObjectName("perfClearCacheBtn")
         self._clear_thumb_cache_btn.setAccessibleName("Clear Thumbnail Cache")
         self._clear_thumb_cache_btn.setToolTip("Purge all cached slide thumbnails from disk and memory")
         self._clear_thumb_cache_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -87,6 +94,7 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
         button_layout.addStretch()
 
         self._close_btn = QtWidgets.QPushButton("Close")
+        self._close_btn.setObjectName("perfCloseBtn")
         self._close_btn.setAccessibleName("Close Dialog")
         self._close_btn.setToolTip("Close the performance statistics dialog")
         self._close_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -132,6 +140,7 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
 
         # Progress bars for cache usage
         self._thumb_cache_bar = QtWidgets.QProgressBar()
+        self._thumb_cache_bar.setObjectName("perfThumbCacheBar")
         self._thumb_cache_bar.setAccessibleName("Thumbnail Cache Usage")
         layout.addRow("Thumbnail Cache:", self._thumb_cache_bar)
 

@@ -40,3 +40,33 @@ def test_clickable_controls_use_hand_cursor(dialog):
 def test_dialog_buttons_have_hand_cursor(dialog):
     ok = dialog._button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     assert ok.cursor().shape() == QtCore.Qt.CursorShape.PointingHandCursor
+
+
+def test_preferences_dialog_metadata_and_object_names(dialog):
+    Std = QtWidgets.QDialogButtonBox.StandardButton
+
+    assert dialog.objectName() == "preferencesDialog"
+    assert dialog.accessibleName() == "Preferences Dialog"
+
+    assert dialog.tabs.objectName() == "preferencesTabs"
+    assert dialog.tabs.accessibleName() == "Preferences Categories"
+
+    assert dialog._cache_dir_edit.objectName() == "prefCacheDirEdit"
+    assert dialog._browse_cache_btn.objectName() == "prefBrowseCacheBtn"
+    assert dialog._max_thumb_cache_spin.objectName() == "prefMaxThumbCacheSpin"
+    assert dialog._persist_cache_check.objectName() == "prefPersistCacheCheck"
+    assert dialog._parallel_workers_spin.objectName() == "prefParallelWorkersSpin"
+    assert dialog._perf_monitoring_check.objectName() == "prefPerfMonitoringCheck"
+    assert dialog._auto_refresh_spin.objectName() == "prefAutoRefreshSpin"
+    assert dialog._show_tooltips_check.objectName() == "prefShowTooltipsCheck"
+    assert dialog._show_statusbar_check.objectName() == "prefShowStatusbarCheck"
+    assert dialog._confirm_close_check.objectName() == "prefConfirmCloseCheck"
+    assert dialog._recent_files_spin.objectName() == "prefRecentFilesSpin"
+    assert dialog._default_thumb_size_spin.objectName() == "prefDefaultThumbSizeSpin"
+    assert dialog._high_contrast_check.objectName() == "prefHighContrastCheck"
+    assert dialog._reduced_motion_check.objectName() == "prefReducedMotionCheck"
+
+    assert dialog.button_box.objectName() == "prefButtonBox"
+    assert dialog.button_box.button(Std.Ok).objectName() == "prefOkBtn"
+    assert dialog.button_box.button(Std.Cancel).objectName() == "prefCancelBtn"
+    assert dialog.button_box.button(Std.RestoreDefaults).objectName() == "prefRestoreBtn"

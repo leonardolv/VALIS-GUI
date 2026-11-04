@@ -39,6 +39,9 @@ def test_warp_annotations_dialog_accessibility_and_tooltips(qtbot, tmp_path):
     dialog = WarpAnnotationsDialog(registrar, tmp_path)
     qtbot.addWidget(dialog)
 
+    assert dialog.objectName() == "warpAnnotationsDialog"
+    assert dialog.accessibleName() == "Warp Annotations Dialog"
+
     # LineEdits accessibility and placeholders
     assert dialog._annotation_path.accessibleName() == "Annotation file path"
     assert "geojson" in dialog._annotation_path.toolTip().lower()

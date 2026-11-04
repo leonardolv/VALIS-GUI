@@ -109,3 +109,11 @@ class TestValidateSlides:
         # The checked path must be an ancestor of (or equal to) output_dir,
         # i.e. somewhere under tmp_path -- not the unrelated cwd.
         assert tmp_path.resolve() in (checked, *checked.parents)
+
+
+def test_duplicate_stems_warn(tmp_path: Path) -> None:
+    a, b = tmp_path / "HE.tif", tmp_path / "HE.svs"
+    a.write_bytes(b"x")
+    b.write_bytes(b"x")
+    r = validate_slides([a, b], tmp_path / "out", min_disk_space_gb=0.0)
+    assert any("HE_0" in w for w in r.warnings)

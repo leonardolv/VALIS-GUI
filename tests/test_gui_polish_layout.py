@@ -70,9 +70,15 @@ def test_toolbar_goes_icon_only_when_labels_do_not_fit(qtbot, tmp_path):
     w.show()
     qtbot.wait(50)
     tb = w.findChild(QtWidgets.QToolBar, "QuickActionsToolbar")
+    assert tb.property("_full_text_width") is not None
+    # The real labelled width depends on the installed font (and the window
+    # has a minimum width), so drive the decision with the cached requirement
+    # instead of relying on a particular font being wide enough to overflow.
+    tb.setProperty("_full_text_width", w.width() + 500)
+    w._adapt_toolbars_to_width()
     assert tb.toolButtonStyle() == QtCore.Qt.ToolButtonStyle.ToolButtonIconOnly
-    w.resize(2200, 800)
-    qtbot.wait(50)
+    tb.setProperty("_full_text_width", 100)
+    w._adapt_toolbars_to_width()
     assert tb.toolButtonStyle() == QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon
 
 

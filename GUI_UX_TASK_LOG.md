@@ -6,6 +6,86 @@
 
 ## Completed
 
+### Task: MergeSlidesDialog object names, accessibility metadata, public properties, selection queries, and tooltip hyphen standardization
+- **Completed**: 2026-10-26
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/merge_slides_dialog.py`:
+    - Configured explicit `setObjectName("mergeSlidesDialog")`, `setAccessibleName("Merge Slides Dialog")`, and `setAccessibleDescription(...)` on root dialog.
+    - Assigned explicit object names and accessible names on info banner (`mergeInfoBanner`), channel mapping group (`channelMappingGroup`), and merge options group (`mergeOptionsGroup`).
+    - Standardized duplicate handling tooltip to use hyphens (`- Average: ...`, `- Maximum: ...`).
+    - Exposed public widget properties (`table`, `button_box`, `select_all_button`, `select_none_button`, `export_config_button`, `ok_button`, `cancel_button`, `duplicate_handling_combo`, `output_name_edit`, `normalize_checkbox`).
+    - Added ergonomic query helpers (`included_slide_count()`, `is_all_selected()`, `is_none_selected()`, `selected_slide_names()`).
+  - `tests/test_merge_slides_dialog.py`:
+    - Expanded test suite asserting dialog metadata, group and banner object names, public widget properties, and selection query helpers.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_merge_slides_dialog.py tests/test_preferences_dialog_accessibility.py -v` (20 passed in 0.53s, 0 errors).
+- **Status**: Completed
+
+### Task: PreferencesDialog object names, accessibility metadata, tabs container properties, and unit tests
+- **Completed**: 2026-10-26
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/preferences_dialog.py`:
+    - Configured explicit `setObjectName("preferencesDialog")` and `setAccessibleName("Preferences Dialog")` on root dialog.
+    - Added explicit `setObjectName("preferencesTabs")` and `setAccessibleName("Preferences Categories")` on tab container.
+    - Assigned explicit object names across all form controls (`prefCacheDirEdit`, `prefBrowseCacheBtn`, `prefMaxThumbCacheSpin`, `prefPersistCacheCheck`, `prefParallelWorkersSpin`, `prefPerfMonitoringCheck`, `prefAutoRefreshSpin`, `prefShowTooltipsCheck`, `prefShowStatusbarCheck`, `prefConfirmCloseCheck`, `prefRecentFilesSpin`, `prefDefaultThumbSizeSpin`, `prefHighContrastCheck`, `prefReducedMotionCheck`, `prefButtonBox`, `prefOkBtn`, `prefCancelBtn`, `prefRestoreBtn`).
+    - Exposed `tabs` and `button_box` properties on `PreferencesDialog`.
+  - `tests/test_preferences_dialog_accessibility.py`:
+    - Added `test_preferences_dialog_metadata_and_object_names` asserting dialog metadata, tab container properties, and control object names.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_preferences_dialog_accessibility.py -v` (17 passed in 0.23s, 0 errors).
+- **Status**: Completed
+
+### Task: QuickTutorialDialog Accessibility Metadata, Bubble Tooltips, and Public Navigation Helpers
+- **Completed**: 2026-10-25
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/quick_tutorial_dialog.py`:
+    - Configured explicit `setAccessibleName("Quick Tutorial Dialog")` and `setAccessibleDescription("Interactive beginner tutorial for VALIS Workstation")` on dialog instance.
+    - Added informative step title tooltips (`Step X of 13: <Title>`) across all progress bubbles.
+    - Added public ergonomic query properties and navigation helper methods: `current_step`, `total_steps`, `step_title`, `is_first_step()`, `is_last_step()`, `can_go_next()`, `can_go_prev()`, `next_step()`, `prev_step()`, and `go_to_step()`.
+  - `tests/test_quick_tutorial_run_step.py`:
+    - Expanded `test_controls_have_accessible_names` and added `test_quick_tutorial_dialog_query_and_navigation_helpers` verifying dialog accessibility metadata, bubble tooltips, and navigation methods.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_quick_tutorial_dialog_timer.py tests/test_quick_tutorial_footer_style.py tests/test_quick_tutorial_run_step.py -v` (9 passed in 0.55s, 0 errors).
+- **Status**: Completed
+
+### Task: PerformanceStatsDialog object names, accessibility metadata, and button affordances
+- **Completed**: 2026-10-25
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/performance_stats_dialog.py`:
+    - Configured explicit `setObjectName("performanceStatsDialog")` and `setAccessibleName("Performance Statistics Dialog")` on dialog instance.
+    - Added explicit `setObjectName("performanceTabs")` and `setAccessibleName("Performance Statistics Categories")` on tab widget.
+    - Added explicit object names across action buttons (`perfRefreshBtn`, `perfClearCacheBtn`, `perfCloseBtn`) and cache progress bar (`perfThumbCacheBar`).
+  - `tests/test_performance_stats_dialog.py`:
+    - Expanded unit tests asserting dialog and tab object names, accessible names, button object names, tooltips, and pointing hand cursor affordances.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_performance_stats_dialog.py tests/test_error_and_diagnostics_dialogs.py -v` (6 passed in 1.31s, 0 errors).
+- **Status**: Completed
+
+### Task: ErrorDetailDialog and DiagnosticsDialog object names, accessibility metadata, and visual copy confirmation
+- **Completed**: 2026-10-25
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/error_detail_dialog.py`:
+    - Configured explicit `setObjectName("errorDetailDialog")` and `setAccessibleName("Error Details Dialog")` on dialog instance.
+    - Added explicit object names across message label (`errorMessageLabel`), error text label (`errorTextLabel`), details group (`errorDetailsGroup`), details text (`errorDetailsText`), copy button (`errorCopyBtn`), report button (`errorReportBtn`), and close button (`errorCloseBtn`).
+  - `src/valis_workstation/ui/dialogs/diagnostics_dialog.py`:
+    - Configured explicit `setObjectName("diagnosticsDialog")` and `setAccessibleName("Diagnostics Dialog")` on dialog instance.
+    - Added explicit object names across output text area (`diagnosticsText`), refresh button (`diagnosticsRefreshBtn`), copy button (`diagnosticsCopyBtn`), and close button (`diagnosticsCloseBtn`).
+  - `tests/test_error_and_diagnostics_dialogs.py`:
+    - Added comprehensive unit test coverage asserting dialog and widget object names, accessible names, button cursors, tooltips, and non-blocking copy confirmation feedback.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_error_and_diagnostics_dialogs.py tests/test_roi_export_dialog.py tests/test_warp_annotations_dialog.py -v` (11 passed in 0.40s, 0 errors).
+- **Status**: Completed
+
+### Task: ROIExportDialog and WarpAnnotationsDialog object names, accessibility metadata, button tooltips, and pointer cursor affordances
+- **Completed**: 2026-10-25
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/roi_export_dialog.py`:
+    - Configured explicit `setObjectName` ("roiExportDialog") and `setAccessibleName` ("ROI Export Dialog") on dialog instance.
+    - Configured explicit `setObjectName` across coordinate spinboxes (`roiXCoordSpin`, `roiYCoordSpin`, `roiWidthSpin`, `roiHeightSpin`), format combobox (`roiFormatCombo`), reopen checkbox (`roiReopenCheck`), and feedback label (`roiFeedbackLabel`).
+    - Added `PointingHandCursor` affordances across format combobox, reopen checkbox, JSON clipboard action buttons (`roiCopyJsonBtn`, `roiPasteJsonBtn`), reset button (`roiResetBtn`), and dialog action buttons (`roiOkBtn`, `roiCancelBtn`).
+    - Configured explicit `setObjectName`, `setAccessibleName`, and descriptive tooltips on primary Ok and Cancel buttons.
+  - `src/valis_workstation/ui/dialogs/warp_annotations.py`:
+    - Configured explicit `setObjectName` ("warpAnnotationsDialog") and `setAccessibleName` ("Warp Annotations Dialog") on dialog instance.
+  - `tests/test_roi_export_dialog.py` and `tests/test_warp_annotations_dialog.py`:
+    - Expanded unit tests validating dialog and control object names, accessible names, button tooltips, and pointing hand cursor affordances.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_roi_export_dialog.py tests/test_warp_annotations_dialog.py -v` (9 passed in 0.47s, 0 errors).
+- **Status**: Completed
+
 ### Task: FirstRunWizard Finish Page Quick Tutorial Checkbox and Repository-Wide Dash Standardization
 - **Completed**: 2026-10-22
 - **Changes**:

@@ -3,12 +3,47 @@
 from __future__ import annotations
 
 import logging
+import re
 import shutil
 from pathlib import Path
 
 from valis_workstation.constants import has_supported_extension
 
 logger = logging.getLogger(__name__)
+
+
+_INVALID_NAME_CHARS = re.compile(r'[<>:"/\\|?*]')
+RESERVED_NAMES = {
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    *(f"COM{i}" for i in range(1, 10)),
+    *(f"LPT{i}" for i in range(1, 10)),
+}
+DEFAULT_PROJECT_NAME = "New Project"
+
+
+def sanitize_project_name(text: str) -> str:
+    """Return a safe single-folder name for ``output/<project_name>/``.
+
+    Replaces characters Windows forbids, drops trailing dots and spaces (the
+    OS strips them silently, so "x." and "x" would share a folder), and
+    refuses names made only of dots: ``".."`` would send the results to the
+    parent of ``output/``. Empty results fall back to the default name and
+    reserved device names get a ``_project`` suffix.
+    """
+    name = _INVALID_NAME_CHARS.sub("_", text.strip()).rstrip(". ")
+    if not name:
+        name = DEFAULT_PROJECT_NAME
+    if name.upper() in RESERVED_NAMES:
+        name = f"{name}_project"
+    return name
+
+
+def is_valid_project_name(text: str) -> bool:
+    """True when ``text`` can be used as the folder name unchanged."""
+    return bool(text.strip()) and sanitize_project_name(text) == text.strip()
 
 
 class ValidationResult:
@@ -63,6 +98,20 @@ def validate_slides(
         warnings.append(
             f"{len(unsupported_files)} file(s) may not be supported slide formats: "
             f"{', '.join(f.name for f in unsupported_files[:3])}"
+        )
+
+    # VALIS names slides by file stem and renames clashes (HE_0, HE_1), which
+    # changes every output file name; tell the user before they start.
+    by_stem: dict[str, list[Path]] = {}
+    for s in slides:
+        by_stem.setdefault(s.stem, []).append(s)
+    clashes = [v for v in by_stem.values() if len(v) > 1]
+    if clashes:
+        shown = "; ".join(" + ".join(f.name for f in v) for v in clashes[:3])
+        warnings.append(
+            f"{len(clashes)} group(s) of slides share a file name once the "
+            f"extension is ignored ({shown}). VALIS will rename them with a "
+            f"numeric suffix (for example HE_0, HE_1) in its output."
         )
 
     # Calculate total size
