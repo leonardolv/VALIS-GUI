@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PySide6 import QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 from valis_workstation.constants import ImageFormats
 
@@ -55,7 +55,12 @@ class SaveOptionsDialog(QtWidgets.QDialog):
         initial_options: dict | None = None,
     ) -> None:
         super().__init__(parent)
+        self.setObjectName("saveOptionsDialog")
         self.setWindowTitle("Save Options")
+        self.setAccessibleName("Save Options Dialog")
+        self.setAccessibleDescription(
+            "Configure whole-slide image pyramid levels, tile size, compression, and file formats"
+        )
         self.setModal(True)
         self.setMinimumWidth(440)
         self._is_updating_preset = False
@@ -71,6 +76,7 @@ class SaveOptionsDialog(QtWidgets.QDialog):
         self._preset_combo.setAccessibleName("Export Preset Selection")
         self._preset_combo.addItems(list(self.PRESETS.keys()) + ["Custom"])
         self._preset_combo.setToolTip("Quickly select optimized settings for standard export scenarios")
+        self._preset_combo.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         form.addRow("Preset:", self._preset_combo)
 
         # Write pyramid checkbox (C4)
@@ -79,6 +85,7 @@ class SaveOptionsDialog(QtWidgets.QDialog):
         self._write_pyramid.setAccessibleName("Write Image Pyramid Checkbox")
         self._write_pyramid.setChecked(True)
         self._write_pyramid.setToolTip("Enable multi-resolution pyramid output for faster viewer performance")
+        self._write_pyramid.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         form.addRow("", self._write_pyramid)
 
         # Pyramid levels
@@ -180,12 +187,21 @@ class SaveOptionsDialog(QtWidgets.QDialog):
         )
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
+        ok_btn = self.buttons.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        if ok_btn is not None:
+            ok_btn.setObjectName("save_options_ok_btn")
+            ok_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        cancel_btn = self.buttons.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+        if cancel_btn is not None:
+            cancel_btn.setObjectName("save_options_cancel_btn")
+            cancel_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         reset_btn = self.buttons.button(QtWidgets.QDialogButtonBox.StandardButton.Reset)
         if reset_btn is not None:
             reset_btn.setText("Reset to Defaults")
             reset_btn.setObjectName("reset_defaults_btn")
             reset_btn.setAccessibleName("Reset Export Options to Defaults")
             reset_btn.setToolTip("Reset all save options to recommended workstation defaults")
+            reset_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
             reset_btn.clicked.connect(self.reset_to_defaults)
         layout.addWidget(self.buttons)
 
@@ -303,3 +319,51 @@ class SaveOptionsDialog(QtWidgets.QDialog):
             "format": self._format.currentText(),
             "preset": self._preset_combo.currentText(),
         }
+
+    @property
+    def preset_combo(self) -> QtWidgets.QComboBox:
+        return self._preset_combo
+
+    @property
+    def write_pyramid_check(self) -> QtWidgets.QCheckBox:
+        return self._write_pyramid
+
+    @property
+    def pyramid_levels_spin(self) -> QtWidgets.QSpinBox:
+        return self._pyramid_levels
+
+    @property
+    def compression_spin(self) -> QtWidgets.QSpinBox:
+        return self._compression
+
+    @property
+    def quality_spin(self) -> QtWidgets.QSpinBox:
+        return self._quality
+
+    @property
+    def tile_size_combo(self) -> QtWidgets.QComboBox:
+        return self._tile_size
+
+    @property
+    def format_combo(self) -> QtWidgets.QComboBox:
+        return self._format
+
+    @property
+    def info_label(self) -> QtWidgets.QLabel:
+        return self._info_label
+
+    @property
+    def button_box(self) -> QtWidgets.QDialogButtonBox:
+        return self.buttons
+
+    @property
+    def ok_button(self) -> QtWidgets.QPushButton | None:
+        return self.buttons.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+
+    @property
+    def cancel_button(self) -> QtWidgets.QPushButton | None:
+        return self.buttons.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+
+    @property
+    def reset_button(self) -> QtWidgets.QPushButton | None:
+        return self.buttons.button(QtWidgets.QDialogButtonBox.StandardButton.Reset)

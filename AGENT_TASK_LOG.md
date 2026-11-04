@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-11-04 UTC - SaveOptionsDialog Object Names, Accessibility Metadata, Button Affordances, and Unit Test Assertions
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/save_options_dialog.py`: Configured explicit `setObjectName("saveOptionsDialog")`, `setAccessibleName("Save Options Dialog")`, and `setAccessibleDescription(...)` on root dialog; added pointing hand cursors on preset combo, write pyramid checkbox, and dialog buttons; assigned explicit object names on dialog buttons (`save_options_ok_btn`, `save_options_cancel_btn`, `reset_defaults_btn`); added ergonomic property accessors (`preset_combo`, `write_pyramid_check`, `pyramid_levels_spin`, `compression_spin`, `quality_spin`, `tile_size_combo`, `format_combo`, `info_label`, `button_box`, `ok_button`, `cancel_button`, `reset_button`).
+- `tests/test_save_options_dialog.py`: Expanded test suite asserting dialog accessibility metadata, object names, pointing hand cursors, and property accessors.
+- Validation: Verified headlessly with `python -m pytest tests/test_save_options_dialog.py tests/test_merge_slides_dialog.py tests/test_preferences_dialog_accessibility.py tests/test_performance_stats_dialog.py -v` (29 passed in 0.70s, 0 errors).
+
 ### 2026-11-04 UTC - summarize_errors ignored NaN (unmeasured) pairs inconsistently
 Status: **done** (Claude)
 - Root cause: `summarize_errors` summed/maxed raw values, so one NaN made the mean NaN and `max` order-dependent; its sibling `summarize_error_dataframe` already skips unmeasured pairs.

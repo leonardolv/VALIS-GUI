@@ -6,7 +6,7 @@ import pytest
 
 pytest.importorskip("PySide6")
 
-from PySide6 import QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 from valis_workstation.constants import ImageFormats
 from valis_workstation.ui.dialogs.save_options_dialog import SaveOptionsDialog
@@ -17,8 +17,14 @@ class TestSaveOptionsDialogFeatures:
         dlg = SaveOptionsDialog()
         qtbot.addWidget(dlg)
 
+        assert dlg.objectName() == "saveOptionsDialog"
+        assert dlg.accessibleName() == "Save Options Dialog"
+        assert "Configure whole-slide image pyramid" in dlg.accessibleDescription()
+
         assert dlg._preset_combo.accessibleName() == "Export Preset Selection"
+        assert dlg._preset_combo.cursor().shape() == QtCore.Qt.CursorShape.PointingHandCursor
         assert dlg._write_pyramid.accessibleName() == "Write Image Pyramid Checkbox"
+        assert dlg._write_pyramid.cursor().shape() == QtCore.Qt.CursorShape.PointingHandCursor
         assert dlg._pyramid_levels.accessibleName() == "Pyramid Levels"
         assert dlg._compression.accessibleName() == "Compression Level"
         assert dlg._quality.accessibleName() == "Image Quality Percentage"
@@ -26,10 +32,26 @@ class TestSaveOptionsDialogFeatures:
         assert dlg._format.accessibleName() == "Output Image Format"
         assert dlg._info_label.accessibleName() == "Export Info Summary"
 
-        reset_btn = dlg.buttons.button(QtWidgets.QDialogButtonBox.StandardButton.Reset)
+        # Check properties
+        assert dlg.preset_combo is dlg._preset_combo
+        assert dlg.write_pyramid_check is dlg._write_pyramid
+        assert dlg.pyramid_levels_spin is dlg._pyramid_levels
+        assert dlg.compression_spin is dlg._compression
+        assert dlg.quality_spin is dlg._quality
+        assert dlg.tile_size_combo is dlg._tile_size
+        assert dlg.format_combo is dlg._format
+        assert dlg.info_label is dlg._info_label
+        assert dlg.button_box is dlg.buttons
+        assert dlg.ok_button is not None
+        assert dlg.ok_button.objectName() == "save_options_ok_btn"
+        assert dlg.cancel_button is not None
+        assert dlg.cancel_button.objectName() == "save_options_cancel_btn"
+
+        reset_btn = dlg.reset_button
         assert reset_btn is not None
         assert reset_btn.text() == "Reset to Defaults"
         assert reset_btn.accessibleName() == "Reset Export Options to Defaults"
+        assert reset_btn.cursor().shape() == QtCore.Qt.CursorShape.PointingHandCursor
 
         opts = dlg.get_options()
         assert opts["format"] == ImageFormats.OME_TIFF
