@@ -20,6 +20,9 @@ class ErrorSummary:
 
 
 def summarize_errors(errors: list[float], threshold: float) -> ErrorSummary:
+    # Unmeasured (NaN) pairs are skipped, as in summarize_error_dataframe: `max`
+    # over a NaN picks whichever operand came first and the mean would be NaN.
+    errors = [e for e in errors if e == e]
     if not errors:
         return ErrorSummary(mean_error=0.0, max_error=0.0, threshold=threshold)
     mean_error = sum(errors) / len(errors)

@@ -44,6 +44,18 @@ class TestSummarizeErrors:
         assert result.max_error == 3.0
         assert result.is_acceptable
 
+    def test_nan_values_are_skipped(self) -> None:
+        nan = float("nan")
+        for errors in ([nan, 4.0, 2.0], [4.0, nan, 2.0], [4.0, 2.0, nan]):
+            result = summarize_errors(errors, threshold=5.0)
+            assert result.mean_error == 3.0
+            assert result.max_error == 4.0
+
+    def test_all_nan_behaves_like_empty(self) -> None:
+        result = summarize_errors([float("nan")], threshold=5.0)
+        assert result.mean_error == 0.0
+        assert result.max_error == 0.0
+
 
 class TestSelectMetricColumn:
     def test_prefers_non_rigid_tre(self) -> None:
