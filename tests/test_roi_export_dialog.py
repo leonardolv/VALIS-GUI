@@ -136,3 +136,54 @@ def test_roi_export_dialog_reset_to_defaults(qtbot):
     assert options["bbox"] == (0, 0, 1000, 1000)
     assert options["format"] == ImageFormats.OME_TIFF
     assert options["reopen"] is True
+
+def test_roi_export_dialog_properties_and_query_helpers(qtbot):
+    dialog = ROIExportDialog()
+    qtbot.addWidget(dialog)
+
+    # Public properties
+    assert dialog.x_spin is dialog._x
+    assert dialog.y_spin is dialog._y
+    assert dialog.width_spin is dialog._width
+    assert dialog.height_spin is dialog._height
+    assert dialog.format_combo is dialog._format
+    assert dialog.reopen_checkbox is dialog._reopen
+    assert dialog.feedback_label is dialog._feedback_label
+    assert dialog.button_box is dialog._button_box
+
+    # Initial query helper values
+    assert dialog.coordinates() == (0, 0, 1000, 1000)
+    assert dialog.area() == 1_000_000
+    assert dialog.is_valid_roi() is True
+    assert dialog.selected_format() == ImageFormats.OME_TIFF
+    assert dialog.should_reopen() is True
+    assert dialog.feedback_text() == ""
+
+    # Mutate values via public properties
+    dialog.x_spin.setValue(120)
+    dialog.y_spin.setValue(240)
+    dialog.width_spin.setValue(800)
+    dialog.height_spin.setValue(600)
+    dialog.format_combo.setCurrentText(ImageFormats.PNG)
+    dialog.reopen_checkbox.setChecked(False)
+
+    assert dialog.coordinates() == (120, 240, 800, 600)
+    assert dialog.area() == 480_000
+    assert dialog.is_valid_roi() is True
+    assert dialog.selected_format() == ImageFormats.PNG
+    assert dialog.should_reopen() is False
+
+    options = dialog.get_options()
+    assert options["bbox"] == (120, 240, 800, 600)
+    assert options["format"] == ImageFormats.PNG
+    assert options["reopen"] is False
+
+    # Feedback text query helper verification
+    dialog.copy_json_btn.click()
+    assert "✓ Copied ROI bounding box" in dialog.feedback_text()
+
+    dialog.reset_button.click()
+    assert dialog.coordinates() == (0, 0, 1000, 1000)
+    assert dialog.area() == 1_000_000
+    assert "✓ Reset coordinates" in dialog.feedback_text()
+

@@ -113,14 +113,15 @@ class ROIExportDialog(QtWidgets.QDialog):
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addStretch()
 
-        btns = QtWidgets.QDialogButtonBox(
+        self._button_box = QtWidgets.QDialogButtonBox(
             QtWidgets.QDialogButtonBox.StandardButton.Ok
             | QtWidgets.QDialogButtonBox.StandardButton.Cancel
             | QtWidgets.QDialogButtonBox.StandardButton.Reset
         )
-        btns.setObjectName("roiButtonBox")
-        btns.accepted.connect(self.accept)
-        btns.rejected.connect(self.reject)
+        self._button_box.setObjectName("roiButtonBox")
+        self._button_box.accepted.connect(self.accept)
+        self._button_box.rejected.connect(self.reject)
+        btns = self._button_box
         self.reset_button = btns.button(QtWidgets.QDialogButtonBox.StandardButton.Reset)
         if self.reset_button is not None:
             self.reset_button.setObjectName("roiResetBtn")
@@ -222,16 +223,81 @@ class ROIExportDialog(QtWidgets.QDialog):
         self._feedback_label.setText("✓ Reset coordinates and options to defaults")
         self._feedback_label.setStyleSheet("color: #4CAF50;")
 
+    @property
+    def x_spin(self) -> QtWidgets.QSpinBox:
+        """Returns the X coordinate spinbox."""
+        return self._x
+
+    @property
+    def y_spin(self) -> QtWidgets.QSpinBox:
+        """Returns the Y coordinate spinbox."""
+        return self._y
+
+    @property
+    def width_spin(self) -> QtWidgets.QSpinBox:
+        """Returns the width spinbox."""
+        return self._width
+
+    @property
+    def height_spin(self) -> QtWidgets.QSpinBox:
+        """Returns the height spinbox."""
+        return self._height
+
+    @property
+    def format_combo(self) -> QtWidgets.QComboBox:
+        """Returns the format combobox."""
+        return self._format
+
+    @property
+    def reopen_checkbox(self) -> QtWidgets.QCheckBox:
+        """Returns the reopen in viewer checkbox."""
+        return self._reopen
+
+    @property
+    def feedback_label(self) -> QtWidgets.QLabel:
+        """Returns the feedback and validation label."""
+        return self._feedback_label
+
+    @property
+    def button_box(self) -> QtWidgets.QDialogButtonBox:
+        """Returns the dialog button box."""
+        return self._button_box
+
+    def coordinates(self) -> tuple[int, int, int, int]:
+        """Returns the ROI bounding box coordinates (x, y, width, height) in pixels."""
+        return (
+            self._x.value(),
+            self._y.value(),
+            self._width.value(),
+            self._height.value(),
+        )
+
+    def area(self) -> int:
+        """Returns the area of the ROI bounding box in square pixels."""
+        return self._width.value() * self._height.value()
+
+    def is_valid_roi(self) -> bool:
+        """Returns True if both width and height are strictly positive."""
+        return self._width.value() > 0 and self._height.value() > 0
+
+    def selected_format(self) -> str:
+        """Returns the currently selected image export format string."""
+        return self._format.currentText()
+
+    def should_reopen(self) -> bool:
+        """Returns True if the reopen-in-viewer option is checked."""
+        return self._reopen.isChecked()
+
+    def feedback_text(self) -> str:
+        """Returns the current message text in the feedback label."""
+        return self._feedback_label.text()
+
     def get_options(self) -> dict:
         """Returns the configured bounding box and format options."""
         return {
-            "bbox": (
-                self._x.value(),
-                self._y.value(),
-                self._width.value(),
-                self._height.value(),
-            ),
-            "format": self._format.currentText(),
-            "reopen": self._reopen.isChecked(),
+            "bbox": self.coordinates(),
+            "format": self.selected_format(),
+            "reopen": self.should_reopen(),
         }
+
 

@@ -4,7 +4,14 @@ work this file; always append, never overwrite another agent's entries.
 
 ## In Progress
 
+
 ## Completed
+
+### 2026-11-04 UTC - ROIExportDialog Public Properties, Bounding Box Query Helpers, and Unit Tests
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/roi_export_dialog.py`: Saved `self._button_box`; exposed public property accessors (`x_spin`, `y_spin`, `width_spin`, `height_spin`, `format_combo`, `reopen_checkbox`, `feedback_label`, `button_box`); added ergonomic bounding box query helpers and state predicates (`coordinates()`, `area()`, `is_valid_roi()`, `selected_format()`, `should_reopen()`, `feedback_text()`); refactored `get_options()` to reuse query helpers.
+- `tests/test_roi_export_dialog.py`: Added `test_roi_export_dialog_properties_and_query_helpers` verifying property accessors, initial and mutated coordinates, area calculation, validity predicates, format and reopen query helpers, and feedback message updates.
+- Validation: Verified headlessly with `python -m pytest tests/test_roi_export_dialog.py tests/test_save_options_dialog.py tests/test_warp_annotations_dialog.py tests/test_merge_slides_dialog.py tests/test_preferences_dialog_accessibility.py -v` (36 passed in 0.48s, 0 errors).
 
 ### 2026-11-04 UTC - SaveOptionsDialog Object Names, Accessibility Metadata, Button Affordances, and Unit Test Assertions
 Status: **done** (Antigravity)

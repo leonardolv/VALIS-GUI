@@ -2,9 +2,23 @@
 
 ## In Progress
 
+
 ## Blocked / Needs Review
 
 ## Completed
+
+### Task: ROIExportDialog public properties, bounding box query helpers, and unit tests
+- **Completed**: 2026-11-04
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/roi_export_dialog.py`:
+    - Saved dialog button box instance as `self._button_box`.
+    - Exposed public property accessors for form controls (`x_spin`, `y_spin`, `width_spin`, `height_spin`, `format_combo`, `reopen_checkbox`, `feedback_label`, `button_box`).
+    - Added ergonomic bounding box query helpers and state predicates: `coordinates()`, `area()`, `is_valid_roi()`, `selected_format()`, `should_reopen()`, `feedback_text()`.
+    - Refactored `get_options()` to reuse `coordinates()`, `selected_format()`, and `should_reopen()`.
+  - `tests/test_roi_export_dialog.py`:
+    - Added `test_roi_export_dialog_properties_and_query_helpers` verifying property accessors, initial and mutated coordinates, area calculation, validity predicates, format and reopen query helpers, and feedback message updates.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_roi_export_dialog.py tests/test_save_options_dialog.py tests/test_warp_annotations_dialog.py tests/test_merge_slides_dialog.py tests/test_preferences_dialog_accessibility.py -v` (36 passed in 0.48s, 0 errors).
+- **Status**: Completed
 
 ### Task: SaveOptionsDialog object names, accessibility metadata, button affordances, and unit test assertions
 - **Completed**: 2026-11-04
