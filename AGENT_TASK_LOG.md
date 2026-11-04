@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-11-04 UTC - summarize_errors ignored NaN (unmeasured) pairs inconsistently
+Status: **done** (Claude)
+- Root cause: `summarize_errors` summed/maxed raw values, so one NaN made the mean NaN and `max` order-dependent; its sibling `summarize_error_dataframe` already skips unmeasured pairs.
+- Solution: skip NaN values; an all-NaN list behaves like an empty one.
+- Validation: 2 new tests in `tests/test_error_metrics.py` (both fail before); file 18 passed. Qt suite not run (no PySide6 in sandbox). No manual change needed.
+
 ### 2026-10-30 UTC - ROI export: slides whose names differ only by case overwrote each other's crop
 Status: **done** (Claude)
 - Root cause: `export_roi_crops` wrote `{name}_ROI{ext}` per slide; on case-insensitive filesystems (Windows/macOS) `Slide` and `slide` map to one file, so one crop was silently lost while both were reported as exported.
