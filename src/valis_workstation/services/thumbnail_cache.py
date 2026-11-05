@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
-from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QSettings
+from PySide6.QtCore import QSettings
 from PySide6.QtGui import QPixmap
 
 logger = logging.getLogger(__name__)
