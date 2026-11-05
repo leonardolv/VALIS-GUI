@@ -4,9 +4,22 @@
 
 
 
+
 ## Blocked / Needs Review
 
 ## Completed
+
+### Task: ErrorDetailDialog public properties, query and trigger helpers, and unit tests
+- **Completed**: 2026-11-05
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/error_detail_dialog.py`:
+    - Configured accessible description on `ErrorDetailDialog`: `Dialog displaying error message, technical traceback, and action options`.
+    - Exposed public property accessors: `error_text_label`, `details_group_box`, `details_text_edit`, `copy_button`, `report_button`, and `close_button`.
+    - Added ergonomic query and action helpers: `error_message_text()`, `has_technical_details()`, `technical_details_text()`, `is_details_expanded()`, `set_details_expanded(expanded)`, `copy_button_text()`, `trigger_copy()`, `trigger_report()`, and `trigger_close()`.
+  - `tests/test_error_and_diagnostics_dialogs.py`:
+    - Expanded test suite asserting accessible description, property accessors, error text and technical detail predicates, details expansion toggling, programmatic triggers, and simple error handling without technical details.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_error_and_diagnostics_dialogs.py tests/test_diagnostics_dialog.py tests/test_performance_stats_dialog.py -v` (12 passed in 2.52s, 0 errors).
+- **Status**: Completed
 
 ### Task: DiagnosticsDialog public properties, query and trigger helpers, and unit tests
 - **Completed**: 2026-11-05

@@ -26,6 +26,7 @@ class ErrorDetailDialog(QtWidgets.QDialog):
         super().__init__(parent)
         self.setObjectName("errorDetailDialog")
         self.setAccessibleName("Error Details Dialog")
+        self.setAccessibleDescription("Dialog displaying error message, technical traceback, and action options")
         self.setWindowTitle("Error Details")
         self.resize(700, 500)
 
@@ -154,6 +155,70 @@ Recent Log:
         url = "https://github.com/cdgatenbee/valis-wsi/issues/new"
         QtGui.QDesktopServices.openUrl(QtCore.QUrl(url))
         logger.info("Opened GitHub issues page")
+
+
+    # -- Public properties & helpers ---------------------------------------
+
+    @property
+    def error_text_label(self) -> QtWidgets.QLabel:
+        return self.error_text
+
+    @property
+    def details_group_box(self) -> QtWidgets.QGroupBox | None:
+        return self.details_group
+
+    @property
+    def details_text_edit(self) -> QtWidgets.QTextEdit | None:
+        return self.details_text
+
+    @property
+    def copy_button(self) -> QtWidgets.QPushButton:
+        return self.copy_btn
+
+    @property
+    def report_button(self) -> QtWidgets.QPushButton:
+        return self.report_btn
+
+    @property
+    def close_button(self) -> QtWidgets.QPushButton:
+        return self.close_btn
+
+    def error_message_text(self) -> str:
+        """Return the user-friendly error message text."""
+        return self.error_text.text()
+
+    def has_technical_details(self) -> bool:
+        """Return True if technical details or log excerpt are present."""
+        return bool(self.details_text and self.details_text.toPlainText().strip())
+
+    def technical_details_text(self) -> str:
+        """Return the combined technical details and log excerpt text."""
+        return self.details_text.toPlainText() if self.details_text else ""
+
+    def is_details_expanded(self) -> bool:
+        """Return True if the technical details group box is expanded."""
+        return bool(self.details_group and self.details_group.isChecked())
+
+    def set_details_expanded(self, expanded: bool) -> None:
+        """Expand or collapse the technical details group box."""
+        if self.details_group is not None:
+            self.details_group.setChecked(expanded)
+
+    def copy_button_text(self) -> str:
+        """Return the current copy button label text."""
+        return self.copy_btn.text()
+
+    def trigger_copy(self) -> None:
+        """Programmatically trigger copy of error details to clipboard."""
+        self.copy_btn.click()
+
+    def trigger_report(self) -> None:
+        """Programmatically trigger issue reporting action."""
+        self.report_btn.click()
+
+    def trigger_close(self) -> None:
+        """Programmatically trigger dialog dismissal."""
+        self.close_btn.click()
 
 
 def show_error_dialog(

@@ -45,8 +45,47 @@ def test_error_detail_dialog_accessibility(qapp):
         # Test non-blocking copy feedback
         dlg._copy_to_clipboard("test", "tech", "log")
         assert dlg.copy_btn.text() == "✓ Copied!"
+
+        # Property accessors and query helpers
+        assert dlg.accessibleDescription() == "Dialog displaying error message, technical traceback, and action options"
+        assert dlg.error_text_label is dlg.error_text
+        assert dlg.details_group_box is dlg.details_group
+        assert dlg.details_text_edit is dlg.details_text
+        assert dlg.copy_button is dlg.copy_btn
+        assert dlg.report_button is dlg.report_btn
+        assert dlg.close_button is dlg.close_btn
+
+        assert dlg.error_message_text() == "Something failed"
+        assert dlg.has_technical_details() is True
+        assert "ValueError: invalid input" in dlg.technical_details_text()
+        assert "Starting task" in dlg.technical_details_text()
+
+        # Expand/collapse details
+        assert dlg.is_details_expanded() is False
+        dlg.set_details_expanded(True)
+        assert dlg.is_details_expanded() is True
+        dlg.set_details_expanded(False)
+        assert dlg.is_details_expanded() is False
+
+        # Triggers and button texts
+        assert len(dlg.copy_button_text()) > 0
+        dlg.trigger_copy()
+        assert "Copied" in dlg.copy_button_text()
+        dlg.trigger_report()
     finally:
         dlg.close()
+
+    # Simple dialog without technical details
+    dlg_simple = ErrorDetailDialog(error_message="Simple notice")
+    try:
+        assert dlg_simple.error_message_text() == "Simple notice"
+        assert dlg_simple.has_technical_details() is False
+        assert dlg_simple.technical_details_text() == ""
+        assert dlg_simple.details_group_box is None
+        assert dlg_simple.details_text_edit is None
+        assert dlg_simple.is_details_expanded() is False
+    finally:
+        dlg_simple.close()
 
 
 def test_diagnostics_dialog_accessibility(qapp, tmp_path):

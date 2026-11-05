@@ -5,7 +5,14 @@ work this file; always append, never overwrite another agent's entries.
 ## In Progress
 
 
+
 ## Completed
+
+### 2026-11-05 UTC - ErrorDetailDialog Public Properties, Query and Trigger Helpers, and Unit Tests
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/error_detail_dialog.py`: Configured accessible description on `ErrorDetailDialog`; exposed public property accessors (`error_text_label`, `details_group_box`, `details_text_edit`, `copy_button`, `report_button`, `close_button`); added ergonomic query and trigger helpers (`error_message_text()`, `has_technical_details()`, `technical_details_text()`, `is_details_expanded()`, `set_details_expanded()`, `copy_button_text()`, `trigger_copy()`, `trigger_report()`, `trigger_close()`).
+- `tests/test_error_and_diagnostics_dialogs.py`: Expanded test assertions covering accessible description, property accessors, error and traceback text queries, details expansion lifecycle, programmatic button triggers, and simple dialogs without tracebacks.
+- Validation: Verified headlessly with `python -m pytest tests/test_error_and_diagnostics_dialogs.py tests/test_diagnostics_dialog.py tests/test_performance_stats_dialog.py -v` (12 passed in 2.52s, 0 errors).
 
 ### 2026-11-05 UTC - DiagnosticsDialog Public Properties, Query and Trigger Helpers, and Unit Tests
 Status: **done** (Antigravity)
