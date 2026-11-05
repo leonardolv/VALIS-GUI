@@ -7,6 +7,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-11-05 UTC - DiagnosticsDialog Public Properties, Query and Trigger Helpers, and Unit Tests
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/diagnostics_dialog.py`: Exposed public property accessors on `DiagnosticsDialog` (`text_edit`, `refresh_button`, `copy_button`, `close_button`); added ergonomic query and action helpers (`diagnostics_text()`, `has_diagnostics_content()`, `is_copy_enabled()`, `is_refresh_enabled()`, `trigger_refresh()`, `trigger_copy()`).
+- `tests/test_diagnostics_dialog.py`: Added unit test `test_diagnostics_dialog_properties_and_query_helpers` verifying property accessors, content predicates, text queries, programmatic copy to clipboard, and refresh lifecycle.
+- Validation: Verified headlessly with `python -m pytest tests/test_diagnostics_dialog.py tests/test_error_and_diagnostics_dialogs.py tests/test_performance_stats_dialog.py -v` (12 passed in 2.43s, 0 errors).
+
 ### 2026-11-05 UTC - PerformanceStatsDialog Public Properties, Metric Query Helpers, and Unit Tests
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/performance_stats_dialog.py`: Exposed public property accessors on `PerformanceStatsDialog` (`tabs`, `refresh_button`, `clear_cache_button`, `close_button`, `thumb_cache_bar`); added ergonomic query helpers (`uptime_text()`, `current_memory_text()`, `peak_memory_text()`, `thumb_hit_rate_text()`, `slides_loaded_count()`, `registration_runs_count()`, `cached_thumbnails_count()`, `is_auto_refresh_active()`, `tab_count()`, `current_tab_title()`).

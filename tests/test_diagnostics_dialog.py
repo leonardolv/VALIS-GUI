@@ -92,3 +92,45 @@ def test_copy_button_label_survives_a_double_click(qtbot, tmp_path):
     dialog._copy_btn.click()
     assert dialog._copy_btn.text() == "✓ Copied!"
     qtbot.waitUntil(lambda: dialog._copy_btn.text() == "Copy to Clipboard", timeout=4000)
+
+def test_diagnostics_dialog_properties_and_query_helpers(qtbot, tmp_path):
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "logs").mkdir()
+    log_file = repo_root / "logs" / "valis_workstation.log"
+    log_file.write_text("test log", encoding="utf-8")
+
+    last_result = {
+        "output_dir": "/output",
+        "registered_dir": "/registered",
+    }
+
+    dialog = DiagnosticsDialog(repo_root=repo_root, last_result=last_result)
+    qtbot.addWidget(dialog)
+
+    # Properties
+    assert dialog.text_edit == dialog._text
+    assert dialog.refresh_button == dialog._refresh_btn
+    assert dialog.copy_button == dialog._copy_btn
+    assert dialog.close_button == dialog._close_btn
+
+    # Query helpers
+    assert dialog.has_diagnostics_content() is True
+    assert "VALIS Workstation Diagnostics" in dialog.diagnostics_text()
+    assert "/output" in dialog.diagnostics_text()
+    assert dialog.is_copy_enabled() is True
+    assert dialog.is_refresh_enabled() is True
+
+    # Trigger copy
+    dialog.trigger_copy()
+    assert QtWidgets.QApplication.clipboard().text() == dialog.diagnostics_text()
+    assert dialog.copy_button.text() == "✓ Copied!"
+
+    # Clear and trigger refresh
+    dialog.text_edit.setPlainText("")
+    assert dialog.has_diagnostics_content() is False
+    assert dialog.diagnostics_text() == ""
+    dialog.trigger_refresh()
+    assert dialog.has_diagnostics_content() is True
+    assert "VALIS Workstation Diagnostics" in dialog.diagnostics_text()
+

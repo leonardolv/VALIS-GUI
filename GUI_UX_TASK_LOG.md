@@ -8,6 +8,17 @@
 
 ## Completed
 
+### Task: DiagnosticsDialog public properties, query and trigger helpers, and unit tests
+- **Completed**: 2026-11-05
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/diagnostics_dialog.py`:
+    - Exposed public property accessors on `DiagnosticsDialog`: `text_edit`, `refresh_button`, `copy_button`, `close_button`.
+    - Added ergonomic query and action helpers: `diagnostics_text()`, `has_diagnostics_content()`, `is_copy_enabled()`, `is_refresh_enabled()`, `trigger_refresh()`, and `trigger_copy()`.
+  - `tests/test_diagnostics_dialog.py`:
+    - Added unit test `test_diagnostics_dialog_properties_and_query_helpers` verifying property accessors, content predicates, text queries, programmatic copy to clipboard, and refresh lifecycle.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_diagnostics_dialog.py tests/test_error_and_diagnostics_dialogs.py tests/test_performance_stats_dialog.py -v` (12 passed in 2.43s, 0 errors).
+- **Status**: Completed
+
 ### Task: PerformanceStatsDialog public properties, metric query helpers, and unit tests
 - **Completed**: 2026-11-05
 - **Changes**:

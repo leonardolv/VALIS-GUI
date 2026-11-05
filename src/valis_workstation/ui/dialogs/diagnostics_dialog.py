@@ -19,6 +19,8 @@ class DiagnosticsDialog(QtWidgets.QDialog):
         parent: QtWidgets.QWidget | None = None,
     ) -> None:
         super().__init__(parent)
+        self._repo_root = repo_root
+        self._last_result = last_result
         self.setObjectName("diagnosticsDialog")
         self.setAccessibleName("Diagnostics Dialog")
         self.setWindowTitle("Diagnostics")
@@ -109,3 +111,51 @@ class DiagnosticsDialog(QtWidgets.QDialog):
         lines.append(f"Log file exists: {log_file.exists()} ({log_file})")
 
         self._text.setPlainText("\n".join(lines))
+
+    # ================================================================== #
+    #  Public properties and query helpers                                #
+    # ================================================================== #
+
+    @property
+    def text_edit(self) -> QtWidgets.QPlainTextEdit:
+        """The read-only plain text edit displaying diagnostics."""
+        return self._text
+
+    @property
+    def refresh_button(self) -> QtWidgets.QPushButton:
+        """The Refresh button."""
+        return self._refresh_btn
+
+    @property
+    def copy_button(self) -> QtWidgets.QPushButton:
+        """The Copy to Clipboard button."""
+        return self._copy_btn
+
+    @property
+    def close_button(self) -> QtWidgets.QPushButton:
+        """The Close button."""
+        return self._close_btn
+
+    def diagnostics_text(self) -> str:
+        """Return the current diagnostic plain text."""
+        return self._text.toPlainText()
+
+    def has_diagnostics_content(self) -> bool:
+        """Check whether any diagnostic output is currently displayed."""
+        return bool(self._text.toPlainText().strip())
+
+    def is_copy_enabled(self) -> bool:
+        """Check whether the copy button is enabled."""
+        return self._copy_btn.isEnabled()
+
+    def is_refresh_enabled(self) -> bool:
+        """Check whether the refresh button is enabled."""
+        return self._refresh_btn.isEnabled()
+
+    def trigger_refresh(self) -> None:
+        """Programmatically trigger a diagnostics refresh."""
+        self._populate(self._repo_root, self._last_result)
+
+    def trigger_copy(self) -> None:
+        """Programmatically trigger copying diagnostics to the clipboard."""
+        self._copy_to_clipboard()
