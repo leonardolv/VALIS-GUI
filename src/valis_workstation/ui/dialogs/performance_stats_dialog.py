@@ -329,3 +329,82 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
         """Stop timer when dialog is closed."""
         self._update_timer.stop()
         super().closeEvent(event)
+
+    # ------------------------------------------------------------------
+    # Public properties and query helpers
+    # ------------------------------------------------------------------
+
+    @property
+    def tabs(self) -> QtWidgets.QTabWidget:
+        """The category tabs widget."""
+        return self._tabs
+
+    @property
+    def refresh_button(self) -> QtWidgets.QPushButton:
+        """The manual refresh statistics button."""
+        return self._refresh_btn
+
+    @property
+    def clear_cache_button(self) -> QtWidgets.QPushButton:
+        """The clear thumbnail cache button."""
+        return self._clear_thumb_cache_btn
+
+    @property
+    def close_button(self) -> QtWidgets.QPushButton:
+        """The dialog close button."""
+        return self._close_btn
+
+    @property
+    def thumb_cache_bar(self) -> QtWidgets.QProgressBar:
+        """The thumbnail cache usage progress bar."""
+        return self._thumb_cache_bar
+
+    def uptime_text(self) -> str:
+        """Return the formatted application uptime text."""
+        return self._uptime_label.text()
+
+    def current_memory_text(self) -> str:
+        """Return the current memory consumption text."""
+        return self._current_mem_label.text()
+
+    def peak_memory_text(self) -> str:
+        """Return the peak memory consumption text."""
+        return self._peak_mem_label.text()
+
+    def thumb_hit_rate_text(self) -> str:
+        """Return the thumbnail cache hit rate percentage text."""
+        return self._thumb_hit_rate_label.text()
+
+    def slides_loaded_count(self) -> int:
+        """Return the number of slides loaded."""
+        try:
+            return int(self._slides_count_label.text())
+        except (ValueError, TypeError):
+            return 0
+
+    def registration_runs_count(self) -> int:
+        """Return the number of registration runs completed."""
+        try:
+            return int(self._reg_count_label.text())
+        except (ValueError, TypeError):
+            return 0
+
+    def cached_thumbnails_count(self) -> int:
+        """Return the number of cached thumbnails."""
+        try:
+            return int(self._thumb_total_label.text())
+        except (ValueError, TypeError):
+            return 0
+
+    def is_auto_refresh_active(self) -> bool:
+        """Check whether the background refresh timer is active."""
+        return bool(self._update_timer.isActive())
+
+    def tab_count(self) -> int:
+        """Return the number of metric tabs available."""
+        return self._tabs.count()
+
+    def current_tab_title(self) -> str:
+        """Return the title of the currently selected tab."""
+        return self._tabs.tabText(self._tabs.currentIndex())
+

@@ -4,7 +4,14 @@ work this file; always append, never overwrite another agent's entries.
 
 ## In Progress
 
+
 ## Completed
+
+### 2026-11-05 UTC - PerformanceStatsDialog Public Properties, Metric Query Helpers, and Unit Tests
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/performance_stats_dialog.py`: Exposed public property accessors on `PerformanceStatsDialog` (`tabs`, `refresh_button`, `clear_cache_button`, `close_button`, `thumb_cache_bar`); added ergonomic query helpers (`uptime_text()`, `current_memory_text()`, `peak_memory_text()`, `thumb_hit_rate_text()`, `slides_loaded_count()`, `registration_runs_count()`, `cached_thumbnails_count()`, `is_auto_refresh_active()`, `tab_count()`, `current_tab_title()`).
+- `tests/test_performance_stats_dialog.py`: Added unit test `test_performance_stats_dialog_properties_and_query_helpers` asserting property accessors, default metric query helpers, tab switching queries, and timer deactivation on dialog accept.
+- Validation: Verified headlessly with `python -m pytest tests/test_performance_stats_dialog.py tests/test_warp_annotations_dialog.py tests/test_blink_viewer_dialog.py tests/test_roi_export_dialog.py tests/test_save_options_dialog.py tests/test_merge_slides_dialog.py -v` (30 passed in 0.74s, 0 errors).
 
 ### 2026-11-04 UTC - WarpAnnotationsDialog Public Properties, Query Helpers, and Unit Tests
 Status: **done** (Antigravity)

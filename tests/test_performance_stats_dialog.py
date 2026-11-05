@@ -71,3 +71,37 @@ def test_refresh_timer_stops_on_accept_and_reject(qtbot):
         assert dialog._update_timer.isActive()
         getattr(dialog, finish)()
         assert not dialog._update_timer.isActive()
+
+
+def test_performance_stats_dialog_properties_and_query_helpers(qtbot):
+    dialog = PerformanceStatsDialog()
+    qtbot.addWidget(dialog)
+
+    # Property accessors
+    assert dialog.tabs == dialog._tabs
+    assert dialog.refresh_button == dialog._refresh_btn
+    assert dialog.clear_cache_button == dialog._clear_thumb_cache_btn
+    assert dialog.close_button == dialog._close_btn
+    assert dialog.thumb_cache_bar == dialog._thumb_cache_bar
+
+    # Metric query helpers
+    assert dialog.is_auto_refresh_active() is True
+    assert dialog.tab_count() == 3
+    assert dialog.current_tab_title() == "Overview"
+    assert isinstance(dialog.uptime_text(), str)
+    assert isinstance(dialog.current_memory_text(), str)
+    assert isinstance(dialog.peak_memory_text(), str)
+    assert isinstance(dialog.thumb_hit_rate_text(), str)
+    assert isinstance(dialog.slides_loaded_count(), int)
+    assert isinstance(dialog.registration_runs_count(), int)
+    assert isinstance(dialog.cached_thumbnails_count(), int)
+
+    # Tab switching reflected in query helper
+    dialog.tabs.setCurrentIndex(1)
+    assert dialog.current_tab_title() == "Thumbnail Cache"
+    dialog.tabs.setCurrentIndex(2)
+    assert dialog.current_tab_title() == "Memory"
+
+    dialog.accept()
+    assert dialog.is_auto_refresh_active() is False
+
