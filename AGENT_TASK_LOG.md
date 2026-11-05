@@ -61,6 +61,11 @@ Status: **done** (Claude)
 - Root cause: `PropertiesDock.config()` only replaced `< > : " / \ | ? *`, so a project name of `..` produced `output/..` (the repo root) as the registration output directory, and `study.` / `study ` alias `study` on Windows. The red-border validator duplicated the rules separately and also accepted these.
 - Solution: new `sanitize_project_name()` / `is_valid_project_name()` in `utils/validation.py` (drops trailing dots/spaces, falls back to "New Project" for dot-only names, reserved-name suffix); `config()` and the validator now share it, with a tooltip for the new case. No manual change needed (the manual does not describe name rules).
 - Validation: new `tests/test_project_name_sanitize.py` (19 tests); full suite 605 passed offscreen (baseline 585).
+### 2026-10-28 UTC - Conservative dead-code audit: remove 9 unused imports
+Status: **done** (Claude)
+- Removed (ruff F401, each grep-verified to have no reference in src/tests incl. patch targets and re-exports): `dataclasses.field` (models/config.py), `QBuffer`/`QByteArray`/`QIODevice` (services/thumbnail_cache.py), `ImageFormats` (services/valis_pipeline.py), `QtGui` (ui/dialogs/preferences_dialog.py), `Callable` (ui/dialogs/quick_tutorial_dialog.py), `datetime`/`Path` (utils/performance.py).
+- Kept for a human decision (vulture, 60% confidence, unused but plausibly meant to be wired up or public helpers): `constants.ConfigKeys` and three `key_for_label`, `MainWindow._start_registration_from_context/_confirm_registration/_safe_total_size_bytes/expand_center/_open_repo_document`, `error_metrics.summarize_errors`, merge dialog selection helpers, `QuickTutorialDialog` step-navigation methods, `splitter_utils.set_splitter_sizes/expand_panel`, `paths.ensure_dir/normalize_path`, `performance.TimingContext/log_performance_summary/get_performance_status`.
+- Validation: 585 passed offscreen before and after; ruff src+tests 183 -> 174 findings.
 
 ### 2026-10-28 UTC - Reference slide pick with case-clashing names; warn about stem clashes before registering
 Status: **done** (Claude)
