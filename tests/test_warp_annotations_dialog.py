@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
@@ -175,3 +174,32 @@ def test_warp_annotations_dialog_properties_and_query_helpers(qtbot, tmp_path):
     assert dialog.selected_source_slide_name() == "Slide_B"
     assert dialog.selected_source_slide_path() == "/path/Slide_B.ndpi"
 
+
+
+def test_warp_annotations_run_uses_real_slide_signature(qtbot, tmp_path):
+    """The dialog must only pass kwargs the vendored VALIS Slide method accepts
+    (geojson_f, to_slide_obj, src_slide_level, src_pt_level, dst_slide_level,
+    non_rigid); a stub with **kwargs hid a TypeError from crop=True."""
+    class StrictSlide(MockSlide):
+        def warp_geojson_from_to(
+            self,
+            geojson_f,
+            to_slide_obj,
+            src_slide_level=0,
+            src_pt_level=0,
+            dst_slide_level=0,
+            non_rigid=True,
+        ):
+            return {"type": "FeatureCollection", "features": []}
+
+    registrar = MockRegistrar(["Slide_A"])
+    registrar._slides = {"/path/Slide_A.ndpi": StrictSlide("Slide_A")}
+    dialog = WarpAnnotationsDialog(registrar, tmp_path)
+    qtbot.addWidget(dialog)
+    sample = tmp_path / "s.geojson"
+    sample.write_text(json.dumps({"type": "FeatureCollection", "features": []}))
+    dialog._annotation_path.setText(str(sample))
+    dialog._output_dir_edit.setText(str(tmp_path / "out"))
+
+    dialog._run_warp()
+    assert (tmp_path / "out" / "Slide_A_to_Slide_A.geojson").exists()

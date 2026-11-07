@@ -253,7 +253,6 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
                 src_slide_level=0,
                 src_pt_level=0,
                 non_rigid=self._use_non_rigid,
-                crop=True,
             )
             output_path = (
                 output_dir / f"{source_slide.name}_to_{target_slide.name}.geojson"
