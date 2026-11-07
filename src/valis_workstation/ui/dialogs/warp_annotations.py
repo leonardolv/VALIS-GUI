@@ -245,20 +245,25 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
 
         source_slide = self._registrar.get_slide(source_slide_path)
 
-        for target_path in self._registrar.get_sorted_img_f_list():
-            target_slide = self._registrar.get_slide(target_path)
-            warped_geojson = source_slide.warp_geojson_from_to(
-                str(annotation_path),
-                to_slide_obj=target_slide,
-                src_slide_level=0,
-                src_pt_level=0,
-                non_rigid=self._use_non_rigid,
-                crop=True,
-            )
-            output_path = (
-                output_dir / f"{source_slide.name}_to_{target_slide.name}.geojson"
-            )
-            output_path.write_text(json.dumps(warped_geojson))
+        try:
+            for target_path in self._registrar.get_sorted_img_f_list():
+                target_slide = self._registrar.get_slide(target_path)
+                warped_geojson = source_slide.warp_geojson_from_to(
+                    str(annotation_path),
+                    to_slide_obj=target_slide,
+                    src_slide_level=0,
+                    src_pt_level=0,
+                    non_rigid=self._use_non_rigid,
+                )
+                output_path = (
+                    output_dir / f"{source_slide.name}_to_{target_slide.name}.geojson"
+                )
+                output_path.write_text(json.dumps(warped_geojson))
+        except Exception as e:
+            self._status.setText(f"Error warping annotations: {e}")
+            if os.environ.get("QT_QPA_PLATFORM") != "offscreen" and not os.environ.get("PYTEST_CURRENT_TEST"):
+                QtWidgets.QMessageBox.warning(self, "Warp", f"Error warping annotations: {e}")
+            return
 
         self._status.setText(f"Warped annotations saved to {output_dir}")
         self.accept()

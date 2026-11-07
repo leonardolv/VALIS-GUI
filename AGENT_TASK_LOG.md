@@ -8,6 +8,13 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-11-07 UTC - Fix Slide.warp_geojson_from_to invalid crop argument and add warp execution error handling
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/warp_annotations.py`: Removed unsupported `crop=True` parameter passed to `source_slide.warp_geojson_from_to`, resolving a runtime `TypeError` when invoking with upstream/vendored VALIS API; wrapped warp loop in exception handling so failures during file operations or geometric transformations gracefully report errors to `self._status` without crashing the application.
+- `tests/test_warp_annotations_dialog.py`: Updated `MockSlide.warp_geojson_from_to` signature to match the exact VALIS API parameters (`geojson_f`, `to_slide_obj`, `src_slide_level`, `src_pt_level`, `dst_slide_level`, `non_rigid`) without swallowing unexpected keyword arguments; added unit test `test_warp_annotations_dialog_run_warp_handles_exception` verifying error handling during warp failures.
+- Validation: Verified headlessly with `python -m pytest tests/test_warp_annotations_dialog.py tests/test_error_and_diagnostics_dialogs.py tests/test_diagnostics_dialog.py tests/test_performance_stats_dialog.py tests/test_blink_viewer_dialog.py -v` (23 passed in 2.53s, 0 errors).
+
+
 ### 2026-11-05 UTC - ErrorDetailDialog Public Properties, Query and Trigger Helpers, and Unit Tests
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/error_detail_dialog.py`: Configured accessible description on `ErrorDetailDialog`; exposed public property accessors (`error_text_label`, `details_group_box`, `details_text_edit`, `copy_button`, `report_button`, `close_button`); added ergonomic query and trigger helpers (`error_message_text()`, `has_technical_details()`, `technical_details_text()`, `is_details_expanded()`, `set_details_expanded()`, `copy_button_text()`, `trigger_copy()`, `trigger_report()`, `trigger_close()`).
@@ -1707,6 +1714,8 @@ path used by "Average". Validation: 41 passed in tests/test_merge_slides_service
 
 ## Backlog
 
+- ~~**Warp Annotations probably raises `TypeError` with the real VALIS.**~~ Done by the 2026-11-07 run — see the Completed entry. Dropped `crop=True`, wrapped warp execution loop in exception handling with user status reporting, and updated MockSlide signature in tests.
+  (original entry follows)
 - **Warp Annotations probably raises `TypeError` with the real VALIS.** Found 2026-10-26 while documenting the tool. `WarpAnnotationsDialog._run_warp` passes `crop=True` to `Slide.warp_geojson_from_to`, which in the vendored `valis/registration.py` takes `(geojson_f, to_slide_obj, src_slide_level, src_pt_level, dst_slide_level, non_rigid)` only. The dialog test uses a fake slide with `**kwargs`, so it cannot see this. Fix is probably to drop `crop=True` (check what upstream VALIS 1.2.0 does), then add a test whose fake slide has the real signature. Not changed in the docs run because it alters behaviour.
 
 - ~~**`ui/show_tooltips` and `cache/persist` are the two remaining

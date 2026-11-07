@@ -9,6 +9,18 @@
 
 ## Completed
 
+### Task: Fix Slide.warp_geojson_from_to invalid crop argument and add warp execution error handling
+- **Completed**: 2026-11-07
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/warp_annotations.py`:
+    - Removed unsupported `crop=True` parameter passed to `source_slide.warp_geojson_from_to`, resolving a runtime `TypeError` when invoking with upstream/vendored VALIS API.
+    - Wrapped warp loop in exception handling so failures during file operations or geometric transformations gracefully report errors to `self._status` without crashing the application.
+  - `tests/test_warp_annotations_dialog.py`:
+    - Updated `MockSlide.warp_geojson_from_to` signature to match the exact VALIS API parameters (`geojson_f`, `to_slide_obj`, `src_slide_level`, `src_pt_level`, `dst_slide_level`, `non_rigid`) without swallowing unexpected keyword arguments.
+    - Added unit test `test_warp_annotations_dialog_run_warp_handles_exception` verifying error handling during warp failures.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_warp_annotations_dialog.py tests/test_error_and_diagnostics_dialogs.py tests/test_diagnostics_dialog.py tests/test_performance_stats_dialog.py tests/test_blink_viewer_dialog.py -v` (23 passed in 2.53s, 0 errors).
+- **Status**: Completed
+
 ### Task: ErrorDetailDialog public properties, query and trigger helpers, and unit tests
 - **Completed**: 2026-11-05
 - **Changes**:

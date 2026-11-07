@@ -18,7 +18,15 @@ class MockSlide:
     def __init__(self, name: str) -> None:
         self.name = name
 
-    def warp_geojson_from_to(self, *args, **kwargs):
+    def warp_geojson_from_to(
+        self,
+        geojson_f,
+        to_slide_obj,
+        src_slide_level: int = 0,
+        src_pt_level: int = 0,
+        dst_slide_level: int = 0,
+        non_rigid: bool = True,
+    ):
         return {"type": "FeatureCollection", "features": [{"type": "Feature"}]}
 
 
@@ -137,6 +145,25 @@ def test_warp_annotations_dialog_run_warp_success(qtbot, tmp_path):
     assert "saved" in dialog._status.text().lower()
     assert (out_folder / "Slide_A_to_Slide_A.geojson").exists()
     assert (out_folder / "Slide_A_to_Slide_B.geojson").exists()
+
+
+def test_warp_annotations_dialog_run_warp_handles_exception(qtbot, tmp_path):
+    registrar = MockRegistrar(["Slide_A", "Slide_B"])
+    dialog = WarpAnnotationsDialog(registrar, tmp_path)
+    qtbot.addWidget(dialog)
+
+    sample_geojson = tmp_path / "sample.geojson"
+    sample_geojson.write_text(json.dumps({"type": "FeatureCollection", "features": []}))
+    dialog._annotation_path.setText(str(sample_geojson))
+
+    source_path = dialog.selected_source_slide_path()
+    source_slide = registrar.get_slide(source_path)
+    source_slide.warp_geojson_from_to = MagicMock(side_effect=RuntimeError("Transformation error"))
+
+    dialog._run_warp()
+
+    assert "error warping annotations" in dialog._status.text().lower()
+    assert "transformation error" in dialog._status.text().lower()
 
 
 def test_warp_annotations_dialog_properties_and_query_helpers(qtbot, tmp_path):
