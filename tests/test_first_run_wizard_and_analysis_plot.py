@@ -148,3 +148,44 @@ def test_quick_tutorial_dialog_properties_and_query_helpers(qtbot):
     dialog.set_dont_show_checked(not initial_checked)
     assert dialog.is_dont_show_checked() == (not initial_checked)
     dialog.set_dont_show_checked(initial_checked)
+
+
+def test_quick_tutorial_qss_styling_and_bubble_properties(qtbot):
+    """Assert QuickTutorialDialog styling rules are defined in QSS and bubbles use Qt properties."""
+    from pathlib import Path
+
+    styles_dir = Path(__file__).resolve().parent.parent / "src" / "valis_workstation" / "styles"
+    base_qss = (styles_dir / "adobe_dark.qss").read_text(encoding="utf-8")
+    hc_qss = (styles_dir / "high_contrast_overrides.qss").read_text(encoding="utf-8")
+
+    # QSS rules
+    assert "QFrame#TutorialHeader" in base_qss
+    assert "QLabel#tutorialTitleLabel" in base_qss
+    assert "QLabel#tutorialStepCounter" in base_qss
+    assert "QFrame#tutorialBodyContainer" in base_qss
+    assert "QTextBrowser#tutorialBody" in base_qss
+    assert "QPushButton#tutorialActionBtn" in base_qss
+    assert 'QLabel[tutorialBubble="true"]' in base_qss
+    assert 'QLabel[tutorialBubble="true"][active="true"]' in base_qss
+
+    # High-contrast overrides
+    assert "QFrame#TutorialHeader" in hc_qss
+    assert "QPushButton#tutorialActionBtn" in hc_qss
+    assert 'QLabel[tutorialBubble="true"][active="true"]' in hc_qss
+
+    # Dialog bubble properties
+    parent = QtWidgets.QWidget()
+    qtbot.addWidget(parent)
+    dialog = QuickTutorialDialog(parent)
+    qtbot.addWidget(dialog)
+
+    # Initial step 0
+    assert dialog.bubbles[0].property("active") == "true"
+    assert dialog.bubbles[1].property("active") == "false"
+    for b in dialog.bubbles:
+        assert b.property("tutorialBubble") == "true"
+
+    # Step transition
+    dialog.go_to_step(3)
+    assert dialog.bubbles[0].property("active") == "false"
+    assert dialog.bubbles[3].property("active") == "true"

@@ -747,3 +747,112 @@ QLabel#SlideName {
     color: #e2e2e2;
     font-size: 11px;
 }
+
+
+/* ---- Quick Tutorial Dialog -------------------------------- */
+QFrame#TutorialHeader {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #0c4a6e, stop:0.5 #0e7490, stop:1 #0891b2);
+    padding: 18px 24px;
+}
+
+QLabel#tutorialIconLabel {
+    font-size: 42px;
+}
+
+QLabel#tutorialTitleLabel {
+    font-size: 22px;
+    font-weight: bold;
+    color: #f0f9ff;
+}
+
+QLabel#tutorialStepCounter {
+    font-size: 13px;
+    color: #bae6fd;
+}
+
+QFrame#tutorialBodyContainer {
+    background: #0f172a;
+}
+
+QTextBrowser#tutorialBody {
+    background: transparent;
+    color: #e2e8f0;
+    border: none;
+    font-size: 15px;
+    line-height: 1.8;
+    selection-background-color: #0284c7;
+}
+
+QTextBrowser#tutorialBody a {
+    color: #38bdf8;
+}
+
+QPushButton#tutorialActionBtn {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #059669, stop:1 #10b981);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+QPushButton#tutorialActionBtn:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #047857, stop:1 #059669);
+}
+
+QFrame#tutorialBubblesContainer {
+    background: #0f172a;
+}
+
+QLabel[tutorialBubble="true"] {
+    background: #334155;
+    border-radius: 5px;
+}
+
+QLabel[tutorialBubble="true"][active="true"] {
+    background: #0ea5e9;
+    border-radius: 5px;
+}
+
+QPushButton#tutorialPrevBtn,
+QPushButton#tutorialCloseBtn {
+    padding: 8px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    background: #334155;
+    color: #e2e8f0;
+    border: 1px solid #475569;
+}
+
+QPushButton#tutorialPrevBtn:hover,
+QPushButton#tutorialCloseBtn:hover {
+    background: #475569;
+}
+
+QPushButton#tutorialPrevBtn:disabled {
+    color: #475569;
+    background: #1e293b;
+    border-color: #334155;
+}
+
+QPushButton#tutorialNextBtn {
+    padding: 8px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #0284c7, stop:1 #0ea5e9);
+    color: #ffffff;
+    border: none;
+}
+
+QPushButton#tutorialNextBtn:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #0369a1, stop:1 #0284c7);
+}

@@ -217,20 +217,12 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         # Header bar
         self._header = QtWidgets.QFrame()
         self._header.setObjectName("TutorialHeader")
-        self._header.setStyleSheet(
-            "#TutorialHeader {"
-            "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-            "    stop:0 #0c4a6e, stop:0.5 #0e7490, stop:1 #0891b2);"
-            "  padding: 18px 24px;"
-            "}"
-        )
         header_layout = QtWidgets.QHBoxLayout(self._header)
         header_layout.setContentsMargins(24, 18, 24, 18)
 
         self._icon_label = QtWidgets.QLabel()
         self._icon_label.setObjectName("tutorialIconLabel")
         self._icon_label.setAccessibleName("Tutorial step icon")
-        self._icon_label.setStyleSheet("font-size: 42px;")
         header_layout.addWidget(self._icon_label)
 
         header_text_layout = QtWidgets.QVBoxLayout()
@@ -239,15 +231,11 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         self._title_label = QtWidgets.QLabel()
         self._title_label.setObjectName("tutorialTitleLabel")
         self._title_label.setAccessibleName("Tutorial step title")
-        self._title_label.setStyleSheet(
-            "font-size: 22px; font-weight: bold; color: #f0f9ff;"
-        )
         header_text_layout.addWidget(self._title_label)
 
         self._step_counter = QtWidgets.QLabel()
         self._step_counter.setObjectName("tutorialStepCounter")
         self._step_counter.setAccessibleName("Tutorial step counter")
-        self._step_counter.setStyleSheet("font-size: 13px; color: #bae6fd;")
         header_text_layout.addWidget(self._step_counter)
 
         header_layout.addLayout(header_text_layout, 1)
@@ -255,7 +243,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
 
         # Body (scrollable)
         body_container = QtWidgets.QFrame()
-        body_container.setStyleSheet("background: #0f172a;")
+        body_container.setObjectName("tutorialBodyContainer")
         body_layout = QtWidgets.QVBoxLayout(body_container)
         body_layout.setContentsMargins(32, 24, 32, 24)
         body_layout.setSpacing(16)
@@ -264,17 +252,6 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         self._body.setObjectName("tutorialBody")
         self._body.setOpenExternalLinks(True)
         self._body.setAccessibleName("Tutorial step text")
-        self._body.setStyleSheet(
-            "QTextBrowser {"
-            "  background: transparent;"
-            "  color: #e2e8f0;"
-            "  border: none;"
-            "  font-size: 15px;"
-            "  line-height: 1.8;"
-            "  selection-background-color: #0284c7;"
-            "}"
-            "QTextBrowser a { color: #38bdf8; }"
-        )
         body_layout.addWidget(self._body, 1)
 
         # Embedded Action Button
@@ -282,19 +259,6 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         self._action_btn.setObjectName("tutorialActionBtn")
         self._action_btn.setVisible(False)
         self._action_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
-        self._action_btn.setStyleSheet(
-            "QPushButton {"
-            "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-            "    stop:0 #059669, stop:1 #10b981);"
-            "  color: #ffffff; border: none; border-radius: 8px;"
-            "  padding: 12px 24px; font-size: 16px; font-weight: bold;"
-            "  margin-top: 10px;"
-            "}"
-            "QPushButton:hover {"
-            "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-            "    stop:0 #047857, stop:1 #059669);"
-            "}"
-        )
         self._action_btn.setAccessibleName("Tutorial action")
         self._action_btn.setToolTip("Perform this step's action in the main window")
         self._action_btn.clicked.connect(self._on_action_clicked)
@@ -305,7 +269,6 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         # ── Bubbles Progress Indicator ──────────────────────────────
         self._bubbles_container = QtWidgets.QFrame()
         self._bubbles_container.setObjectName("tutorialBubblesContainer")
-        self._bubbles_container.setStyleSheet("background: #0f172a;")
         bubbles_layout = QtWidgets.QHBoxLayout(self._bubbles_container)
         bubbles_layout.setContentsMargins(16, 0, 16, 16)
         bubbles_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -315,6 +278,7 @@ class QuickTutorialDialog(QtWidgets.QDialog):
         for i in range(len(_STEPS)):
             lbl = QtWidgets.QLabel()
             lbl.setObjectName(f"tutorialBubble_{i}")
+            lbl.setProperty("tutorialBubble", "true")
             lbl.setAccessibleName(f"Step {i + 1} indicator")
             lbl.setToolTip(f"Step {i + 1} of {len(_STEPS)}: {_STEPS[i].title}")
             lbl.setFixedSize(10, 10)
@@ -359,26 +323,8 @@ class QuickTutorialDialog(QtWidgets.QDialog):
 
         footer_layout.addStretch(1)
 
-        btn_style = (
-            "QPushButton {"
-            "  padding: 8px 24px;"
-            "  border-radius: 6px;"
-            "  font-weight: 600;"
-            "  font-size: 13px;"
-            "}"
-        )
-
         self._prev_btn = QtWidgets.QPushButton("← Previous")
         self._prev_btn.setObjectName("tutorialPrevBtn")
-        self._prev_btn.setStyleSheet(
-            btn_style
-            + "QPushButton {"
-            "  background: #334155; color: #e2e8f0; border: 1px solid #475569;"
-            "}"
-            "QPushButton:hover { background: #475569; }"
-            "QPushButton:disabled { color: #475569; background: #1e293b; "
-            "border-color: #334155; }"
-        )
         self._prev_btn.setAccessibleName("Previous step")
         self._prev_btn.setToolTip("Go back one step (Left arrow)")
         self._prev_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
@@ -387,18 +333,6 @@ class QuickTutorialDialog(QtWidgets.QDialog):
 
         self._next_btn = QtWidgets.QPushButton("Next →")
         self._next_btn.setObjectName("tutorialNextBtn")
-        self._next_btn.setStyleSheet(
-            btn_style
-            + "QPushButton {"
-            "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-            "    stop:0 #0284c7, stop:1 #0ea5e9);"
-            "  color: #ffffff; border: none;"
-            "}"
-            "QPushButton:hover {"
-            "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-            "    stop:0 #0369a1, stop:1 #0284c7);"
-            "}"
-        )
         self._next_btn.setAccessibleName("Next step")
         self._next_btn.setToolTip("Go to the next step (Right arrow)")
         self._next_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
@@ -407,13 +341,11 @@ class QuickTutorialDialog(QtWidgets.QDialog):
 
         self._close_btn = QtWidgets.QPushButton("Close")
         self._close_btn.setObjectName("tutorialCloseBtn")
-        self._close_btn.setStyleSheet(
-            btn_style
-            + "QPushButton {"
-            "  background: #334155; color: #e2e8f0; border: 1px solid #475569;"
-            "}"
-            "QPushButton:hover { background: #475569; }"
-        )
+        self._close_btn.setAccessibleName("Close tutorial")
+        self._close_btn.setToolTip("Close the tutorial; you can reopen it from the Help menu")
+        self._close_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self._close_btn.clicked.connect(self.accept)
+        footer_layout.addWidget(self._close_btn)
         self._close_btn.setAccessibleName("Close tutorial")
         self._close_btn.setToolTip("Close the tutorial; you can reopen it from the Help menu")
         self._close_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
@@ -469,10 +401,11 @@ class QuickTutorialDialog(QtWidgets.QDialog):
     # ── Navigation ───────────────────────────────────────────────────
 
     def _set_bubble_state(self, lbl: QtWidgets.QLabel, active: bool) -> None:
-        if active:
-            lbl.setStyleSheet("background: #0ea5e9; border-radius: 5px;")
-        else:
-            lbl.setStyleSheet("background: #334155; border-radius: 5px;")
+        lbl.setProperty("active", "true" if active else "false")
+        style = lbl.style()
+        if style:
+            style.unpolish(lbl)
+            style.polish(lbl)
 
     def _show_step(self, index: int) -> None:
         index = max(0, min(index, len(_STEPS) - 1))

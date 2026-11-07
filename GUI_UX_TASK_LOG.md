@@ -2,12 +2,25 @@
 
 ## In Progress
 
-
-
-
 ## Blocked / Needs Review
 
 ## Completed
+
+### Task: Decouple QuickTutorialDialog styling from Python into QSS with dynamic bubble state properties
+- **Completed**: 2026-11-08
+- **Changes**:
+  - `src/valis_workstation/styles/adobe_dark.qss`:
+    - Added dedicated styling rules for `#TutorialHeader`, `#tutorialIconLabel`, `#tutorialTitleLabel`, `#tutorialStepCounter`, `#tutorialBodyContainer`, `#tutorialBody`, `#tutorialActionBtn`, `#tutorialBubblesContainer`, `QLabel[tutorialBubble="true"]`, `QLabel[tutorialBubble="true"][active="true"]`, and transport navigation buttons (`#tutorialPrevBtn`, `#tutorialNextBtn`, `#tutorialCloseBtn`).
+  - `src/valis_workstation/styles/high_contrast_overrides.qss`:
+    - Added high contrast overrides for tutorial header, text browser, action button, bubbles, and navigation buttons.
+  - `src/valis_workstation/ui/dialogs/quick_tutorial_dialog.py`:
+    - Removed hardcoded inline `setStyleSheet` calls across header, title, counter, body container, body browser, action button, bubble container, and navigation buttons.
+    - Standardized bubble indicator state styling via Qt dynamic properties `tutorialBubble="true"` and `active="true"|"false"` with `unpolish`/`polish` re-styling.
+    - Assigned explicit object name `tutorialBodyContainer` on the body container frame.
+  - `tests/test_first_run_wizard_and_analysis_plot.py`:
+    - Added `test_quick_tutorial_qss_styling_and_bubble_properties` validating QSS rule definitions, object names, and dynamic bubble property toggling across all tutorial steps.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_first_run_wizard_and_analysis_plot.py tests/test_quick_tutorial_dialog_timer.py tests/test_quick_tutorial_footer_style.py tests/test_quick_tutorial_run_step.py tests/test_accessibility_settings.py -v` (44 passed in 7.23s, 0 errors).
+- **Status**: Completed
 
 ### Task: FirstRunWizard, AnalysisPlotDialog, and QuickTutorialDialog properties and ergonomics helpers
 - **Completed**: 2026-11-07
@@ -444,6 +457,6 @@
 
 ## Backlog
 
-- **Remaining audit plan (2026-10-16)**: (1) ~~Properties combos still elide long values~~ (done 2026-10-22: per-item tooltips + wide popup). (2) Not yet screenshotted: Layers tab (needs napari), WarpAnnotationsDialog, BlinkViewerDialog, FirstRunWizard at small size, Results toolbar, menus. (3) Quick Tutorial uses hard-coded colours in Python; move to QSS. (4) ~~Quick Tutorial "Don't show" checkbox and FirstRun wizard tutorial checkbox~~ (done 2026-10-22). (5) ~~Hard-coded #888 in splash/welcome note: check contrast~~ (done 2026-10-22: polished to #a0a0a0 >= 6.5:1 WCAG AA). (6) Update VALIS-GUI-Manual.html screenshots/text if toolbar labels matter (toolbar is icon-only below ~1450px).
+- **Remaining audit plan (2026-10-16)**: (1) ~~Properties combos still elide long values~~ (done 2026-10-22: per-item tooltips + wide popup). (2) Not yet screenshotted: Layers tab (needs napari), WarpAnnotationsDialog, BlinkViewerDialog, FirstRunWizard at small size, Results toolbar, menus. (3) ~~Quick Tutorial uses hard-coded colours in Python; move to QSS~~ (done 2026-11-08: decoupled into adobe_dark.qss and high_contrast_overrides.qss with dynamic property selectors). (4) ~~Quick Tutorial "Don't show" checkbox and FirstRun wizard tutorial checkbox~~ (done 2026-10-22). (5) ~~Hard-coded #888 in splash/welcome note: check contrast~~ (done 2026-10-22: polished to #a0a0a0 >= 6.5:1 WCAG AA). (6) Update VALIS-GUI-Manual.html screenshots/text if toolbar labels matter (toolbar is icon-only below ~1450px).
 - ~~Add thumbnail caching for large whole-slide image formats.~~ (Completed in `ThumbnailCache` and `thumbnail_generator.py`)
 - ~~Implement batch export options for registered slide sets.~~ (Completed via `SaveOptionsDialog` batch export presets)

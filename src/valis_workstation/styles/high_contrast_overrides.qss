@@ -194,3 +194,75 @@ QTableWidget:focus, QTableView:focus,
 QTabBar::tab:focus {
     border: 3px solid #ffdd00;
 }
+
+
+/* ---- Quick Tutorial Dialog Overrides ------------------------- */
+QFrame#TutorialHeader {
+    background: #000000;
+    border-bottom: 2px solid #ffffff;
+}
+
+QLabel#tutorialTitleLabel,
+QLabel#tutorialStepCounter {
+    color: #ffffff;
+}
+
+QFrame#tutorialBodyContainer,
+QFrame#tutorialBubblesContainer {
+    background: #000000;
+}
+
+QTextBrowser#tutorialBody {
+    color: #ffffff;
+    selection-background-color: #ffdd00;
+    selection-color: #000000;
+}
+
+QTextBrowser#tutorialBody a {
+    color: #ffdd00;
+}
+
+QPushButton#tutorialActionBtn {
+    background: #ffdd00;
+    color: #000000;
+    border: 2px solid #ffffff;
+}
+
+QPushButton#tutorialActionBtn:hover {
+    background: #ffffff;
+    color: #000000;
+}
+
+QLabel[tutorialBubble="true"] {
+    background: #333333;
+    border: 1px solid #777777;
+}
+
+QLabel[tutorialBubble="true"][active="true"] {
+    background: #ffdd00;
+    border: 1px solid #ffffff;
+}
+
+QPushButton#tutorialPrevBtn,
+QPushButton#tutorialCloseBtn {
+    background: #000000;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+}
+
+QPushButton#tutorialPrevBtn:hover,
+QPushButton#tutorialCloseBtn:hover {
+    background: #ffdd00;
+    color: #000000;
+}
+
+QPushButton#tutorialNextBtn {
+    background: #ffdd00;
+    color: #000000;
+    border: 2px solid #ffffff;
+}
+
+QPushButton#tutorialNextBtn:hover {
+    background: #ffffff;
+    color: #000000;
+}
