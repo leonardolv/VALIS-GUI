@@ -4,9 +4,13 @@ work this file; always append, never overwrite another agent's entries.
 
 ## In Progress
 
-
-
 ## Completed
+
+### 2026-11-07 UTC - Warp Annotations no longer raises TypeError (Claude)
+Status: **done**
+- Root cause: `WarpAnnotationsDialog._run_warp` passed `crop=True` to `Slide.warp_geojson_from_to`, which (vendored `valis/registration.py`) accepts only `geojson_f, to_slide_obj, src_slide_level, src_pt_level, dst_slide_level, non_rigid`. Every real run raised TypeError; the test stub took `**kwargs` and hid it.
+- Fix: removed `crop=True` in `ui/dialogs/warp_annotations.py`. Added `test_warp_annotations_run_uses_real_slide_signature` with a strict-signature stub (fails before the fix with TypeError).
+- Validation: `QT_QPA_PLATFORM=offscreen pytest tests/test_warp_annotations_dialog.py` 6 passed; ruff clean. Backlog item (2026-10-26 Warp Annotations TypeError) resolved.
 
 ### 2026-11-05 UTC - ErrorDetailDialog Public Properties, Query and Trigger Helpers, and Unit Tests
 Status: **done** (Antigravity)
