@@ -9,6 +9,10 @@ class FirstRunWizard(QtWidgets.QWizard):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("first_run_wizard")
+        self.setAccessibleName("VALIS Workstation Setup Wizard")
+        self.setAccessibleDescription(
+            "Interactive setup wizard for configuring initial project defaults and tutorial preferences"
+        )
         self.setWindowTitle("VALIS Workstation Setup")
         self.resize(640, 420)
 
@@ -29,9 +33,13 @@ class FirstRunWizard(QtWidgets.QWizard):
             ["WSI Archive", "Fast Review", "Publication"]
         )
 
-        self.addPage(self._build_welcome_page())
-        self.addPage(self._build_options_page())
-        self.addPage(self._build_finish_page())
+        self._welcome_page = self._build_welcome_page()
+        self._options_page = self._build_options_page()
+        self._finish_page = self._build_finish_page()
+
+        self.addPage(self._welcome_page)
+        self.addPage(self._options_page)
+        self.addPage(self._finish_page)
 
         self._apply_button_affordances()
 
@@ -129,3 +137,49 @@ class FirstRunWizard(QtWidgets.QWizard):
     def should_open_tutorial(self) -> bool:
         """Return True if the user elected to launch the Quick Tutorial on finish."""
         return self._open_tutorial_check.isChecked()
+
+    @property
+    def project_name_edit(self) -> QtWidgets.QLineEdit:
+        return self._project_name_edit
+
+    @property
+    def output_profile_combo(self) -> QtWidgets.QComboBox:
+        return self._output_profile_combo
+
+    @property
+    def open_tutorial_check(self) -> QtWidgets.QCheckBox:
+        return self._open_tutorial_check
+
+    @property
+    def welcome_page(self) -> QtWidgets.QWizardPage:
+        return self._welcome_page
+
+    @property
+    def options_page(self) -> QtWidgets.QWizardPage:
+        return self._options_page
+
+    @property
+    def finish_page(self) -> QtWidgets.QWizardPage:
+        return self._finish_page
+
+    def set_project_name(self, name: str) -> None:
+        self._project_name_edit.setText(name)
+
+    def set_output_profile(self, profile: str) -> None:
+        idx = self._output_profile_combo.findText(profile)
+        if idx >= 0:
+            self._output_profile_combo.setCurrentIndex(idx)
+        else:
+            self._output_profile_combo.setCurrentText(profile)
+
+    def set_open_tutorial(self, enabled: bool) -> None:
+        self._open_tutorial_check.setChecked(enabled)
+
+    def has_valid_project_name(self) -> bool:
+        return bool(self._project_name_edit.text().strip())
+
+    def output_profiles(self) -> list[str]:
+        return [
+            self._output_profile_combo.itemText(i)
+            for i in range(self._output_profile_combo.count())
+        ]

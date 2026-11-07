@@ -14,8 +14,15 @@ class AnalysisPlotDialog(QtWidgets.QDialog):
     def __init__(self, summary_df, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("AnalysisPlotDialog")
+        self.setAccessibleName("Registration Analysis Dialog")
+        self.setAccessibleDescription(
+            "Dialog displaying registration error analysis plots and summary statistics"
+        )
         self.setWindowTitle("Registration Analysis")
         self.resize(720, 480)
+
+        self._metric_column: str | None = None
+        self._values: list[float] = []
 
         layout = QtWidgets.QVBoxLayout(self)
         self._canvas = FigureCanvasQTAgg(Figure(figsize=(6, 4)))
@@ -44,6 +51,34 @@ class AnalysisPlotDialog(QtWidgets.QDialog):
 
         self._update_plot(summary_df)
 
+    @property
+    def canvas(self) -> FigureCanvasQTAgg:
+        return self._canvas
+
+    @property
+    def summary_label(self) -> QtWidgets.QLabel:
+        return self._summary_label
+
+    @property
+    def button_box(self) -> QtWidgets.QDialogButtonBox:
+        return self._button_box
+
+    @property
+    def close_button(self) -> QtWidgets.QPushButton | None:
+        return self._close_btn
+
+    def summary_text(self) -> str:
+        return self._summary_label.text()
+
+    def metric_column_name(self) -> str | None:
+        return self._metric_column
+
+    def has_metrics(self) -> bool:
+        return bool(self._metric_column and self._values)
+
+    def trigger_close(self) -> None:
+        self.reject()
+
     def _update_plot(self, summary_df) -> None:
         axes = self._canvas.figure.subplots()
         axes.clear()
@@ -55,6 +90,8 @@ class AnalysisPlotDialog(QtWidgets.QDialog):
 
         metric_column = summary.get("metric_column")
         values = summary.get("values", [])
+        self._metric_column = metric_column
+        self._values = values
 
         if metric_column and values:
             axes.plot(values, marker="o")
@@ -74,4 +111,3 @@ class AnalysisPlotDialog(QtWidgets.QDialog):
         if n_missing:
             text += f" | {n_missing} pair(s) without a measurement (excluded)"
         self._summary_label.setText(text)
-

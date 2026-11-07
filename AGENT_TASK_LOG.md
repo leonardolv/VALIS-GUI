@@ -8,6 +8,14 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-11-07 UTC - FirstRunWizard, AnalysisPlotDialog, and QuickTutorialDialog properties and ergonomics helpers
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/first_run_wizard.py`: Configured accessible name and description on `FirstRunWizard`; exposed public property accessors (`project_name_edit`, `output_profile_combo`, `open_tutorial_check`, `welcome_page`, `options_page`, `finish_page`); added ergonomic mutation and query helpers (`set_project_name(name)`, `set_output_profile(profile)`, `set_open_tutorial(enabled)`, `has_valid_project_name()`, `output_profiles()`).
+- `src/valis_workstation/ui/dialogs/analysis_plot.py`: Configured accessible name and description on `AnalysisPlotDialog`; stored active metric column and values; exposed public property accessors (`canvas`, `summary_label`, `button_box`, `close_button`); added ergonomic query and action helpers (`summary_text()`, `metric_column_name()`, `has_metrics()`, `trigger_close()`).
+- `src/valis_workstation/ui/dialogs/quick_tutorial_dialog.py`: Exposed public property accessors on `QuickTutorialDialog` (`header`, `icon_label`, `title_label`, `step_counter`, `body_browser`, `action_button`, `dont_show_checkbox`, `prev_button`, `next_button`, `close_button`, `bubbles`); added ergonomic query and state helpers (`icon_text()`, `step_counter_text()`, `body_html()`, `body_plain_text()`, `is_action_button_visible()`, `action_button_text()`, `is_dont_show_checked()`, `set_dont_show_checked(checked)`, `close_button_text()`, `bubble_count()`, `is_bubble_active(index)`).
+- `tests/test_first_run_wizard_and_analysis_plot.py`: Expanded unit test assertions verifying accessibility metadata, property references, project name validation, profile mutations, analysis plot metric state, programmatic close trigger, and quick tutorial properties, navigation, action button visibility, and bubble states.
+- Validation: Verified headlessly with `python -m pytest tests/test_first_run_wizard_and_analysis_plot.py tests/test_warp_annotations_dialog.py tests/test_diagnostics_dialog.py tests/test_error_and_diagnostics_dialogs.py -v` (17 passed in 6.91s, 0 errors).
+
 ### 2026-11-07 UTC - Fix Slide.warp_geojson_from_to invalid crop argument and add warp execution error handling
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/warp_annotations.py`: Removed unsupported `crop=True` parameter passed to `source_slide.warp_geojson_from_to`, resolving a runtime `TypeError` when invoking with upstream/vendored VALIS API; wrapped warp loop in exception handling so failures during file operations or geometric transformations gracefully report errors to `self._status` without crashing the application.

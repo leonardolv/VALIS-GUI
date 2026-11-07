@@ -600,3 +600,83 @@ class QuickTutorialDialog(QtWidgets.QDialog):
             self._go_prev()
         else:
             super().keyPressEvent(event)
+
+
+    @property
+    def header(self) -> QtWidgets.QFrame:
+        return self._header
+
+    @property
+    def icon_label(self) -> QtWidgets.QLabel:
+        return self._icon_label
+
+    @property
+    def title_label(self) -> QtWidgets.QLabel:
+        return self._title_label
+
+    @property
+    def step_counter(self) -> QtWidgets.QLabel:
+        return self._step_counter
+
+    @property
+    def body_browser(self) -> QtWidgets.QTextBrowser:
+        return self._body
+
+    @property
+    def action_button(self) -> QtWidgets.QPushButton:
+        return self._action_btn
+
+    @property
+    def dont_show_checkbox(self) -> QtWidgets.QCheckBox:
+        return self._dont_show
+
+    @property
+    def prev_button(self) -> QtWidgets.QPushButton:
+        return self._prev_btn
+
+    @property
+    def next_button(self) -> QtWidgets.QPushButton:
+        return self._next_btn
+
+    @property
+    def close_button(self) -> QtWidgets.QPushButton:
+        return self._close_btn
+
+    @property
+    def bubbles(self) -> list[QtWidgets.QLabel]:
+        return list(self._bubbles)
+
+    def icon_text(self) -> str:
+        return self._icon_label.text()
+
+    def step_counter_text(self) -> str:
+        return self._step_counter.text()
+
+    def body_html(self) -> str:
+        return self._body.toHtml()
+
+    def body_plain_text(self) -> str:
+        return self._body.toPlainText()
+
+    def is_action_button_visible(self) -> bool:
+        return not self._action_btn.isHidden()
+
+    def action_button_text(self) -> str:
+        return self._action_btn.text()
+
+    def is_dont_show_checked(self) -> bool:
+        return self._dont_show.isChecked()
+
+    def set_dont_show_checked(self, checked: bool) -> None:
+        self._dont_show.setChecked(checked)
+
+    def close_button_text(self) -> str:
+        return self._close_btn.text()
+
+    def bubble_count(self) -> int:
+        return len(self._bubbles)
+
+    def is_bubble_active(self, index: int) -> bool:
+        if 0 <= index < len(self._bubbles):
+            return index == self._current_step
+        return False
