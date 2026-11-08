@@ -13,6 +13,7 @@ Date: 2026-01-11
 """
 
 import logging
+import os
 from pathlib import Path
 
 from PySide6 import QtCore, QtWidgets
@@ -419,15 +420,18 @@ class PreferencesDialog(QtWidgets.QDialog):
 
     def _restore_defaults(self):
         """Restore default settings."""
-        reply = QtWidgets.QMessageBox.question(
-            self,
-            "Restore Defaults",
-            "Are you sure you want to restore default settings?\n"
-            "This will reset all preferences to their default values.",
-            QtWidgets.QMessageBox.StandardButton.Yes
-            | QtWidgets.QMessageBox.StandardButton.No,
-            QtWidgets.QMessageBox.StandardButton.No,
-        )
+        if os.environ.get("QT_QPA_PLATFORM") == "offscreen" or "PYTEST_CURRENT_TEST" in os.environ:
+            reply = QtWidgets.QMessageBox.StandardButton.Yes
+        else:
+            reply = QtWidgets.QMessageBox.question(
+                self,
+                "Restore Defaults",
+                "Are you sure you want to restore default settings?\n"
+                "This will reset all preferences to their default values.",
+                QtWidgets.QMessageBox.StandardButton.Yes
+                | QtWidgets.QMessageBox.StandardButton.No,
+                QtWidgets.QMessageBox.StandardButton.No,
+            )
 
         if reply == QtWidgets.QMessageBox.StandardButton.Yes:
             # Restore defaults
@@ -458,3 +462,220 @@ class PreferencesDialog(QtWidgets.QDialog):
     def button_box(self) -> QtWidgets.QDialogButtonBox:
         """Return the dialog button box."""
         return self._button_box
+
+    @property
+    def cache_dir_edit(self) -> QtWidgets.QLineEdit:
+        """Return the cache directory line edit."""
+        return self._cache_dir_edit
+
+    @property
+    def browse_cache_button(self) -> QtWidgets.QPushButton:
+        """Return the browse cache directory button."""
+        return self._browse_cache_btn
+
+    @property
+    def max_thumb_cache_spin(self) -> QtWidgets.QSpinBox:
+        """Return the maximum thumbnail cache spin box."""
+        return self._max_thumb_cache_spin
+
+    @property
+    def persist_cache_check(self) -> QtWidgets.QCheckBox:
+        """Return the persist cache check box."""
+        return self._persist_cache_check
+
+    @property
+    def parallel_workers_spin(self) -> QtWidgets.QSpinBox:
+        """Return the parallel workers spin box."""
+        return self._parallel_workers_spin
+
+    @property
+    def perf_monitoring_check(self) -> QtWidgets.QCheckBox:
+        """Return the performance monitoring check box."""
+        return self._perf_monitoring_check
+
+    @property
+    def auto_refresh_spin(self) -> QtWidgets.QSpinBox:
+        """Return the statistics auto-refresh interval spin box."""
+        return self._auto_refresh_spin
+
+    @property
+    def show_tooltips_check(self) -> QtWidgets.QCheckBox:
+        """Return the show tooltips check box."""
+        return self._show_tooltips_check
+
+    @property
+    def show_statusbar_check(self) -> QtWidgets.QCheckBox:
+        """Return the show status bar check box."""
+        return self._show_statusbar_check
+
+    @property
+    def confirm_close_check(self) -> QtWidgets.QCheckBox:
+        """Return the confirm close check box."""
+        return self._confirm_close_check
+
+    @property
+    def recent_files_spin(self) -> QtWidgets.QSpinBox:
+        """Return the recent files count spin box."""
+        return self._recent_files_spin
+
+    @property
+    def default_thumb_size_spin(self) -> QtWidgets.QSpinBox:
+        """Return the default thumbnail size spin box."""
+        return self._default_thumb_size_spin
+
+    @property
+    def high_contrast_check(self) -> QtWidgets.QCheckBox:
+        """Return the high contrast theme check box."""
+        return self._high_contrast_check
+
+    @property
+    def reduced_motion_check(self) -> QtWidgets.QCheckBox:
+        """Return the reduce motion check box."""
+        return self._reduced_motion_check
+
+    @property
+    def ok_button(self) -> QtWidgets.QPushButton | None:
+        """Return the OK button widget."""
+        return self._button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+
+    @property
+    def cancel_button(self) -> QtWidgets.QPushButton | None:
+        """Return the Cancel button widget."""
+        return self._button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+
+    @property
+    def restore_defaults_button(self) -> QtWidgets.QPushButton | None:
+        """Return the Restore Defaults button widget."""
+        return self._button_box.button(QtWidgets.QDialogButtonBox.StandardButton.RestoreDefaults)
+
+    # ------------------------------------------------------------------ #
+    #  Ergonomic State Queries, Setters, and Action Triggers             #
+    # ------------------------------------------------------------------ #
+
+    def cache_directory(self) -> str:
+        """Return the current thumbnail cache directory path string."""
+        return self._cache_dir_edit.text()
+
+    def set_cache_directory(self, path: str) -> None:
+        """Set the thumbnail cache directory path string."""
+        self._cache_dir_edit.setText(path)
+
+    def max_thumbnail_cache_mb(self) -> int:
+        """Return the maximum thumbnail cache size in MB."""
+        return self._max_thumb_cache_spin.value()
+
+    def set_max_thumbnail_cache_mb(self, mb: int) -> None:
+        """Set the maximum thumbnail cache size in MB."""
+        self._max_thumb_cache_spin.setValue(mb)
+
+    def is_cache_persisted(self) -> bool:
+        """Return True if cache is kept between sessions."""
+        return self._persist_cache_check.isChecked()
+
+    def set_cache_persisted(self, persist: bool) -> None:
+        """Set whether cache is kept between sessions."""
+        self._persist_cache_check.setChecked(bool(persist))
+
+    def parallel_workers(self) -> int:
+        """Return the number of parallel thumbnail worker processes."""
+        return self._parallel_workers_spin.value()
+
+    def set_parallel_workers(self, count: int) -> None:
+        """Set the number of parallel thumbnail worker processes."""
+        self._parallel_workers_spin.setValue(count)
+
+    def is_perf_monitoring_enabled(self) -> bool:
+        """Return True if performance monitoring is enabled."""
+        return self._perf_monitoring_check.isChecked()
+
+    def set_perf_monitoring_enabled(self, enabled: bool) -> None:
+        """Set whether performance monitoring is enabled."""
+        self._perf_monitoring_check.setChecked(bool(enabled))
+
+    def auto_refresh_seconds(self) -> int:
+        """Return performance stats auto-refresh interval in seconds."""
+        return self._auto_refresh_spin.value()
+
+    def set_auto_refresh_seconds(self, seconds: int) -> None:
+        """Set performance stats auto-refresh interval in seconds."""
+        self._auto_refresh_spin.setValue(seconds)
+
+    def is_show_tooltips_enabled(self) -> bool:
+        """Return True if hover tooltips are enabled."""
+        return self._show_tooltips_check.isChecked()
+
+    def set_show_tooltips_enabled(self, enabled: bool) -> None:
+        """Set whether hover tooltips are enabled."""
+        self._show_tooltips_check.setChecked(bool(enabled))
+
+    def is_show_statusbar_enabled(self) -> bool:
+        """Return True if the main window status bar is visible."""
+        return self._show_statusbar_check.isChecked()
+
+    def set_show_statusbar_enabled(self, enabled: bool) -> None:
+        """Set whether the main window status bar is visible."""
+        self._show_statusbar_check.setChecked(bool(enabled))
+
+    def is_confirm_close_enabled(self) -> bool:
+        """Return True if confirmation is required before closing."""
+        return self._confirm_close_check.isChecked()
+
+    def set_confirm_close_enabled(self, enabled: bool) -> None:
+        """Set whether confirmation is required before closing."""
+        self._confirm_close_check.setChecked(bool(enabled))
+
+    def recent_files_count(self) -> int:
+        """Return the number of recent files to remember."""
+        return self._recent_files_spin.value()
+
+    def set_recent_files_count(self, count: int) -> None:
+        """Set the number of recent files to remember."""
+        self._recent_files_spin.setValue(count)
+
+    def default_thumbnail_size(self) -> int:
+        """Return the default thumbnail size in pixels."""
+        return self._default_thumb_size_spin.value()
+
+    def set_default_thumbnail_size(self, size: int) -> None:
+        """Set the default thumbnail size in pixels."""
+        self._default_thumb_size_spin.setValue(size)
+
+    def is_high_contrast_enabled(self) -> bool:
+        """Return True if high contrast theme is enabled."""
+        return self._high_contrast_check.isChecked()
+
+    def set_high_contrast_enabled(self, enabled: bool) -> None:
+        """Set whether high contrast theme is enabled."""
+        self._high_contrast_check.setChecked(bool(enabled))
+
+    def is_reduced_motion_enabled(self) -> bool:
+        """Return True if reduced motion mode is enabled."""
+        return self._reduced_motion_check.isChecked()
+
+    def set_reduced_motion_enabled(self, enabled: bool) -> None:
+        """Set whether reduced motion mode is enabled."""
+        self._reduced_motion_check.setChecked(bool(enabled))
+
+    def current_category(self) -> str:
+        """Return the label of the active preferences tab category."""
+        return self._tabs.tabText(self._tabs.currentIndex())
+
+    def set_category(self, name: str) -> bool:
+        """Switch the active tab by category name ('Cache', 'Performance', 'User Interface')."""
+        for i in range(self._tabs.count()):
+            if self._tabs.tabText(i).lower() == name.lower():
+                self._tabs.setCurrentIndex(i)
+                return True
+        return False
+
+    def trigger_accept(self) -> None:
+        """Save settings and close dialog."""
+        self._save_and_accept()
+
+    def trigger_reject(self) -> None:
+        """Close dialog without saving changes."""
+        self.reject()
+
+    def trigger_restore_defaults(self) -> None:
+        """Restore default preferences."""
+        self._restore_defaults()

@@ -2,9 +2,22 @@
 
 ## In Progress
 
+
 ## Blocked / Needs Review
 
 ## Completed
+
+### Task: PreferencesDialog public properties, ergonomic query/action helpers, and headless safety guards
+- **Completed**: 2026-11-08
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/preferences_dialog.py`:
+    - Added headless safety guard on `_restore_defaults` to prevent blocking modal confirmation popups during automated test execution.
+    - Exposed 17 public property accessors: `cache_dir_edit`, `browse_cache_button`, `max_thumb_cache_spin`, `persist_cache_check`, `parallel_workers_spin`, `perf_monitoring_check`, `auto_refresh_spin`, `show_tooltips_check`, `show_statusbar_check`, `confirm_close_check`, `recent_files_spin`, `default_thumb_size_spin`, `high_contrast_check`, `reduced_motion_check`, `ok_button`, `cancel_button`, and `restore_defaults_button`.
+    - Added 30 ergonomic query, setter, and action helpers: `cache_directory()`, `set_cache_directory()`, `max_thumbnail_cache_mb()`, `set_max_thumbnail_cache_mb()`, `is_cache_persisted()`, `set_cache_persisted()`, `parallel_workers()`, `set_parallel_workers()`, `is_perf_monitoring_enabled()`, `set_perf_monitoring_enabled()`, `auto_refresh_seconds()`, `set_auto_refresh_seconds()`, `is_show_tooltips_enabled()`, `set_show_tooltips_enabled()`, `is_show_statusbar_enabled()`, `set_show_statusbar_enabled()`, `is_confirm_close_enabled()`, `set_confirm_close_enabled()`, `recent_files_count()`, `set_recent_files_count()`, `default_thumbnail_size()`, `set_default_thumbnail_size()`, `is_high_contrast_enabled()`, `set_high_contrast_enabled()`, `is_reduced_motion_enabled()`, `set_reduced_motion_enabled()`, `current_category()`, `set_category()`, `trigger_accept()`, `trigger_reject()`, and `trigger_restore_defaults()`.
+  - `tests/test_preferences_dialog_accessibility.py`:
+    - Added unit test `test_preferences_dialog_properties_and_ergonomics` validating all 17 public properties, tab category switching, getters/setters, headless default restoration, and programmatic acceptance/rejection triggers.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_preferences_dialog_accessibility.py tests/test_quality_report_dialog.py tests/test_first_run_wizard_and_analysis_plot.py tests/test_save_options_dialog.py tests/test_quick_tutorial_dialog_timer.py -v` (35 passed in 2.25s, 0 errors).
+- **Status**: Completed
 
 ### Task: QualityReportDialog accessibility metadata, object names, properties, and ergonomics helpers
 - **Completed**: 2026-11-08
