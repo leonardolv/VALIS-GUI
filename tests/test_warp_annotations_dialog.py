@@ -202,3 +202,43 @@ def test_warp_annotations_dialog_properties_and_query_helpers(qtbot, tmp_path):
     assert dialog.selected_source_slide_name() == "Slide_B"
     assert dialog.selected_source_slide_path() == "/path/Slide_B.ndpi"
 
+
+
+def test_warp_annotations_dialog_selection_helpers_and_action_triggers(qtbot, tmp_path, monkeypatch):
+    registrar = MockRegistrar(["Slide_A", "Slide_B"])
+    dialog = WarpAnnotationsDialog(registrar, tmp_path)
+    qtbot.addWidget(dialog)
+
+    # select_source_slide
+    assert dialog.select_source_slide("Slide_B") is True
+    assert dialog.selected_source_slide_name() == "Slide_B"
+    assert dialog.select_source_slide("/path/Slide_A.ndpi") is True
+    assert dialog.selected_source_slide_name() == "Slide_A"
+    assert dialog.select_source_slide("NonExistent") is False
+
+    # Mock dialog browse methods
+    test_file = str(tmp_path / "regions.geojson")
+    monkeypatch.setattr(
+        QtWidgets.QFileDialog,
+        "getOpenFileName",
+        lambda *args, **kwargs: (test_file, "GeoJSON (*.geojson)"),
+    )
+    dialog.trigger_browse_annotation()
+    assert dialog.annotation_file_path() == test_file
+
+    test_out = str(tmp_path / "custom_output")
+    monkeypatch.setattr(
+        QtWidgets.QFileDialog,
+        "getExistingDirectory",
+        lambda *args, **kwargs: test_out,
+    )
+    dialog.trigger_browse_output()
+    assert dialog.output_directory() == test_out
+
+    # trigger_warp without valid file sets error status
+    dialog.set_annotation_file_path("")
+    dialog.trigger_warp()
+    assert "not found" in dialog.status_text().lower()
+
+    # trigger_cancel dismisses dialog
+    dialog.trigger_cancel()

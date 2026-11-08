@@ -7,6 +7,20 @@
 
 ## Completed
 
+### Task: WarpAnnotationsDialog and BlinkViewerDialog slide selection helpers and programmatic action triggers
+- **Completed**: 2026-11-08
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/warp_annotations.py`:
+    - Added slide selection helper `select_source_slide(name_or_path: str | Path) -> bool`.
+    - Added programmatic action triggers: `trigger_browse_annotation() -> None`, `trigger_browse_output() -> None`, `trigger_warp() -> None`, and `trigger_cancel() -> None`.
+  - `src/valis_workstation/ui/dialogs/blink_viewer.py`:
+    - Added slide selection helpers `select_slide_a(name_or_path: str | Path) -> bool` and `select_slide_b(name_or_path: str | Path) -> bool`.
+    - Added programmatic action triggers: `trigger_toggle_blink() -> bool`, `trigger_start_blink() -> None`, `trigger_stop_blink() -> None`, and `trigger_close() -> None`.
+  - `tests/test_warp_annotations_dialog.py` & `tests/test_blink_viewer_dialog.py`:
+    - Added unit tests `test_warp_annotations_dialog_selection_helpers_and_action_triggers` and `test_blink_viewer_slide_selection_and_action_triggers`.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_warp_annotations_dialog.py tests/test_blink_viewer_dialog.py tests/test_merge_slides_dialog.py tests/test_preferences_dialog_accessibility.py -v` (36 passed in 0.45s, 0 errors).
+- **Status**: Completed
+
 ### Task: MergeSlidesDialog configuration setters, row lookups, and programmatic action triggers
 - **Completed**: 2026-11-08
 - **Changes**:

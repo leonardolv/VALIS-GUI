@@ -8,6 +8,13 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-11-08 UTC - WarpAnnotationsDialog and BlinkViewerDialog Selection Helpers and Action Triggers
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/dialogs/warp_annotations.py`: Added slide selection helper `select_source_slide(name_or_path)`; added programmatic action triggers `trigger_browse_annotation()`, `trigger_browse_output()`, `trigger_warp()`, and `trigger_cancel()`.
+- `src/valis_workstation/ui/dialogs/blink_viewer.py`: Added slide selection helpers `select_slide_a(name_or_path)` and `select_slide_b(name_or_path)`; added programmatic action triggers `trigger_toggle_blink()`, `trigger_start_blink()`, `trigger_stop_blink()`, and `trigger_close()`.
+- `tests/test_warp_annotations_dialog.py` & `tests/test_blink_viewer_dialog.py`: Added unit tests `test_warp_annotations_dialog_selection_helpers_and_action_triggers` and `test_blink_viewer_slide_selection_and_action_triggers`.
+- Validation: Verified headlessly with `python -m pytest tests/test_warp_annotations_dialog.py tests/test_blink_viewer_dialog.py tests/test_merge_slides_dialog.py tests/test_preferences_dialog_accessibility.py -v` (36 passed in 0.45s, 0 errors).
+
 ### 2026-11-08 UTC - MergeSlidesDialog Configuration Setters, Row Lookups, and Action Triggers
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/merge_slides_dialog.py`: Added option queries and setters (`output_image_name()`, `set_output_image_name()`, `duplicate_handling()`, `set_duplicate_handling()`, `is_normalize_enabled()`, `set_normalize()`); added channel mapping row lookups and mutation helpers (`slide_row_index()`, `is_slide_included()`, `set_slide_included()`, `channel_name()`, `set_channel_name()`, `channel_color()`, `set_channel_color()`); added programmatic action triggers (`trigger_select_all()`, `trigger_select_none()`, `trigger_export_config()`, `trigger_accept()`, `trigger_reject()`).
