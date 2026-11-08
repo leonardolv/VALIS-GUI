@@ -367,3 +367,97 @@ class SaveOptionsDialog(QtWidgets.QDialog):
     @property
     def reset_button(self) -> QtWidgets.QPushButton | None:
         return self.buttons.button(QtWidgets.QDialogButtonBox.StandardButton.Reset)
+
+    def preset_name(self) -> str:
+        """Return the currently selected preset name."""
+        return self._preset_combo.currentText()
+
+    def set_preset(self, preset_name: str) -> bool:
+        """Select a preset by name.
+
+        Returns True if the preset was found and selected, False otherwise.
+        """
+        idx = self._preset_combo.findText(preset_name)
+        if idx >= 0:
+            self._preset_combo.setCurrentIndex(idx)
+            return True
+        return False
+
+    def is_write_pyramid_enabled(self) -> bool:
+        """Return True if write pyramid checkbox is checked."""
+        return self._write_pyramid.isChecked()
+
+    def set_write_pyramid(self, enabled: bool) -> None:
+        """Set write pyramid checkbox state."""
+        self._write_pyramid.setChecked(enabled)
+
+    def pyramid_levels(self) -> int:
+        """Return current pyramid levels value."""
+        return self._pyramid_levels.value()
+
+    def set_pyramid_levels(self, levels: int) -> None:
+        """Set pyramid levels value."""
+        self._pyramid_levels.setValue(levels)
+
+    def compression_level(self) -> int:
+        """Return current compression level (0-9)."""
+        return self._compression.value()
+
+    def set_compression_level(self, level: int) -> None:
+        """Set compression level (0-9)."""
+        self._compression.setValue(level)
+
+    def quality_value(self) -> int:
+        """Return current JPEG quality value (1-100)."""
+        return self._quality.value()
+
+    def set_quality_value(self, quality: int) -> None:
+        """Set JPEG quality value (1-100)."""
+        self._quality.setValue(quality)
+
+    def tile_size(self) -> int:
+        """Return current tile size in pixels."""
+        return int(self._tile_size.currentText())
+
+    def set_tile_size(self, tile_size: int | str) -> bool:
+        """Set tile size by string or integer.
+
+        Returns True if size was valid and selected, False otherwise.
+        """
+        idx = self._tile_size.findText(str(tile_size))
+        if idx >= 0:
+            self._tile_size.setCurrentIndex(idx)
+            return True
+        return False
+
+    def format_name(self) -> str:
+        """Return currently selected export format name."""
+        return self._format.currentText()
+
+    def set_format(self, fmt: str) -> bool:
+        """Set export format by name.
+
+        Returns True if format was valid and selected, False otherwise.
+        """
+        idx = self._format.findText(fmt)
+        if idx >= 0:
+            self._format.setCurrentIndex(idx)
+            return True
+        return False
+
+    def info_text(self) -> str:
+        """Return current info summary text."""
+        return self._info_label.text()
+
+    def trigger_accept(self) -> None:
+        """Programmatically accept the dialog."""
+        self.accept()
+
+    def trigger_reject(self) -> None:
+        """Programmatically reject the dialog."""
+        self.reject()
+
+    def trigger_reset_defaults(self) -> None:
+        """Programmatically reset options to defaults."""
+        self.reset_to_defaults()
+

@@ -153,3 +153,62 @@ class TestSaveOptionsDialogFeatures:
         assert opts["tile_size"] == 512
         assert opts["write_pyramid"] is True
         assert opts["preset"] == "Default (Balanced OME-TIFF)"
+
+    def test_ergonomics_getters_setters_and_action_triggers(self, qtbot) -> None:
+        dlg = SaveOptionsDialog()
+        qtbot.addWidget(dlg)
+
+        # Preset query and mutation
+        assert dlg.preset_name() == "Default (Balanced OME-TIFF)"
+        assert dlg.set_preset("Archival Lossless") is True
+        assert dlg.preset_name() == "Archival Lossless"
+        assert dlg.set_preset("NonExistentPreset") is False
+        assert dlg.preset_name() == "Archival Lossless"
+
+        # Pyramid checkbox and levels
+        assert dlg.is_write_pyramid_enabled() is True
+        dlg.set_write_pyramid(False)
+        assert dlg.is_write_pyramid_enabled() is False
+        dlg.set_write_pyramid(True)
+        assert dlg.is_write_pyramid_enabled() is True
+
+        assert dlg.pyramid_levels() == 5
+        dlg.set_pyramid_levels(6)
+        assert dlg.pyramid_levels() == 6
+
+        # Compression and Quality
+        dlg.set_compression_level(3)
+        assert dlg.compression_level() == 3
+
+        dlg.set_quality_value(89)
+        assert dlg.quality_value() == 89
+
+        # Tile size
+        assert dlg.tile_size() == 1024
+        assert dlg.set_tile_size(256) is True
+        assert dlg.tile_size() == 256
+        assert dlg.set_tile_size(9999) is False
+        assert dlg.tile_size() == 256
+
+        # Format
+        assert dlg.format_name() == ImageFormats.TIFF
+        assert dlg.set_format(ImageFormats.PNG) is True
+        assert dlg.format_name() == ImageFormats.PNG
+        assert dlg.set_format("UNKNOWN_FMT") is False
+        assert dlg.format_name() == ImageFormats.PNG
+
+        # Info text
+        assert "Info:" in dlg.info_text()
+
+        # Reset defaults trigger
+        dlg.trigger_reset_defaults()
+        assert dlg.preset_name() == "Default (Balanced OME-TIFF)"
+        assert dlg.format_name() == ImageFormats.OME_TIFF
+
+        # Action triggers
+        dlg.trigger_reject()
+        assert dlg.result() == QtWidgets.QDialog.DialogCode.Rejected
+
+        dlg.trigger_accept()
+        assert dlg.result() == QtWidgets.QDialog.DialogCode.Accepted
+

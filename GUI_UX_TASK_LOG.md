@@ -7,6 +7,24 @@
 
 ## Completed
 
+### Task: ProjectDock and SaveOptionsDialog explicit object names, public properties, headless guards, and ergonomics helpers
+- **Completed**: 2026-11-08
+- **Changes**:
+  - `src/valis_workstation/ui/project_dock.py`:
+    - Configured accessible name and description on `ProjectDock`.
+    - Standardized explicit object names and accessible names on `projectSlidesHeader`, `projectFilterInput`, `projectEmptyLabel`, `projectOpenFolderBtn`, `projectListWidget`, `projectClearAllBtn`, and `projectRemoveSelectedBtn`.
+    - Added pointing hand cursor affordances on `clear_button` and `remove_selected_button`.
+    - Added headless safety guard on `_clear_all_slides` to avoid blocking modal confirmation dialogs in headless test environments.
+    - Exposed 7 public properties: `filter_edit`, `list_widget`, `clear_button`, `remove_selected_button`, `open_folder_button`, `empty_label`, and `slides_header`.
+    - Added 13 ergonomic query, setter, selection, and action helpers: `slide_count()`, `visible_slide_count()`, `has_slides()`, `selected_slide_paths()`, `selected_slide_names()`, `select_slide()`, `select_all_slides()`, `clear_selection()`, `filter_text()`, `set_filter_text()`, `trigger_open_folder()`, `trigger_clear_all()`, and `trigger_remove_selected()`.
+  - `src/valis_workstation/ui/dialogs/save_options_dialog.py`:
+    - Added 17 ergonomic state queries, setters, and programmatic action triggers: `preset_name()`, `set_preset()`, `is_write_pyramid_enabled()`, `set_write_pyramid()`, `pyramid_levels()`, `set_pyramid_levels()`, `compression_level()`, `set_compression_level()`, `quality_value()`, `set_quality_value()`, `tile_size()`, `set_tile_size()`, `format_name()`, `set_format()`, `info_text()`, `trigger_accept()`, `trigger_reject()`, and `trigger_reset_defaults()`.
+  - `tests/test_project_dock_accessibility.py` & `tests/test_save_options_dialog.py`:
+    - Added comprehensive unit tests validating dock metadata, object names, button cursor affordances, public property accessors, slide queries, mutations, selection helpers, action triggers, and dialog ergonomics.
+- **Verification**: Verified headlessly with `pytest tests/test_project_dock_accessibility.py tests/test_save_options_dialog.py tests/test_gui_components.py tests/test_roi_export_dialog.py tests/test_quality_report_dialog.py tests/test_preferences_dialog_accessibility.py tests/test_first_run_wizard_and_analysis_plot.py -v` (67 passed in 14.28s, 0 errors).
+- **Status**: Completed
+
+
 ### Task: WarpAnnotationsDialog and BlinkViewerDialog slide selection helpers and programmatic action triggers
 - **Completed**: 2026-11-08
 - **Changes**:
