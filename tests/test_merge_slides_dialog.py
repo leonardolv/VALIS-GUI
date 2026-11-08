@@ -161,3 +161,89 @@ def test_name_columns_stretch_to_fill_the_table(qtbot):
     stretch = QtWidgets.QHeaderView.ResizeMode.Stretch
     assert header.sectionResizeMode(1) == stretch
     assert header.sectionResizeMode(2) == stretch
+
+
+def test_merge_slides_dialog_ergonomics_helpers_and_action_triggers(qtbot, tmp_path, monkeypatch):
+    """Test MergeSlidesDialog ergonomic setters, row queries, and action triggers."""
+    slides = ["Slide_DAPI", "Slide_GFP", "Slide_RFP"]
+    dialog = MergeSlidesDialog(slides)
+    qtbot.addWidget(dialog)
+
+    # 1. Output image name
+    assert dialog.output_image_name() == "merged_image"
+    dialog.set_output_image_name("multiplex_panel_1")
+    assert dialog.output_image_name() == "multiplex_panel_1"
+
+    # 2. Overlap / duplicate handling
+    assert dialog.duplicate_handling() == "Average"
+    assert dialog.set_duplicate_handling("Maximum") is True
+    assert dialog.duplicate_handling() == "Maximum"
+    assert dialog.set_duplicate_handling("InvalidMethod") is False
+
+    # 3. Intensity normalization
+    assert dialog.is_normalize_enabled() is True
+    dialog.set_normalize(False)
+    assert dialog.is_normalize_enabled() is False
+    dialog.set_normalize(True)
+    assert dialog.is_normalize_enabled() is True
+
+    # 4. Row lookups and slide inclusion
+    assert dialog.slide_row_index("Slide_DAPI") == 0
+    assert dialog.slide_row_index("Slide_GFP") == 1
+    assert dialog.slide_row_index("Nonexistent") == -1
+
+    assert dialog.is_slide_included("Slide_DAPI") is True
+    assert dialog.is_slide_included("Nonexistent") is False
+    assert dialog.set_slide_included("Slide_DAPI", False) is True
+    assert dialog.is_slide_included("Slide_DAPI") is False
+    assert dialog.set_slide_included("Nonexistent", True) is False
+    assert dialog.set_slide_included("Slide_DAPI", True) is True
+    assert dialog.is_slide_included("Slide_DAPI") is True
+
+    # 5. Channel names and colors
+    assert dialog.channel_name("Slide_DAPI") == "Channel_1"
+    assert dialog.channel_name("Nonexistent") is None
+    assert dialog.set_channel_name("Slide_DAPI", "DAPI_405") is True
+    assert dialog.channel_name("Slide_DAPI") == "DAPI_405"
+    assert dialog.set_channel_name("Nonexistent", "Foo") is False
+
+    assert dialog.channel_color("Slide_GFP") == "Auto"
+    assert dialog.channel_color("Nonexistent") is None
+    assert dialog.set_channel_color("Slide_GFP", "Green") is True
+    assert dialog.channel_color("Slide_GFP") == "Green"
+    assert dialog.set_channel_color("Slide_GFP", "InvalidColor") is False
+    assert dialog.set_channel_color("Nonexistent", "Red") is False
+
+    # 6. Action triggers: select none / select all
+    dialog.trigger_select_none()
+    assert dialog.is_none_selected() is True
+    assert dialog.included_slide_count() == 0
+
+    dialog.trigger_select_all()
+    assert dialog.is_all_selected() is True
+    assert dialog.included_slide_count() == 3
+
+    # 7. Action trigger: export config
+    export_path = tmp_path / "trigger_export_cfg.json"
+    monkeypatch.setattr(
+        QtWidgets.QFileDialog,
+        "getSaveFileName",
+        lambda *args, **kwargs: (str(export_path), "JSON Files (*.json)"),
+    )
+    dialog.trigger_export_config()
+    assert export_path.exists()
+    cfg = json.loads(export_path.read_text(encoding="utf-8"))
+    assert cfg["output_name"] == "multiplex_panel_1"
+    assert cfg["duplicate_handling"] == "maximum"
+
+    # 8. Action triggers: accept and reject
+    accepted = []
+    rejected = []
+    dialog.accepted.connect(lambda: accepted.append(True))
+    dialog.rejected.connect(lambda: rejected.append(True))
+
+    dialog.trigger_accept()
+    assert len(accepted) == 1
+
+    dialog.trigger_reject()
+    assert len(rejected) == 1

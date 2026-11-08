@@ -368,3 +368,118 @@ class MergeSlidesDialog(QtWidgets.QDialog):
                 if item:
                     names.append(item.text())
         return names
+
+    def output_image_name(self) -> str:
+        """Return the merged output image base name."""
+        return self._output_name.text()
+
+    def set_output_image_name(self, name: str) -> None:
+        """Set the merged output image base name."""
+        self._output_name.setText(name)
+
+    def duplicate_handling(self) -> str:
+        """Return the active overlap handling method."""
+        return self._duplicate_handling.currentText()
+
+    def set_duplicate_handling(self, method: str) -> bool:
+        """Set the overlap handling method (e.g. 'Average', 'Maximum', 'Minimum', 'First', 'Last')."""
+        idx = self._duplicate_handling.findText(method, QtCore.Qt.MatchFlag.MatchFixedString)
+        if idx >= 0:
+            self._duplicate_handling.setCurrentIndex(idx)
+            return True
+        return False
+
+    def is_normalize_enabled(self) -> bool:
+        """Return True if channel intensity normalization is enabled."""
+        return bool(self._normalize.isChecked())
+
+    def set_normalize(self, enabled: bool) -> None:
+        """Set channel intensity normalization toggle."""
+        self._normalize.setChecked(bool(enabled))
+
+    def slide_row_index(self, slide_name: str) -> int:
+        """Return table row index for a given slide name, or -1 if not found."""
+        for i in range(self._table.rowCount()):
+            item = self._table.item(i, 1)
+            if item and item.text() == slide_name:
+                return i
+        return -1
+
+    def is_slide_included(self, slide_name: str) -> bool:
+        """Return True if the specified slide is marked for inclusion."""
+        row = self.slide_row_index(slide_name)
+        if row >= 0:
+            cb = self._table.cellWidget(row, 0)
+            if isinstance(cb, QtWidgets.QCheckBox):
+                return cb.isChecked()
+        return False
+
+    def set_slide_included(self, slide_name: str, included: bool) -> bool:
+        """Set slide inclusion checkbox state for a given slide name. Returns True if found."""
+        row = self.slide_row_index(slide_name)
+        if row >= 0:
+            cb = self._table.cellWidget(row, 0)
+            if isinstance(cb, QtWidgets.QCheckBox):
+                cb.setChecked(bool(included))
+                return True
+        return False
+
+    def channel_name(self, slide_name: str) -> str | None:
+        """Return the configured channel name for a given slide name, or None."""
+        row = self.slide_row_index(slide_name)
+        if row >= 0:
+            item = self._table.item(row, 2)
+            if item:
+                return item.text()
+        return None
+
+    def set_channel_name(self, slide_name: str, channel_name: str) -> bool:
+        """Set the channel name text for a given slide. Returns True if found."""
+        row = self.slide_row_index(slide_name)
+        if row >= 0:
+            item = self._table.item(row, 2)
+            if item:
+                item.setText(channel_name)
+                return True
+        return False
+
+    def channel_color(self, slide_name: str) -> str | None:
+        """Return the selected channel pseudo-color for a given slide, or None."""
+        row = self.slide_row_index(slide_name)
+        if row >= 0:
+            combo = self._table.cellWidget(row, 3)
+            if isinstance(combo, QtWidgets.QComboBox):
+                return combo.currentText()
+        return None
+
+    def set_channel_color(self, slide_name: str, color: str) -> bool:
+        """Set the channel pseudo-color for a given slide. Returns True if found."""
+        row = self.slide_row_index(slide_name)
+        if row >= 0:
+            combo = self._table.cellWidget(row, 3)
+            if isinstance(combo, QtWidgets.QComboBox):
+                idx = combo.findText(color, QtCore.Qt.MatchFlag.MatchFixedString)
+                if idx >= 0:
+                    combo.setCurrentIndex(idx)
+                    return True
+        return False
+
+    def trigger_select_all(self) -> None:
+        """Programmatically trigger selecting all slides for merge."""
+        self._select_all()
+
+    def trigger_select_none(self) -> None:
+        """Programmatically trigger deselecting all slides."""
+        self._select_none()
+
+    def trigger_export_config(self) -> None:
+        """Programmatically trigger export configuration file dialog."""
+        self._export_config()
+
+    def trigger_accept(self) -> None:
+        """Programmatically accept and close dialog with current configuration."""
+        self.accept()
+
+    def trigger_reject(self) -> None:
+        """Programmatically reject and close dialog without merging."""
+        self.reject()

@@ -7,6 +7,19 @@
 
 ## Completed
 
+### Task: MergeSlidesDialog configuration setters, row lookups, and programmatic action triggers
+- **Completed**: 2026-11-08
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/merge_slides_dialog.py`:
+    - Added option query and setter helpers: `output_image_name() -> str`, `set_output_image_name(name: str) -> None`, `duplicate_handling() -> str`, `set_duplicate_handling(method: str) -> bool`, `is_normalize_enabled() -> bool`, `set_normalize(enabled: bool) -> None`.
+    - Added channel mapping row lookups and setters: `slide_row_index(slide_name: str) -> int`, `is_slide_included(slide_name: str) -> bool`, `set_slide_included(slide_name: str, included: bool) -> bool`, `channel_name(slide_name: str) -> str | None`, `set_channel_name(slide_name: str, channel_name: str) -> bool`, `channel_color(slide_name: str) -> str | None`, `set_channel_color(slide_name: str, color: str) -> bool`.
+    - Added programmatic action triggers: `trigger_select_all() -> None`, `trigger_select_none() -> None`, `trigger_export_config() -> None`, `trigger_accept() -> None`, and `trigger_reject() -> None`.
+  - `tests/test_merge_slides_dialog.py`:
+    - Added unit test `test_merge_slides_dialog_ergonomics_helpers_and_action_triggers` verifying output image name, duplicate handling method selection, normalization toggling, slide row index lookup, slide inclusion mutations, channel renaming, channel pseudo-color changes, and programmatic action triggers.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_merge_slides_dialog.py tests/test_preferences_dialog_accessibility.py tests/test_quality_report_dialog.py -v` (28 passed in 1.26s, 0 errors).
+- **Status**: Completed
+
+
 ### Task: PreferencesDialog public properties, ergonomic query/action helpers, and headless safety guards
 - **Completed**: 2026-11-08
 - **Changes**:
