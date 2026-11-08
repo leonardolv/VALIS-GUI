@@ -70,3 +70,95 @@ def test_preferences_dialog_metadata_and_object_names(dialog):
     assert dialog.button_box.button(Std.Ok).objectName() == "prefOkBtn"
     assert dialog.button_box.button(Std.Cancel).objectName() == "prefCancelBtn"
     assert dialog.button_box.button(Std.RestoreDefaults).objectName() == "prefRestoreBtn"
+
+
+def test_preferences_dialog_properties_and_ergonomics(dialog):
+    # Verify child property accessors
+    assert dialog.cache_dir_edit is dialog._cache_dir_edit
+    assert dialog.browse_cache_button is dialog._browse_cache_btn
+    assert dialog.max_thumb_cache_spin is dialog._max_thumb_cache_spin
+    assert dialog.persist_cache_check is dialog._persist_cache_check
+    assert dialog.parallel_workers_spin is dialog._parallel_workers_spin
+    assert dialog.perf_monitoring_check is dialog._perf_monitoring_check
+    assert dialog.auto_refresh_spin is dialog._auto_refresh_spin
+    assert dialog.show_tooltips_check is dialog._show_tooltips_check
+    assert dialog.show_statusbar_check is dialog._show_statusbar_check
+    assert dialog.confirm_close_check is dialog._confirm_close_check
+    assert dialog.recent_files_spin is dialog._recent_files_spin
+    assert dialog.default_thumb_size_spin is dialog._default_thumb_size_spin
+    assert dialog.high_contrast_check is dialog._high_contrast_check
+    assert dialog.reduced_motion_check is dialog._reduced_motion_check
+    assert dialog.ok_button is not None
+    assert dialog.cancel_button is not None
+    assert dialog.restore_defaults_button is not None
+
+    # Verify query and setter helpers
+    dialog.set_cache_directory("/tmp/custom_cache")
+    assert dialog.cache_directory() == "/tmp/custom_cache"
+
+    dialog.set_max_thumbnail_cache_mb(800)
+    assert dialog.max_thumbnail_cache_mb() == 800
+
+    dialog.set_cache_persisted(False)
+    assert dialog.is_cache_persisted() is False
+    dialog.set_cache_persisted(True)
+    assert dialog.is_cache_persisted() is True
+
+    dialog.set_parallel_workers(8)
+    assert dialog.parallel_workers() == 8
+
+    dialog.set_perf_monitoring_enabled(False)
+    assert dialog.is_perf_monitoring_enabled() is False
+    dialog.set_perf_monitoring_enabled(True)
+    assert dialog.is_perf_monitoring_enabled() is True
+
+    dialog.set_auto_refresh_seconds(5)
+    assert dialog.auto_refresh_seconds() == 5
+
+    dialog.set_show_tooltips_enabled(False)
+    assert dialog.is_show_tooltips_enabled() is False
+    dialog.set_show_tooltips_enabled(True)
+    assert dialog.is_show_tooltips_enabled() is True
+
+    dialog.set_show_statusbar_enabled(False)
+    assert dialog.is_show_statusbar_enabled() is False
+    dialog.set_show_statusbar_enabled(True)
+    assert dialog.is_show_statusbar_enabled() is True
+
+    dialog.set_confirm_close_enabled(True)
+    assert dialog.is_confirm_close_enabled() is True
+    dialog.set_confirm_close_enabled(False)
+    assert dialog.is_confirm_close_enabled() is False
+
+    dialog.set_recent_files_count(15)
+    assert dialog.recent_files_count() == 15
+
+    dialog.set_default_thumbnail_size(256)
+    assert dialog.default_thumbnail_size() == 256
+
+    dialog.set_high_contrast_enabled(True)
+    assert dialog.is_high_contrast_enabled() is True
+    dialog.set_high_contrast_enabled(False)
+    assert dialog.is_high_contrast_enabled() is False
+
+    dialog.set_reduced_motion_enabled(True)
+    assert dialog.is_reduced_motion_enabled() is True
+    dialog.set_reduced_motion_enabled(False)
+    assert dialog.is_reduced_motion_enabled() is False
+
+    # Category switching
+    assert dialog.current_category() == "Cache"
+    assert dialog.set_category("Performance") is True
+    assert dialog.current_category() == "Performance"
+    assert dialog.set_category("User Interface") is True
+    assert dialog.current_category() == "User Interface"
+    assert dialog.set_category("Nonexistent") is False
+
+    # Headless restore defaults trigger
+    dialog.trigger_restore_defaults()
+    assert dialog.max_thumbnail_cache_mb() == 500
+    assert dialog.parallel_workers() == 4
+
+    # Trigger accept & reject
+    dialog.trigger_reject()
+    dialog.trigger_accept()

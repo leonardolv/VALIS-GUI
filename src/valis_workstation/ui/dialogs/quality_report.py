@@ -7,6 +7,8 @@ from PySide6 import QtCore, QtWidgets
 class QualityReportDialog(QtWidgets.QDialog):
     def __init__(self, summary_df, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
+        self.setObjectName("qualityReportDialog")
+        self.setAccessibleName("Alignment Quality Report Dialog")
         self.setWindowTitle("Alignment Quality Report")
         self.resize(900, 500)
         self._summary_df = summary_df
@@ -157,3 +159,61 @@ class QualityReportDialog(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.critical(
                     self, "Export Error", f"Failed to export: {exc}"
                 )
+
+    # ------------------------------------------------------------------ #
+    #  Public Properties & Ergonomic Query/Action Helpers                 #
+    # ------------------------------------------------------------------ #
+
+    @property
+    def table(self) -> QtWidgets.QTableWidget:
+        """The alignment quality metrics table."""
+        return self._table
+
+    @property
+    def copy_table_button(self) -> QtWidgets.QPushButton:
+        """The copy table to clipboard push button."""
+        return self._copy_table_btn
+
+    @property
+    def export_csv_button(self) -> QtWidgets.QPushButton:
+        """The export CSV push button."""
+        return self._export_csv_btn
+
+    @property
+    def close_button(self) -> QtWidgets.QPushButton | None:
+        """The close dialog push button."""
+        return self._close_btn
+
+    def row_count(self) -> int:
+        """Return the number of metric rows in the table."""
+        return self._table.rowCount()
+
+    def column_count(self) -> int:
+        """Return the number of columns in the table."""
+        return self._table.columnCount()
+
+    def has_data(self) -> bool:
+        """Return True if the table contains metrics data."""
+        return self._table.rowCount() > 0 and self._table.columnCount() > 0
+
+    def headers(self) -> list[str]:
+        """Return the list of horizontal column header labels."""
+        return [
+            self._table.horizontalHeaderItem(c).text()
+            for c in range(self._table.columnCount())
+            if self._table.horizontalHeaderItem(c) is not None
+        ]
+
+    def cell_text(self, row: int, col: int) -> str:
+        """Return the textual value at the specified table coordinates."""
+        item = self._table.item(row, col)
+        return item.text() if item is not None else ""
+
+    def trigger_copy_table(self) -> None:
+        """Programmatically trigger copying the full metrics table to clipboard."""
+        self._copy_table()
+
+    def trigger_close(self) -> None:
+        """Programmatically reject/close the quality report dialog."""
+        self.reject()
+

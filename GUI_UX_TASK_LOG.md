@@ -2,9 +2,62 @@
 
 ## In Progress
 
+
 ## Blocked / Needs Review
 
 ## Completed
+
+### Task: WarpAnnotationsDialog and BlinkViewerDialog slide selection helpers and programmatic action triggers
+- **Completed**: 2026-11-08
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/warp_annotations.py`:
+    - Added slide selection helper `select_source_slide(name_or_path: str | Path) -> bool`.
+    - Added programmatic action triggers: `trigger_browse_annotation() -> None`, `trigger_browse_output() -> None`, `trigger_warp() -> None`, and `trigger_cancel() -> None`.
+  - `src/valis_workstation/ui/dialogs/blink_viewer.py`:
+    - Added slide selection helpers `select_slide_a(name_or_path: str | Path) -> bool` and `select_slide_b(name_or_path: str | Path) -> bool`.
+    - Added programmatic action triggers: `trigger_toggle_blink() -> bool`, `trigger_start_blink() -> None`, `trigger_stop_blink() -> None`, and `trigger_close() -> None`.
+  - `tests/test_warp_annotations_dialog.py` & `tests/test_blink_viewer_dialog.py`:
+    - Added unit tests `test_warp_annotations_dialog_selection_helpers_and_action_triggers` and `test_blink_viewer_slide_selection_and_action_triggers`.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_warp_annotations_dialog.py tests/test_blink_viewer_dialog.py tests/test_merge_slides_dialog.py tests/test_preferences_dialog_accessibility.py -v` (36 passed in 0.45s, 0 errors).
+- **Status**: Completed
+
+### Task: MergeSlidesDialog configuration setters, row lookups, and programmatic action triggers
+- **Completed**: 2026-11-08
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/merge_slides_dialog.py`:
+    - Added option query and setter helpers: `output_image_name() -> str`, `set_output_image_name(name: str) -> None`, `duplicate_handling() -> str`, `set_duplicate_handling(method: str) -> bool`, `is_normalize_enabled() -> bool`, `set_normalize(enabled: bool) -> None`.
+    - Added channel mapping row lookups and setters: `slide_row_index(slide_name: str) -> int`, `is_slide_included(slide_name: str) -> bool`, `set_slide_included(slide_name: str, included: bool) -> bool`, `channel_name(slide_name: str) -> str | None`, `set_channel_name(slide_name: str, channel_name: str) -> bool`, `channel_color(slide_name: str) -> str | None`, `set_channel_color(slide_name: str, color: str) -> bool`.
+    - Added programmatic action triggers: `trigger_select_all() -> None`, `trigger_select_none() -> None`, `trigger_export_config() -> None`, `trigger_accept() -> None`, and `trigger_reject() -> None`.
+  - `tests/test_merge_slides_dialog.py`:
+    - Added unit test `test_merge_slides_dialog_ergonomics_helpers_and_action_triggers` verifying output image name, duplicate handling method selection, normalization toggling, slide row index lookup, slide inclusion mutations, channel renaming, channel pseudo-color changes, and programmatic action triggers.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_merge_slides_dialog.py tests/test_preferences_dialog_accessibility.py tests/test_quality_report_dialog.py -v` (28 passed in 1.26s, 0 errors).
+- **Status**: Completed
+
+
+### Task: PreferencesDialog public properties, ergonomic query/action helpers, and headless safety guards
+- **Completed**: 2026-11-08
+- **Changes**:
+  - `src/valis_workstation/ui/dialogs/preferences_dialog.py`:
+    - Added headless safety guard on `_restore_defaults` to prevent blocking modal confirmation popups during automated test execution.
+    - Exposed 17 public property accessors: `cache_dir_edit`, `browse_cache_button`, `max_thumb_cache_spin`, `persist_cache_check`, `parallel_workers_spin`, `perf_monitoring_check`, `auto_refresh_spin`, `show_tooltips_check`, `show_statusbar_check`, `confirm_close_check`, `recent_files_spin`, `default_thumb_size_spin`, `high_contrast_check`, `reduced_motion_check`, `ok_button`, `cancel_button`, and `restore_defaults_button`.
+    - Added 30 ergonomic query, setter, and action helpers: `cache_directory()`, `set_cache_directory()`, `max_thumbnail_cache_mb()`, `set_max_thumbnail_cache_mb()`, `is_cache_persisted()`, `set_cache_persisted()`, `parallel_workers()`, `set_parallel_workers()`, `is_perf_monitoring_enabled()`, `set_perf_monitoring_enabled()`, `auto_refresh_seconds()`, `set_auto_refresh_seconds()`, `is_show_tooltips_enabled()`, `set_show_tooltips_enabled()`, `is_show_statusbar_enabled()`, `set_show_statusbar_enabled()`, `is_confirm_close_enabled()`, `set_confirm_close_enabled()`, `recent_files_count()`, `set_recent_files_count()`, `default_thumbnail_size()`, `set_default_thumbnail_size()`, `is_high_contrast_enabled()`, `set_high_contrast_enabled()`, `is_reduced_motion_enabled()`, `set_reduced_motion_enabled()`, `current_category()`, `set_category()`, `trigger_accept()`, `trigger_reject()`, and `trigger_restore_defaults()`.
+  - `tests/test_preferences_dialog_accessibility.py`:
+    - Added unit test `test_preferences_dialog_properties_and_ergonomics` validating all 17 public properties, tab category switching, getters/setters, headless default restoration, and programmatic acceptance/rejection triggers.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_preferences_dialog_accessibility.py tests/test_quality_report_dialog.py tests/test_first_run_wizard_and_analysis_plot.py tests/test_save_options_dialog.py tests/test_quick_tutorial_dialog_timer.py -v` (35 passed in 2.25s, 0 errors).
+- **Status**: Completed
+
+### Task: QualityReportDialog accessibility metadata, object names, properties, and ergonomics helpers
+- **Completed**: 2026-11-08
+- **Changes**:
+  - src/valis_workstation/ui/dialogs/quality_report.py:
+    - Assigned explicit object name (qualityReportDialog) and accessible name (Alignment Quality Report Dialog) on QualityReportDialog.
+    - Exposed public widget property accessors: 	able, copy_table_button, export_csv_button, and close_button.
+    - Added ergonomic query and action helpers: 
+ow_count(), column_count(), has_data(), headers(), cell_text(row, col), 	rigger_copy_table(), and 	rigger_close().
+  - 	ests/test_quality_report_dialog.py:
+    - Added unit tests 	est_quality_report_dialog_properties_and_ergonomics and 	est_quality_report_dialog_empty_state_queries verifying dialog metadata, property accessors, table row/column counts, cell text extraction, header listing, clipboard copy triggers, and clean dismissal.
+- **Verification**: Verified headlessly with python -m pytest tests/test_quality_report_dialog.py tests/test_first_run_wizard_and_analysis_plot.py tests/test_save_options_dialog.py tests/test_quick_tutorial_dialog_timer.py -v (17 passed in 1.91s, 0 errors).
+- **Status**: Completed
 
 ### Task: Decouple QuickTutorialDialog styling from Python into QSS with dynamic bubble state properties
 - **Completed**: 2026-11-08

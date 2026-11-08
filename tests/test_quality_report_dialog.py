@@ -90,3 +90,55 @@ def test_quality_report_dialog_export_csv_headless(qtbot, tmp_path, monkeypatch)
     assert target_csv.exists()
     content = target_csv.read_text(encoding="utf-8")
     assert "slide_01.ndpi" in content
+
+
+def test_quality_report_dialog_properties_and_ergonomics(qtbot):
+    df = pd.DataFrame(
+        {
+            "filename": ["slide_01.ndpi", "slide_02.ndpi"],
+            "mean_d_tform": [1.25, 0.95],
+            "mean_d_non_rigid": [0.35, 0.15],
+        }
+    )
+    dialog = QualityReportDialog(df)
+    qtbot.addWidget(dialog)
+
+    # Dialog metadata
+    assert dialog.objectName() == "qualityReportDialog"
+    assert dialog.accessibleName() == "Alignment Quality Report Dialog"
+
+    # Properties
+    assert dialog.table is dialog._table
+    assert dialog.copy_table_button is dialog._copy_table_btn
+    assert dialog.export_csv_button is dialog._export_csv_btn
+    assert dialog.close_button is dialog._close_btn
+
+    # Ergonomic queries
+    assert dialog.row_count() == 2
+    assert dialog.column_count() == 3
+    assert dialog.has_data() is True
+    assert dialog.headers() == ["filename", "mean_d_tform", "mean_d_non_rigid"]
+    assert dialog.cell_text(0, 0) == "slide_01.ndpi"
+    assert dialog.cell_text(0, 1) == "1.25"
+    assert dialog.cell_text(1, 0) == "slide_02.ndpi"
+
+    # Copy trigger
+    dialog.trigger_copy_table()
+    clipboard_text = QtWidgets.QApplication.clipboard().text()
+    assert "slide_01.ndpi" in clipboard_text
+    assert "slide_02.ndpi" in clipboard_text
+
+    # Close trigger
+    dialog.trigger_close()
+
+
+def test_quality_report_dialog_empty_state_queries(qtbot):
+    empty_df = pd.DataFrame()
+    dialog = QualityReportDialog(empty_df)
+    qtbot.addWidget(dialog)
+
+    assert dialog.row_count() == 0
+    assert dialog.column_count() == 0
+    assert dialog.has_data() is False
+    assert dialog.headers() == []
+    assert dialog.cell_text(0, 0) == ""

@@ -348,3 +348,46 @@ class BlinkViewerDialog(QtWidgets.QDialog):
     def is_blinking(self) -> bool:
         """Return True if auto-blinking is active."""
         return self._blink_toggle.isChecked() and self._timer.isActive()
+
+    def select_slide_a(self, name_or_path: str | Path) -> bool:
+        """Select Slide A by name or path string. Returns True if found."""
+        target = str(name_or_path).lower()
+        for i in range(self._slide_a.count()):
+            if (
+                self._slide_a.itemText(i).lower() == target
+                or str(self._slide_a.itemData(i)).lower() == target
+            ):
+                self._slide_a.setCurrentIndex(i)
+                return True
+        return False
+
+    def select_slide_b(self, name_or_path: str | Path) -> bool:
+        """Select Slide B by name or path string. Returns True if found."""
+        target = str(name_or_path).lower()
+        for i in range(self._slide_b.count()):
+            if (
+                self._slide_b.itemText(i).lower() == target
+                or str(self._slide_b.itemData(i)).lower() == target
+            ):
+                self._slide_b.setCurrentIndex(i)
+                return True
+        return False
+
+    def trigger_toggle_blink(self) -> bool:
+        """Toggle auto-blink state and return new blinking state."""
+        self._blink_toggle.click()
+        return self.is_blinking()
+
+    def trigger_start_blink(self) -> None:
+        """Start auto-blink if not already running."""
+        if not self._blink_toggle.isChecked():
+            self._blink_toggle.setChecked(True)
+
+    def trigger_stop_blink(self) -> None:
+        """Stop auto-blink if currently running."""
+        if self._blink_toggle.isChecked():
+            self._blink_toggle.setChecked(False)
+
+    def trigger_close(self) -> None:
+        """Dismiss the blink viewer dialog."""
+        self.reject()

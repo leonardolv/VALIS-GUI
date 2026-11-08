@@ -176,3 +176,34 @@ def test_blink_viewer_properties_and_query_helpers(qtbot, mock_viewer):
     assert dlg.is_blinking()
     dlg.blink_toggle_button.setChecked(False)
     assert not dlg.is_blinking()
+
+
+def test_blink_viewer_slide_selection_and_action_triggers(qtbot, mock_viewer):
+    slides = [Path("sample1.tif"), Path("sample2.tif"), Path("sample3.tif")]
+    dlg = BlinkViewerDialog(viewer=mock_viewer, slide_paths=slides)
+    qtbot.addWidget(dlg)
+
+    # select_slide_a and select_slide_b
+    assert dlg.select_slide_a("sample3.tif") is True
+    assert dlg.selected_slide_a() == Path("sample3.tif")
+    assert dlg.select_slide_a("nonexistent.tif") is False
+
+    assert dlg.select_slide_b("sample1.tif") is True
+    assert dlg.selected_slide_b() == Path("sample1.tif")
+    assert dlg.select_slide_b("nonexistent.tif") is False
+
+    # Action triggers: start, stop, toggle blink
+    assert dlg.is_blinking() is False
+    dlg.trigger_start_blink()
+    assert dlg.is_blinking() is True
+
+    dlg.trigger_stop_blink()
+    assert dlg.is_blinking() is False
+
+    assert dlg.trigger_toggle_blink() is True
+    assert dlg.is_blinking() is True
+    assert dlg.trigger_toggle_blink() is False
+    assert dlg.is_blinking() is False
+
+    # trigger_close dismisses dialog
+    dlg.trigger_close()

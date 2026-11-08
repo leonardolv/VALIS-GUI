@@ -196,6 +196,40 @@ class WarpAnnotationsDialog(QtWidgets.QDialog):
         """Return True if non-rigid registration is available on the registrar."""
         return bool(self._use_non_rigid)
 
+    def select_source_slide(self, name_or_path: str | Path) -> bool:
+        """Select a source slide by item display name or file path."""
+        target = str(name_or_path).lower()
+        for i in range(self._source_slide.count()):
+            if (
+                self._source_slide.itemText(i).lower() == target
+                or str(self._source_slide.itemData(i)).lower() == target
+            ):
+                self._source_slide.setCurrentIndex(i)
+                return True
+        return False
+
+    def trigger_browse_annotation(self) -> None:
+        """Trigger the browse annotation file action."""
+        self._browse_annotation_btn.click()
+
+    def trigger_browse_output(self) -> None:
+        """Trigger the browse output folder action."""
+        self._browse_output_btn.click()
+
+    def trigger_warp(self) -> None:
+        """Trigger the annotation warp action."""
+        if self._ok_btn:
+            self._ok_btn.click()
+        else:
+            self._run_warp()
+
+    def trigger_cancel(self) -> None:
+        """Trigger dialog cancellation and dismissal."""
+        if self._cancel_btn:
+            self._cancel_btn.click()
+        else:
+            self.reject()
+
     def _browse_annotation(self) -> None:
         settings = QtCore.QSettings("VALIS", "Workstation")
         last_dir = settings.value("ui/last_warp_annotation_dir", str(Path.home()))
