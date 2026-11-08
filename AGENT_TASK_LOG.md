@@ -8,6 +8,11 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-11-08 UTC - psutil missing from packaged dependencies: memory stats silently read 0.0 MB
+Status: **done** (Claude)
+- Root cause: `utils/performance.py` imports `psutil` (optional fallback to no sampling) but it was only in `requirements.txt`, not `pyproject.toml` dependencies, so a pip-installed package reported "Current/Peak Memory: 0.0 MB" in the Performance dialog, and 3 tests failed on such installs.
+- Fix: added `psutil>=5.9.0` to `pyproject.toml`; `PerformanceMonitor.memory_tracking_available`; `PerformanceStatsDialog` shows "Unavailable (install psutil)" instead of fake 0.0 MB; psutil-dependent tests skip without it; new tests for the unavailable path.
+- Validation: full suite headless, 621 passed (was 3 failed without psutil); with psutil installed the touched files pass (38).
 ### 2026-11-08 UTC - WarpAnnotationsDialog and BlinkViewerDialog Selection Helpers and Action Triggers
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/warp_annotations.py`: Added slide selection helper `select_source_slide(name_or_path)`; added programmatic action triggers `trigger_browse_annotation()`, `trigger_browse_output()`, `trigger_warp()`, and `trigger_cancel()`.

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from valis_workstation.utils import performance as perf_mod
 from valis_workstation.utils.paths import ensure_dir, normalize_path
 from valis_workstation.utils.exceptions import UserVisibleError, ValisWorkstationError
 from valis_workstation.utils.performance import (
@@ -85,10 +86,17 @@ class TestPerformanceMonitor:
         assert mon.metrics.slide_count == 5
         assert mon.metrics.total_slide_load_time == 2.5
 
+    @pytest.mark.skipif(perf_mod.psutil is None, reason="psutil not installed")
     def test_sample_memory(self) -> None:
         mon = PerformanceMonitor()
         mem = mon.sample_memory()
         assert mem > 0
+
+    def test_memory_tracking_unavailable_without_psutil(self, monkeypatch) -> None:
+        monkeypatch.setattr(perf_mod, "psutil", None)
+        mon = PerformanceMonitor()
+        assert mon.memory_tracking_available is False
+        assert mon.sample_memory() == 0.0
 
     def test_summary_includes_uptime(self) -> None:
         mon = PerformanceMonitor()
