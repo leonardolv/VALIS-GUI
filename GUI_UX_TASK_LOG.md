@@ -6,6 +6,19 @@
 
 ## Completed
 
+### Task: QualityReportDialog accessibility metadata, object names, properties, and ergonomics helpers
+- **Completed**: 2026-11-08
+- **Changes**:
+  - src/valis_workstation/ui/dialogs/quality_report.py:
+    - Assigned explicit object name (qualityReportDialog) and accessible name (Alignment Quality Report Dialog) on QualityReportDialog.
+    - Exposed public widget property accessors: 	able, copy_table_button, export_csv_button, and close_button.
+    - Added ergonomic query and action helpers: 
+ow_count(), column_count(), has_data(), headers(), cell_text(row, col), 	rigger_copy_table(), and 	rigger_close().
+  - 	ests/test_quality_report_dialog.py:
+    - Added unit tests 	est_quality_report_dialog_properties_and_ergonomics and 	est_quality_report_dialog_empty_state_queries verifying dialog metadata, property accessors, table row/column counts, cell text extraction, header listing, clipboard copy triggers, and clean dismissal.
+- **Verification**: Verified headlessly with python -m pytest tests/test_quality_report_dialog.py tests/test_first_run_wizard_and_analysis_plot.py tests/test_save_options_dialog.py tests/test_quick_tutorial_dialog_timer.py -v (17 passed in 1.91s, 0 errors).
+- **Status**: Completed
+
 ### Task: Decouple QuickTutorialDialog styling from Python into QSS with dynamic bubble state properties
 - **Completed**: 2026-11-08
 - **Changes**:
