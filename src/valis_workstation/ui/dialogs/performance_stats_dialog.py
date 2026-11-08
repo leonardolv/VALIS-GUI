@@ -214,11 +214,17 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
             uptime = summary.get("uptime_s", 0)
             self._uptime_label.setText(self._format_duration(uptime))
 
+            mem_ok = monitor.memory_tracking_available
+            na_text = "Unavailable (install psutil)"
+
+            def _mb(value: float) -> str:
+                return f"{value:.1f} MB" if mem_ok else na_text
+
             current_mem = summary.get("current_memory_mb", 0)
-            self._current_mem_label.setText(f"{current_mem:.1f} MB")
+            self._current_mem_label.setText(_mb(current_mem))
 
             peak_mem = summary["memory"]["peak_mb"]
-            self._peak_mem_label.setText(f"{peak_mem:.1f} MB")
+            self._peak_mem_label.setText(_mb(peak_mem))
 
             thumb_hit_rate = summary["thumbnails"]["cache_hit_rate"]
             self._thumb_hit_rate_label.setText(f"{thumb_hit_rate * 100:.1f}%")
@@ -261,11 +267,11 @@ class PerformanceStatsDialog(QtWidgets.QDialog):
                 )
 
             # Memory tab
-            self._mem_current_label.setText(f"{current_mem:.1f} MB")
-            self._mem_peak_label.setText(f"{peak_mem:.1f} MB")
+            self._mem_current_label.setText(_mb(current_mem))
+            self._mem_peak_label.setText(_mb(peak_mem))
 
             avg_mem = summary["memory"]["avg_mb"]
-            self._mem_avg_label.setText(f"{avg_mem:.1f} MB")
+            self._mem_avg_label.setText(_mb(avg_mem))
 
             samples = len(monitor.metrics.memory_samples)
             self._mem_samples_label.setText(str(samples))

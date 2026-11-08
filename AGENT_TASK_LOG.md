@@ -8,6 +8,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-11-08 UTC - psutil missing from packaged dependencies: memory stats silently read 0.0 MB
+Status: **done** (Claude)
+- Root cause: `utils/performance.py` imports `psutil` (optional fallback to no sampling) but it was only in `requirements.txt`, not `pyproject.toml` dependencies, so a pip-installed package reported "Current/Peak Memory: 0.0 MB" in the Performance dialog, and 3 tests failed on such installs.
+- Fix: added `psutil>=5.9.0` to `pyproject.toml`; `PerformanceMonitor.memory_tracking_available`; `PerformanceStatsDialog` shows "Unavailable (install psutil)" instead of fake 0.0 MB; psutil-dependent tests skip without it; new tests for the unavailable path.
+- Validation: full suite headless, 621 passed (was 3 failed without psutil); with psutil installed the touched files pass (38).
+
 ### 2026-11-07 UTC - FirstRunWizard, AnalysisPlotDialog, and QuickTutorialDialog properties and ergonomics helpers
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/dialogs/first_run_wizard.py`: Configured accessible name and description on `FirstRunWizard`; exposed public property accessors (`project_name_edit`, `output_profile_combo`, `open_tutorial_check`, `welcome_page`, `options_page`, `finish_page`); added ergonomic mutation and query helpers (`set_project_name(name)`, `set_output_profile(profile)`, `set_open_tutorial(enabled)`, `has_valid_project_name()`, `output_profiles()`).

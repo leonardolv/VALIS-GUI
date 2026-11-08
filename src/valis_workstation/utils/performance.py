@@ -189,6 +189,11 @@ class PerformanceMonitor:
             f"({duration / count:.2f}s per slide)"
         )
 
+    @property
+    def memory_tracking_available(self) -> bool:
+        """Whether memory can be sampled (needs the optional ``psutil``)."""
+        return self._memory_process is not None
+
     def sample_memory(self) -> float:
         """
         Sample current memory usage.

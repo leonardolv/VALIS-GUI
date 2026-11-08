@@ -105,3 +105,21 @@ def test_performance_stats_dialog_properties_and_query_helpers(qtbot):
     dialog.accept()
     assert dialog.is_auto_refresh_active() is False
 
+
+
+def test_memory_labels_say_unavailable_without_psutil(qtbot, monkeypatch):
+    """Without psutil the dialog must not claim the app uses 0.0 MB."""
+    from valis_workstation.utils import performance as perf
+
+    monkeypatch.setattr(perf, "psutil", None)
+    monkeypatch.setattr(perf, "_performance_monitor", perf.PerformanceMonitor(), raising=False)
+    monkeypatch.setattr(perf, "get_performance_monitor", lambda: perf._performance_monitor)
+    import valis_workstation.ui.dialogs.performance_stats_dialog as mod
+
+    monkeypatch.setattr(mod, "get_performance_monitor", perf.get_performance_monitor)
+    dialog = PerformanceStatsDialog()
+    qtbot.addWidget(dialog)
+    dialog._update_stats()
+    assert "psutil" in dialog.current_memory_text()
+    assert "psutil" in dialog.peak_memory_text()
+    assert "0.0 MB" not in dialog.current_memory_text()

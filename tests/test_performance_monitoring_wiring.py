@@ -91,6 +91,10 @@ def _reset_global_monitor():
 # ---------------------------------------------------------------------------
 
 
+needs_psutil = pytest.mark.skipif(
+    perf_module.psutil is None, reason="psutil not installed"
+)
+
 class TestMonitoringEnabledSetting:
     def test_defaults_to_enabled_when_unset(self):
         QtCore.QSettings("VALIS", "Workstation").remove(
@@ -162,6 +166,7 @@ class TestTrackersRespectTheToggle:
         monitor.track_slides_loaded(0, 0.0)  # must not raise
         assert monitor.metrics.slide_count == 0
 
+    @needs_psutil
     def test_memory_peak_and_samples_are_not_recorded_when_disabled(self):
         QtCore.QSettings("VALIS", "Workstation").setValue(
             "performance/monitoring_enabled", False
@@ -172,6 +177,7 @@ class TestTrackersRespectTheToggle:
         assert monitor.metrics.memory_samples == []
         assert monitor.metrics.peak_memory_mb == 0.0
 
+    @needs_psutil
     def test_memory_peak_and_samples_are_recorded_when_enabled(self):
         QtCore.QSettings("VALIS", "Workstation").setValue(
             "performance/monitoring_enabled", True
