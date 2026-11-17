@@ -7,6 +7,20 @@
 
 ## Completed
 
+### Task: PropertiesDock accessibility metadata, object names, public properties, ergonomics helpers, and headless preset guards
+- **Completed**: 2026-11-17
+- **Changes**:
+  - `src/valis_workstation/ui/properties_dock.py`:
+    - Configured accessible name and description on `PropertiesDock`.
+    - Standardized explicit object names, accessible names, and pointing hand cursor affordances across: `presetCombo`, `savePresetBtn`, `loadPresetBtn`, `deletePresetBtn`, `projectNameEdit`, `rigidCheck`, `nonRigidCheck`, `maxSizeSpin`, `useGpuCheck`, `featureDetectorCombo`, `transformerTypeCombo`, `referenceSlideCombo`, `cropModeCombo`, `useMasksCheck`, `denoiseCheck`, `imgsOrderedCheck`, `cropForRigidCheck`, `nonRigidMethodCombo`, `useColorFeaturesCheck`, `microRegistrationCheck`, `microMaxSizeSpin`, `outputProfileCombo`, `formatCombo`, `writePyramidCheck`, `compressionLevelSpin`, `pyramidLevelsSpin`, `tileSizeSpin`, and `imageQualitySpin`.
+    - Added headless safety guards for preset save and delete dialogues (`QInputDialog`, `QMessageBox`) and statusBar message calls.
+    - Exposed 28 public widget property accessors: `preset_combo`, `save_preset_btn`, `load_preset_btn`, `delete_preset_btn`, `project_name_edit`, `rigid_check`, `non_rigid_check`, `working_resolution_spin`, `use_gpu_check`, `feature_detector_combo`, `transformer_type_combo`, `reference_slide_combo`, `crop_mode_combo`, `use_masks_check`, `denoise_check`, `imgs_ordered_check`, `crop_for_rigid_check`, `non_rigid_method_combo`, `use_color_features_check`, `micro_registration_check`, `micro_max_size_spin`, `output_profile_combo`, `format_combo`, `write_pyramid_check`, `compression_level_spin`, `pyramid_levels_spin`, `tile_size_spin`, and `image_quality_spin`.
+    - Added 35 ergonomic query, setter, preset management, and programmatic action triggers: `project_name()`, `set_project_name()`, `is_rigid_enabled()`, `set_rigid_enabled()`, `is_non_rigid_enabled()`, `set_non_rigid_enabled()`, `working_resolution()`, `set_working_resolution()`, `is_gpu_enabled()`, `set_gpu_enabled()`, `feature_detector()`, `set_feature_detector()`, `transformer_type()`, `set_transformer_type()`, `crop_mode()`, `set_crop_mode()`, `reference_slide()`, `set_reference_slide()`, `is_use_masks_enabled()`, `set_use_masks_enabled()`, `is_denoise_enabled()`, `set_denoise_enabled()`, `is_imgs_ordered_enabled()`, `set_imgs_ordered_enabled()`, `is_crop_for_rigid_enabled()`, `set_crop_for_rigid_enabled()`, `is_color_features_enabled()`, `set_color_features_enabled()`, `non_rigid_method()`, `set_non_rigid_method()`, `is_micro_registration_enabled()`, `set_micro_registration_enabled()`, `micro_resolution()`, `set_micro_resolution()`, `output_format()`, `set_output_format()`, `output_profile()`, `set_output_profile()`, `is_write_pyramid_enabled()`, `set_write_pyramid_enabled()`, `compression_level()`, `set_compression_level()`, `pyramid_levels()`, `set_pyramid_levels()`, `tile_size()`, `set_tile_size()`, `image_quality()`, `set_image_quality()`, `selected_preset_name()`, `select_preset()`, `preset_names()`, `save_preset()`, `load_preset()`, `delete_preset()`, `trigger_save_preset()`, `trigger_load_preset()`, and `trigger_delete_preset()`.
+  - `tests/test_properties_dock_accessibility.py`:
+    - Created comprehensive unit tests validating dock metadata, object names, button cursor affordances, public properties, ergonomic getters/setters, preset operations, and action triggers.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_properties_dock_accessibility.py tests/test_project_dock_accessibility.py tests/test_save_options_dialog.py tests/test_preferences_dialog_accessibility.py tests/test_quality_report_dialog.py -v` (34 passed in 3.35s, 0 errors).
+- **Status**: Completed
+
 ### Task: ProjectDock and SaveOptionsDialog explicit object names, public properties, headless guards, and ergonomics helpers
 - **Completed**: 2026-11-08
 - **Changes**:
