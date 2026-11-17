@@ -7,6 +7,21 @@
 
 ## Completed
 
+### Task: LayerControlsDock accessibility metadata, object names, public properties, ergonomics helpers, and programmatic action triggers
+- **Completed**: 2026-11-17
+- **Changes**:
+  - `src/valis_workstation/ui/layer_controls_dock.py`:
+    - Configured accessible name and description on `LayerControlsDock`.
+    - Standardized explicit object names, accessible names, and pointing hand cursor affordances across: `layerSearchEdit`, `layerLockEditsCheck`, `layerSoloBtn`, `layerResetOpacityBtn`, `layerShowAllBtn`, and `layerTableWidget`.
+    - Standardized cell widget object names, accessible descriptions, and hand cursor affordances across visibility checkboxes, opacity sliders, and colormap combos.
+    - Exposed 6 public widget property accessors: `search_edit`, `lock_checkbox`, `solo_button`, `reset_opacity_button`, `show_all_button`, and `table_widget`.
+    - Added 15 ergonomic state query and setter helpers: `layer_count()`, `visible_layer_count()`, `has_layers()`, `is_locked()`, `set_locked()`, `filter_text()`, `set_filter_text()`, `layer_names()`, `layer_row()`, `is_layer_visible()`, `set_layer_visible()`, `layer_opacity()`, `set_layer_opacity()`, `layer_colormap()`, and `set_layer_colormap()`.
+    - Added 4 programmatic action triggers: `trigger_solo_selected()`, `trigger_reset_opacity()`, `trigger_show_all()`, and `trigger_refresh()`.
+  - `tests/test_layer_controls_dock_accessibility.py`:
+    - Created dedicated unit test suite validating dock metadata, object names, pointing hand cursors, public properties, ergonomic state queries/setters, layer mutations, search filters, edit locks, and action triggers.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_layer_controls_dock_accessibility.py tests/test_properties_dock_accessibility.py tests/test_project_dock_accessibility.py tests/test_save_options_dialog.py tests/test_preferences_dialog_accessibility.py tests/test_quality_report_dialog.py -v` (36 passed in 3.39s, 0 errors).
+- **Status**: Completed
+
 ### Task: PropertiesDock accessibility metadata, object names, public properties, ergonomics helpers, and headless preset guards
 - **Completed**: 2026-11-17
 - **Changes**:

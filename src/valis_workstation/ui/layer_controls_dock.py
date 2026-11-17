@@ -28,6 +28,10 @@ class LayerControlsDock(QtWidgets.QDockWidget):
     def __init__(self, viewer, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__("Layers", parent)
         self.setObjectName("LayerControlsDock")
+        self.setAccessibleName("Layer Controls Dock")
+        self.setAccessibleDescription(
+            "Layer management, visibility toggling, opacity adjustments, and colormaps"
+        )
         self._viewer = viewer
 
         container = QtWidgets.QWidget()
@@ -45,18 +49,26 @@ class LayerControlsDock(QtWidgets.QDockWidget):
         toolbar.setSpacing(GRID_SPACING)
         toolbar.addWidget(QtWidgets.QLabel("Search"))
         self._search_edit = QtWidgets.QLineEdit()
+        self._search_edit.setObjectName("layerSearchEdit")
+        self._search_edit.setAccessibleName("Search layer names")
         self._search_edit.setPlaceholderText("layer name...")
         self._search_edit.setClearButtonEnabled(True)
         self._search_edit.textChanged.connect(self._apply_filter)
         toolbar.addWidget(self._search_edit, 1)
 
         self._lock_check = QtWidgets.QCheckBox("Lock edits")
+        self._lock_check.setObjectName("layerLockEditsCheck")
+        self._lock_check.setAccessibleName("Lock layer edits")
+        self._lock_check.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._lock_check.setToolTip(
             "Prevent accidental visibility/opacity/colormap edits"
         )
         toolbar.addWidget(self._lock_check)
 
         self._solo_btn = QtWidgets.QPushButton("Solo Selected")
+        self._solo_btn.setObjectName("layerSoloBtn")
+        self._solo_btn.setAccessibleName("Solo selected layer")
+        self._solo_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._solo_btn.setIcon(
             load_icon("play", self, QtWidgets.QStyle.StandardPixmap.SP_MediaPlay)
         )
@@ -67,6 +79,9 @@ class LayerControlsDock(QtWidgets.QDockWidget):
         toolbar.addWidget(self._solo_btn)
 
         self._reset_opacity_btn = QtWidgets.QPushButton("Reset Opacity")
+        self._reset_opacity_btn.setObjectName("layerResetOpacityBtn")
+        self._reset_opacity_btn.setAccessibleName("Reset layer opacities")
+        self._reset_opacity_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._reset_opacity_btn.setIcon(
             load_icon(
                 "refresh", self, QtWidgets.QStyle.StandardPixmap.SP_BrowserReload
@@ -79,6 +94,9 @@ class LayerControlsDock(QtWidgets.QDockWidget):
         toolbar.addWidget(self._reset_opacity_btn)
 
         self._show_all_btn = QtWidgets.QPushButton("Show All")
+        self._show_all_btn.setObjectName("layerShowAllBtn")
+        self._show_all_btn.setAccessibleName("Show all layers")
+        self._show_all_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._show_all_btn.setIcon(
             load_icon("eye", self, QtWidgets.QStyle.StandardPixmap.SP_DialogApplyButton)
         )
@@ -90,6 +108,9 @@ class LayerControlsDock(QtWidgets.QDockWidget):
         layout.addLayout(toolbar)
 
         self._table = QtWidgets.QTableWidget()
+        self._table.setObjectName("layerTableWidget")
+        self._table.setAccessibleName("Layers table")
+        self._table.setAccessibleDescription("Table listing image layers with visibility, opacity, and colormap controls")
         self._table.setColumnCount(4)
         self._table.setHorizontalHeaderLabels(
             ["Visible", "Name", "Opacity", "Colormap"]
@@ -146,22 +167,27 @@ class LayerControlsDock(QtWidgets.QDockWidget):
         self._show_all_btn.setEnabled(has_layers)
 
         for row_idx, layer in enumerate(layers):
+            layer_name = str(getattr(layer, "name", f"Layer {row_idx + 1}"))
             visible = QtWidgets.QCheckBox()
+            visible.setObjectName(f"layerVisibleCheck_{row_idx}")
+            visible.setAccessibleName(f"Toggle visibility for {layer_name}")
+            visible.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
             visible.setChecked(bool(getattr(layer, "visible", True)))
             visible.stateChanged.connect(
                 lambda state, l=layer: self._on_visible_changed(l, state)
             )
             self._table.setCellWidget(row_idx, 0, visible)
 
-            name_item = QtWidgets.QTableWidgetItem(
-                str(getattr(layer, "name", "<unnamed>"))
-            )
+            name_item = QtWidgets.QTableWidgetItem(layer_name)
             name_item.setFlags(
                 QtCore.Qt.ItemFlag.ItemIsSelectable | QtCore.Qt.ItemFlag.ItemIsEnabled
             )
             self._table.setItem(row_idx, 1, name_item)
 
             opacity = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
+            opacity.setObjectName(f"layerOpacitySlider_{row_idx}")
+            opacity.setAccessibleName(f"Opacity for {layer_name}")
+            opacity.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
             opacity.setRange(0, 100)
             opacity_val = float(getattr(layer, "opacity", 1.0))
             opacity.setValue(max(0, min(100, int(opacity_val * 100))))
@@ -171,6 +197,9 @@ class LayerControlsDock(QtWidgets.QDockWidget):
             self._table.setCellWidget(row_idx, 2, opacity)
 
             colormap_combo = QtWidgets.QComboBox()
+            colormap_combo.setObjectName(f"layerColormapCombo_{row_idx}")
+            colormap_combo.setAccessibleName(f"Colormap for {layer_name}")
+            colormap_combo.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
             colormap_combo.addItems(COLORMAP_OPTIONS)
             current = getattr(layer, "colormap", None)
             if (
@@ -260,3 +289,153 @@ class LayerControlsDock(QtWidgets.QDockWidget):
     def _set_colormap(layer, value: str) -> None:
         if hasattr(layer, "colormap"):
             layer.colormap = value
+
+    # Public widget property accessors
+    @property
+    def search_edit(self) -> QtWidgets.QLineEdit:
+        return self._search_edit
+
+    @property
+    def lock_checkbox(self) -> QtWidgets.QCheckBox:
+        return self._lock_check
+
+    @property
+    def solo_button(self) -> QtWidgets.QPushButton:
+        return self._solo_btn
+
+    @property
+    def reset_opacity_button(self) -> QtWidgets.QPushButton:
+        return self._reset_opacity_btn
+
+    @property
+    def show_all_button(self) -> QtWidgets.QPushButton:
+        return self._show_all_btn
+
+    @property
+    def table_widget(self) -> QtWidgets.QTableWidget:
+        return self._table
+
+    # Ergonomic state queries and setters
+    def layer_count(self) -> int:
+        """Return total number of registered layers."""
+        return len(self._layers)
+
+    def visible_layer_count(self) -> int:
+        """Return count of layers whose visible property is True."""
+        return sum(1 for l in self._layers if getattr(l, "visible", True))
+
+    def has_layers(self) -> bool:
+        """Return True if at least one layer is registered."""
+        return len(self._layers) > 0
+
+    def is_locked(self) -> bool:
+        """Return True if layer edits are currently locked."""
+        return self._lock_check.isChecked()
+
+    def set_locked(self, locked: bool) -> None:
+        """Toggle edit locking."""
+        self._lock_check.setChecked(bool(locked))
+
+    def filter_text(self) -> str:
+        """Return the current search/filter text."""
+        return self._search_edit.text()
+
+    def set_filter_text(self, text: str) -> None:
+        """Update search/filter text."""
+        self._search_edit.setText(text)
+
+    def layer_names(self) -> list[str]:
+        """Return names of all registered layers."""
+        return [str(getattr(l, "name", f"<layer_{i}>")) for i, l in enumerate(self._layers)]
+
+    def layer_row(self, name: str) -> int:
+        """Return row index for layer with matching name, or -1 if not found."""
+        target = name.strip().lower()
+        for i, l in enumerate(self._layers):
+            if str(getattr(l, "name", "")).strip().lower() == target:
+                return i
+        return -1
+
+    def _resolve_layer_index(self, name_or_row: str | int) -> int:
+        if isinstance(name_or_row, int):
+            return name_or_row if 0 <= name_or_row < len(self._layers) else -1
+        return self.layer_row(str(name_or_row))
+
+    def is_layer_visible(self, name_or_row: str | int) -> bool:
+        """Return visibility status of specified layer."""
+        idx = self._resolve_layer_index(name_or_row)
+        if idx < 0:
+            return False
+        return bool(getattr(self._layers[idx], "visible", True))
+
+    def set_layer_visible(self, name_or_row: str | int, visible: bool) -> bool:
+        """Set visibility of specified layer. Returns True if layer was found."""
+        idx = self._resolve_layer_index(name_or_row)
+        if idx < 0:
+            return False
+        cb = self._table.cellWidget(idx, 0)
+        if isinstance(cb, QtWidgets.QCheckBox):
+            cb.setChecked(bool(visible))
+        else:
+            self._layers[idx].visible = bool(visible)
+        return True
+
+    def layer_opacity(self, name_or_row: str | int) -> float:
+        """Return opacity (0.0 to 1.0) of specified layer."""
+        idx = self._resolve_layer_index(name_or_row)
+        if idx < 0:
+            return 0.0
+        return float(getattr(self._layers[idx], "opacity", 1.0))
+
+    def set_layer_opacity(self, name_or_row: str | int, opacity: float) -> bool:
+        """Set opacity (0.0 to 1.0) of specified layer. Returns True if layer was found."""
+        idx = self._resolve_layer_index(name_or_row)
+        if idx < 0:
+            return False
+        clamped = max(0.0, min(1.0, float(opacity)))
+        slider = self._table.cellWidget(idx, 2)
+        if isinstance(slider, QtWidgets.QSlider):
+            slider.setValue(int(clamped * 100))
+        else:
+            self._layers[idx].opacity = clamped
+        return True
+
+    def layer_colormap(self, name_or_row: str | int) -> str | None:
+        """Return colormap name of specified layer, or None if not applicable."""
+        idx = self._resolve_layer_index(name_or_row)
+        if idx < 0:
+            return None
+        combo = self._table.cellWidget(idx, 3)
+        if isinstance(combo, QtWidgets.QComboBox):
+            return combo.currentText()
+        cm = getattr(self._layers[idx], "colormap", None)
+        return getattr(cm, "name", str(cm)) if cm is not None else None
+
+    def set_layer_colormap(self, name_or_row: str | int, colormap: str) -> bool:
+        """Set colormap of specified layer. Returns True if layer was found."""
+        idx = self._resolve_layer_index(name_or_row)
+        if idx < 0:
+            return False
+        combo = self._table.cellWidget(idx, 3)
+        if isinstance(combo, QtWidgets.QComboBox):
+            combo.setCurrentText(colormap)
+        else:
+            self._set_colormap(self._layers[idx], colormap)
+        return True
+
+    # Programmatic action triggers
+    def trigger_solo_selected(self) -> None:
+        """Programmatically trigger solo selected layer action."""
+        self._solo_selected()
+
+    def trigger_reset_opacity(self) -> None:
+        """Programmatically trigger reset opacity action."""
+        self._reset_opacity()
+
+    def trigger_show_all(self) -> None:
+        """Programmatically trigger show all layers action."""
+        self._show_all_layers()
+
+    def trigger_refresh(self) -> None:
+        """Programmatically trigger refresh of layer list."""
+        self.refresh()
