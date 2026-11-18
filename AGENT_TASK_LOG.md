@@ -4,9 +4,13 @@ work this file; always append, never overwrite another agent's entries.
 
 ## In Progress
 
-
-
 ## Completed
+
+### 2026-11-18 UTC - StatusDock Accessibility Metadata, Object Names, Public Properties, Ergonomics Helpers, and Action Triggers
+Status: **done** (Antigravity)
+- `src/valis_workstation/ui/status_dock.py`: Configured accessible name (`Pipeline Status and Log Dock`) and description on `StatusDock`; standardized explicit object names, accessible descriptions, and pointing hand cursors across `statusProgressBar`, `statusStageLabel`, `statusTimingLabel`, `statusLogHeader`, `statusLogFilterEdit`, `statusAutoScrollCheck`, `statusClearLogBtn`, `statusCopyLogBtn`, `statusCancelBtn`, and `statusLogConsole`; added headless execution safety guards for confirmation dialogs and save log dialogs; exposed 9 public widget properties (`progress_bar`, `stage_label`, `timing_label`, `filter_edit`, `auto_scroll_checkbox`, `clear_button`, `copy_button`, `cancel_button`, `log_console`); added 14 ergonomic state query/setter helpers (`progress_value()`, `stage_text()`, `timing_text()`, `log_line_count()`, `log_lines()`, `log_text()`, `console_text()`, `filter_text()`, `set_filter_text()`, `is_auto_scroll_enabled()`, `set_auto_scroll_enabled()`, `is_cancel_visible()`, `append_log_line()`, `_save_log_as()`); added 3 programmatic action triggers (`trigger_clear_log()`, `trigger_copy_log()`, `trigger_cancel()`).
+- `tests/test_status_dock_accessibility.py`: Created dedicated unit test suite validating dock metadata, object names, pointing hand cursors, public properties, ergonomic queries/setters, log filtering, copy/save log actions, and programmatic action triggers.
+- Validation: Verified headlessly with `python -m pytest tests/test_status_dock_accessibility.py tests/test_layer_controls_dock_accessibility.py tests/test_properties_dock_accessibility.py tests/test_project_dock_accessibility.py tests/test_save_options_dialog.py tests/test_preferences_dialog_accessibility.py tests/test_gui_components.py -v` (59 passed in 4.82s, 0 errors).
 
 ### 2026-11-17 UTC - LayerControlsDock Accessibility Metadata, Object Names, Public Properties, Ergonomics Helpers, and Programmatic Action Triggers
 Status: **done** (Antigravity)

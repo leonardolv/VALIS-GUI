@@ -2,10 +2,27 @@
 
 ## In Progress
 
-
 ## Blocked / Needs Review
 
 ## Completed
+
+### Task: StatusDock accessibility metadata, object names, public properties, ergonomics helpers, headless dialog guards, and action triggers
+- **Completed**: 2026-11-18
+- **Changes**:
+  - `src/valis_workstation/ui/status_dock.py`:
+    - Added `_is_headless()` checking `QT_QPA_PLATFORM == "offscreen"`, `PYTEST_CURRENT_TEST`, or `HEADLESS == "1"`.
+    - Configured accessible name (`Pipeline Status and Log Dock`) and description on `StatusDock`.
+    - Standardized explicit object names across controls: `statusProgressBar`, `statusStageLabel`, `statusTimingLabel`, `statusLogHeader`, `statusLogFilterEdit`, `statusAutoScrollCheck`, `statusClearLogBtn`, `statusCopyLogBtn`, `statusCancelBtn`, and `statusLogConsole`.
+    - Configured accessible names and pointing hand cursor affordances across interactive controls (`statusAutoScrollCheck`, `statusClearLogBtn`, `statusCopyLogBtn`, and `statusCancelBtn`).
+    - Added headless execution safety guards for confirmation questions in `_clear_log` and file dialogs in `_save_log_as`.
+    - Exposed 9 public widget property accessors: `progress_bar`, `stage_label`, `timing_label`, `filter_edit`, `auto_scroll_checkbox`, `clear_button`, `copy_button`, `cancel_button`, and `log_console`.
+    - Added 14 ergonomic state query and setter helpers: `progress_value()`, `stage_text()`, `timing_text()`, `log_line_count()`, `log_lines()`, `log_text()`, `console_text()`, `filter_text()`, `set_filter_text()`, `is_auto_scroll_enabled()`, `set_auto_scroll_enabled()`, `is_cancel_visible()`, `append_log_line()`, and `_save_log_as()`.
+    - Added 3 programmatic action triggers: `trigger_clear_log()`, `trigger_copy_log()`, and `trigger_cancel()`.
+    - Wrapped cancel button disconnect in `warnings.catch_warnings()` to silence PySide6 RuntimeWarnings on empty slot disconnections.
+  - `tests/test_status_dock_accessibility.py`:
+    - Created comprehensive unit test suite validating dock metadata, object names, pointing hand cursors, public properties, ergonomic queries/setters, log filtering, copy/save log actions, and programmatic action triggers.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_status_dock_accessibility.py tests/test_layer_controls_dock_accessibility.py tests/test_properties_dock_accessibility.py tests/test_project_dock_accessibility.py tests/test_save_options_dialog.py tests/test_preferences_dialog_accessibility.py tests/test_gui_components.py -v` (59 passed in 4.82s, 0 errors).
+- **Status**: Completed
 
 ### Task: LayerControlsDock accessibility metadata, object names, public properties, ergonomics helpers, and programmatic action triggers
 - **Completed**: 2026-11-17
