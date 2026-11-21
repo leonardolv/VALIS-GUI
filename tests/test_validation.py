@@ -117,3 +117,36 @@ def test_duplicate_stems_warn(tmp_path: Path) -> None:
     b.write_bytes(b"x")
     r = validate_slides([a, b], tmp_path / "out", min_disk_space_gb=0.0)
     assert any("HE_0" in w for w in r.warnings)
+
+
+class TestValidateSlidesRobustness:
+    def test_stat_failure_during_large_slide_check_does_not_crash(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        f = tmp_path / "s1.tif"
+        f.write_bytes(b"\x00" * 100)
+        real_stat = Path.stat
+        calls = {"n": 0}
+
+        def flaky_stat(self, *a, **k):  # type: ignore[no-untyped-def]
+            if self.name == "s1.tif":
+                calls["n"] += 1
+                if calls["n"] > 2:  # exists() + size loop succeed, later call fails
+                    raise PermissionError("denied")
+            return real_stat(self, *a, **k)
+
+        monkeypatch.setattr(Path, "stat", flaky_stat)
+        result = validate_slides([f], tmp_path / "output")
+        assert isinstance(result, ValidationResult)
+
+    def test_output_path_that_is_a_file_reports_one_error(
+        self, tmp_path: Path
+    ) -> None:
+        s = tmp_path / "s1.tif"
+        s.write_bytes(b"\x00" * 100)
+        out = tmp_path / "out"
+        out.write_text("x")
+        result = validate_slides([s], out)
+        assert not result.is_valid
+        assert len(result.errors) == 1
+        assert "file, not a directory" in result.errors[0]

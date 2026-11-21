@@ -159,9 +159,15 @@ def validate_slides(
             warnings.append("Could not verify available disk space")
 
         # Warn about very large slides
-        large_slides = [
-            s for s in existing_slides if s.stat().st_size > 5 * 1024**3
-        ]  # > 5GB
+        large_slides = []
+        for s in existing_slides:
+            try:
+                if s.stat().st_size > 5 * 1024**3:  # > 5GB
+                    large_slides.append(s)
+            except OSError:
+                # Already reported above; a file that vanished or became
+                # unreadable between checks must not abort validation.
+                continue
         if large_slides:
             warnings.append(
                 f"{len(large_slides)} very large slide(s) detected (>5GB). "
@@ -172,12 +178,17 @@ def validate_slides(
     if output_dir.exists() and not output_dir.is_dir():
         errors.append("Output path exists as a file, not a directory")
 
-    # Check if output directory is writable
+    # Check if output directory is writable (skipped when the path is a file:
+    # that was reported above and mkdir would only add a confusing duplicate)
     try:
+        if output_dir.exists() and not output_dir.is_dir():
+            raise NotADirectoryError(str(output_dir))
         output_dir.mkdir(parents=True, exist_ok=True)
         test_file = output_dir / ".write_test"
         test_file.touch()
         test_file.unlink()
+    except NotADirectoryError:
+        pass  # already reported
     except Exception as e:
         errors.append(f"Output directory is not writable: {str(e)}")
 

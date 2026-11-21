@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-11-21 UTC - validate_slides: uncaught stat() OSError and duplicate output-path errors
+Status: **done** (Claude)
+- Root cause: `utils/validation.py` guarded `stat()` OSError in the size loop but the later >5GB check called `s.stat()` unguarded, so a file vanishing/unreadable between checks crashed validation (and the Run click). When the output path was a file, the "not a directory" error was followed by a second misleading "not writable" error from `mkdir`.
+- Fix: guarded the large-slide check; skip mkdir/write probe when the path is a file so exactly one error is reported.
+- Validation: 2 new tests in `tests/test_validation.py` fail before / pass after; full suite headless 637 passed, 3 skipped.
+
 ### 2026-11-18 UTC - StatusDock Accessibility Metadata, Object Names, Public Properties, Ergonomics Helpers, and Action Triggers
 Status: **done** (Antigravity)
 - `src/valis_workstation/ui/status_dock.py`: Configured accessible name (`Pipeline Status and Log Dock`) and description on `StatusDock`; standardized explicit object names, accessible descriptions, and pointing hand cursors across `statusProgressBar`, `statusStageLabel`, `statusTimingLabel`, `statusLogHeader`, `statusLogFilterEdit`, `statusAutoScrollCheck`, `statusClearLogBtn`, `statusCopyLogBtn`, `statusCancelBtn`, and `statusLogConsole`; added headless execution safety guards for confirmation dialogs and save log dialogs; exposed 9 public widget properties (`progress_bar`, `stage_label`, `timing_label`, `filter_edit`, `auto_scroll_checkbox`, `clear_button`, `copy_button`, `cancel_button`, `log_console`); added 14 ergonomic state query/setter helpers (`progress_value()`, `stage_text()`, `timing_text()`, `log_line_count()`, `log_lines()`, `log_text()`, `console_text()`, `filter_text()`, `set_filter_text()`, `is_auto_scroll_enabled()`, `set_auto_scroll_enabled()`, `is_cancel_visible()`, `append_log_line()`, `_save_log_as()`); added 3 programmatic action triggers (`trigger_clear_log()`, `trigger_copy_log()`, `trigger_cancel()`).
