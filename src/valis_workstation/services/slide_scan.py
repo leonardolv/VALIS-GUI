@@ -24,13 +24,26 @@ def scan_slide_folder(
         return []
 
     valid_exts = {ext.lower() for ext in (extensions or DEFAULT_EXTENSIONS)}
-    slides = [
-        path
-        for path in folder.iterdir()
-        if path.is_file()
-        and not path.name.startswith(".")  # skip macOS ._* resource forks
-        and (has_supported_extension(path) if extensions is None else any(str(path).lower().endswith(ext) for ext in valid_exts))
-    ]
+
+    def _is_slide(path: Path) -> bool:
+        if path.name.startswith("."):  # skip macOS ._* resource forks
+            return False
+        if extensions is None:
+            ext_ok = has_supported_extension(path)
+        else:
+            ext_ok = any(str(path).lower().endswith(ext) for ext in valid_exts)
+        if not ext_ok:
+            return False
+        try:
+            return path.is_file()
+        except OSError:  # broken network share / permission problem
+            return False
+
+    try:
+        slides = [path for path in folder.iterdir() if _is_slide(path)]
+    except OSError as exc:  # e.g. PermissionError on an unreadable folder
+        logger.warning("Cannot read folder %s: %s", folder, exc)
+        return []
     logger.info(
         "Scanned folder %s: found %d slides with extensions %s",
         folder,

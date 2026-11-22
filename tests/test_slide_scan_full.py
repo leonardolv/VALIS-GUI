@@ -176,3 +176,33 @@ class TestFindReferenceSlide:
         assert find_reference_slide(paths, "ihc") == "/d/IHC.svs"
         assert find_reference_slide(paths, "HE.tif") == "/d/HE.tif"
         assert find_reference_slide(paths, "nope") is None
+
+
+def test_scan_unreadable_folder_returns_empty(tmp_path, monkeypatch):
+    from pathlib import Path
+
+    from valis_workstation.services.slide_scan import scan_slide_folder
+
+    def boom(self):
+        raise PermissionError("denied")
+
+    monkeypatch.setattr(Path, "iterdir", boom)
+    assert scan_slide_folder(tmp_path) == []
+
+
+def test_scan_skips_entries_whose_stat_fails(tmp_path, monkeypatch):
+    from pathlib import Path
+
+    from valis_workstation.services.slide_scan import scan_slide_folder
+
+    (tmp_path / "a.tif").write_bytes(b"x")
+    (tmp_path / "b.tif").write_bytes(b"x")
+    real = Path.is_file
+
+    def flaky(self):
+        if self.name == "a.tif":
+            raise OSError("stale handle")
+        return real(self)
+
+    monkeypatch.setattr(Path, "is_file", flaky)
+    assert [p.name for p in scan_slide_folder(tmp_path)] == ["b.tif"]
