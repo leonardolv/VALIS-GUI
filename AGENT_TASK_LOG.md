@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-11-22 UTC - scan_slide_folder: unreadable folder / failing stat crashed the scan
+Status: **done** (Claude)
+- Root cause: `iterdir()` and `is_file()` in `services/slide_scan.py` were unguarded, so a permission-denied or stale network-share folder raised out of the GUI slot instead of yielding an empty list.
+- Fix: `OSError` on listing logs a warning and returns `[]`; an entry whose `is_file()` fails is skipped (extension checked first to avoid needless stats).
+- Validation: 2 new tests in `tests/test_slide_scan_full.py`; file + `tests/test_validation.py` 30 passed (1 pre-existing failure: matplotlib not installed in this sandbox). PR: see merge.
+
 ### 2026-11-21 UTC - validate_slides: uncaught stat() OSError and duplicate output-path errors
 Status: **done** (Claude)
 - Root cause: `utils/validation.py` guarded `stat()` OSError in the size loop but the later >5GB check called `s.stat()` unguarded, so a file vanishing/unreadable between checks crashed validation (and the Run click). When the output path was a file, the "not a directory" error was followed by a second misleading "not writable" error from `mkdir`.
