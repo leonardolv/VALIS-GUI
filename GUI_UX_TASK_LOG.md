@@ -6,6 +6,25 @@
 
 ## Completed
 
+### Task: SlidePreviewDock accessibility metadata, object names, public properties, ergonomics helpers, and action triggers
+- **Completed**: 2026-11-22
+- **Problem / Root Cause**: `SlidePreviewDock` lacked accessible descriptions, standardized object names for filter/sort/size controls, pointing hand cursors on interactive toggles/sliders, public widget properties, ergonomic state queries/setters for programmatic slide inspection/selection, and action triggers for automated navigation.
+- **Solution & Code Changes**:
+  - `src/valis_workstation/ui/slide_preview_dock.py`:
+    - Configured explicit accessible name (`Slide Preview Dock`) and description on `SlidePreviewDock`.
+    - Standardized explicit object names across controls: `slidePreviewContainer`, `slidePreviewHeader`, `slideFilterLabel`, `slideFilterEdit`, `slideSortLabel`, `slideSortCombo`, `slideSizeLabel`, `slideSizeSlider`, `slideSummaryLabel`, `slideGridViewBtn`, `slideListViewBtn`, `slideViewGroup`, `slideScrollArea`, and `slideGridContainer`.
+    - Configured pointing hand cursor affordances across interactive controls (`slideSortCombo`, `slideSizeSlider`, `slideGridViewBtn`, and `slideListViewBtn`).
+    - Standardized accessible names and descriptions on thumbnail card widgets (`SlideCard`, `SlideThumb`, `SlideName`).
+    - Exposed 9 public widget property accessors: `header_label`, `filter_edit`, `sort_combobox`, `size_slider`, `summary_label`, `grid_view_button`, `list_view_button`, `scroll_area`, and `grid_container`.
+    - Added 21 ergonomic state query and setter helpers: `has_slides()`, `slide_names()`, `visible_slide_count()`, `visible_slide_names()`, `selected_slide_name()`, `is_slide_selected()`, `select_slide()`, `filter_text()`, `set_filter_text()`, `clear_filter()`, `sort_mode()`, `set_sort_mode()`, `thumbnail_size()`, `set_thumbnail_size()`, `is_grid_view()`, `is_list_view()`, `set_view_mode()`, `summary_text()`, `slide_metadata()`, `slide_widget()`, and `slide_pixmap()`.
+    - Added 5 programmatic action triggers: `trigger_grid_view()`, `trigger_list_view()`, `trigger_select_next()`, `trigger_select_previous()`, and `trigger_clear()`.
+  - `src/valis_workstation/main_window.py`:
+    - Exposed public dock properties on `MainWindow`: `slide_preview_dock`, `project_dock`, `properties_dock`, `status_dock`, and `layer_controls_dock`.
+  - `tests/test_slide_preview_dock_accessibility.py`:
+    - Created dedicated unit test suite validating dock metadata, object names, pointing hand cursors, public properties, ergonomic queries/setters, slide selection, filtering/sorting, view mode toggles, and action triggers.
+- **Verification**: Verified headlessly with `python -m pytest tests/test_slide_preview_dock_accessibility.py tests/test_status_dock_accessibility.py tests/test_layer_controls_dock_accessibility.py tests/test_properties_dock_accessibility.py tests/test_project_dock_accessibility.py tests/test_save_options_dialog.py tests/test_preferences_dialog_accessibility.py tests/test_gui_components.py tests/test_thumbnail_cache.py tests/test_thumbnail_numpy_conversion.py -v` (84 passed in 12.36s, 0 errors) and full suite sweep `python -m pytest -v` (645 passed in 33.85s, 0 errors); ruff clean.
+- **Status**: Completed
+
 ### Task: StatusDock accessibility metadata, object names, public properties, ergonomics helpers, headless dialog guards, and action triggers
 - **Completed**: 2026-11-18
 - **Changes**:

@@ -1772,3 +1772,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self._quick_tutorial_dialog.activateWindow()
         logger.info("Quick tutorial dialog opened (non-modal)")
 
+    # ── Public dock properties ────────────────────────────────────────
+
+    @property
+    def slide_preview_dock(self) -> SlidePreviewDock:
+        """Public access to the slide preview dock widget."""
+        return self._slide_preview_dock
+
+    @property
+    def project_dock(self) -> ProjectDock:
+        """Public access to the project dock widget."""
+        return self._project_dock
+
+    @property
+    def properties_dock(self) -> PropertiesDock:
+        """Public access to the properties dock widget."""
+        return self._properties_dock
+
+    @property
+    def status_dock(self) -> StatusDock:
+        """Public access to the pipeline status dock widget."""
+        return self._status_dock
+
+    @property
+    def layer_controls_dock(self) -> LayerControlsDock | None:
+        """Public access to the layer controls dock widget, or None."""
+        return self._layer_controls_dock
+
+

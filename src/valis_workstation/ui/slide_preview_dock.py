@@ -3,15 +3,11 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from valis_workstation.layout_constants import GRID_SPACING
 from valis_workstation.ui.icons import load_icon
-
-if TYPE_CHECKING:
-    pass
 
 
 class SlidePreviewDock(QtWidgets.QDockWidget):
@@ -27,9 +23,14 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__("Slide Preview", parent)
         self.setObjectName("SlidePreviewDock")
+        self.setAccessibleName("Slide Preview Dock")
+        self.setAccessibleDescription(
+            "Slide preview dock displaying slide thumbnails and metadata cards in responsive grid or list layout."
+        )
 
         # Main container
         container = QtWidgets.QWidget()
+        container.setObjectName("slidePreviewContainer")
         layout = QtWidgets.QVBoxLayout(container)
         layout.setContentsMargins(
             GRID_SPACING, GRID_SPACING, GRID_SPACING, GRID_SPACING
@@ -37,6 +38,8 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         layout.setSpacing(GRID_SPACING)
 
         self._slides_header = QtWidgets.QLabel("Thumbnails")
+        self._slides_header.setObjectName("slidePreviewHeader")
+        self._slides_header.setAccessibleName("Slide Preview Header")
         self._slides_header.setProperty("role", "sidebar-header")
         layout.addWidget(self._slides_header)
 
@@ -48,8 +51,14 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         toolbar2 = QtWidgets.QHBoxLayout()
         toolbar2.setSpacing(GRID_SPACING)
 
-        toolbar.addWidget(QtWidgets.QLabel("Filter:"))
+        filter_label = QtWidgets.QLabel("Filter:")
+        filter_label.setObjectName("slideFilterLabel")
+        toolbar.addWidget(filter_label)
+
         self._filter_edit = QtWidgets.QLineEdit()
+        self._filter_edit.setObjectName("slideFilterEdit")
+        self._filter_edit.setAccessibleName("Filter Slide Thumbnails")
+        self._filter_edit.setAccessibleDescription("Filter visible slide thumbnails by filename.")
         self._filter_edit.setPlaceholderText("slide name...")
         self._filter_edit.setToolTip("Filter thumbnails by filename")
         self._filter_edit.setClearButtonEnabled(True)
@@ -57,16 +66,30 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         self._filter_edit.setMinimumWidth(80)
         toolbar.addWidget(self._filter_edit, 1)
 
-        toolbar.addWidget(QtWidgets.QLabel("Sort:"))
+        sort_label = QtWidgets.QLabel("Sort:")
+        sort_label.setObjectName("slideSortLabel")
+        toolbar.addWidget(sort_label)
+
         self._sort_combo = QtWidgets.QComboBox()
+        self._sort_combo.setObjectName("slideSortCombo")
+        self._sort_combo.setAccessibleName("Sort Slide Thumbnails")
+        self._sort_combo.setAccessibleDescription("Sort order for slide thumbnails (Name A-Z or Name Z-A).")
+        self._sort_combo.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._sort_combo.addItems(["Name (A-Z)", "Name (Z-A)"])
         self._sort_combo.setToolTip("Sort order for thumbnails")
         self._sort_combo.currentTextChanged.connect(self._apply_filter_sort)
         toolbar.addWidget(self._sort_combo)
 
         # Thumbnail size slider
-        toolbar2.addWidget(QtWidgets.QLabel("Size:"))
+        size_label = QtWidgets.QLabel("Size:")
+        size_label.setObjectName("slideSizeLabel")
+        toolbar2.addWidget(size_label)
+
         self._size_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self._size_slider.setObjectName("slideSizeSlider")
+        self._size_slider.setAccessibleName("Thumbnail Size Slider")
+        self._size_slider.setAccessibleDescription("Adjust thumbnail preview size from 64 to 256 pixels.")
+        self._size_slider.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._size_slider.setRange(64, 256)
         self._size_slider.setValue(128)
         self._size_slider.setMaximumWidth(150)
@@ -75,11 +98,14 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         toolbar2.addWidget(self._size_slider, 1)
 
         self._summary_label = QtWidgets.QLabel("0 slides")
+        self._summary_label.setObjectName("slideSummaryLabel")
+        self._summary_label.setAccessibleName("Slide Count Summary")
         self._summary_label.setProperty("role", "sidebar-subtle")
         toolbar2.addWidget(self._summary_label)
 
         # View mode toggle
         self._grid_view = QtWidgets.QPushButton("Grid")
+        self._grid_view.setObjectName("slideGridViewBtn")
         self._grid_view.setIcon(
             load_icon(
                 "grid", self, QtWidgets.QStyle.StandardPixmap.SP_FileDialogDetailedView
@@ -89,16 +115,20 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         self._grid_view.setCheckable(True)
         self._grid_view.setChecked(True)
         self._grid_view.setToolTip("Show thumbnails in a responsive grid")
+        self._grid_view.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
 
         self._list_view = QtWidgets.QPushButton("List")
+        self._list_view.setObjectName("slideListViewBtn")
         self._list_view.setIcon(
             load_icon("list", self, QtWidgets.QStyle.StandardPixmap.SP_FileDialogListView)
         )
         self._list_view.setProperty("viewToggle", True)
         self._list_view.setCheckable(True)
         self._list_view.setToolTip("Show one thumbnail row per line")
+        self._list_view.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
 
         view_group = QtWidgets.QButtonGroup(self)
+        view_group.setObjectName("slideViewGroup")
         view_group.setExclusive(True)
         view_group.addButton(self._grid_view)
         view_group.addButton(self._list_view)
@@ -109,6 +139,7 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         for _btn, _name in ((self._grid_view, "Grid view"), (self._list_view, "List view")):
             _btn.setText("")
             _btn.setAccessibleName(_name)
+            _btn.setAccessibleDescription(f"Switch thumbnails to {_name.lower()}.")
         self._size_slider.setMinimumWidth(50)
         toolbar2.addWidget(self._grid_view)
         toolbar2.addWidget(self._list_view)
@@ -118,11 +149,14 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
 
         # Scroll area for thumbnails
         self._scroll = QtWidgets.QScrollArea()
+        self._scroll.setObjectName("slideScrollArea")
+        self._scroll.setAccessibleName("Slide Thumbnails Scroll Area")
         self._scroll.setWidgetResizable(True)
         self._scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self._scroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
 
         self._grid_container = QtWidgets.QWidget()
+        self._grid_container.setObjectName("slideGridContainer")
         self._grid_layout = QtWidgets.QGridLayout(self._grid_container)
         self._grid_layout.setSpacing(GRID_SPACING)
         self._grid_layout.setAlignment(
@@ -141,7 +175,7 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         self._current_size = 128
         self._selected_slide: str | None = None
 
-    def eventFilter(self, watched: QtCore.QObject, event: QtCore.QEvent) -> bool:  # noqa: N802
+    def eventFilter(self, watched: QtCore.QObject, event: QtCore.QEvent) -> bool:
         if (
             watched is self._scroll.viewport()
             and event.type() == QtCore.QEvent.Type.Resize
@@ -178,6 +212,8 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         # Create thumbnail widget
         widget = QtWidgets.QWidget()
         widget.setObjectName("SlideCard")
+        widget.setAccessibleName(f"Slide Card: {name}")
+        widget.setAccessibleDescription(f"Thumbnail card for slide {name}. Click to select.")
         widget.setProperty("selected", False)
         widget.setProperty("filterVisible", True)
         widget.setProperty("slideName", name)
@@ -193,6 +229,7 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         # Thumbnail label
         thumb_label = QtWidgets.QLabel()
         thumb_label.setObjectName("SlideThumb")
+        thumb_label.setAccessibleName(f"Thumbnail image for {name}")
         thumb_label.setAlignment(QtCore.Qt.AlignCenter)
         thumb_label.setAttribute(QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 
@@ -213,6 +250,7 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         # Name label
         name_label = QtWidgets.QLabel(name)
         name_label.setObjectName("SlideName")
+        name_label.setAccessibleName(f"Slide filename: {name}")
         name_label.setAlignment(QtCore.Qt.AlignCenter)
         name_label.setWordWrap(True)
         name_label.setMaximumWidth(self._current_size + 20)
@@ -400,3 +438,228 @@ class SlidePreviewDock(QtWidgets.QDockWidget):
         else:
             self._summary_label.setText(f"{total} slides")
             self.setWindowTitle(f"Slide Preview ({total})")
+
+    # ── Public widget properties ──────────────────────────────────────
+
+    @property
+    def header_label(self) -> QtWidgets.QLabel:
+        """Header label widget."""
+        return self._slides_header
+
+    @property
+    def filter_edit(self) -> QtWidgets.QLineEdit:
+        """Filter line edit control."""
+        return self._filter_edit
+
+    @property
+    def sort_combobox(self) -> QtWidgets.QComboBox:
+        """Sort mode combo box."""
+        return self._sort_combo
+
+    @property
+    def size_slider(self) -> QtWidgets.QSlider:
+        """Thumbnail size slider."""
+        return self._size_slider
+
+    @property
+    def summary_label(self) -> QtWidgets.QLabel:
+        """Slide count summary label."""
+        return self._summary_label
+
+    @property
+    def grid_view_button(self) -> QtWidgets.QPushButton:
+        """Grid view mode toggle button."""
+        return self._grid_view
+
+    @property
+    def list_view_button(self) -> QtWidgets.QPushButton:
+        """List view mode toggle button."""
+        return self._list_view
+
+    @property
+    def scroll_area(self) -> QtWidgets.QScrollArea:
+        """Thumbnail scroll area container."""
+        return self._scroll
+
+    @property
+    def grid_container(self) -> QtWidgets.QWidget:
+        """Internal container widget holding thumbnail grid."""
+        return self._grid_container
+
+    # ── Ergonomic state queries and setters ────────────────────────────
+
+    def has_slides(self) -> bool:
+        """Return True if any slide thumbnails are loaded."""
+        return len(self._thumbnails) > 0
+
+    def slide_names(self) -> list[str]:
+        """Return list of loaded slide names in ingestion order."""
+        return list(self._thumbnails.keys())
+
+    def visible_slide_count(self) -> int:
+        """Return number of currently visible slide thumbnails matching filter."""
+        return sum(
+            1
+            for widget in self._thumbnails.values()
+            if bool(widget.property("filterVisible"))
+        )
+
+    def visible_slide_names(self) -> list[str]:
+        """Return list of visible slide names matching filter in current sort order."""
+        needle = self._filter_edit.text().strip().lower()
+        names = list(self._thumbnails.keys())
+        if self._sort_combo.currentText() == "Name (Z-A)":
+            names.sort(key=lambda n: (n.lower(), n), reverse=True)
+        else:
+            names.sort(key=lambda n: (n.lower(), n))
+        return [
+            name
+            for name in names
+            if needle in name.lower()
+            and bool(self._thumbnails[name].property("filterVisible"))
+        ]
+
+    def selected_slide_name(self) -> str | None:
+        """Return name of currently selected slide, or None if none selected."""
+        return self._selected_slide
+
+    def is_slide_selected(self, name: str) -> bool:
+        """Return True if specified slide is currently selected."""
+        return self._selected_slide == name
+
+    def select_slide(self, name: str | None) -> bool:
+        """Programmatically select a slide by name.
+
+        Parameters
+        ----------
+        name : str | None
+            Slide name to select, or None to deselect.
+
+        Returns
+        -------
+        bool
+            True if slide selection was updated, False if slide name was not found.
+        """
+        if name is None:
+            self._set_selected_slide(None)
+            return True
+        if name not in self._thumbnails:
+            return False
+        self._on_slide_clicked(name)
+        return True
+
+    def filter_text(self) -> str:
+        """Return current filter query text."""
+        return self._filter_edit.text()
+
+    def set_filter_text(self, text: str) -> None:
+        """Update filter query text and trigger filtering."""
+        self._filter_edit.setText(text)
+
+    def clear_filter(self) -> None:
+        """Clear filter query text."""
+        self._filter_edit.clear()
+
+    def sort_mode(self) -> str:
+        """Return current sort order mode text."""
+        return self._sort_combo.currentText()
+
+    def set_sort_mode(self, mode: str) -> bool:
+        """Set thumbnail sort order mode ('Name (A-Z)' or 'Name (Z-A)')."""
+        idx = self._sort_combo.findText(mode)
+        if idx >= 0:
+            self._sort_combo.setCurrentIndex(idx)
+            return True
+        return False
+
+    def thumbnail_size(self) -> int:
+        """Return current thumbnail size in pixels."""
+        return self._current_size
+
+    def set_thumbnail_size(self, size: int) -> None:
+        """Set thumbnail size in pixels (clamped between 64 and 256)."""
+        self._size_slider.setValue(size)
+
+    def is_grid_view(self) -> bool:
+        """Return True if grid view mode is active."""
+        return self._grid_view.isChecked()
+
+    def is_list_view(self) -> bool:
+        """Return True if list view mode is active."""
+        return self._list_view.isChecked()
+
+    def set_view_mode(self, mode: str) -> bool:
+        """Set view mode to 'grid' or 'list'.
+
+        Returns
+        -------
+        bool
+            True if mode was recognized and applied, False otherwise.
+        """
+        normalized = mode.strip().lower()
+        if normalized == "grid":
+            if not self._grid_view.isChecked():
+                self._grid_view.click()
+            return True
+        elif normalized == "list":
+            if not self._list_view.isChecked():
+                self._list_view.click()
+            return True
+        return False
+
+    def summary_text(self) -> str:
+        """Return slide count summary text."""
+        return self._summary_label.text()
+
+    def slide_metadata(self, name: str) -> dict | None:
+        """Return metadata dictionary for the specified slide, or None."""
+        data = self._slide_data.get(name)
+        return data.get("metadata") if data else None
+
+    def slide_widget(self, name: str) -> QtWidgets.QWidget | None:
+        """Return thumbnail card widget for the specified slide, or None."""
+        return self._thumbnails.get(name)
+
+    def slide_pixmap(self, name: str) -> QtGui.QPixmap | None:
+        """Return thumbnail pixmap for the specified slide, or None."""
+        data = self._slide_data.get(name)
+        return data.get("thumbnail") if data else None
+
+    # ── Programmatic action triggers ───────────────────────────────────
+
+    def trigger_grid_view(self) -> None:
+        """Programmatically switch to grid view mode."""
+        if not self._grid_view.isChecked():
+            self._grid_view.click()
+
+    def trigger_list_view(self) -> None:
+        """Programmatically switch to list view mode."""
+        if not self._list_view.isChecked():
+            self._list_view.click()
+
+    def trigger_select_next(self) -> bool:
+        """Programmatically select the next visible slide in order."""
+        visible = self.visible_slide_names()
+        if not visible:
+            return False
+        if self._selected_slide not in visible:
+            return self.select_slide(visible[0])
+        idx = visible.index(self._selected_slide)
+        next_idx = (idx + 1) % len(visible)
+        return self.select_slide(visible[next_idx])
+
+    def trigger_select_previous(self) -> bool:
+        """Programmatically select the previous visible slide in order."""
+        visible = self.visible_slide_names()
+        if not visible:
+            return False
+        if self._selected_slide not in visible:
+            return self.select_slide(visible[-1])
+        idx = visible.index(self._selected_slide)
+        prev_idx = (idx - 1) % len(visible)
+        return self.select_slide(visible[prev_idx])
+
+    def trigger_clear(self) -> None:
+        """Programmatically clear all slide thumbnails."""
+        self.clear()
+
