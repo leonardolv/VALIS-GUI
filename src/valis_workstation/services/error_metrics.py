@@ -73,3 +73,23 @@ def summarize_error_dataframe(summary_df: pd.DataFrame) -> dict:
         "mean": float(sum(measured) / len(measured)) if measured else 0.0,
         "max": float(max(measured)) if measured else 0.0,
     }
+
+
+def format_summary_text(summary: dict) -> str:
+    """One-line summary for the analysis dialog.
+
+    When no pair was measured the mean/max are not 0: showing ``0.000`` would
+    read as a perfect registration, so they are reported as ``n/a``.
+    """
+    metric_column = summary.get("metric_column")
+    values = summary.get("values") or []
+    n_missing = summary.get("n_missing", 0) or 0
+    if metric_column and values and n_missing >= len(values):
+        mean_txt = max_txt = "n/a"
+    else:
+        mean_txt = f"{(summary.get('mean') or 0.0):.3f}"
+        max_txt = f"{(summary.get('max') or 0.0):.3f}"
+    text = f"Metric: {metric_column or 'N/A'} | Mean: {mean_txt} | Max: {max_txt}"
+    if n_missing:
+        text += f" | {n_missing} pair(s) without a measurement (excluded)"
+    return text

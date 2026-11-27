@@ -7,7 +7,10 @@ except ImportError:
 from matplotlib.figure import Figure
 from PySide6 import QtCore, QtWidgets
 
-from valis_workstation.services.error_metrics import summarize_error_dataframe
+from valis_workstation.services.error_metrics import (
+    format_summary_text,
+    summarize_error_dataframe,
+)
 
 
 class AnalysisPlotDialog(QtWidgets.QDialog):
@@ -104,10 +107,5 @@ class AnalysisPlotDialog(QtWidgets.QDialog):
         self._canvas.figure.tight_layout()
         self._canvas.draw()
 
-        mean_val = summary.get("mean", 0.0) or 0.0
-        max_val = summary.get("max", 0.0) or 0.0
-        text = f"Metric: {metric_column or 'N/A'} | Mean: {mean_val:.3f} | Max: {max_val:.3f}"
-        n_missing = summary.get("n_missing", 0)
-        if n_missing:
-            text += f" | {n_missing} pair(s) without a measurement (excluded)"
+        text = format_summary_text(summary)
         self._summary_label.setText(text)
