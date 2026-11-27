@@ -6,6 +6,12 @@ work this file; always append, never overwrite another agent's entries.
 
 ## Completed
 
+### 2026-11-27 UTC - Analysis dialog showed "Mean 0.000 / Max 0.000" when no pair was measured
+Status: **done** (Claude)
+- Root cause: `summarize_error_dataframe` returns mean/max `0.0` when every pair is NaN (unmeasured); `AnalysisPlotDialog` printed those as `0.000`, which reads as a perfect registration.
+- Solution: new pure `error_metrics.format_summary_text` (used by the dialog) prints `n/a` for mean/max when all pairs are unmeasured; other output unchanged.
+- Validation: `tests/test_error_metrics.py` (3 new tests) and `tests/test_first_run_wizard_and_analysis_plot.py`: 26 passed offscreen.
+
 ### 2026-11-26 UTC - Audit pass: nothing found
 Status: **done** (Claude)
 - Checked: Backlog (the Warp Annotations `crop=True` item is already fixed in code and struck through; `warp_annotations.py` no longer passes it), `services/slide_scan.py`, `services/roi_export.py`, `services/error_metrics.py`, `services/merge_slides.py` (head), `services/thumbnail_cache.py` (corrupt sidecar, vanished-file paths), `services/valis_pipeline.py` output-size logging, `utils/paths.py`, `constants.has_supported_extension`. All already guard OSError/NaN/corrupt-metadata cases and have tests.

@@ -132,3 +132,31 @@ class TestSummarizeErrorDataframe:
         df = pd.DataFrame({0: [1.0], "rigid_TRE": [2.0]})
         assert select_metric_column(df) == "rigid_TRE"
         assert select_metric_column(pd.DataFrame({0: [1]})) is None
+
+
+class TestFormatSummaryText:
+    def test_all_unmeasured_reports_na_not_zero(self):
+        from valis_workstation.services.error_metrics import format_summary_text
+
+        text = format_summary_text(
+            {"metric_column": "rigid_TRE", "values": [float("nan")] * 2,
+             "n_missing": 2, "mean": 0.0, "max": 0.0}
+        )
+        assert "Mean: n/a" in text and "Max: n/a" in text
+        assert "2 pair(s) without a measurement" in text
+
+    def test_measured_values_formatted(self):
+        from valis_workstation.services.error_metrics import format_summary_text
+
+        text = format_summary_text(
+            {"metric_column": "x_TRE", "values": [1.0, 3.0], "n_missing": 0,
+             "mean": 2.0, "max": 3.0}
+        )
+        assert text == "Metric: x_TRE | Mean: 2.000 | Max: 3.000"
+
+    def test_no_metric(self):
+        from valis_workstation.services.error_metrics import format_summary_text
+
+        assert format_summary_text({"metric_column": None, "values": []}) == (
+            "Metric: N/A | Mean: 0.000 | Max: 0.000"
+        )
